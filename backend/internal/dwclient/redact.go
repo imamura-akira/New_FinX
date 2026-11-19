@@ -16,6 +16,8 @@ var (
 		"document": true, "image": true,
 		"birthday": true, "birthmonth": true, "birthyear": true, "birthdate": true, "dob": true,
 		"street1": true, "street2": true,
+		// 沙盒实测：DW User 对象的地址行、头像（邮箱哈希）字段名
+		"addressline1": true, "addressline2": true, "avatarurl": true,
 	}
 	// 保留尾 4 位：税号、证件号、银行与账户号码、电话
 	redactLast4 = map[string]bool{
@@ -24,11 +26,14 @@ var (
 		"accountnumber": true, "routingnumber": true, "accountno": true,
 		"beneficiaryaccountnumber": true, "beneficiaryroutingnumber": true, "beneficiaryswiftaba": true,
 		"phone": true, "phonenumber": true,
+		"idno": true, // 沙盒实测：DW User 对象中的证件号字段
 	}
 	// 保留首字符：姓名、邮箱本地部分
 	redactInitial = map[string]bool{
 		"firstname": true, "lastname": true, "beneficiaryname": true, "politicallyexposednames": true,
 		"emailaddress": true, "email": true, "signedby": true,
+		// 沙盒实测：DW User 对象中的姓名派生字段与签名人
+		"displayname": true, "acksignedby": true, "employercompany": true,
 	}
 )
 

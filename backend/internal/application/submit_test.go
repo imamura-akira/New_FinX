@@ -232,7 +232,7 @@ func validUSDraft() map[string]any {
 	return map[string]any{
 		"firstName": "Alex", "lastName": "Chen", "dateOfBirth": "1990-03-07",
 		"citizenship": "US", "taxResidency": "US", "phone": "+1 415 555 0142", "contactEmail": "alex@example.com", "language": "zh_CN",
-		"usTaxPayer": "YES", "tinType": "SSN", "tin": "123-45-6789", "irsBackup": "NO", "tinConfirm": true,
+		"usTaxPayer": "YES", "tinType": "SSN", "tin": "234-56-7890", "irsBackup": "NO", "tinConfirm": true,
 		"residentialAddress": map[string]any{"line1": "200 Market Street", "city": "San Francisco", "state": "CA", "postalCode": "94105", "country": "US"},
 		"employmentStatus":   "EMPLOYED", "employerName": "Example Corp",
 		"annualIncomeRange": "100k-200k", "netWorthRange": "200k-500k", "netWorthLiquidRange": "50k-200k",
@@ -306,7 +306,7 @@ func TestSubmitHappyPathPostThenPatch(t *testing.T) {
 		t.Fatalf("DISCLOSURES 不正确: %v", disc)
 	}
 	// 生成的 DW 密码不得出现在日志中
-	if strings.Contains(sf.logs.String(), post["password"].(string)) || strings.Contains(sf.logs.String(), "123-45-6789") {
+	if strings.Contains(sf.logs.String(), post["password"].(string)) || strings.Contains(sf.logs.String(), "234-56-7890") {
 		t.Fatal("日志泄露 DW 密码或税号")
 	}
 	// 重复提交
@@ -453,6 +453,9 @@ func TestSubmitValidationErrors(t *testing.T) {
 		}, "residentialAddress.line1"},
 		{"美国地址缺州", func(d, _ map[string]any) { delete(d["residentialAddress"].(map[string]any), "state") }, "residentialAddress.state"},
 		{"SSN 格式", func(d, _ map[string]any) { d["tin"] = "12-345" }, "tin"},
+		{"SSN 为示例号码", func(d, _ map[string]any) { d["tin"] = "123-45-6789" }, "tin"},
+		{"SSN 区号 9xx", func(d, _ map[string]any) { d["tin"] = "912-34-5678" }, "tin"},
+		{"SSN 组号 00", func(d, _ map[string]any) { d["tin"] = "234-00-5678" }, "tin"},
 		{"美国纳税人选外国税号", func(d, _ map[string]any) { d["tinType"] = "FOREIGN_TIN" }, "tinType"},
 		{"未确认税号", func(d, _ map[string]any) { d["tinConfirm"] = false }, "tinConfirm"},
 		{"在职缺雇主", func(d, _ map[string]any) { delete(d, "employerName") }, "employerName"},

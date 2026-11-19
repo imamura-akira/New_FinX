@@ -22,7 +22,9 @@ func TestParseKYC(t *testing.T) {
 	}{
 		{"文档结构 kyc.status.name", `{"kyc":{"status":{"name":"KYC_APPROVED"}}}`, "KYC_APPROVED", 0},
 		{"status 为字符串", `{"kyc":{"status":"KYC_PROCESSING"}}`, "KYC_PROCESSING", 0},
-		{"顶层 status、无前缀小写", `{"status":{"name":"manual_review"}}`, "KYC_MANUAL_REVIEW", 0},
+		{"沙盒实测：顶层 APPROVED、kyc 无 status", `{"kyc":{"accepted":{"acceptedBy":"SYSTEM"},"approved":{}},"status":{"description":"User approved.","name":"APPROVED"}}`, "KYC_APPROVED", 0},
+		{"顶层 PENDING 不映射为细分状态", `{"kyc":{},"status":{"name":"PENDING"}}`, "USER_PENDING", 0},
+		{"无前缀小写", `{"kyc":{"status":{"name":"manual_review"}}}`, "KYC_MANUAL_REVIEW", 0},
 		{"带问题项", `{"kyc":{"status":{"name":"KYC_INFO_REQUIRED"},"errors":[{"code":"ADDRESS","description":"x"},{"description":"no code"}]}}`, "KYC_INFO_REQUIRED", 1},
 		{"details 数组", `{"kyc":{"status":{"name":"KYC_DOC_REQUIRED"},"details":[{"name":"ID_DOC"}]}}`, "KYC_DOC_REQUIRED", 1},
 		{"空响应", `{}`, "", 0},

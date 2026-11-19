@@ -35,6 +35,7 @@ func run() int {
 	c, err := dwclient.New(dwclient.Config{
 		BaseURL: cfg.DW.BaseURL, AppKey: cfg.DW.AppKey, ClientID: cfg.DW.ClientID, ClientSecret: cfg.DW.ClientSecret,
 		Timeout: cfg.DW.HTTPTimeout, TokenRequestsPerHour: cfg.DW.TokenRequestsPerHour, TokenRefreshSkew: cfg.DW.TokenRefreshSkew,
+		LogBodies: cfg.DW.LogBodies,
 	}, dwclient.WithLogger(logger))
 	if err != nil {
 		fmt.Println("创建 DW 客户端失败:", err)

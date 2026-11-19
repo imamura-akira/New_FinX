@@ -41,6 +41,19 @@ func TestPGAccountRepo(t *testing.T) {
 		}
 		return false
 	}
+	if find() {
+		t.Fatal("编排未完成（披露未提交）时不应开户")
+	}
+	_, _ = st.DB.Exec(`UPDATE applications SET orchestration_state = 'DOCS_DONE' WHERE id = $1`, appID)
+	find = func() bool {
+		list, _ := r.NeedAccount(ctx, 1000)
+		for _, p := range list {
+			if p.AppID == appID {
+				return true
+			}
+		}
+		return false
+	}
 	if !find() {
 		t.Fatal("KYC 通过且无账户时应待开户")
 	}

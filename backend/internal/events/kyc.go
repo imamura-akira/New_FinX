@@ -138,23 +138,23 @@ func (r *Reconciler) refresh(ctx context.Context, t KYCTarget) {
 	}
 }
 
-// ParseKYC 宽松解析 GET /users/{id}/kyc-status 的响应（结构待沙盒验证）：
-// 状态取 kyc.status.name（pages.md 3.1.2），兼容 kyc.status 为字符串或顶层 status；
+// ParseKYC 宽松解析 GET /users/{id}/kyc-status 的响应：
+// 优先取 kyc.status.name（pages.md 3.1.2 文档描述）；沙盒实际无此字段时，顶层 status.name=APPROVED 视为 KYC_APPROVED；
 // 问题项取 kyc.errors / kyc.details / kyc.reasons 数组中的对象。
 func ParseKYC(resp map[string]any) (string, []Issue) {
 	k, _ := resp["kyc"].(map[string]any)
-	if k == nil {
-		k = resp
+	status := statusName(k["status"])
+	if status == "" && k != nil {
+		// 沙盒实测（2026-11-19）：kyc 对象只有 accepted / approved，无 kyc.status；
+		// 粗粒度状态在顶层 status.name（User 对象：PENDING / APPROVED）。
+		// 只把 APPROVED 映射为 KYC_APPROVED；PENDING 不映射（无法确定是哪个细分状态），保持原状态并记录。
+		if top := statusName(resp["status"]); top == "APPROVED" {
+			status = "KYC_APPROVED"
+		} else if top != "" {
+			status = "USER_" + top
+		}
 	}
-	status := ""
-	switch s := k["status"].(type) {
-	case string:
-		status = s
-	case map[string]any:
-		status, _ = s["name"].(string)
-	}
-	status = strings.ToUpper(strings.TrimSpace(status))
-	if status != "" && !strings.HasPrefix(status, "KYC_") {
+	if status != "" && !strings.HasPrefix(status, "KYC_") && !strings.HasPrefix(status, "USER_") {
 		status = "KYC_" + status
 	}
 	var issues []Issue
@@ -174,6 +174,17 @@ func ParseKYC(resp map[string]any) (string, []Issue) {
 		}
 	}
 	return status, issues
+}
+
+func statusName(v any) string {
+	switch x := v.(type) {
+	case string:
+		return strings.ToUpper(strings.TrimSpace(x))
+	case map[string]any:
+		n, _ := x["name"].(string)
+		return strings.ToUpper(strings.TrimSpace(n))
+	}
+	return ""
 }
 
 func firstString(m map[string]any, keys ...string) string {

@@ -350,6 +350,7 @@ func TestRedactJSON(t *testing.T) {
 		{`{"emailAddress":"jane@example.com"}`, `{"emailAddress":"j***@example.com"}`},
 		{`{"list":[{"ssn":"123456789"}]}`, `{"list":[{"ssn":"*****6789"}]}`},
 		{`{"amount":250.5,"currency":"USD"}`, `{"amount":250.5,"currency":"USD"}`},
+		{`{"addressLine1":"200 Market Street","displayName":"DTester","idNo":"****1173"}`, `{"addressLine1":"[REDACTED]","displayName":"D***","idNo":"****1173"}`},
 		{`not json`, `[non-json body, 8 bytes]`},
 		{``, ``},
 	}

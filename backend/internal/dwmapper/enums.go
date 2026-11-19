@@ -16,11 +16,12 @@ var countryAlpha3 = map[string]string{
 }
 
 // tinTypeDW：IDENTIFICATION_INFO.type。非 SSN 类型需同时提供 issuingCountry（[D]）。
+// DW userTaxIDType（post_users 参考页）：SSN、EIN、FTIN、PASSPORT、ALIEN_ID、OTHER。ITIN 无对应值，暂按 SSN 发送（待 DW 确认）。
 var tinTypeDW = map[string]string{
 	"SSN":         "SSN",
-	"ITIN":        "ITIN",
-	"FOREIGN_TIN": "TAX_ID",
-	"NIN":         "NATIONAL_ID",
+	"ITIN":        "SSN",
+	"FOREIGN_TIN": "FTIN",
+	"NIN":         "OTHER",
 }
 
 // employmentStatusDW：EMPLOYMENT_INFO.status。
@@ -40,13 +41,12 @@ var investmentExperienceDW = map[string]string{
 	"5+":   "YRS_5_10",
 }
 
-// investmentObjectiveDW：INVESTOR_PROFILE_INFO.investmentObjectives。
-// DW 示例值为 LONG_TERM；App 的四个目标与 DW 枚举的对应关系待 DW 确认。
+// investmentObjectiveDW：INVESTOR_PROFILE_INFO.investmentObjectives（post_users 参考页；LONG_TERM 等前四个已废弃）。
 var investmentObjectiveDW = map[string]string{
-	"GROWTH":   "LONG_TERM",
-	"INCOME":   "LONG_TERM",
-	"PRESERVE": "LONG_TERM",
-	"SPEC":     "FREQUENT",
+	"GROWTH":   "GROWTH",
+	"INCOME":   "INCOME",
+	"PRESERVE": "CAPITAL_PRESERVATION",
+	"SPEC":     "SPECULATION",
 }
 
 // riskToleranceDW：INVESTOR_PROFILE_INFO.riskTolerance。
@@ -73,14 +73,16 @@ var netWorthUSD = map[string]int{
 	">1m":       1500000,
 }
 
-// fundingSourcesDW：COMPLIANCE_AML_INFO.fundingSources（App 代码为占位，枚举值待 DW 确认）。
+// fundingSourcesDW：COMPLIANCE_AML_INFO.fundingSources。
+// 沙盒实测 "EMPLOYMENT" 被拒（U025 Unrecognized funding source）；DW 取值（post_users 参考页）：
+// EMP、GIFT、TRUST、INVESTMENT、SAVINGS、RETIRE、GAMBLING、LEGAL、FAMILY、UNEMP、ROLLOVER、RENT、SALE、INSURANCE。
+// 原型选项"经营收入"暂映射 EMP、"继承 / 赠与"映射 GIFT；"其他"在 DW 无对应值，不映射（提交时提示重新选择）。待用户确认选项调整。
 var fundingSourcesDW = map[string]string{
-	"EMPLOYMENT":  "EMPLOYMENT",
+	"EMPLOYMENT":  "EMP",
 	"SAVINGS":     "SAVINGS",
-	"INVESTMENTS": "INVESTMENTS",
-	"BUSINESS":    "BUSINESS",
-	"INHERITANCE": "INHERITANCE",
-	"OTHER":       "OTHER",
+	"INVESTMENTS": "INVESTMENT",
+	"BUSINESS":    "EMP",
+	"INHERITANCE": "GIFT",
 }
 
 // languageDW：BASIC_INFO.language（可选；DW 响应示例为 "en_US"）。

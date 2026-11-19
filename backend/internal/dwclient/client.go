@@ -36,6 +36,8 @@ type Config struct {
 	TokenRefreshSkew     time.Duration // 默认 5m
 	GetRetries           int           // 默认 3
 	RetryBackoff         time.Duration // 首次退避，默认 300ms，之后翻倍
+	// LogBodies：成功响应也记录脱敏后的响应体（仅沙盒分析用；config 禁止 production 开启）。
+	LogBodies bool
 }
 
 // ErrNotConfigured：凭据未配置。
@@ -225,6 +227,8 @@ func (c *Client) send(ctx context.Context, method, path string, payload []byte, 
 	level := slog.LevelInfo
 	if resp.StatusCode >= 400 {
 		level = slog.LevelWarn
+	}
+	if resp.StatusCode >= 400 || c.cfg.LogBodies {
 		attrs = append(attrs, slog.String("response_body", RedactJSON(respBody)))
 	}
 	c.logger.Log(ctx, level, "dw request", attrs...)

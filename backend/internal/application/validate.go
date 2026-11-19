@@ -44,6 +44,24 @@ func ageOn(dob string, now time.Time) (int, bool) {
 	return age, true
 }
 
+// plausibleSSN：SSA 结构规则（区号不为 000/666/9xx、组号不为 00、序号不为 0000）及常见示例号码。
+// 沙盒实测 DW 会拒绝无效 SSN（E032 Invalid SSN provided），在我方先拦截，避免申请被转人工。
+func plausibleSSN(s string) bool {
+	d := strings.NewReplacer("-", "", " ", "").Replace(s)
+	if len(d) != 9 {
+		return false
+	}
+	area, group, serial := d[:3], d[3:5], d[5:]
+	if area == "000" || area == "666" || area[0] == '9' || group == "00" || serial == "0000" {
+		return false
+	}
+	switch d {
+	case "123456789", "078051120", "219099999":
+		return false
+	}
+	return true
+}
+
 // FullName：签名须与之一致。
 func FullName(d dwmapper.Data) string {
 	return strings.TrimSpace(strings.TrimSpace(d.FirstName) + " " + strings.TrimSpace(d.LastName))
@@ -98,6 +116,8 @@ func ValidateSubmission(d dwmapper.Data, docs []DocMeta, disclosures []dwmapper.
 		add("tinType", "请选择税号类型")
 	case d.TINType == "SSN" && !ssnRE.MatchString(tin):
 		add("tin", "SSN 格式应为 123-45-6789")
+	case d.TINType == "SSN" && !plausibleSSN(tin):
+		add("tin", "该 SSN 无效，请核对后重新填写")
 	case d.TINType == "ITIN" && !itinRE.MatchString(tin):
 		add("tin", "ITIN 以 9 开头，格式为 9XX-XX-XXXX")
 	case len(tin) < 5:

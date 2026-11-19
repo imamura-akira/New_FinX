@@ -126,7 +126,7 @@ func nameOf(v any) string {
 	return ""
 }
 
-// EnsureAccounts 为 KYC 已通过、尚无账户的用户开户。每个用户最多尝试 maxCreateAttempts 次。
+// EnsureAccounts 为 KYC 已通过、资料已全部提交给 DW（编排 DOCS_DONE）、尚无账户的用户开户。每个用户最多尝试 maxCreateAttempts 次。
 //
 // 幂等：开户前先查 GET /users/{userID}/accounts，已有 LIVE 账户则直接采用，避免超时重试导致重复开户。
 func (s *Service) EnsureAccounts(ctx context.Context) {
@@ -245,7 +245,11 @@ type PGRepo struct{ DB *sql.DB }
 func (p PGRepo) NeedAccount(ctx context.Context, limit int) ([]Pending, error) {
 	rows, err := p.DB.QueryContext(ctx,
 		`SELECT d.application_id, d.dw_user_id FROM dw_users d
+		   JOIN applications ap ON ap.id = d.application_id
 		  WHERE d.kyc_status = 'KYC_APPROVED' AND d.dw_user_id IS NOT NULL AND d.deleted_at IS NULL
+		    -- 沙盒实测：POST /users 后即自动 APPROVED，此时披露等资料尚未 PATCH。
+		    -- 必须等编排全部完成（DISCLOSURES 已提交）才开户。
+		    AND ap.orchestration_state = 'DOCS_DONE' AND ap.submit_blocked = false
 		    AND d.account_attempts < $2
 		    AND NOT EXISTS (SELECT 1 FROM accounts a WHERE a.dw_user_id = d.dw_user_id)
 		  ORDER BY d.kyc_updated_at LIMIT $1`, limit, maxCreateAttempts)

@@ -71,6 +71,7 @@ type DW struct {
 	HTTPTimeout          time.Duration // 默认 10s
 	TokenRequestsPerHour int           // token 请求预算，约 5–10 次/小时
 	TokenRefreshSkew     time.Duration // 到期前多久刷新
+	LogBodies            bool          // DW_LOG_BODIES：成功响应也记录脱敏响应体（仅沙盒）
 }
 
 // Config：全部配置。
@@ -130,6 +131,7 @@ func LoadFrom(get Getenv) (*Config, error) {
 			HTTPTimeout:          p.dur("DW_HTTP_TIMEOUT", 10*time.Second),
 			TokenRequestsPerHour: p.int("DW_TOKEN_REQUESTS_PER_HOUR", 6),
 			TokenRefreshSkew:     p.dur("DW_TOKEN_REFRESH_SKEW", 5*time.Minute),
+			LogBodies:            p.bool("DW_LOG_BODIES", false),
 		},
 		SessionTTL:         p.dur("SESSION_TTL", 24*time.Hour),
 		OTPDevLog:          p.bool("OTP_DEV_LOG", false),
@@ -230,6 +232,9 @@ func (c *Config) Validate() error {
 	}
 	if c.KYCPollInterval < 5*time.Second || c.KYCPollInterval > time.Hour {
 		errs = append(errs, "KYC_POLL_INTERVAL 超出范围 5s–1h")
+	}
+	if c.DW.LogBodies && c.Env == "production" {
+		errs = append(errs, "production 环境禁止开启 DW_LOG_BODIES")
 	}
 	if c.OTPDevLog && c.Env == "production" {
 		errs = append(errs, "production 环境禁止开启 OTP_DEV_LOG")

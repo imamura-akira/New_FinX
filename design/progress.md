@@ -1,6 +1,28 @@
 # 开发进度（progress.md）
 
-> 最近更新：2026-11-19（第二个暂停点）
+> 最近更新：2026-11-19（Demo-1 #5 暂停点）
+
+## 0. 当前里程碑：Demo-1（客户演示）
+
+目标：真实 Flutter App（iOS 模拟器优先）连接本机 Go 后端与 DW 沙盒，演示三条主线：A 开户、B KYC、C 出入金。M1 的剩余工作并入 Demo-1。
+
+| # | 任务 | 状态 | 提交 |
+|---|---|---|---|
+| 1 | 迁移 000002、演示验证码 000000、路由挂载、本机访问 | 完成 | 6638838 |
+| 2 | 开户草稿与证件暂存接口 | 完成 | 6ade440 |
+| 3 | 开户提交编排 | 完成 | 2057c62 |
+| 4 | KYC 状态、对账轮询、自动开户 | 完成 | dd89405 |
+| 5 | 沙盒实测 A/B | **暂停**：创建用户与 KYC 已跑通；开户卡在 `EMPLOYMENT_INFO.type` 规格缺口；PEP/董事"NULL"问题待验证 | 见 `design/sandbox-log.md` |
+| 6–12 | 资金接口、沙盒实测 C、Flutter、演示辅助 | 未开始 | — |
+
+**恢复步骤**：先读 `design/sandbox-log.md` 末尾"需要决定"的 4 条；用户决定后，修正 dwmapper（及必要的页面规格），用新测试用户重跑 #5（脚本思路：登录 → PUT 草稿 → 提交 → 观察日志），直到 `POST /accounts` 成功，然后继续 #6。
+本地运行（演示模式 + 沙盒分析日志）：
+
+```bash
+cd "/Users/ak/Desktop/Claude FinX New/backend" && (set -a; source ./.env; set +a; DATABASE_URL='postgres://postgres:dev@127.0.0.1:55432/finx?sslmode=disable' OTP_DEV_LOG=true KYC_POLL_INTERVAL=10s DW_LOG_BODIES=true go run ./cmd/server)
+```
+
+---
 
 ## 1. 当前位置
 

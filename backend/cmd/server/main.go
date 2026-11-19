@@ -87,6 +87,7 @@ func run(migrateCmd string, logger *slog.Logger) error {
 		dw, err = dwclient.New(dwclient.Config{
 			BaseURL: cfg.DW.BaseURL, AppKey: cfg.DW.AppKey, ClientID: cfg.DW.ClientID, ClientSecret: cfg.DW.ClientSecret,
 			Timeout: cfg.DW.HTTPTimeout, TokenRequestsPerHour: cfg.DW.TokenRequestsPerHour, TokenRefreshSkew: cfg.DW.TokenRefreshSkew,
+			LogBodies: cfg.DW.LogBodies,
 		}, dwclient.WithLogger(logger))
 		if err != nil {
 			return err
