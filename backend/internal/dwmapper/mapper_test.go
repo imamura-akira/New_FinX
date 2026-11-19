@@ -217,6 +217,7 @@ func TestBuildMappingErrors(t *testing.T) {
 		{"职位未知", func(d *Data) { d.Position = "OTHER" }, []string{"position"}},
 		{"在职缺行业", func(d *Data) { d.Industry = "" }, []string{"industry"}},
 		{"资金来源未知", func(d *Data) { d.FundingSources = []string{"LOTTERY"} }, []string{"fundingSources"}},
+		{"美国州无法识别（沙盒 E032）", func(d *Data) { d.ResidentialAddress.State = "Kalifornia" }, []string{"residentialAddress.state"}},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -237,6 +238,31 @@ func TestBuildMappingErrors(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func TestNormalizeUSState(t *testing.T) {
+	for _, tc := range []struct{ in, want string }{
+		{"CA", "CA"}, {" ca ", "CA"}, {"C.A.", "CA"}, {"California", "CA"}, {"new york", "NY"}, {"NEW-YORK", "NY"},
+		{"District of Columbia", "DC"}, {"Washington, D.C.", "DC"}, {"pr", "PR"},
+		{"Califrnia", ""}, {"XX", ""}, {"", ""},
+	} {
+		got, ok := NormalizeUSState(tc.in)
+		if got != tc.want || ok != (tc.want != "") {
+			t.Errorf("NormalizeUSState(%q) = %q %v，期望 %q", tc.in, got, ok, tc.want)
+		}
+	}
+	// 全称在映射时转为代码
+	d := usData()
+	d.ResidentialAddress.State = "california"
+	core, _, err := Build(d, sub())
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, doc := range core {
+		if doc.Type == DocAddressInfo && doc.Data["province"] != "CA" {
+			t.Fatalf("province = %v，期望 CA", doc.Data["province"])
+		}
 	}
 }
 

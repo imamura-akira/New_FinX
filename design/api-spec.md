@@ -122,3 +122,4 @@ Base URL：`/api/v1`　认证：`Authorization: Bearer <sessionToken>`（除 /au
 | 2026-11-19 | 5.5 市场数据（F11）落地：`/market/quotes`、`/market/instruments/{symbol}` 写入 openapi.yaml；两接口**无需登录**（虚拟行情、不含用户信息，P-01"先逛逛行情"需未登录可看）；`/market/instruments` 响应新增 `exchange`、`type`；`chgPct` 为百分数；`symbols` 单次最多 50 个、未知代码忽略、为空返回全部；未知个股返回 42200 | 新增，向后兼容 |
 | 2026-11-19 | 沙盒实测：`rule14b` 为 false（P-05 选"否"）时 DW 拒绝开户（U040），`GET /application/status` 将停在 KYC_APPROVED、accountStatus 为空。接口不变；处理方式待 Q-DW-11 与用户决定 | 记录，无接口变更 |
 | 2026-11-20 | `GET /account` 新增可选字段 `dw{userId, accountId, accountNo, kycStatus, syncedAt}`：**仅演示环境**（`OTP_DEV_LOG=true`，config 禁止 production 开启）返回，供 App P-08"DW 沙盒凭证"区与 DW 当场对照；生产不返回 | 新增，向后兼容 |
+| 2026-11-20 | 开户校验加固（`PUT /application/draft` 分步校验与 `POST /application/submit`）：美国地址 `residentialAddress.state` 须为 USPS 州代码或全称（沙盒 E032）；SSN 拦截 123-45-6789 与全同数字；美国 / NANP 电话区号与交换码不以 0、1 开头、全同数字拦截。均返回 42200 字段错误（英文文案），接口形状不变 | 校验收紧，向后兼容 |

@@ -467,6 +467,11 @@ func TestSubmitValidationErrors(t *testing.T) {
 		{"资金来源为空", func(d, _ map[string]any) { d["fundingSources"] = []string{} }, "fundingSources"},
 		{"选项不在列表", func(d, _ map[string]any) { d["riskTolerance"] = "YOLO" }, "riskTolerance"},
 		{"手机号格式", func(d, _ map[string]any) { d["phone"] = "abc" }, "phone"},
+		{"美国州无法识别（沙盒 E032）", func(d, _ map[string]any) { d["residentialAddress"].(map[string]any)["state"] = "Califrnia" }, "residentialAddress.state"},
+		{"SSN 全同数字", func(d, _ map[string]any) { d["tin"] = "111-11-1111" }, "tin"},
+		{"电话区号以 1 开头", func(d, _ map[string]any) { d["phone"] = "+1 115 555 0142" }, "phone"},
+		{"电话交换码以 0 开头", func(d, _ map[string]any) { d["phone"] = "+1 415 055 0142" }, "phone"},
+		{"电话全同数字", func(d, _ map[string]any) { d["phone"] = "+1 222 222 2222" }, "phone"},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {

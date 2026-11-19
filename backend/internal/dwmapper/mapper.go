@@ -106,6 +106,13 @@ func Build(d Data, s Submission) (core, rest []Document, err error) {
 	if l2 := strings.TrimSpace(addr.Line2); l2 != "" {
 		address["street2"] = l2
 	}
+	if addr.Country == "US" { // 美国地址：province 必须为 USPS 两位代码（沙盒 E032）
+		if code, ok := NormalizeUSState(addr.State); ok {
+			address["province"] = code
+		} else {
+			m.fail("residentialAddress.state")
+		}
+	}
 
 	employment := map[string]any{
 		"status":     m.lookup("employmentStatus", employmentStatusDW, d.EmploymentStatus),

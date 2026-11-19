@@ -141,3 +141,10 @@
 - **对照**：另一虚构测试用户在 P-05 选"是"，提交后约 4 秒 KYC 通过并开户（OPEN）。至此确认是 `rule14b` 取值导致失败。
 - **App 端联调结果**：首页（开户中）显示"交易账户开立中"；开户后首页资产卡、"资金数据来自 DriveWealth · 更新于"、P-08 账户号码与 LIVE · CASH · SELF 均为 DW 真实返回，金额 $0.00。P-06 的轮询与各分支由 widget test 覆盖。
 
+## 2026-11-20 · 真机 TestFlight 提交失败（Ref FX261119-WSFNYEBJ）
+
+- 现象：App 显示"发送给券商时出错，无需重复提交"（编排转人工，`submit_blocked`）。
+- 原因：`POST /users` 返回 **400 E032**，`errorDetails.field = ADDRESS_INFO.province`，`detail = "Invalid US state"`（DW requestId `request_f7b273ae-cefa-4826-89b4-d5f7d76e4225_pas`）。P-03d 州字段为自由输入，前后端只校验非空，非 USPS 代码的取值被放行。DW 用户未创建（失败发生在第一步）。
+- 修正：美国地址的州规范为 USPS 两位代码（接受代码或全称，大小写不限）；无法识别时 P-03d 与提交校验均返回 42200（英文提示）。同时加固 SSN（123-45-6789、全同数字）与电话（NANP 区号 / 交换码不以 0、1 开头，全同数字）校验。
+- 处理：该测试账号已按用户要求用 `demoreset reset` 清除，重新注册后可再次提交。
+

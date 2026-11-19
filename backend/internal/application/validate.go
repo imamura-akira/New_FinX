@@ -62,6 +62,60 @@ func plausibleSSN(s string) bool {
 	return true
 }
 
+// blacklistedSSN：明显的占位号码（123-45-6789、全同数字），提示用户填写真实 SSN。
+func blacklistedSSN(s string) bool {
+	d := strings.NewReplacer("-", "", " ", "").Replace(s)
+	return len(d) == 9 && (d == "123456789" || allSameDigit(d))
+}
+
+func allSameDigit(d string) bool {
+	if d == "" {
+		return false
+	}
+	return strings.Count(d, d[:1]) == len(d)
+}
+
+// phoneProblem 返回电话号码的问题文案（空表示通过）：
+// 美国 / NANP（+1 开头，或不带国家码的 10 位、1 开头的 11 位）按 NANP 规则校验区号与交换码不以 0/1 开头；
+// 任何号码的有效数字全同（如 +1 111 111 1111）一律拦截。
+func phoneProblem(raw string) string {
+	p := strings.TrimSpace(raw)
+	if !phoneRE.MatchString(p) {
+		return "Enter a valid phone number with country code"
+	}
+	digits := dwmapper.NormalizePhone(p)
+	plus := strings.HasPrefix(digits, "+")
+	digits = strings.TrimPrefix(digits, "+")
+	national := ""
+	switch {
+	case plus && strings.HasPrefix(digits, "1"):
+		national = digits[1:]
+	case !plus && len(digits) == 11 && digits[0] == '1':
+		national = digits[1:]
+	case !plus && len(digits) == 10:
+		national = digits
+	}
+	if national != "" {
+		if len(national) != 10 {
+			return "Enter a valid U.S. phone number: +1 and 10 digits"
+		}
+		if allSameDigit(national) {
+			return "Enter your real phone number. This number cannot be used."
+		}
+		if national[0] == '0' || national[0] == '1' {
+			return "Enter a valid U.S. phone number: the area code can't start with 0 or 1"
+		}
+		if national[3] == '0' || national[3] == '1' {
+			return "Enter a valid U.S. phone number: the exchange code can't start with 0 or 1"
+		}
+		return ""
+	}
+	if allSameDigit(digits) {
+		return "Enter your real phone number. This number cannot be used."
+	}
+	return ""
+}
+
 // FullName：签名须与之一致。
 func FullName(d dwmapper.Data) string {
 	return strings.TrimSpace(strings.TrimSpace(d.FirstName) + " " + strings.TrimSpace(d.LastName))
@@ -93,8 +147,8 @@ func ValidateSubmission(d dwmapper.Data, docs []DocMeta, disclosures []dwmapper.
 	if !in("taxResidency", d.TaxResidency) {
 		add("taxResidency", "Select your country of tax residence")
 	}
-	if !phoneRE.MatchString(strings.TrimSpace(d.Phone)) {
-		add("phone", "Enter a valid phone number with country code")
+	if msg := phoneProblem(d.Phone); msg != "" {
+		add("phone", msg)
 	}
 	if !in("language", d.Language) {
 		add("language", "Select a language")
@@ -116,6 +170,8 @@ func ValidateSubmission(d dwmapper.Data, docs []DocMeta, disclosures []dwmapper.
 		add("tinType", "Select a tax ID type")
 	case d.TINType == "SSN" && !ssnRE.MatchString(tin):
 		add("tin", "SSN format: 123-45-6789")
+	case d.TINType == "SSN" && blacklistedSSN(tin):
+		add("tin", "Enter your real SSN. This number cannot be used.")
 	case d.TINType == "SSN" && !plausibleSSN(tin):
 		add("tin", "This SSN is not valid. Check it and try again")
 	case d.TINType == "ITIN" && !itinRE.MatchString(tin):
@@ -147,8 +203,12 @@ func ValidateSubmission(d dwmapper.Data, docs []DocMeta, disclosures []dwmapper.
 	if strings.TrimSpace(a.PostalCode) == "" {
 		add("residentialAddress.postalCode", "Enter your ZIP / postal code")
 	}
-	if a.Country == "US" && strings.TrimSpace(a.State) == "" {
-		add("residentialAddress.state", "Enter your state")
+	if a.Country == "US" {
+		if strings.TrimSpace(a.State) == "" {
+			add("residentialAddress.state", "Enter your state")
+		} else if _, ok := dwmapper.NormalizeUSState(a.State); !ok { // 沙盒 E032：province 须为 USPS 州代码
+			add("residentialAddress.state", "Enter a valid U.S. state, e.g. CA or California")
+		}
 	}
 	if !in("country", a.Country) {
 		add("residentialAddress.country", "Select your country or region")

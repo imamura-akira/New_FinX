@@ -30,6 +30,72 @@ bool plausibleSsn(String s) {
   return !const {'123456789', '078051120', '219099999'}.contains(d);
 }
 
+/// 明显的占位 SSN（123-45-6789、全同数字），提示填写真实号码（与后端 blacklistedSSN 一致）。
+bool blacklistedSsn(String s) {
+  final d = s.replaceAll(RegExp(r'[\s-]'), '');
+  return d.length == 9 && (d == '123456789' || _allSame(d));
+}
+
+bool _allSame(String d) => d.isNotEmpty && d.split('').every((c) => c == d[0]);
+
+/// 电话问题文案（空表示通过；与后端 phoneProblem 一致）：美国 / NANP 号码按 NANP 规则校验，
+/// 区号与交换码不能以 0/1 开头；有效数字全同一律拦截。
+String? phoneProblem(String raw) {
+  final p = raw.trim();
+  if (!_phoneRe.hasMatch(p)) return 'Enter a valid phone number with country code';
+  final plus = p.startsWith('+');
+  final digits = p.replaceAll(RegExp(r'\D'), '');
+  String? national;
+  if (plus && digits.startsWith('1')) {
+    national = digits.substring(1);
+  } else if (!plus && digits.length == 11 && digits.startsWith('1')) {
+    national = digits.substring(1);
+  } else if (!plus && digits.length == 10) {
+    national = digits;
+  }
+  if (national != null) {
+    if (national.length != 10) return 'Enter a valid U.S. phone number: +1 and 10 digits';
+    if (_allSame(national)) return 'Enter your real phone number. This number cannot be used.';
+    if (national[0] == '0' || national[0] == '1') return "Enter a valid U.S. phone number: the area code can't start with 0 or 1";
+    if (national[3] == '0' || national[3] == '1') return "Enter a valid U.S. phone number: the exchange code can't start with 0 or 1";
+    return null;
+  }
+  if (_allSame(digits)) return 'Enter your real phone number. This number cannot be used.';
+  return null;
+}
+
+/// 美国州：USPS 两位代码（50 州 + DC + 海外领地），与后端 dwmapper/usstates.go 一致。
+const usStates = <String, String>{
+  'AL': 'Alabama', 'AK': 'Alaska', 'AZ': 'Arizona', 'AR': 'Arkansas', 'CA': 'California', //
+  'CO': 'Colorado', 'CT': 'Connecticut', 'DE': 'Delaware', 'FL': 'Florida', 'GA': 'Georgia',
+  'HI': 'Hawaii', 'ID': 'Idaho', 'IL': 'Illinois', 'IN': 'Indiana', 'IA': 'Iowa',
+  'KS': 'Kansas', 'KY': 'Kentucky', 'LA': 'Louisiana', 'ME': 'Maine', 'MD': 'Maryland',
+  'MA': 'Massachusetts', 'MI': 'Michigan', 'MN': 'Minnesota', 'MS': 'Mississippi', 'MO': 'Missouri',
+  'MT': 'Montana', 'NE': 'Nebraska', 'NV': 'Nevada', 'NH': 'New Hampshire', 'NJ': 'New Jersey',
+  'NM': 'New Mexico', 'NY': 'New York', 'NC': 'North Carolina', 'ND': 'North Dakota', 'OH': 'Ohio',
+  'OK': 'Oklahoma', 'OR': 'Oregon', 'PA': 'Pennsylvania', 'RI': 'Rhode Island', 'SC': 'South Carolina',
+  'SD': 'South Dakota', 'TN': 'Tennessee', 'TX': 'Texas', 'UT': 'Utah', 'VT': 'Vermont',
+  'VA': 'Virginia', 'WA': 'Washington', 'WV': 'West Virginia', 'WI': 'Wisconsin', 'WY': 'Wyoming',
+  'DC': 'District of Columbia',
+  'PR': 'Puerto Rico', 'GU': 'Guam', 'VI': 'U.S. Virgin Islands', 'AS': 'American Samoa', 'MP': 'Northern Mariana Islands',
+};
+
+String _stateKey(String s) => s.toLowerCase().replaceAll(RegExp(r'[.,\-]'), ' ').trim().split(RegExp(r'\s+')).join(' ');
+
+final _stateByName = <String, String>{
+  for (final e in usStates.entries) _stateKey(e.value): e.key,
+  'washington dc': 'DC',
+  'washington d c': 'DC',
+  'virgin islands': 'VI',
+};
+
+/// 规范为 USPS 两位代码：接受代码（大小写不限）或全称；无法识别返回 null（DW 会以 E032 拒绝）。
+String? normalizeUsState(String s) {
+  final up = s.trim().replaceAll('.', '').toUpperCase();
+  if (up.length == 2 && usStates.containsKey(up)) return up;
+  return _stateByName[_stateKey(s)];
+}
+
 bool _in(List<Option> opts, String? v) => opts.any((o) => o.$1 == v);
 
 Map<String, String> validateStep(String step, Map<String, dynamic> d, {String loginEmail = '', DateTime? now}) {
@@ -48,7 +114,8 @@ Map<String, String> validateStep(String step, Map<String, dynamic> d, {String lo
       }
       if (!_in(countries, d['citizenship'] as String?)) e['citizenship'] = 'Select your citizenship';
       if (!_in(countries, d['taxResidency'] as String?)) e['taxResidency'] = 'Select your country of tax residence';
-      if (!_phoneRe.hasMatch(_s(d, 'phone'))) e['phone'] = 'Enter a valid phone number with country code';
+      final phoneErr = phoneProblem(_s(d, 'phone'));
+      if (phoneErr != null) e['phone'] = phoneErr;
       if (!_in(languages, d['language'] as String?)) e['language'] = 'Select a language';
       final ce = _s(d, 'contactEmail').isEmpty ? loginEmail : _s(d, 'contactEmail');
       if (!_emailRe.hasMatch(ce)) e['contactEmail'] = 'Enter a valid contact email';
@@ -65,6 +132,8 @@ Map<String, String> validateStep(String step, Map<String, dynamic> d, {String lo
         e['tinType'] = 'Select a tax ID type';
       } else if (!masked && tinType == 'SSN' && !_ssnRe.hasMatch(tin)) {
         e['tin'] = 'SSN format: 123-45-6789';
+      } else if (!masked && tinType == 'SSN' && blacklistedSsn(tin)) {
+        e['tin'] = 'Enter your real SSN. This number cannot be used.';
       } else if (!masked && tinType == 'SSN' && !plausibleSsn(tin)) {
         e['tin'] = 'This SSN is not valid. Check it and try again';
       } else if (!masked && tinType == 'ITIN' && !_itinRe.hasMatch(tin)) {
@@ -84,7 +153,14 @@ Map<String, String> validateStep(String step, Map<String, dynamic> d, {String lo
       }
       if ((a['city'] as String? ?? '').trim().isEmpty) e['residentialAddress.city'] = 'Enter your city';
       if ((a['postalCode'] as String? ?? '').trim().isEmpty) e['residentialAddress.postalCode'] = 'Enter your ZIP / postal code';
-      if (a['country'] == 'US' && (a['state'] as String? ?? '').trim().isEmpty) e['residentialAddress.state'] = 'Enter your state';
+      if (a['country'] == 'US') {
+        final st = (a['state'] as String? ?? '').trim();
+        if (st.isEmpty) {
+          e['residentialAddress.state'] = 'Enter your state';
+        } else if (normalizeUsState(st) == null) {
+          e['residentialAddress.state'] = 'Enter a valid U.S. state, e.g. CA or California';
+        }
+      }
       if (!_in(countries, a['country'] as String?)) e['residentialAddress.country'] = 'Select your country or region';
       final mail = d['mailingAddress'];
       if (mail is Map && ((mail['line1'] as String?) ?? '').trim().isEmpty) e['mailingAddress.line1'] = 'Enter your mailing address';
