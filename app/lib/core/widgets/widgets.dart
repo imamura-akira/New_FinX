@@ -14,6 +14,7 @@ class AppButton extends StatelessWidget {
     this.small = false,
     this.loading = false,
     this.icon,
+    this.fitContent = false,
   });
 
   final String label;
@@ -22,6 +23,9 @@ class AppButton extends StatelessWidget {
   final bool small;
   final bool loading;
   final Widget? icon;
+
+  /// 宽度随内容（原型底部"Save & exit"按钮），高度仍为常规 48。
+  final bool fitContent;
 
   @override
   Widget build(BuildContext context) {
@@ -48,7 +52,7 @@ class AppButton extends StatelessWidget {
       opacity: enabled || loading ? 1 : .4,
       child: SizedBox(
         height: small ? 34 : 48,
-        width: small ? null : double.infinity,
+        width: small || fitContent ? null : double.infinity,
         child: DecoratedBox(
           decoration: BoxDecoration(gradient: gradient, color: gradient == null ? bg : null, borderRadius: radius),
           child: TextButton(

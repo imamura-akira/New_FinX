@@ -1,3 +1,4 @@
+import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../app/scope.dart';
@@ -62,7 +63,38 @@ class HomePage extends StatelessWidget {
                     ],
                   ),
                 ),
-                const Notice('开户、开户进度与资金功能将在后续迭代接入此页面。'),
+                // 开户入口（原型 P-07"继续开户"卡片；资产卡与 P-08 在 #10 接入）
+                if (me != null && (me.accountStatus == 'NONE' || me.accountStatus == 'DRAFT'))
+                  AppCard(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          me.accountStatus == 'DRAFT' ? '继续开户' : '开立证券账户',
+                          style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+                        ),
+                        const SizedBox(height: 6),
+                        const Text('账户由合作券商 DriveWealth 开立和托管，约 5 分钟完成。', style: TextStyle(fontSize: 13, color: AppColors.muted)),
+                        const SizedBox(height: 12),
+                        AppButton(
+                          me.accountStatus == 'DRAFT' ? '继续开户' : '开始开户',
+                          key: const Key('home.openAccount'),
+                          onPressed: () => context.go('/onboarding/a'),
+                        ),
+                      ],
+                    ),
+                  )
+                else if (me != null)
+                  AppCard(
+                    child: Row(
+                      children: [
+                        const Expanded(
+                          child: Text('开户申请已提交', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                        ),
+                        LinkButton('查看开户进度', key: const Key('home.status.link'), onPressed: () => context.go('/application/status')),
+                      ],
+                    ),
+                  ),
               ],
             ),
           ),

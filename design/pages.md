@@ -531,123 +531,123 @@ flowchart TD
 
 ### 3.1.6 P-03e 所属行业与职位选项（Demo-1 新增，2026-11-19）
 
-- 来源：DW `post_users` 参考页 `EMPLOYMENT_INFO.type`（19 项）与 `position`（89 项）枚举，代码与 DW 一致；中文名称为我方翻译（**文案待产品确认**）。
+- 来源：DW `post_users` 参考页 `EMPLOYMENT_INFO.type`（19 项）与 `position`（89 项）枚举，代码与 DW 一致；中文名称为我方翻译（**文案待产品确认**）；开户模块界面为英文，App 实际显示英文列（与 `app/lib/features/onboarding/domain/options.dart` 一致）。
 - 显示规则：就业状态为"受雇"或"自雇"时显示。**所属行业必填**（沙盒实测开户必需）；**职位选填**（DW 仅在使用其行情服务时要求）。DW 无"其他"职位。
 - 接口字段：`industry`、`position`（`ApplicationData`，见 api-spec.md 第 10 节）。
 
-| industry | 显示名称 |
-|---|---|
-| `AGRICULTURE` | 农业、林业与渔业 |
-| `MINING` | 采矿业 |
-| `UTILITIES` | 公用事业 |
-| `CONSTRUCTION` | 建筑业 |
-| `MANUFACTURING` | 制造业 |
-| `WHOLESALE` | 批发业 |
-| `RETAIL` | 零售业 |
-| `TRANSPORT` | 交通运输与仓储 |
-| `INFORMATION` | 信息与传媒 |
-| `FINANCE` | 金融与保险 |
-| `REAL_ESTATE` | 房地产与租赁 |
-| `PROFESSIONAL` | 专业、科学与技术服务 |
-| `MANAGEMENT` | 企业管理 |
-| `EDUCATION` | 教育 |
-| `HEALTH` | 医疗与社会救助 |
-| `ART` | 艺术、娱乐与休闲 |
-| `FOOD` | 住宿与餐饮 |
-| `PUBLIC` | 公共管理 |
-| `WASTE` | 废弃物管理与环境治理 |
+| industry | 中文名称 | 英文显示名称（App 实际显示） |
+|---|---|---|
+| `AGRICULTURE` | 农业、林业与渔业 | Agriculture, forestry & fishing |
+| `MINING` | 采矿业 | Mining |
+| `UTILITIES` | 公用事业 | Utilities |
+| `CONSTRUCTION` | 建筑业 | Construction |
+| `MANUFACTURING` | 制造业 | Manufacturing |
+| `WHOLESALE` | 批发业 | Wholesale trade |
+| `RETAIL` | 零售业 | Retail trade |
+| `TRANSPORT` | 交通运输与仓储 | Transportation & warehousing |
+| `INFORMATION` | 信息与传媒 | Information & media |
+| `FINANCE` | 金融与保险 | Finance & insurance |
+| `REAL_ESTATE` | 房地产与租赁 | Real estate & leasing |
+| `PROFESSIONAL` | 专业、科学与技术服务 | Professional, scientific & technical services |
+| `MANAGEMENT` | 企业管理 | Management of companies |
+| `EDUCATION` | 教育 | Education |
+| `HEALTH` | 医疗与社会救助 | Health care & social assistance |
+| `ART` | 艺术、娱乐与休闲 | Arts, entertainment & recreation |
+| `FOOD` | 住宿与餐饮 | Accommodation & food services |
+| `PUBLIC` | 公共管理 | Public administration |
+| `WASTE` | 废弃物管理与环境治理 | Waste management & remediation |
 
-| position | 显示名称 |
-|---|---|
-| `ACCOUNTANT` | 会计 / 审计 / 簿记 |
-| `ACTUARY` | 精算师 |
-| `ADJUSTER` | 理赔 / 定损员 |
-| `ADMINISTRATOR` | 行政管理 |
-| `ADVERTISER` | 广告 / 营销 |
-| `AGENT` | 代理人 |
-| `ATC` | 空中交通管制员 |
-| `AMBASSADOR` | 外交人员 |
-| `ANALYST` | 分析师 |
-| `APPRAISER` | 评估师 |
-| `ARCHITECT` | 建筑师 |
-| `ARTIST` | 艺术工作者 |
-| `ASSISTANT` | 助理 |
-| `ATHLETE` | 运动员 |
-| `ATTENDANT` | 服务员 / 乘务员 |
-| `ATTORNEY` | 律师 |
-| `AUCTIONEER` | 拍卖师 |
-| `AUDITOR` | 审计员 |
-| `BARBER` | 美发师 |
-| `BROKER` | 经纪人 |
-| `BUSINESS_EXEC` | 企业高管 |
-| `BUSINESS_OWNER` | 企业主 |
-| `CAREGIVER` | 护理员 |
-| `CARPENTER` | 木工 |
-| `CASHIER` | 收银员 |
-| `CHEF` | 厨师 |
-| `CHIROPRACTOR` | 脊椎按摩师 |
-| `CIVIL` | 公务员 |
-| `CLERGY` | 宗教人员 |
-| `CLERK` | 文员 |
-| `COMPLIANCE` | 合规人员 |
-| `CONSULTANT` | 顾问 |
-| `CONTRACTOR` | 承包商 |
-| `COUNSELOR` | 咨询师 / 辅导员 |
-| `CUSTOMER_SERVICE` | 客户服务 |
-| `DEALER` | 交易商 / 经销商 |
-| `DEVELOPER` | 开发人员 |
-| `DISTRIBUTOR` | 分销商 |
-| `DOCTOR` | 医生 |
-| `DRIVER` | 司机 |
-| `ENGINEER` | 工程师 |
-| `EXAMINER` | 检验 / 审查员 |
-| `EXTERMINATOR` | 虫害防治员 |
-| `FACTORY` | 工厂工人 |
-| `FARMER` | 农民 |
-| `FINANCIAL` | 财务人员 |
-| `FISHERMAN` | 渔民 |
-| `FLIGHT` | 机组人员 |
-| `HR` | 人力资源 |
-| `IMPEX` | 进出口贸易 |
-| `INSPECTOR` | 检查员 |
-| `INTERN` | 实习生 |
-| `INVESTMENT` | 投资从业人员 |
-| `INVESTOR` | 投资人 |
-| `IT` | 信息技术 |
-| `JANITOR` | 保洁员 |
-| `JEWELER` | 珠宝从业人员 |
-| `LABORER` | 体力劳动者 |
-| `LANDSCAPER` | 园林工 |
-| `LENDING` | 信贷从业人员 |
-| `MANAGER` | 经理 |
-| `MECHANIC` | 机修工 |
-| `MILITARY` | 军人 |
-| `MORTICIAN` | 殡葬从业人员 |
-| `NURSE` | 护士 |
-| `NUTRITIONIST` | 营养师 |
-| `OFFICE` | 办公室职员 |
-| `PHARMACIST` | 药剂师 |
-| `PHYSICAL` | 物理治疗师 |
-| `PILOT` | 飞行员 |
-| `POLICE` | 警察 |
-| `POLITICIAN` | 政界人士 |
-| `PM` | 项目经理 |
-| `REP` | 销售代表 |
-| `RESEARCHER` | 研究员 |
-| `SAILOR` | 海员 |
-| `SALES` | 销售 |
-| `SCIENTIST` | 科学家 |
-| `SEAMSTRESS` | 裁缝 |
-| `SECURITY` | 安保人员 |
-| `SOCIAL` | 社会工作者 |
-| `TEACHER` | 教师 |
-| `TECHNICIAN` | 技术员 |
-| `TELLER` | 柜员 |
-| `TRADESPERSON` | 技术工人 |
-| `TRAINER` | 培训师 |
-| `TRANSPORTER` | 运输从业人员 |
-| `UNDERWRITER` | 核保员 |
-| `WRITER` | 作家 / 编辑 |
+| position | 中文名称 | 英文显示名称（App 实际显示） |
+|---|---|---|
+| `ACCOUNTANT` | 会计 / 审计 / 簿记 | Accountant / CPA / Bookkeeper |
+| `ACTUARY` | 精算师 | Actuary |
+| `ADJUSTER` | 理赔 / 定损员 | Claims adjuster |
+| `ADMINISTRATOR` | 行政管理 | Administrator |
+| `ADVERTISER` | 广告 / 营销 | Advertising / marketing |
+| `AGENT` | 代理人 | Agent |
+| `ATC` | 空中交通管制员 | Air traffic controller |
+| `AMBASSADOR` | 外交人员 | Ambassador / diplomat |
+| `ANALYST` | 分析师 | Analyst |
+| `APPRAISER` | 评估师 | Appraiser |
+| `ARCHITECT` | 建筑师 | Architect |
+| `ARTIST` | 艺术工作者 | Artist |
+| `ASSISTANT` | 助理 | Assistant |
+| `ATHLETE` | 运动员 | Athlete |
+| `ATTENDANT` | 服务员 / 乘务员 | Attendant |
+| `ATTORNEY` | 律师 | Attorney |
+| `AUCTIONEER` | 拍卖师 | Auctioneer |
+| `AUDITOR` | 审计员 | Auditor |
+| `BARBER` | 美发师 | Barber / hairstylist |
+| `BROKER` | 经纪人 | Broker |
+| `BUSINESS_EXEC` | 企业高管 | Business executive |
+| `BUSINESS_OWNER` | 企业主 | Business owner |
+| `CAREGIVER` | 护理员 | Caregiver |
+| `CARPENTER` | 木工 | Carpenter |
+| `CASHIER` | 收银员 | Cashier |
+| `CHEF` | 厨师 | Chef / cook |
+| `CHIROPRACTOR` | 脊椎按摩师 | Chiropractor |
+| `CIVIL` | 公务员 | Civil servant |
+| `CLERGY` | 宗教人员 | Clergy |
+| `CLERK` | 文员 | Clerk |
+| `COMPLIANCE` | 合规人员 | Compliance officer |
+| `CONSULTANT` | 顾问 | Consultant |
+| `CONTRACTOR` | 承包商 | Contractor |
+| `COUNSELOR` | 咨询师 / 辅导员 | Counselor |
+| `CUSTOMER_SERVICE` | 客户服务 | Customer service |
+| `DEALER` | 交易商 / 经销商 | Dealer |
+| `DEVELOPER` | 开发人员 | Developer |
+| `DISTRIBUTOR` | 分销商 | Distributor |
+| `DOCTOR` | 医生 | Doctor / physician |
+| `DRIVER` | 司机 | Driver |
+| `ENGINEER` | 工程师 | Engineer |
+| `EXAMINER` | 检验 / 审查员 | Examiner / inspector |
+| `EXTERMINATOR` | 虫害防治员 | Exterminator |
+| `FACTORY` | 工厂工人 | Factory worker |
+| `FARMER` | 农民 | Farmer |
+| `FINANCIAL` | 财务人员 | Financial professional |
+| `FISHERMAN` | 渔民 | Fisherman |
+| `FLIGHT` | 机组人员 | Flight crew |
+| `HR` | 人力资源 | Human resources |
+| `IMPEX` | 进出口贸易 | Import / export |
+| `INSPECTOR` | 检查员 | Inspector |
+| `INTERN` | 实习生 | Intern |
+| `INVESTMENT` | 投资从业人员 | Investment professional |
+| `INVESTOR` | 投资人 | Investor |
+| `IT` | 信息技术 | IT professional |
+| `JANITOR` | 保洁员 | Janitor |
+| `JEWELER` | 珠宝从业人员 | Jeweler |
+| `LABORER` | 体力劳动者 | Laborer |
+| `LANDSCAPER` | 园林工 | Landscaper |
+| `LENDING` | 信贷从业人员 | Lending professional |
+| `MANAGER` | 经理 | Manager |
+| `MECHANIC` | 机修工 | Mechanic |
+| `MILITARY` | 军人 | Military |
+| `MORTICIAN` | 殡葬从业人员 | Mortician |
+| `NURSE` | 护士 | Nurse |
+| `NUTRITIONIST` | 营养师 | Nutritionist |
+| `OFFICE` | 办公室职员 | Office worker |
+| `PHARMACIST` | 药剂师 | Pharmacist |
+| `PHYSICAL` | 物理治疗师 | Physical therapist |
+| `PILOT` | 飞行员 | Pilot |
+| `POLICE` | 警察 | Police officer |
+| `POLITICIAN` | 政界人士 | Politician |
+| `PM` | 项目经理 | Project manager |
+| `REP` | 销售代表 | Sales representative |
+| `RESEARCHER` | 研究员 | Researcher |
+| `SAILOR` | 海员 | Sailor |
+| `SALES` | 销售 | Sales |
+| `SCIENTIST` | 科学家 | Scientist |
+| `SEAMSTRESS` | 裁缝 | Tailor / seamstress |
+| `SECURITY` | 安保人员 | Security officer |
+| `SOCIAL` | 社会工作者 | Social worker |
+| `TEACHER` | 教师 | Teacher |
+| `TECHNICIAN` | 技术员 | Technician |
+| `TELLER` | 柜员 | Bank teller |
+| `TRADESPERSON` | 技术工人 | Tradesperson |
+| `TRAINER` | 培训师 | Trainer |
+| `TRANSPORTER` | 运输从业人员 | Transporter |
+| `UNDERWRITER` | 核保员 | Underwriter |
+| `WRITER` | 作家 / 编辑 | Writer / editor |
 
 ## 3.2 第 3 版：KYC 未通过 / 补齐页面重新设计；资金完全按 DW 支持的方式
 

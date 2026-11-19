@@ -31,6 +31,10 @@
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
 	</dict>
+	<key>NSCameraUsageDescription</key>
+	<string>FinX uses the camera to photograph your ID for identity verification.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>FinX needs access to your photos so you can upload an image of your ID for identity verification.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
