@@ -74,60 +74,60 @@ func ValidateSubmission(d dwmapper.Data, docs []DocMeta, disclosures []dwmapper.
 
 	// P-03b 基本身份
 	if !asciiNameRE.MatchString(d.FirstName) {
-		add("firstName", "请使用英文字母填写，不支持 é、и、中文等非标准字符")
+		add("firstName", "Use standard ASCII letters only (no é, и, Chinese, etc.)")
 	}
 	if !asciiNameRE.MatchString(d.LastName) {
-		add("lastName", "请使用英文字母填写，不支持 é、и、中文等非标准字符")
+		add("lastName", "Use standard ASCII letters only (no é, и, Chinese, etc.)")
 	}
 	switch age, ok := ageOn(d.DateOfBirth, now); {
 	case !ok:
-		add("dateOfBirth", "请选择出生日期")
+		add("dateOfBirth", "Select your date of birth")
 	case age < 18:
-		add("dateOfBirth", "开户人须年满 18 周岁")
+		add("dateOfBirth", "You must be 18 or older to open an account")
 	case age > 120:
-		add("dateOfBirth", "请检查出生日期")
+		add("dateOfBirth", "Check your date of birth")
 	}
 	if !in("citizenship", d.Citizenship) {
-		add("citizenship", "请选择国籍")
+		add("citizenship", "Select your citizenship")
 	}
 	if !in("taxResidency", d.TaxResidency) {
-		add("taxResidency", "请选择税务居民国家/地区")
+		add("taxResidency", "Select your country of tax residence")
 	}
 	if !phoneRE.MatchString(strings.TrimSpace(d.Phone)) {
-		add("phone", "请输入有效的手机号（含国家区号）")
+		add("phone", "Enter a valid phone number with country code")
 	}
 	if !in("language", d.Language) {
-		add("language", "请选择语言")
+		add("language", "Select a language")
 	}
 	if ce := strings.TrimSpace(d.ContactEmail); ce != "" && !emailRE.MatchString(ce) {
-		add("contactEmail", "请输入有效的联系邮箱")
+		add("contactEmail", "Enter a valid contact email")
 	}
 
 	// P-03c 税务
 	switch d.USTaxPayer {
 	case "YES", "NO":
 	default:
-		add("usTaxPayer", "请回答此问题")
+		add("usTaxPayer", "Please answer this question")
 	}
 	tin := strings.TrimSpace(d.TIN)
 	usTypes := map[string]bool{"SSN": true, "ITIN": true}
 	switch {
 	case d.USTaxPayer == "YES" && !usTypes[d.TINType], d.USTaxPayer == "NO" && (usTypes[d.TINType] || !in("tinType", d.TINType)):
-		add("tinType", "请选择税号类型")
+		add("tinType", "Select a tax ID type")
 	case d.TINType == "SSN" && !ssnRE.MatchString(tin):
-		add("tin", "SSN 格式应为 123-45-6789")
+		add("tin", "SSN format: 123-45-6789")
 	case d.TINType == "SSN" && !plausibleSSN(tin):
-		add("tin", "该 SSN 无效，请核对后重新填写")
+		add("tin", "This SSN is not valid. Check it and try again")
 	case d.TINType == "ITIN" && !itinRE.MatchString(tin):
-		add("tin", "ITIN 以 9 开头，格式为 9XX-XX-XXXX")
+		add("tin", "ITIN starts with 9: 9XX-XX-XXXX")
 	case len(tin) < 5:
-		add("tin", "请输入完整税号")
+		add("tin", "Enter your full tax ID")
 	}
 	if d.USTaxPayer == "NO" && d.TaxTreaty != "YES" && d.TaxTreaty != "NO" {
-		add("taxTreaty", "请回答此问题")
+		add("taxTreaty", "Please answer this question")
 	}
 	if !d.TINConfirm {
-		add("tinConfirm", "请确认这是您本人报税使用的号码")
+		add("tinConfirm", "Confirm this is the number you use to file taxes")
 	}
 
 	// P-03d 地址
@@ -137,48 +137,48 @@ func ValidateSubmission(d dwmapper.Data, docs []DocMeta, disclosures []dwmapper.
 	}
 	switch {
 	case strings.TrimSpace(a.Line1) == "":
-		add("residentialAddress.line1", "请输入街道地址")
+		add("residentialAddress.line1", "Enter your street address")
 	case poBoxRE.MatchString(a.Line1 + " " + a.Line2):
-		add("residentialAddress.line1", "居住地址不能是邮政信箱（P.O. Box），请填写实际居住地址")
+		add("residentialAddress.line1", "Home address cannot be a P.O. Box — enter where you actually live")
 	}
 	if strings.TrimSpace(a.City) == "" {
-		add("residentialAddress.city", "请输入城市")
+		add("residentialAddress.city", "Enter your city")
 	}
 	if strings.TrimSpace(a.PostalCode) == "" {
-		add("residentialAddress.postalCode", "请输入邮编")
+		add("residentialAddress.postalCode", "Enter your ZIP / postal code")
 	}
 	if a.Country == "US" && strings.TrimSpace(a.State) == "" {
-		add("residentialAddress.state", "请输入州")
+		add("residentialAddress.state", "Enter your state")
 	}
 	if !in("country", a.Country) {
-		add("residentialAddress.country", "请选择国家/地区")
+		add("residentialAddress.country", "Select your country or region")
 	}
 	if d.MailingAddress != nil && strings.TrimSpace(d.MailingAddress.Line1) == "" {
-		add("mailingAddress.line1", "请输入邮寄地址")
+		add("mailingAddress.line1", "Enter your mailing address")
 	}
 
 	// P-03e 就业与财务
 	if !in("employmentStatus", d.EmploymentStatus) {
-		add("employmentStatus", "请选择就业状态")
+		add("employmentStatus", "Select your employment status")
 	}
 	if d.EmploymentStatus == "EMPLOYED" || d.EmploymentStatus == "SELF_EMPLOYED" {
 		if strings.TrimSpace(d.EmployerName) == "" {
-			add("employerName", "在职时须填写雇主名称")
+			add("employerName", "Employer name is required when employed")
 		}
 		if !in("industry", d.Industry) { // 沙盒实测：开户必需
-			add("industry", "请选择所属行业")
+			add("industry", "Select your industry")
 		}
 		if d.Position != "" && !in("position", d.Position) {
-			add("position", "请从列表中选择职位")
+			add("position", "Select a position from the list")
 		}
 	}
 	for _, c := range []struct{ field, v, msg string }{
-		{"annualIncomeRange", d.AnnualIncomeRange, "请选择年收入"},
-		{"netWorthRange", d.NetWorthRange, "请选择净资产"},
-		{"netWorthLiquidRange", d.NetWorthLiquidRange, "请选择可投资（流动）净资产"},
-		{"investmentExperience", d.InvestmentExperience, "请选择投资经验"},
-		{"investmentObjective", d.InvestmentObjective, "请选择投资目标"},
-		{"riskTolerance", d.RiskTolerance, "请选择风险承受能力"},
+		{"annualIncomeRange", d.AnnualIncomeRange, "Select your annual income"},
+		{"netWorthRange", d.NetWorthRange, "Select your net worth"},
+		{"netWorthLiquidRange", d.NetWorthLiquidRange, "Select your liquid net worth"},
+		{"investmentExperience", d.InvestmentExperience, "Select your investment experience"},
+		{"investmentObjective", d.InvestmentObjective, "Select your investment objective"},
+		{"riskTolerance", d.RiskTolerance, "Select your risk tolerance"},
 	} {
 		if !in(c.field, c.v) {
 			add(c.field, c.msg)
@@ -189,29 +189,29 @@ func ValidateSubmission(d dwmapper.Data, docs []DocMeta, disclosures []dwmapper.
 		okSources = okSources && in("fundingSources", s)
 	}
 	if !okSources {
-		add("fundingSources", "请至少选择一项资金来源")
+		add("fundingSources", "Select at least one source of funds")
 	}
 
 	// P-03f 监管问题
 	if d.IsAffiliatedBD == nil {
-		add("isAffiliatedBD", "请回答此问题")
+		add("isAffiliatedBD", "Please answer this question")
 	} else if *d.IsAffiliatedBD {
 		if strings.TrimSpace(d.AffiliatedFirmName) == "" {
-			add("affiliatedFirmName", "请填写机构名称")
+			add("affiliatedFirmName", "Enter the firm name")
 		}
 		if !d.AffiliatedAck {
-			add("affiliatedAck", "请确认已了解报备要求")
+			add("affiliatedAck", "Confirm you understand the notification requirements")
 		}
 	}
 	if d.IsPEP == nil {
-		add("isPEP", "请回答此问题")
+		add("isPEP", "Please answer this question")
 	} else if *d.IsPEP && strings.TrimSpace(d.PEPName) == "" {
-		add("pepName", "请填写政治公众人物姓名")
+		add("pepName", "Enter the name of the PEP")
 	}
 	if d.IsControlPerson == nil {
-		add("isControlPerson", "请回答此问题")
+		add("isControlPerson", "Please answer this question")
 	} else if *d.IsControlPerson && strings.TrimSpace(d.ControlCompanyName) == "" && strings.TrimSpace(d.ControlCompanySymbol) == "" {
-		add("controlCompanyName", "请填写公司名称或股票代码")
+		add("controlCompanyName", "Enter the company name or ticker")
 	}
 
 	// P-04 证件：非美国纳税人必须上传（护照只需资料页）
@@ -222,9 +222,9 @@ func ValidateSubmission(d dwmapper.Data, docs []DocMeta, disclosures []dwmapper.
 		}
 		front, hasFront := sides["FRONT"]
 		if !hasFront {
-			add("documents", "请先上传证件照片")
+			add("documents", "Please upload your ID photos first")
 		} else if _, hasBack := sides["BACK"]; front != "PASSPORT" && !hasBack {
-			add("documents", "请上传证件背面")
+			add("documents", "Upload the back of your ID")
 		}
 	}
 
@@ -235,14 +235,19 @@ func ValidateSubmission(d dwmapper.Data, docs []DocMeta, disclosures []dwmapper.
 	}
 	for _, id := range append(append([]string{}, dwmapper.DWRequiredDisclosures...), PartnerDisclosures...) {
 		if !acks[id].Accepted {
-			add("disclosures."+id, "请阅读并同意此文件")
+			add("disclosures."+id, "Read and agree to this document")
 		}
 	}
 	if _, answered := acks[dwmapper.DWChoiceDisclosure]; !answered {
-		add("disclosures."+dwmapper.DWChoiceDisclosure, "请回答此问题")
+		add("disclosures."+dwmapper.DWChoiceDisclosure, "Please answer this question")
 	}
 	if name := FullName(d); name == "" || !strings.EqualFold(strings.Join(strings.Fields(signature), " "), name) {
-		add("signatureName", "签名须与法定姓名一致")
+		add("signatureName", "Signature must match your legal name")
 	}
 	return fe
+}
+
+// validationEN：开户模块的 42200（标题文案取自原型 toast "Please fix the highlighted fields"）。
+func validationEN(fe ...httpx.FieldError) error {
+	return httpx.Validation("Please fix the highlighted fields", fe...)
 }

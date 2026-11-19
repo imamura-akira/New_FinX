@@ -219,12 +219,12 @@ func (s *Service) handleSaveDraft(w http.ResponseWriter, r *http.Request) {
 		Step string                     `json:"step"`
 		Data map[string]json.RawMessage `json:"data"`
 	}
-	if err := httpx.Decode(w, r, maxDraftBytes, &in); err != nil {
+	if err := httpx.DecodeWith(w, r, maxDraftBytes, &in, httpx.DecodeEN); err != nil {
 		httpx.Fail(w, r, err)
 		return
 	}
 	if !validSteps[in.Step] {
-		httpx.Fail(w, r, httpx.Validation("", httpx.FieldError{Field: "step", Reason: "步骤标识不正确"}))
+		httpx.Fail(w, r, validationEN(httpx.FieldError{Field: "step", Reason: "Invalid step"}))
 		return
 	}
 	a, err := s.repo.EnsureDraft(r.Context(), httpx.UserID(r.Context()))
@@ -233,7 +233,7 @@ func (s *Service) handleSaveDraft(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if a.Status != "DRAFT" {
-		httpx.Fail(w, r, httpx.Conflict("开户申请已提交，不能再修改"))
+		httpx.Fail(w, r, httpx.Conflict("Your application has been submitted and can't be changed"))
 		return
 	}
 	st, err := s.load(a)
@@ -255,7 +255,7 @@ func (s *Service) handleSaveDraft(w http.ResponseWriter, r *http.Request) {
 	now := s.now().UTC()
 	if err := s.repo.SaveDraft(r.Context(), a.ID, in.Step, enc, now); err != nil {
 		if errors.Is(err, ErrNotDraft) {
-			httpx.Fail(w, r, httpx.Conflict("开户申请已提交，不能再修改"))
+			httpx.Fail(w, r, httpx.Conflict("Your application has been submitted and can't be changed"))
 			return
 		}
 		httpx.Fail(w, r, err)
@@ -292,7 +292,7 @@ func mergeDraft(cur, patch map[string]json.RawMessage) (map[string]json.RawMessa
 		probe, _ := json.Marshal(map[string]json.RawMessage{k: v})
 		var d dwmapper.Data
 		if err := json.Unmarshal(probe, &d); err != nil {
-			return nil, httpx.Validation("", httpx.FieldError{Field: k, Reason: "字段格式不正确"})
+			return nil, validationEN(httpx.FieldError{Field: k, Reason: "Invalid format"})
 		}
 	}
 	// 账户类型首期固定，不接受客户端改写
@@ -310,35 +310,35 @@ func (s *Service) handleUploadDocument(w http.ResponseWriter, r *http.Request) {
 		Side    string `json:"side"`
 		Image   string `json:"image"`
 	}
-	if err := httpx.Decode(w, r, maxDocumentBody, &in); err != nil {
+	if err := httpx.DecodeWith(w, r, maxDocumentBody, &in, httpx.DecodeEN); err != nil {
 		httpx.Fail(w, r, err)
 		return
 	}
 	var fe []httpx.FieldError
 	if !validDocTypes[in.DocType] {
-		fe = append(fe, httpx.FieldError{Field: "docType", Reason: "请选择证件类型"})
+		fe = append(fe, httpx.FieldError{Field: "docType", Reason: "Select an ID type"})
 	}
 	if in.Side != "FRONT" && in.Side != "BACK" {
-		fe = append(fe, httpx.FieldError{Field: "side", Reason: "请指定证件正面或背面"})
+		fe = append(fe, httpx.FieldError{Field: "side", Reason: "Specify the front or back of the ID"})
 	}
 	img, err := base64.StdEncoding.DecodeString(in.Image)
 	ctype := ""
 	switch {
 	case err != nil || len(img) == 0:
-		fe = append(fe, httpx.FieldError{Field: "image", Reason: "图片无法读取，请重新拍摄或上传"})
+		fe = append(fe, httpx.FieldError{Field: "image", Reason: "The image couldn't be read. Retake or upload it again"})
 	case len(img) > maxImageBytes:
-		fe = append(fe, httpx.FieldError{Field: "image", Reason: "图片不能超过 10 MB"})
+		fe = append(fe, httpx.FieldError{Field: "image", Reason: "The image must be 10 MB or smaller"})
 	default:
 		ctype = http.DetectContentType(img)
 		if !validImageTypes[ctype] {
-			fe = append(fe, httpx.FieldError{Field: "image", Reason: "仅支持 JPG、PNG 或 PDF"})
+			fe = append(fe, httpx.FieldError{Field: "image", Reason: "Only JPG, PNG or PDF files are supported"})
 		}
 	}
 	if in.DocType == "PASSPORT" && in.Side == "BACK" {
-		fe = append(fe, httpx.FieldError{Field: "side", Reason: "护照只需上传资料页"})
+		fe = append(fe, httpx.FieldError{Field: "side", Reason: "For a passport, upload the photo page only"})
 	}
 	if len(fe) > 0 {
-		httpx.Fail(w, r, httpx.Validation("", fe...))
+		httpx.Fail(w, r, validationEN(fe...))
 		return
 	}
 	a, err := s.repo.EnsureDraft(r.Context(), httpx.UserID(r.Context()))
@@ -347,7 +347,7 @@ func (s *Service) handleUploadDocument(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if a.Status != "DRAFT" { // 提交后补证件走 P-35（KYC_DOC_REQUIRED），本期未实现
-		httpx.Fail(w, r, httpx.Conflict("开户申请已提交，不能再修改证件"))
+		httpx.Fail(w, r, httpx.Conflict("Your application has been submitted and the ID can't be changed"))
 		return
 	}
 	enc, err := s.cipher.Encrypt(img, docAAD(a.ID, in.Side))

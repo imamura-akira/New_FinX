@@ -59,6 +59,16 @@ Base URL：`/api/v1`　认证：`Authorization: Bearer <sessionToken>`（除 /au
 **入金状态枚举**（DW Deposit Status）：`STARTED / PENDING / SUCCESSFUL / FAILED / RETURNED / APPROVED / REJECTED / ON_HOLD / PROCESSING`（PROCESSING 为沙盒实测新增，见第 10 节）；出金状态枚举待 Q-DW-8d。
 **金额校验**：限额走后端配置 `limits.*`（当前示例值）；超限返回 42201 并带限额。
 
+## 5.5 市场数据（F11，阶段性虚拟行情）
+
+> 第一阶段由后端**虚拟行情服务**提供（随机游走模拟，非真实数据），响应统一带 `simulated: true`；
+> 接口形状按真实行情设计，接入真实数据源时只换实现、不改契约。App 轮询间隔 3–5 秒。
+
+| 方法 路径 | 请求 | 响应 data | 说明 |
+|---|---|---|---|
+| GET /market/quotes | `?symbols=AAPL,SPY` | `{simulated, ts, quotes:[{symbol, last, chg, chgPct, bid, ask}]}` | 批量报价；P-07 自选、P-09 列表用 |
+| GET /market/instruments/{symbol} | — | `{simulated, symbol, name, last, chg, chgPct, dayHigh, dayLow, prevClose, candles:[{t,o,h,l,c}]}` | P-10 个股页；candles 为模拟分时/日 K |
+
 ## 6. 文件与通知（F10，P-15/P-17）
 
 | 方法 路径 | 响应 data | 说明 |
@@ -92,6 +102,8 @@ Base URL：`/api/v1`　认证：`Authorization: Bearer <sessionToken>`（除 /au
 
 ## 9. 版本与冻结
 
+- 变更 2026-11-19：新增 5.5 市场数据（虚拟行情，F11）；/account/money 的展示要求见 PRD F12。
+
 - 本契约 v1 随 UI 定稿冻结路径与字段名；新增字段向后兼容，破坏性变更升 /api/v2。
 - 【Q-DW-x】标注处的请求体结构已为两种方案预留，答复后删除未选方案并更新 OpenAPI。
 
@@ -106,3 +118,4 @@ Base URL：`/api/v1`　认证：`Authorization: Bearer <sessionToken>`（除 /au
 | 2026-11-19 | `ApplicationData` 新增 `industry`（DW EMPLOYMENT_INFO.type 枚举，受雇/自雇时必填）与 `position`（DW position 枚举，选填）；`occupation` 保留但不再发送给 DW（停用，后续版本删除需升版本）。选项见 pages.md 3.1.6 | 新增，向后兼容 |
 | 2026-11-19 | 资金（Demo-1 #6）：`GET /account/money` 新增 `pendingDeposits`、`withheldForSeasoning`；`Transfer` 新增 `bankAccountId`，status 新增我方取值 `SUBMITTING`（已记录、提交结果待确认）；`GET /funding/transfers` 每页 50 条，下一页游标放在响应头 `X-Next-Cursor`；资金接口在账户冻结/关闭时返回 40301（附 restriction），账户未开立返回 40901；入金提交结果不明时返回 50001 并附 `transferId`；出金超过 DW 可提现金额返回 42201（附 limits.available）；`POST /funding/bank-accounts` 不接受客户端户名（后端写入开户姓名） | 新增，向后兼容 |
 | 2026-11-19 | 沙盒实测（sandbox-log.md #7）：入金状态枚举新增 `PROCESSING`（DW 编号 17，文档未列出）；`Transfer` 新增 `buyingPowerAvailableAt`、`withdrawableAt`（来自 DW seasoningDetails）；`BankAccount` 新增 `nickname`（DW 绑卡响应不含银行名称） | 新增，向后兼容 |
+| 2026-11-19 | 开户与 KYC 模块（`/application/*`，对应 P-03–P-06、P-30、P-34–P-36）的 `message` 与 `fields[].reason`、KYC 问题项 `userMessage` 改为英文（文案取自原型；行业/职位两条为新增），其余模块仍为中文（pages.md 定稿说明、ui-signoff 第 3 节） | 文案变更，字段与结构不变 |

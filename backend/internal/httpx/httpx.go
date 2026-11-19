@@ -128,25 +128,40 @@ func Fail(w http.ResponseWriter, r *http.Request, err error) {
 // MaxBody 默认请求体上限；证件上传另设。
 const MaxBody = 256 << 10
 
-// Decode 解析 JSON 请求体（限制大小、拒绝未知顶层字段）。
+// DecodeMessages：请求解析失败时的提示文案（开户与 KYC 模块用英文，其余模块用中文，见 pages.md 定稿说明）。
+type DecodeMessages struct{ Invalid, TooLarge, Empty, ContentType string }
+
+var (
+	// DecodeZH：默认简体中文。
+	DecodeZH = DecodeMessages{Invalid: "请求格式不正确", TooLarge: "提交的内容过大", Empty: "请求内容为空", ContentType: "请求格式不正确"}
+	// DecodeEN：开户与 KYC 模块（P-03–P-06、P-30、P-34–P-36）。
+	DecodeEN = DecodeMessages{Invalid: "Invalid request", TooLarge: "The request is too large", Empty: "The request is empty", ContentType: "Invalid request"}
+)
+
+// Decode 解析 JSON 请求体（限制大小、拒绝未知顶层字段），错误文案为中文。
 func Decode(w http.ResponseWriter, r *http.Request, limit int64, v any) error {
+	return DecodeWith(w, r, limit, v, DecodeZH)
+}
+
+// DecodeWith 同 Decode，使用指定语言的错误文案。
+func DecodeWith(w http.ResponseWriter, r *http.Request, limit int64, v any, m DecodeMessages) error {
 	if limit <= 0 {
 		limit = MaxBody
 	}
 	if ct := r.Header.Get("Content-Type"); ct != "" && !strings.HasPrefix(ct, "application/json") {
-		return Validation("请求格式不正确")
+		return Validation(m.ContentType)
 	}
 	dec := json.NewDecoder(http.MaxBytesReader(w, r.Body, limit))
 	dec.DisallowUnknownFields()
 	if err := dec.Decode(v); err != nil {
 		var mbe *http.MaxBytesError
 		if errors.As(err, &mbe) {
-			return Validation("提交的内容过大")
+			return Validation(m.TooLarge)
 		}
 		if errors.Is(err, io.EOF) {
-			return Validation("请求内容为空")
+			return Validation(m.Empty)
 		}
-		return Validation("请求格式不正确")
+		return Validation(m.Invalid)
 	}
 	return nil
 }

@@ -535,3 +535,47 @@ func contains(list []string, s string) bool {
 	}
 	return false
 }
+
+// 开户与 KYC 模块界面一律英文（pages.md 定稿说明、ui-signoff 第 3 节 2026-11-19）：
+// 本模块接口返回的提示与字段错误不得含中文。
+func TestOnboardingMessagesAreEnglish(t *testing.T) {
+	han := func(s string) bool {
+		for _, r := range s {
+			if r >= 0x4E00 && r <= 0x9FFF {
+				return true
+			}
+		}
+		return false
+	}
+	check := func(name string, r result) {
+		t.Helper()
+		if r.Code == 0 {
+			t.Fatalf("%s: 应返回错误", name)
+		}
+		var d struct {
+			Fields []struct{ Field, Reason string }
+		}
+		_ = json.Unmarshal(r.Data, &d)
+		if han(r.Msg) {
+			t.Errorf("%s: message 含中文: %q", name, r.Msg)
+		}
+		for _, f := range d.Fields {
+			if han(f.Reason) {
+				t.Errorf("%s: %s 的 reason 含中文: %q", name, f.Field, f.Reason)
+			}
+		}
+	}
+	sf := newSubmitFixture(t, config.SubmitPostPatch)
+	// 几乎空白的草稿 → 触发绝大多数字段错误
+	sf.prepare(t, "u1", map[string]any{"firstName": "Zoë", "usTaxPayer": "NO", "isAffiliatedBD": true, "isPEP": true, "isControlPerson": true, "employmentStatus": "EMPLOYED", "position": "ASTRONAUT", "tin": "1", "mailingAddress": map[string]any{}})
+	r := sf.call("u1", "POST", "/api/v1/application/submit", map[string]any{"signatureName": "x", "disclosures": []any{}})
+	if len(r.fields()) < 20 {
+		t.Fatalf("应触发大量字段错误，实际 %d", len(r.fields()))
+	}
+	check("提交校验", r)
+	check("非法步骤", sf.call("u1", "PUT", "/api/v1/application/draft", map[string]any{"step": "zz", "data": map[string]any{}}))
+	check("字段类型错误", sf.call("u1", "PUT", "/api/v1/application/draft", map[string]any{"step": "b", "data": map[string]any{"isPEP": "YES"}}))
+	check("请求体非法", sf.call("u1", "PUT", "/api/v1/application/draft", map[string]any{"step": "b", "unknown": 1}))
+	check("证件格式", sf.call("u1", "POST", "/api/v1/application/documents", map[string]string{"docType": "X", "side": "Y", "image": "!!"}))
+	check("无草稿提交", sf.call("u2", "POST", "/api/v1/application/submit", submitBody()))
+}

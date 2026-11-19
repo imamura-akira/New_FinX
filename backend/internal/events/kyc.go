@@ -177,7 +177,7 @@ func ParseKYC(resp map[string]any) (string, []Issue) {
 				continue
 			}
 			raw, _ := json.Marshal(m)
-			issues = append(issues, Issue{Code: code, Field: firstString(m, "field"), UserMessage: "请核对此项信息", Raw: raw})
+			issues = append(issues, Issue{Code: code, Field: firstString(m, "field"), UserMessage: "Please review this information", Raw: raw})
 		}
 	}
 	return status, issues

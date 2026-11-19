@@ -108,14 +108,14 @@ func credAAD(appID, col string) []byte { return crypto.AAD("dw_users", col, appI
 
 func (s *Service) handleSubmit(w http.ResponseWriter, r *http.Request) {
 	if s.kycMode == config.KYCModePartnerKYC {
-		httpx.Fail(w, r, httpx.NotEnabled("当前开户模式暂未开通"))
+		httpx.Fail(w, r, httpx.NotEnabled("Account opening is not available yet"))
 		return
 	}
 	var in struct {
 		SignatureName string                `json:"signatureName"`
 		Disclosures   []dwmapper.Disclosure `json:"disclosures"`
 	}
-	if err := httpx.Decode(w, r, 0, &in); err != nil {
+	if err := httpx.DecodeWith(w, r, 0, &in, httpx.DecodeEN); err != nil {
 		httpx.Fail(w, r, err)
 		return
 	}
@@ -126,11 +126,11 @@ func (s *Service) handleSubmit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if a == nil {
-		httpx.Fail(w, r, httpx.Conflict("请先填写开户资料"))
+		httpx.Fail(w, r, httpx.Conflict("Please complete your application first"))
 		return
 	}
 	if a.Status != "DRAFT" {
-		httpx.Fail(w, r, httpx.Conflict("开户申请已提交，请勿重复提交"))
+		httpx.Fail(w, r, httpx.Conflict("Your application has already been submitted"))
 		return
 	}
 	st, err := s.load(a)
@@ -140,7 +140,7 @@ func (s *Service) handleSubmit(w http.ResponseWriter, r *http.Request) {
 	}
 	d, err := decodeData(st.Data)
 	if err != nil {
-		httpx.Fail(w, r, httpx.Validation("开户资料格式不正确，请重新填写"))
+		httpx.Fail(w, r, httpx.Validation("Your application data is invalid. Please fill it in again"))
 		return
 	}
 	docs, err := s.repo.ListDocuments(ctx, a.ID)
@@ -150,7 +150,7 @@ func (s *Service) handleSubmit(w http.ResponseWriter, r *http.Request) {
 	}
 	now := s.now().UTC()
 	if fe := ValidateSubmission(d, docs, in.Disclosures, in.SignatureName, now); len(fe) > 0 {
-		httpx.Fail(w, r, httpx.Validation("开户资料不完整，请修改标红的内容", fe...))
+		httpx.Fail(w, r, httpx.Validation("Please fix the highlighted fields", fe...))
 		return
 	}
 	// 映射预检：选项无法映射为 DW 取值时现在就拒绝，而不是在异步编排中失败
@@ -159,9 +159,9 @@ func (s *Service) handleSubmit(w http.ResponseWriter, r *http.Request) {
 		if errors.As(err, &me) {
 			var fe []httpx.FieldError
 			for _, f := range me.Fields {
-				fe = append(fe, httpx.FieldError{Field: f, Reason: "暂不支持该选项，请重新选择"})
+				fe = append(fe, httpx.FieldError{Field: f, Reason: "This option isn't supported yet. Choose another"})
 			}
-			httpx.Fail(w, r, httpx.Validation("", fe...))
+			httpx.Fail(w, r, validationEN(fe...))
 			return
 		}
 		httpx.Fail(w, r, err)
@@ -197,7 +197,7 @@ func (s *Service) handleSubmit(w http.ResponseWriter, r *http.Request) {
 	}
 	if err := s.orepo.MarkSubmitted(ctx, a.ID, ref, dataEnc, uEnc, pEnc, now); err != nil {
 		if errors.Is(err, ErrNotDraft) {
-			httpx.Fail(w, r, httpx.Conflict("开户申请已提交，请勿重复提交"))
+			httpx.Fail(w, r, httpx.Conflict("Your application has already been submitted"))
 			return
 		}
 		httpx.Fail(w, r, err)
