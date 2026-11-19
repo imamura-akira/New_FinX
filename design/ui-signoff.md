@@ -54,6 +54,7 @@
 | 2026-11-19 | P-03e"资金来源"选项改为与 DW 取值一一对应（英文标签）：Employment income（EMP）、Savings（SAVINGS）、Investment returns（INVESTMENT）、Gift / Inheritance（GIFT）、Retirement（RETIRE）、Family support（FAMILY）、Sale of assets（SALE）、Rental income（RENT）；删除 Other 与"经营收入"近似映射 | DW 沙盒实测 "EMPLOYMENT" 被拒（sandbox-log.md）；用户 2026-11-19 决定 | P-03e、P-30（汇总显示）。原型只读，以 pages.md 为准 |
 | 2026-11-19 | P-13 / P-14 / P-18 的资金可用时间直接显示 DW 返回的日期（`buyingPowerAvailableAt` 购买力可用日、`withdrawableAt` 可提现日），替换"通常 4–5 个工作日"静态文案；静态文案仅在无返回值时兜底 | DW 沙盒实测每笔入金返回 seasoningDetails（sandbox-log.md #7）；用户 2026-11-19 决定 | P-13、P-14、P-18 |
 | 2026-11-19 | Demo-1 行情页（F11b）按数据源裁剪展示：P-09 不显示涨跌分布、内部人增减持、ETF 今日热点与成交额；P-10 图表仅"分时"（无 1 周–5 年切换），报价区只显示买一 / 卖一价（无数量、交易所与成交量），关键数据只有昨收与日高 / 日低；不显示下单按钮，改为"演示版本仅提供行情展示"。页面结构不删，接入真实行情后恢复 | 虚拟行情（F11）只提供报价与 1 分钟 K 线，不造假数据；Demo-1 不做下单。**待用户确认**（progress.md 待确认决定 D-1） | P-09、P-10 |
+| 2026-11-19 | Demo-1 资金页（#11）范围：P-14 电汇出金表单暂不开放（选择"电汇"时显示说明），ACH 出金完整；P-18 只显示资金进出（交易、分红、公司行动不在 Demo-1 范围），列表取最近 50 条；P-32 采用方案 A 直接录入（BANK_LINK_METHOD=DIRECT，Plaid 页面不做）。页面结构保留，后续恢复 | 出金在 2026-11-23 前无法沙盒实测；Demo-1 无交易功能；Q-DW-2 沙盒按 DIRECT 实测通过。**待用户确认**（progress.md D-4、D-5） | P-14、P-18、P-32 |
 
 ## 4. 签署
 

@@ -353,14 +353,14 @@ class _ApplicationStatusPageState extends State<ApplicationStatusPage> with Prog
                 title: 'Link a bank account (ACH)',
                 subtitle: 'U.S. bank account in your own name. No fee.',
                 trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.faint),
-                onTap: () => showToast(context, 'Bank linking arrives in the next build'), // Demo-1 #11 接入 P-32
+                onTap: () => context.push('/funding/banks/link'),
               ),
               ListRow(
                 icon: Icons.public_rounded,
                 title: 'Wire transfer',
                 subtitle: 'For large amounts or international banks',
                 trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.faint),
-                onTap: () => showToast(context, 'Wire instructions are not part of this demo build'),
+                onTap: () => context.push('/funding/wire'),
               ),
             ],
           ),

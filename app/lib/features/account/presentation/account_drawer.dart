@@ -10,8 +10,14 @@ import '../../../core/widgets/form_widgets.dart';
 import '../../../core/widgets/widgets.dart';
 import '../domain/account_overview.dart';
 
-/// 入金入口（P-13，Demo-1 #11 接入）。
-void openDeposit(BuildContext context) => showToast(context, '入金功能将在下一版本接入');
+/// 入金入口（P-13）。
+void openDeposit(BuildContext context) => context.push('/funding/deposit');
+
+/// 从抽屉进入资金页面：先关闭抽屉再跳转。
+void _fromDrawer(BuildContext context, String route) {
+  Navigator.of(context).pop();
+  context.push(route);
+}
 
 /// 姓名首字母头像（原型 nameAvatar）。
 class NameAvatar extends StatelessWidget {
@@ -83,14 +89,34 @@ class AccountDrawer extends StatelessWidget {
               const SizedBox(height: 12),
               _accountCard(context),
               _group('资金', [
-                ListRow(icon: Icons.south_rounded, title: '入金', onTap: () => openDeposit(context)),
-                ListRow(icon: Icons.north_rounded, title: '出金', onTap: () => showToast(context, '出金功能将在下一版本接入')),
-                ListRow(icon: Icons.account_balance_outlined, title: '银行账户', onTap: () => showToast(context, '银行账户管理将在下一版本接入')),
+                ListRow(
+                  key: const Key('drawer.deposit'),
+                  icon: Icons.south_rounded,
+                  title: '入金',
+                  onTap: () => _fromDrawer(context, '/funding/deposit'),
+                ),
+                ListRow(
+                  key: const Key('drawer.withdraw'),
+                  icon: Icons.north_rounded,
+                  title: '出金',
+                  onTap: () => _fromDrawer(context, '/funding/withdraw'),
+                ),
+                ListRow(
+                  key: const Key('drawer.banks'),
+                  icon: Icons.account_balance_outlined,
+                  title: '银行账户',
+                  onTap: () => _fromDrawer(context, '/funding/banks'),
+                ),
                 ListRow(icon: Icons.swap_horiz_rounded, title: '转入其他券商账户', onTap: () => _notInDemo(context)),
               ]),
               _group('动态', [
                 ListRow(icon: Icons.notifications_none_rounded, title: '通知', onTap: () => _notInDemo(context)),
-                ListRow(icon: Icons.history_rounded, title: '历史记录', onTap: () => showToast(context, '资金记录将在下一版本接入')),
+                ListRow(
+                  key: const Key('drawer.history'),
+                  icon: Icons.history_rounded,
+                  title: '历史记录',
+                  onTap: () => _fromDrawer(context, '/funding/history'),
+                ),
                 ListRow(icon: Icons.description_outlined, title: '文件', onTap: () => _notInDemo(context)),
               ]),
               _group('管理', [
@@ -206,7 +232,7 @@ class AccountDrawer extends StatelessWidget {
           const SizedBox(height: 10),
           Row(
             children: [
-              Expanded(child: AppButton('入金', small: true, onPressed: () => openDeposit(context))),
+              Expanded(child: AppButton('入金', small: true, onPressed: () => _fromDrawer(context, '/funding/deposit'))),
               const SizedBox(width: 8),
               Expanded(
                 child: AppButton('转入', small: true, kind: ButtonKind.ghost, onPressed: () => _notInDemo(context)),

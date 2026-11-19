@@ -7,6 +7,8 @@ import '../features/account/presentation/kyc_action_pages.dart';
 import '../features/auth/presentation/login_page.dart';
 import '../features/auth/presentation/welcome_page.dart';
 import '../features/common/session_expired_page.dart';
+import '../features/funding/presentation/bank_pages.dart';
+import '../features/funding/presentation/transfer_pages.dart';
 import '../features/home/presentation/home_page.dart';
 import '../features/market/presentation/instrument_page.dart';
 import '../features/market/presentation/market_page.dart';
@@ -99,6 +101,13 @@ GoRouter buildRouter(SessionController session) {
           ),
         ],
       ),
+      // 资金（#11）：P-13 入金、P-14 出金、P-18 资金记录、P-31 银行账户、P-32 绑定、P-33 电汇指引
+      GoRoute(path: '/funding/deposit', builder: (_, _) => const DepositPage()),
+      GoRoute(path: '/funding/withdraw', builder: (_, _) => const WithdrawPage()),
+      GoRoute(path: '/funding/history', builder: (_, _) => const TransfersPage()),
+      GoRoute(path: '/funding/banks', builder: (_, _) => const BankAccountsPage()),
+      GoRoute(path: '/funding/banks/link', builder: (_, _) => const LinkBankPage()),
+      GoRoute(path: '/funding/wire', builder: (_, _) => const WireInstructionsPage()),
       // P-06 开户进度；P-34/35/36 KYC 补齐与未通过
       GoRoute(path: Routes.applicationStatus, builder: (_, _) => const ApplicationStatusPage()),
       GoRoute(path: Routes.kycInfo, builder: (_, _) => const KycInfoRequiredPage()),
