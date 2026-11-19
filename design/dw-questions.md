@@ -46,6 +46,13 @@ c) Full enum for deposit `type` (docs show `ACH`, `CASH_PROMOTION`).
 d) Request fields and status enum for `POST /funding/redemptions` (ACH and WIRE).
 e) Configured values for our program: ACH buying-power timing (default: after settlement, typically 4–5 business days), ACH seasoning period (default 30 days — and does it start when funds clear?), applicability of the 5-business-day hold described at legal.drivewealth.com, deposit/withdrawal cutoff times, wire fees.
 
+
+**Q-DW-9 — "Not applicable" value for `politicallyExposedNames` / `directorOf`**
+The creating-a-user example sends `"politicallyExposedNames": "NULL"` for non-PEP users, and the schema notes `directorOf` "can be set to 'NULL' if not applicable". In sandbox (2026-11-19), sending the string `"NULL"` resulted in the user object showing `politicallyExposed: true` and `director: true`, while sending an empty string `""` resulted in `false` for both (and correctly reset an earlier `true`). Please confirm in writing the correct value to send for a user who is **not** a PEP and **not** a director/officer — empty string, JSON `null`, omitting the field, or the literal `"NULL"` — and whether the same rule applies in production.
+
+**Q-DW-10 — ITIN holders and `IDENTIFICATION_INFO.type`**
+The `userTaxIDType` enum in the post_users reference lists `SSN`, `EIN`, `FTIN`, `PASSPORT`, `ALIEN_ID`, `OTHER` — there is no ITIN value. For U.S. taxpayers who have an ITIN (Individual Taxpayer Identification Number, 9XX-XX-XXXX) instead of an SSN, which `type` should we send? We currently send `SSN` as a placeholder. Related: for our non-U.S. applicants' national ID numbers we send `OTHER`, and `FTIN` for foreign tax IDs — please confirm.
+
 ---
 
 *Prepared 2026-11-19. Sources verified against developer.drivewealth.com (creating-a-user, opening-accounts, depositing-1, individual-funding), legal.drivewealth.com and info.drivewealth.com funding policies.*

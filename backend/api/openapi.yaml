@@ -1029,8 +1029,8 @@ components:
         riskTolerance: { type: string }
         fundingSources:
           type: array
-          items: { type: string }
-          description: 对应 DW COMPLIANCE_AML_INFO.fundingSources，枚举待 DW 确认
+          description: 对应 DW COMPLIANCE_AML_INFO.fundingSources，取值与 DW 一一对应（2026-11-19 用户决定；沙盒已验证 EMP）
+          items: { type: string, enum: [EMP, SAVINGS, INVESTMENT, GIFT, RETIRE, FAMILY, SALE, RENT] }
         isAffiliatedBD: { type: boolean }
         affiliatedFirmName: { type: string }
         affiliatedAck: { type: boolean, description: 已了解向雇主报备要求（isAffiliatedBD=true 时必填 true） }

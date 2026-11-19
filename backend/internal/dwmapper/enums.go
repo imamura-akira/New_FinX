@@ -191,15 +191,17 @@ var netWorthUSD = map[string]int{
 }
 
 // fundingSourcesDW：COMPLIANCE_AML_INFO.fundingSources。
-// 沙盒实测 "EMPLOYMENT" 被拒（U025 Unrecognized funding source）；DW 取值（post_users 参考页）：
-// EMP、GIFT、TRUST、INVESTMENT、SAVINGS、RETIRE、GAMBLING、LEGAL、FAMILY、UNEMP、ROLLOVER、RENT、SALE、INSURANCE。
-// 原型选项"经营收入"暂映射 EMP、"继承 / 赠与"映射 GIFT；"其他"在 DW 无对应值，不映射（提交时提示重新选择）。待用户确认选项调整。
+// 2026-11-19 用户决定：P-03e 选项与 DW 取值一一对应（App 取值即 DW 取值），删除 Other 与"经营收入"近似映射。
+// 沙盒实测 "EMPLOYMENT" 被拒、"EMP" 被接受；其余取值来自 post_users 参考页（ui-signoff.md 第 3 节登记）。
 var fundingSourcesDW = map[string]string{
-	"EMPLOYMENT":  "EMP",
-	"SAVINGS":     "SAVINGS",
-	"INVESTMENTS": "INVESTMENT",
-	"BUSINESS":    "EMP",
-	"INHERITANCE": "GIFT",
+	"EMP":        "EMP",        // Employment income
+	"SAVINGS":    "SAVINGS",    // Savings
+	"INVESTMENT": "INVESTMENT", // Investment returns
+	"GIFT":       "GIFT",       // Gift / Inheritance
+	"RETIRE":     "RETIRE",     // Retirement
+	"FAMILY":     "FAMILY",     // Family support
+	"SALE":       "SALE",       // Sale of assets
+	"RENT":       "RENT",       // Rental income
 }
 
 // languageDW：BASIC_INFO.language（可选；DW 响应示例为 "en_US"）。

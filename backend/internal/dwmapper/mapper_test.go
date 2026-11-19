@@ -23,7 +23,7 @@ func usData() Data {
 		EmploymentStatus:   "EMPLOYED", EmployerName: "Example Corp", Industry: "PROFESSIONAL", Position: "ENGINEER",
 		AnnualIncomeRange: "100k-200k", NetWorthRange: "200k-500k", NetWorthLiquidRange: "50k-200k",
 		InvestmentExperience: "3-5", InvestmentObjective: "GROWTH", RiskTolerance: "MED",
-		FundingSources: []string{"EMPLOYMENT", "SAVINGS"},
+		FundingSources: []string{"EMP", "SAVINGS"},
 		IsAffiliatedBD: ptr(false), IsPEP: ptr(false), IsControlPerson: ptr(false),
 	}
 }

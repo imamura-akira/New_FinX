@@ -5,7 +5,7 @@
 >
 > - 截图中的品牌名、吉祥物、图标、头像、真实人物姓名、营销文案均**不沿用**，下文统一使用中性的功能名称（如"AI 助手""智能组合"）。
 > - 合规编号沿用 `compliance-map.md`：`1–24` 为 DW 上线清单，`PDF-1…6` 为 PDF 清单要点。状态一律"待确认"，本文件不代表已满足。
-> - 状态：**第 5 版 · UI 已定稿（2026-11-19，定稿记录见 `design/ui-signoff.md`）**。页面结构与交互自本版冻结，后续改动走 ui-signoff.md 的变更记录。**已核实项**（有 DW 文档原文出处，标注"已核实"）可直接作为开发依据；**待 DW 确认项**（第 5.1 节 Q-DW-1 至 Q-DW-8）按规划值实现并留配置开关，其中 Q-DW-1、Q-DW-2 是沙盒接入前置条件。接口与后端方案见 `design/api-spec.md`、`design/backend-design.md`；产品需求见 `design/prd.md`。
+> - 状态：**第 5 版 · UI 已定稿（2026-11-19，定稿记录见 `design/ui-signoff.md`）**。视觉与文案两项定稿后变更已登记：FinX 主题（`design/theme.md`）；**开户与 KYC 模块（P-03–P-06、P-30、P-34–P-36）界面与用户输入一律英文**，App 其余模块中文，英文文案以原型为基准。页面结构与交互自本版冻结，后续改动走 ui-signoff.md 的变更记录。**已核实项**（有 DW 文档原文出处，标注"已核实"）可直接作为开发依据；**待 DW 确认项**（第 5.1 节 Q-DW-1 至 Q-DW-8）按规划值实现并留配置开关，其中 Q-DW-1、Q-DW-2 是沙盒接入前置条件。接口与后端方案见 `design/api-spec.md`、`design/backend-design.md`；产品需求见 `design/prd.md`。
 
 ---
 
@@ -146,7 +146,7 @@ flowchart TD
   - **P-03b 基本身份**：法定名、法定姓（只允许标准 ASCII 字母，实时校验 → **1**）、出生日期（不满 18 岁拦截 → **4**）、国籍、税务居民国；**第 4 版新增"联系邮箱"**：默认取登录邮箱，Apple 中转邮箱（`emailIsRelay=true`）时要求填写真实邮箱，作为 DW `BASIC_INFO.emailAddress`（能否使用中转邮箱待 DW 确认）。
   - **P-03c 税号**：TIN 类型（SSN / ITIN / 外国 TIN / NIN）与号码，说明须为本人报税用的政府签发号码 → **3**。
   - **P-03d 地址**：实际居住地址（检测并拦截 P.O. Box → **2**），可另填邮寄地址（允许 P.O. Box，按 PDF-1）。
-  - **P-03e 就业与财务**：就业状态，在职或自雇时必填雇主名称与**所属行业**（下拉），**职位**为下拉（选填）——Demo-1 变更，选项见 3.1.6；年收入、净资产等投资者画像字段（必填项见 3.1.2）→ **PDF-1**；**第 4 版新增"资金来源"**（多选，对应 DW `COMPLIANCE_AML_INFO.fundingSources`，选项枚举待 DW 确认）。
+  - **P-03e 就业与财务**：就业状态，在职或自雇时必填雇主名称与**所属行业**（下拉），**职位**为下拉（选填）——Demo-1 变更，选项见 3.1.6；年收入、净资产等投资者画像字段（必填项见 3.1.2）→ **PDF-1**；**第 4 版新增"资金来源"**（多选，对应 DW `COMPLIANCE_AML_INFO.fundingSources`）；**2026-11-19 选项与 DW 取值一一对应**：Employment income（EMP）、Savings（SAVINGS）、Investment returns（INVESTMENT）、Gift / Inheritance（GIFT）、Retirement（RETIRE）、Family support（FAMILY）、Sale of assets（SALE）、Rental income（RENT），无 Other（ui-signoff 第 3 节登记）。
   - **P-03f 三项监管问题** → **5、PDF-2**：
     1. 本人或账户受益人是否受雇于注册经纪商、FINRA 或证券交易所？是 → 填写机构名称，并展示需向雇主报备的说明。
     2. 是否为政治公众人物（PEP）？页面内给出 PEP 定义。是 → 填写 PEP 姓名（必填）、相关国家、职务及任职年份、离任年份（可选）。
@@ -410,12 +410,13 @@ flowchart TD
 | IDENTIFICATION_INFO | **必填**：value、type、citizenship | 原文："non-SSN types require issuingCountry" | [A]；issuingCountry：[D] | 待 DW 确认 | P-03c |
 | PERSONAL_INFO | **必填**：birthDay、birthMonth、birthYear、politicallyExposedNames | **沙盒实测（2026-11-19）**：按示例传 `"NULL"` 会被 DW 记为 politicallyExposed=true；非 PEP 时传空字符串 `""` 得到 false；`irsBackupWithholdings` 不在 DW 文档页中 | [A]；"NULL"：[B]；irsBackupWithholdings：[G] | **待 DW 确认**（"NULL" 用法、irsBackupWithholdings） | P-03b、P-03f |
 | ADDRESS_INFO | **必填**：street1、city、province、postalCode、country | street2 见于示例；地址不得为 P.O. Box | [A]；street2：[B]；P.O. Box：[F] | 待 DW 确认 | P-03d |
-| COMPLIANCE_AML_INFO | **必填**：fundingSources | [F] 表中标为"May be required based on client and expected funding methods"；fundingSources 枚举值文档未给出 | [A]；是否必需：[F] | 待 DW 确认（是否必需、枚举值） | P-03e"资金来源" |
+| COMPLIANCE_AML_INFO | **必填**：fundingSources | [F] 表中标为"May be required based on client and expected funding methods"；**取值（post_users 参考页）**：EMP、GIFT、TRUST、INVESTMENT、SAVINGS、RETIRE、GAMBLING、LEGAL、FAMILY、UNEMP、ROLLOVER、RENT、SALE、INSURANCE；沙盒实测 "EMPLOYMENT" 被拒（U025）、"EMP" 被接受；P-03e 采用其中 8 项 | [A]；是否必需：[F] | 待 DW 确认（是否必需、枚举值） | P-03e"资金来源" |
 | EMPLOYMENT_INFO | [A] 的 Required data 列写有 status、broker、directorOf | **沙盒实测（2026-11-19）**：缺 `type`（行业）时 `POST /accounts` 返回 U040；post_users 参考页：type 在 EMPLOYED / SELF_EMPLOYED 时必填，position 仅在使用 DW 行情服务时必填，二者均为固定枚举（见 3.1.6）；非董事时 `directorOf` 发送空字符串（发送 "NULL" 会被 DW 记为 director=true） | [A]；post_users 参考页；sandbox-log.md | 行业必填已实测；其余待 DW 确认 | P-03e（行业、职位）、P-03f（监管问题 1 → `broker`，问题 3 → `directorOf`） |
 | INVESTOR_PROFILE_INFO | investmentExperience、annualIncome、networthTotal、riskTolerance、investmentObjectives、networthLiquid | — | [A] | 待 DW 确认 | P-03e |
 | DISCLOSURES | [A] 的 Required data 列写有 termsOfUse、marketDataAgreement、customerAgreement、rule14b、privacyPolicy、dataSharing、signedBy | customerAgreement、signedBy 的必填情况：仅见于 [A] 列表，未见其他说明；extendedHoursAgreement 不在 DW 文档页中 | [A]；extendedHoursAgreement：[G] | **待 DW 确认**（customerAgreement、signedBy 是否必填；extendedHoursAgreement） | P-05 |
 | TAX_INFO | taxTreatyWithUS | usTaxpayer 的归属：[C] 响应示例中 usTaxpayer 出现在 TAX_INFO 内，并说明"DriveWealth defaults usTaxpayer / taxTreatyWithUS from citizenship"；[A] 未把 usTaxpayer 列为任何 document 的 Required data。税务声明 attestation 通过 `PATCH /users` 提交 | [A]；usTaxpayer：[C][D]；attestation：[E] | **待 DW 确认**（usTaxpayer 属于 TAX_INFO 还是 IDENTIFICATION_INFO） | P-03c |
 
+- **语言**：开户模块界面为英文；所有提交给 DW 的用户输入（姓名、地址、雇主等）必须为英文/ASCII，表单按此校验。
 - 提交顺序（已核实 creating-a-user）：`POST /users` 首次提交 BASIC_INFO、IDENTIFICATION_INFO、PERSONAL_INFO、ADDRESS_INFO 四类，其余 document 随后 `PATCH /users/{userID}` 补充。**首期按这个两步方案实现**（P-30 对用户仍是一次提交，后端拆为 POST + PATCH）；能否一次提交全部作为优化项，待 Q-DW-3。
 - User 对象本身只返回粗粒度状态 PENDING / APPROVED；P-06 的分支以 kyc-status 中的 `kyc.status.name` 为准。
 
@@ -488,6 +489,8 @@ flowchart TD
 ### 3.1.5 P-13 / P-14 / P-16 修改
 - **P-13 入金**：入金方式为 ACH（已绑定银行）与电汇（→ P-33）两种；未绑定银行时引导到 P-32；没有美国银行账户的用户默认电汇；入金详情在 P-18 中查看状态时间线。入金状态按 DW Deposit Status 页的枚举展示：`STARTED`、`PENDING`、`SUCCESSFUL`、`FAILED`、`RETURNED`（显示 `failureReason`）、`APPROVED`、`REJECTED`、`ON_HOLD`（来源 [H4]）；原文件中的 `BUYING_POWER_GRANTED` 只见于我方调研笔记（[G]），待 DW 确认。
 - **P-14 出金**：出金方式 ACH 与电汇（WIRE）；电汇需填写收款人（只读，须为本人）、账号、SWIFT / ABA、银行名称与国家；状态按 DW redemption 状态展示（处理中 / 成功 / 失败 / 被拒）；可提现金额来自 DW 返回的 `cashAvailableForWithdrawal`（`GET /accounts/{id}/summary/money`，来源 https://developer.drivewealth.com/apis/docs/withdrawing-1 （待复核原文））。
+
+**资金可用时间的展示（2026-11-19 决定）**：P-13 / P-14 / P-18 直接显示 DW 为每笔入金返回的日期——`Transfer.buyingPowerAvailableAt`（购买力可用日，DW `seasoningDetails.depositBuyingPowerHoldExpires`）与 `Transfer.withdrawableAt`（可提现日，DW `seasoningDetails.seasoningPeriodExpires`）。下表中的"通常 4–5 个工作日 / 30 天观察期"等静态默认值**仅在 DW 无返回值时兜底**；生产环境配置值仍待 Q-DW-8e。沙盒实测：两个日期均为提交后约 2 个工作日（sandbox-log.md #7）。
 
 **入金购买力、观察期与可提现金额（第 4 版；页面地址均于 2026-11-19 查阅）**
 

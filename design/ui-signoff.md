@@ -47,7 +47,12 @@
 | 日期 | 变更 | 原因 | 影响页面 |
 |---|---|---|---|
 | 2026-11-19 | 第 5 版定稿 | — | — |
+| 2026-11-19 | 视觉层换为 FinX 主题（紫罗兰渐变浅色系，规格见 design/theme.md）；品牌名 FinX、吉祥物 Fifi 素材入 prototype/assets/；Tab 文案改为 股票大师 / Fifi；页面结构与交互未变 | 用户提供 FinX 样板 20 张 | 全部（仅视觉） |
+| 2026-11-19 | 开户流程版式升级（参考 FinX 样板）：分段进度条 + "STEP X OF N"步骤标 + 每步大标题与说明句、税号输入遮罩加"Show/Hide"、敏感步骤底部安全提示；P-30 删除重复说明行；页面结构与步骤不变 | 用户提供样板截图 2 张 | P-03a–g、P-04、P-05、P-30 |
+| 2026-11-19 | **开户与 KYC 模块界面全英文**（P-03–P-06、P-30、P-34–P-36）：标题、字段、选项、校验报错、按钮、弹窗全部英文；用户输入内容同样要求英文（ASCII），与 DW 提交要求一致；App 其余模块保持中文；演示数据同步（Engineer） | 用户决定（与 FinX 样板策略一致；符合清单对美国用户 E-Sign 英文的要求） | P-03–P-06、P-30、P-34–P-36 |
 | 2026-11-19 | P-03e 新增"所属行业"下拉（受雇/自雇时必填），"职位"由自由文本改为下拉（选填）；选项见 pages.md 3.1.6 | DW 沙盒实测：开户（POST /accounts）要求 EMPLOYMENT_INFO.type，position 为固定枚举（sandbox-log.md）；用户 2026-11-19 批准 | P-03e、P-30（汇总显示）。原型 `prototype/` 按 CLAUDE.md 只读，不同步；以 pages.md 为准 |
+| 2026-11-19 | P-03e"资金来源"选项改为与 DW 取值一一对应（英文标签）：Employment income（EMP）、Savings（SAVINGS）、Investment returns（INVESTMENT）、Gift / Inheritance（GIFT）、Retirement（RETIRE）、Family support（FAMILY）、Sale of assets（SALE）、Rental income（RENT）；删除 Other 与"经营收入"近似映射 | DW 沙盒实测 "EMPLOYMENT" 被拒（sandbox-log.md）；用户 2026-11-19 决定 | P-03e、P-30（汇总显示）。原型只读，以 pages.md 为准 |
+| 2026-11-19 | P-13 / P-14 / P-18 的资金可用时间直接显示 DW 返回的日期（`buyingPowerAvailableAt` 购买力可用日、`withdrawableAt` 可提现日），替换"通常 4–5 个工作日"静态文案；静态文案仅在无返回值时兜底 | DW 沙盒实测每笔入金返回 seasoningDetails（sandbox-log.md #7）；用户 2026-11-19 决定 | P-13、P-14、P-18 |
 
 ## 4. 签署
 

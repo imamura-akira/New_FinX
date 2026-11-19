@@ -237,7 +237,7 @@ func validUSDraft() map[string]any {
 		"employmentStatus":   "EMPLOYED", "employerName": "Example Corp", "industry": "PROFESSIONAL", "position": "ENGINEER",
 		"annualIncomeRange": "100k-200k", "netWorthRange": "200k-500k", "netWorthLiquidRange": "50k-200k",
 		"investmentExperience": "3-5", "investmentObjective": "GROWTH", "riskTolerance": "MED",
-		"fundingSources": []string{"EMPLOYMENT"},
+		"fundingSources": []string{"EMP"},
 		"isAffiliatedBD": false, "isPEP": false, "isControlPerson": false,
 	}
 }
