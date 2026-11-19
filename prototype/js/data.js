@@ -187,7 +187,7 @@ const DATA = (() => {
       Object.assign(s.application.data, {
         firstName: 'Alex', lastName: 'Chen', dateOfBirth: '1992-05-14', tin: '123-45-6789',
         line1: '200 Market Street', line2: 'Apt 5B', city: 'San Francisco', state: 'CA', postalCode: '94105',
-        employmentStatus: 'EMPLOYED', employerName: 'Example Corp', occupation: '工程师', annualIncome: '100k-200k', netWorth: '200k-500k',
+        employmentStatus: 'EMPLOYED', employerName: 'Example Corp', occupation: 'Engineer', annualIncome: '100k-200k', netWorth: '200k-500k',
         isAffiliated: 'NO', isPEP: 'NO', isControl: 'NO', phone: '+1 415 555 0142', tinConfirm: true,
         experience: '3-5', netWorthLiquid: '50k-200k', risk: 'MED', objective: 'GROWTH',
         contactEmail: 'demo.user@example.com', fundingSources: ['EMPLOYMENT', 'SAVINGS'],

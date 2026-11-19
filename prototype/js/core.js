@@ -1,7 +1,7 @@
 'use strict';
 /* 框架：工具函数、状态、账户计算、路由、通用组件、图表、全局操作 */
 
-const APP_NAME = '示例券商'; // 占位名称，品牌待定
+const APP_NAME = 'FinX'; // 品牌：FinX（Fifi 吉祥物），见 design/theme.md
 const DW_DISCLOSURE_URL = 'https://apps.drivewealth.com/disclosures';
 
 /* ---------- Utils ---------- */
@@ -245,7 +245,7 @@ function donut(parts, size = 132, center = '') {
     <svg width="${size}" height="${size}"><circle r="${r}" cx="${size / 2}" cy="${size / 2}" fill="none" stroke="var(--surface-2)" stroke-width="16"/>${arcs}</svg>
     <div style="position:absolute;inset:0;display:grid;place-items:center;text-align:center;font-size:12px">${center}</div></div>`;
 }
-const ALLOC_COLORS = { cash: '#1F4E79', stock: '#0E7C66', etf: '#D08A1E' };
+const ALLOC_COLORS = { cash: '#6C5BF5', stock: '#D63AA8', etf: '#F0A13C' };
 
 /* ---------- Components ---------- */
 const C = {
@@ -276,7 +276,7 @@ const C = {
   /** 两列字段：标签行、输入框、提示行结构一致，无提示时保留占位，保证左右对齐 */
   two(a, b) { return `<div class="two">${C.field({ ...a, pair: true })}${C.field({ ...b, pair: true })}</div>`; },
   yn(bind, value) {
-    return `<div class="yn"><button class="${value === 'YES' ? 'on' : ''}" data-act="setYN" data-bind="${bind}" data-val="YES">是</button><button class="${value === 'NO' ? 'on' : ''}" data-act="setYN" data-bind="${bind}" data-val="NO">否</button></div>`;
+    return `<div class="yn"><button class="${value === 'YES' ? 'on' : ''}" data-act="setYN" data-bind="${bind}" data-val="YES">Yes</button><button class="${value === 'NO' ? 'on' : ''}" data-act="setYN" data-bind="${bind}" data-val="NO">No</button></div>`;
   },
   kv(k, v) { return `<div class="kv"><span>${k}</span><span>${v}</span></div>`; },
   chg(i) { const c = Acc.chg(i); return `<span class="${clsOf(c)} num">${fmt.pct(Acc.chgPct(i))}</span>`; },
@@ -353,7 +353,7 @@ const Router = {
   refresh() { Router.render(true); },
 };
 function tabbar(active) {
-  const tabs = [['assets', '#/p07', 'home', '资产'], ['market', '#/p09', 'market', '市场'], ['inst', '#/p23', 'building', '机构追踪'], ['ai', '#/p26', 'spark', 'AI 助手'], ['rewards', '#/p27', 'gift', '奖励']];
+  const tabs = [['assets', '#/p07', 'home', '资产'], ['market', '#/p09', 'market', '市场'], ['inst', '#/p23', 'building', '股票大师'], ['ai', '#/p26', 'spark', 'Fifi'], ['rewards', '#/p27', 'gift', '奖励']];
   return `<nav class="tabbar">${tabs.map(([k, h, ic, l]) => `<button class="tab ${k === active ? 'on' : ''}" data-go="${h}">${Icon(ic, 22)}<span>${l}</span></button>`).join('')}</nav>`;
 }
 
@@ -395,10 +395,10 @@ const ACCT_LABEL = {
 };
 // 原型中"需补资料"的示例问题（实际来自 DW kyc-status 返回的 errors / details）
 const KYC_SAMPLE_ISSUES = [
-  { code: 'ADDRESS_UNVERIFIED', step: 'd', field: 'line1', reason: '居住地址无法核实，请确认门牌号、街道和邮编完整准确' },
-  { code: 'DOB_MISMATCH', step: 'b', field: 'dateOfBirth', reason: '出生日期与身份记录不一致，请核对' },
+  { code: 'ADDRESS_UNVERIFIED', step: 'd', field: 'line1', reason: 'We could not verify your home address. Check that the street number, street and ZIP are complete and correct.' },
+  { code: 'DOB_MISMATCH', step: 'b', field: 'dateOfBirth', reason: 'Date of birth does not match identity records. Please check.' },
 ];
-const KYC_DOC_REASON = '我们未能通过公共记录核实您的身份，请上传一份政府签发、带照片的有效证件。';
+const KYC_DOC_REASON = 'We could not verify your identity from public records. Please upload a valid government-issued photo ID.';
 const DWSim = {
   timer: null,
   later(fn, ms) { clearTimeout(this.timer); this.timer = setTimeout(() => { this.timer = null; fn(); }, ms); },

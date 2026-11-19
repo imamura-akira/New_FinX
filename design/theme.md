@@ -1,0 +1,81 @@
+# FinX 主题规格（theme.md）
+
+> 来源：用户提供的 20 张 FinX 样板截图（品牌与 Fifi 吉祥物为我方自有资产）。
+> 用途：原型 `prototype/css/app.css` 与 Flutter 主题（`app/` ThemeData）共同的唯一视觉依据。
+> 规则：页面结构与交互不变（UI 定稿第 5 版），本规格只定义视觉层。
+
+## 1. 色彩
+
+| Token | 值 | 用途 |
+|---|---|---|
+| bg | `#F6F5FC` | 页面背景（浅薰衣草） |
+| surface | `#FFFFFF` | 卡片 |
+| surface-2 | `#F3F2FA` | 次级底、图标底 |
+| text | `#171A2E` | 主文字 |
+| muted / faint | `#6B7191` / `#9BA0B8` | 次要文字 |
+| line | `#E9E8F4` | 分隔线、描边 |
+| **primary** | `#6C5BF5` | 主色（紫罗兰）：链接、选中态、图标 |
+| primary-2 | `#4F3ED9` | 主色深 |
+| primary-weak | `#EFECFE` | 主色浅底（badge、选中底） |
+| accent | `#3B82F6` | 蓝色辅助（市场模块可用） |
+| up / down | `#16A34A` / `#E5484D` | 涨跌（美式绿涨红跌，red-up 开关保留） |
+| **grad** | `100deg: #5A57EE → #A944D8 55% → #D63AA8` | 主 CTA 按钮渐变 |
+| grad-soft | `135deg: #7D4DF0 → #C13AC8` | 小选中态、mark |
+| hero | `135deg: #7D4DF0 → #A944D8 → #D63AA8` | 资产总览大卡 |
+| soon | `120deg: #4A43E8 → #8A3FE0 → #D63AA8` | 预告卡（Fifi/奖励，奖励尾端可换 `#F0A13C` 橙） |
+| 资产配置色 | cash `#6C5BF5` / stock `#D63AA8` / etf `#F0A13C` | 环图 |
+
+欢迎页注册按钮可用三段暖渐变 `#5A57EE → #C93BB0 → #F09B3C`（对应样板 Sign up）。
+
+## 2. 形状与投影
+
+- 卡片圆角 18px（大卡 22px）；主按钮全圆角（高 48 → 半径 24）；小按钮半径 17px。
+- 投影：`0 1px 2px rgba(42,34,96,.05), 0 6px 18px rgba(42,34,96,.07)`（带紫味的柔和投影）。
+- 筛选胶囊选中态：grad-soft 渐变底白字；未选中白底描边。
+
+## 3. 字体
+
+- 中文 PingFang SC / 西文系统无衬线；数字 tabular-nums。
+- 层级与现行原型一致；页面大标题 26/700。
+
+## 4. 品牌素材（prototype/assets/）
+
+| 文件 | 内容 | 用在 |
+|---|---|---|
+| logo.png | FiNX 渐变字标 + "GO FinX Go Alpha" 手写标语 | P-01 欢迎页 |
+| fifi_pill.png | Fifi 趴在胶囊上（眨眼） | P-01 欢迎页主视觉 |
+| fifi_paw.png | Fifi 举爪 + 爪形图表 logo | P-26 Fifi 预告卡；可用于空状态 |
+| fifi_avatar.png | Fifi 圆形头像（透明底） | 账户抽屉、Fifi 相关入口 |
+| app_icon_1024.png（design/brand/） | **App 图标母版**：白底 1024×1024，渐变爪印+涨幅柱 | iOS AppIcon 全尺寸由此生成；来源图 app_icon_source.png |
+
+规则：素材为我方品牌资产，可在任何页面使用；新素材先入 `assets/` 并登记到本表。
+样板中出现的真实投资人照片（股票大师页）**不进入**原型与正式 App，继续用字母头像；
+样板奖励商店中的实物商品图（含第三方品牌运动鞋等）不直接复用，正式素材需为自制或有授权。
+
+## 4.5 开户流程版式（参考样板，已实现于原型）
+
+- 顶部分段进度条（每步一段，完成段用 grad-soft），下方 "STEP X OF N" 字距拉开小标。
+- 每步一个大标题（28/800）+ 一句说明（15/muted）；说明句承担合规话术。
+- 敏感输入（税号）默认遮罩，右侧 Show/Hide；底部配 "Encrypted in transit and at rest" 锁形提示。
+- 底部双按钮同行：Save & exit（ghost，自适应宽）+ Continue（渐变主按钮，占满剩余）。
+
+## 5. 文案与命名
+
+- 品牌名：FinX（APP_NAME）；**App 显示名称：FinX Stocks**（主屏图标下方 / CFBundleDisplayName）；吉祥物：Fifi。
+- 底部 Tab：首页(资产) / 市场 / 股票大师 / Fifi / 奖励。
+- **语言**：开户与 KYC 模块（P-03–P-06、P-30、P-34–P-36）界面与用户输入一律英文；其余模块简体中文。英文文案以原型为基准。
+- P-23 对外名称"股票大师"（规格内部编号与数据口径不变，13F 公开申报数据）。
+
+## 6. Flutter 落地要点
+
+- 以上 token 做成 ThemeExtension；渐变用 LinearGradient 常量。
+- 素材从 assets/ 原样拷入 Flutter assets 并在 pubspec 声明。
+- 深色模式：首期不做（样板为浅色系）；预留 token 结构。
+
+## 变更记录
+
+| 日期 | 内容 |
+|---|---|
+| 2026-11-19 | v1：从 20 张样板截图提炼；原型全量换肤（v=10） |
+| 2026-11-19 | v1.1：开户流程版式（分段进度条/大标题/税号遮罩）；开户与 KYC 模块全英文（v=11） |
+| 2026-11-19 | v1.2：确定 App 图标（渐变爪印，母版 design/brand/app_icon_1024.png）与显示名称 FinX Stocks |

@@ -29,6 +29,7 @@ internal/
   dwclient/            DW HTTP 客户端（见第 3 节）
   dwmapper/            App 字段 ⇄ DW documents 映射（pages.md 3.1.2 为唯一依据）
   events/              SQS 消费者 + 对账轮询
+  marketsim/           虚拟行情引擎（F11，阶段性）
   store/               Postgres 仓储；migrations/
   crypto/              PII 字段级加密（AES-256-GCM，密钥走 KMS/env）
   config/              全部开关与阈值
@@ -91,9 +92,18 @@ KYC_APPROVED 事件 → 自动 POST /accounts → 存 account_no → 通知
 
 **PII 规则**：SSN/税号、证件影像、地址、出生日期 → 字段级加密（crypto 包）；日志与错误信息一律脱敏；保存期限与删除流程待法务（PRD 问题 15），表结构预留 `deleted_at` 软删。
 
+## 6.5 虚拟行情引擎（marketsim，F11）
+
+- 内存随机游走：每只股票以 `prevClose` 为锚，按固定 tick（默认 2s）更新 `last = last × (1 + N(0, σ))`，σ 默认 0.0008，日内围绕锚点均值回归，涨跌幅 = 相对 prevClose；bid/ask 按 last ± 1–2 bp 生成。
+- 标的池取自演示自选与 P-09 列表（约 30 只，含 QQQ/SPY/DIA），进程启动时用固定种子初始化，`cmd/demoreset` 可重置。
+- K 线：按 tick 聚合生成模拟分时与日 K，仅内存保留当日。
+- 所有响应带 `simulated: true`；`config.market_data_mode: SIM | REAL`，REAL 为二期接真实行情源的挂载点，契约不变。
+- 边界：虚拟行情只用于展示，不参与任何资金计算；账户余额、购买力、可提现一律来自 DW（见第 3 节），两者在 UI 上不混用。
+
 ## 7. 配置开关（config，对应 ui-signoff.md 第 2 节）
 
 ```yaml
+market_data_mode: SIM       # SIM | REAL（F11，二期接真实行情）
 kyc_mode: DO_KYC            # Q-DW-1
 bank_link_method: DIRECT    # DIRECT | PLAID   Q-DW-2
 user_submit_mode: POST_PATCH # POST_PATCH | SINGLE_POST  Q-DW-3

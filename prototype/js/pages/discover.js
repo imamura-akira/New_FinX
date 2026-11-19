@@ -10,7 +10,7 @@ Pages.p23 = {
     const rows = DATA.opportunities[ctx.f];
     return {
       title: '机构追踪', tab: 'inst',
-      body: `<div class="card" style="background:linear-gradient(140deg,#13354F,#1F4E79);color:#fff"><div class="b" style="font-size:18px">看看大机构在买什么</div><div class="small" style="opacity:.75;margin-top:4px">基于公开的 13F 持仓申报，按季度更新</div></div>
+      body: `<div class="card" style="background:linear-gradient(120deg,#4A43E8,#8A3FE0 55%,#D63AA8);color:#fff"><div class="b" style="font-size:18px">看看大机构在买什么</div><div class="small" style="opacity:.75;margin-top:4px">基于公开的 13F 持仓申报，按季度更新</div></div>
         <div class="row between">${C.seg('g', [['hot', '收益最高'], ['recent', '最近更新']], ctx.g)}<button class="link-btn small" data-go="#/p24">更多</button></div>
         <div class="inst-grid">
           ${inst.slice(0, 6).map((x) => `<button class="card center" data-go="#/p24?id=${x.id}">${nameAvatar(x.name)}<div class="b small mt8 ellipsis">${esc(x.name)}</div><div class="xs muted">年收益</div><div class="badge ${x.ret >= 0 ? 'ok' : 'danger'} mt8 num">${fmt.pct(x.ret)}</div></button>`).join('')}
@@ -95,8 +95,8 @@ Pages.p25 = {
         title: '您的组合',
         body: `${C.notice('warn', '<b>合规待确认：</b>根据问卷生成个性化组合并一键执行，可能被认定为投资顾问服务，与"自主账户"定位冲突。上线前需合规评估（pages.md 问题 3）。' + C.tag('6'))}
           <div class="card"><div class="xs muted">风险评分 ${score} / 40</div><div class="b" style="font-size:22px">${st.name}</div><div class="small muted mt8">${st.desc}</div></div>
-          <div class="card row" style="gap:16px">${donut(st.holdings.map(([s, w], k) => ({ v: w, color: ['#0E7C66', '#1F4E79', '#D08A1E', '#7C3AED'][k] })), 110, `<span class="b">${st.holdings.length} 只</span>`)}
-            <div class="grow">${st.holdings.map(([s, w], k) => `<div class="row between small" style="padding:4px 0"><span class="row" style="gap:6px"><i style="width:8px;height:8px;border-radius:50%;background:${['#0E7C66', '#1F4E79', '#D08A1E', '#7C3AED'][k]};display:inline-block"></i>${s}</span><b class="num">${fmt.pct(w, { sign: false, dp: 0 })}</b></div>`).join('')}</div></div>
+          <div class="card row" style="gap:16px">${donut(st.holdings.map(([s, w], k) => ({ v: w, color: ['#6C5BF5', '#D63AA8', '#F0A13C', '#3B82F6'][k] })), 110, `<span class="b">${st.holdings.length} 只</span>`)}
+            <div class="grow">${st.holdings.map(([s, w], k) => `<div class="row between small" style="padding:4px 0"><span class="row" style="gap:6px"><i style="width:8px;height:8px;border-radius:50%;background:${['#6C5BF5', '#D63AA8', '#F0A13C', '#3B82F6'][k]};display:inline-block"></i>${s}</span><b class="num">${fmt.pct(w, { sign: false, dp: 0 })}</b></div>`).join('')}</div></div>
           <div class="sec-title" style="font-size:15px">配置理由</div>
           <div class="list">${st.holdings.map(([s]) => C.li({ title: `${s} · ${esc(Acc.inst(s).name)}`, sub: Acc.inst(s).etfCategory ? `${Acc.inst(s).etfCategory}类 ETF，用于分散配置` : '核心持仓', go: `#/p10?symbol=${s}` })).join('')}</div>
           <div class="xs faint">过往表现不代表未来收益。此结果仅供参考。</div>`,
@@ -145,7 +145,7 @@ Pages.p26 = {
     return {
       title: 'AI 助手', tab: 'ai',
       right: `<span class="badge" style="margin-right:6px">${Icon('lock', 12)}&nbsp;XP</span>`,
-      body: `<div class="soon"><div class="xs" style="opacity:.7">AI 投资助手</div><h2>即将推出</h2><p>正在学习分析图表、风险和持仓，敬请期待。</p>${DECO}</div>
+      body: `<div class="soon"><div class="xs" style="opacity:.7">Fifi 量化助手</div><h2>即将推出</h2><p>Fifi 正在学习分析图表、风险和持仓，敬请期待。</p><img class="mascot-side" src="assets/fifi_paw.png" alt="Fifi"></div>
         <div class="feat-grid">${feats.map(([ic, t, d], k) => `<div class="feat"><span class="li-ic">${Icon(ic, 18)}</span><span class="lk">${Icon('lock', 14)}</span><div class="t">${k + 1}. ${t}</div><div class="d">${d}</div></div>`).join('')}</div>
         ${C.notice('warn', '上线前需评估是否构成投资建议（参见清单 6）。' + C.tag('6'))}
         <button class="btn ${sub ? 'ghost' : 'secondary'} mt8" data-act="sub">${Icon('bell', 18)} ${sub ? '已订阅上线提醒' : '上线提醒我'}</button>
@@ -164,7 +164,7 @@ Pages.p27 = {
     return {
       title: '奖励', tab: 'rewards',
       right: `<span class="badge" style="margin-right:6px">${Icon('lock', 12)}&nbsp;0 XP</span>`,
-      body: `<div class="soon" style="background:linear-gradient(140deg,#4A2A0A,#B4630F)"><div class="xs" style="opacity:.7">奖励中心</div><h2>即将推出</h2><p>完成学习任务赚取积分，解锁徽章、主题与更多奖励。</p>${DECO}</div>
+      body: `<div class="soon" style="background:linear-gradient(120deg,#8A3FE0,#D63AA8 60%,#F0A13C)"><div class="xs" style="opacity:.7">奖励中心</div><h2>即将推出</h2><p>完成学习任务赚取积分，解锁徽章、主题与更多奖励。</p>${DECO}</div>
         ${C.seg('lv', [['1', '等级 1'], ['2', '等级 2 🔒'], ['3', '等级 3 🔒'], ['4', '等级 4 🔒']], ctx.lv)}
         <div class="reward-grid">${(items[ctx.lv] || []).map(([n, xp]) => `<div class="feat center"><span class="lk">${Icon('lock', 14)}</span><div class="state-ic" style="width:56px;height:56px;margin:4px auto 8px">${Icon('gift', 26)}</div><div class="t">${n}</div><div class="xs muted">${xp} XP</div><div class="badge mt8">即将推出</div></div>`).join('')}</div>
         ${C.notice('info', '若积分获取与入金或交易行为挂钩，需确认相关激励合规要求。')}

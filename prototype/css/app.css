@@ -1,25 +1,28 @@
 /* ---------- Tokens ---------- */
 :root {
-  --bg: #F4F5F7;
+  /* FinX 主题（design/theme.md）：浅薰衣草底 + 紫罗兰主色 + 靛紫→品红渐变 */
+  --bg: #F6F5FC;
   --surface: #FFFFFF;
-  --surface-2: #F1F3F6;
-  --text: #0F172A;
-  --muted: #64748B;
-  --faint: #94A3B8;
-  --line: #E6E8EC;
-  --primary: #0E7C66;
-  --primary-2: #0A5E4E;
-  --primary-weak: #E6F3EF;
-  --accent: #1F4E79;
-  --up: #15803D;
-  --down: #DC2626;
+  --surface-2: #F3F2FA;
+  --text: #171A2E;
+  --muted: #6B7191;
+  --faint: #9BA0B8;
+  --line: #E9E8F4;
+  --primary: #6C5BF5;
+  --primary-2: #4F3ED9;
+  --primary-weak: #EFECFE;
+  --accent: #3B82F6;
+  --up: #16A34A;
+  --down: #E5484D;
   --warn: #B45309;
   --warn-weak: #FFF6E5;
-  --danger: #DC2626;
-  --danger-weak: #FDEDED;
-  --info-weak: #EDF3FA;
-  --radius: 14px;
-  --shadow: 0 1px 2px rgba(15, 23, 42, .05), 0 4px 14px rgba(15, 23, 42, .05);
+  --danger: #E5484D;
+  --danger-weak: #FDEDEE;
+  --info-weak: #EDF2FD;
+  --grad: linear-gradient(100deg, #5A57EE 0%, #A944D8 55%, #D63AA8 100%);
+  --grad-soft: linear-gradient(135deg, #7D5CF0 0%, #C13AC8 100%);
+  --radius: 18px;
+  --shadow: 0 1px 2px rgba(42, 34, 96, .05), 0 6px 18px rgba(42, 34, 96, .07);
 }
 body.red-up { --up: #DC2626; --down: #15803D; }
 
@@ -27,7 +30,7 @@ body.red-up { --up: #DC2626; --down: #15803D; }
 html, body { height: 100%; }
 body {
   font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", "Microsoft YaHei", sans-serif;
-  background: #E7EAEE;
+  background: #ECEAF6;
   color: var(--text);
   font-size: 15px;
   line-height: 1.45;
@@ -78,14 +81,14 @@ input, select, textarea { font: inherit; color: inherit; }
 .sec-title { display: flex; align-items: center; justify-content: space-between; margin: 22px 2px 10px; font-size: 17px; font-weight: 650; }
 .sec-title:first-child { margin-top: 6px; }
 .sec-title .link { font-size: 13px; font-weight: 500; color: var(--primary); display: inline-flex; align-items: center; }
-.btn { height: 48px; border-radius: 12px; font-weight: 600; font-size: 16px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 0 18px; width: 100%; border: 1px solid transparent; }
-.btn.primary { background: var(--primary); color: #fff; }
+.btn { height: 48px; border-radius: 24px; font-weight: 600; font-size: 16px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 0 18px; width: 100%; border: 1px solid transparent; }
+.btn.primary { background: var(--grad); color: #fff; }
 .btn.secondary { background: var(--primary-weak); color: var(--primary-2); }
 .btn.ghost { background: var(--surface); border-color: var(--line); }
 .btn.danger { background: var(--danger); color: #fff; }
 .btn.buy { background: var(--up); color: #fff; }
 .btn.sell { background: var(--down); color: #fff; }
-.btn.sm { height: 34px; font-size: 14px; width: auto; border-radius: 10px; padding: 0 12px; }
+.btn.sm { height: 34px; font-size: 14px; width: auto; border-radius: 17px; padding: 0 12px; }
 .btn:disabled { opacity: .4; cursor: not-allowed; }
 .link-btn { color: var(--primary); font-size: 14px; font-weight: 500; }
 .row { display: flex; align-items: center; gap: 12px; }
@@ -126,7 +129,7 @@ input, select, textarea { font: inherit; color: inherit; }
 .seg.fill { flex-wrap: nowrap; }                                          /* 时间区间：一行等分 */
 .seg.fill button { flex: 1 1 0; min-width: 0; padding: 0 4px; }
 .seg button { height: 32px; padding: 0 14px; border-radius: 16px; border: 1px solid var(--line); background: var(--surface); color: var(--muted); font-size: 14px; white-space: nowrap; flex: none; }
-.seg button.on { background: var(--text); border-color: var(--text); color: #fff; }
+.seg button.on { background: var(--grad-soft); border-color: transparent; color: #fff; }
 .seg2 { display: flex; background: var(--surface-2); border-radius: 11px; padding: 3px; margin-bottom: 12px; }
 .seg2 button { flex: 1; height: 34px; border-radius: 8px; font-weight: 600; color: var(--muted); font-size: 14px; }
 .seg2 button.on { background: var(--surface); color: var(--text); box-shadow: var(--shadow); }
@@ -135,7 +138,7 @@ input, select, textarea { font: inherit; color: inherit; }
 .field { margin-bottom: 14px; }
 .field > label { display: flex; align-items: center; gap: 0; font-size: 13px; line-height: 18px; min-height: 18px; color: var(--muted); margin-bottom: 6px; white-space: nowrap; overflow: hidden; }
 .field > label .ctag { flex: none; }
-.input { width: 100%; height: 46px; border: 1px solid var(--line); border-radius: 10px; padding: 0 12px; font-size: 16px; background: var(--surface); }
+.input { width: 100%; height: 50px; border: 1.5px solid var(--line); border-radius: 15px; padding: 0 14px; font-size: 16px; background: var(--surface); }
 textarea.input { height: 84px; padding: 10px 12px; resize: none; }
 .input:focus { outline: 2px solid var(--primary-weak); border-color: var(--primary); }
 .field.err .input { border-color: var(--danger); }
@@ -182,7 +185,7 @@ body.hide-tags .ctag { display: none; }
 .ava.sq { border-radius: 10px; }
 
 /* ---------- Asset hero ---------- */
-.hero { background: linear-gradient(155deg, #0E7C66 0%, #0D5A63 100%); color: #fff; border-radius: 20px; padding: 18px; margin-bottom: 12px; }
+.hero { background: linear-gradient(135deg, #7D4DF0 0%, #A944D8 55%, #D63AA8 100%); color: #fff; border-radius: 22px; padding: 18px; margin-bottom: 12px; }
 .hero .muted { color: rgba(255, 255, 255, .72); }
 .hero-total { font-size: 32px; font-weight: 700; letter-spacing: -.5px; margin: 4px 0 10px; }
 .hero-split { display: flex; gap: 16px; font-size: 13px; }
@@ -248,8 +251,8 @@ body.hide-tags .ctag { display: none; }
 .state-ic { width: 84px; height: 84px; border-radius: 50%; background: var(--primary-weak); color: var(--primary); display: grid; place-items: center; margin-bottom: 18px; }
 .state h2 { font-size: 22px; margin-bottom: 8px; }
 .state p { color: var(--muted); font-size: 14px; max-width: 300px; }
-.mark { width: 64px; height: 64px; border-radius: 18px; background: linear-gradient(140deg, var(--primary), var(--accent)); display: grid; place-items: center; color: #fff; }
-.soon { background: linear-gradient(140deg, #13354F, #0E7C66); color: #fff; border-radius: 20px; padding: 22px 18px; margin-bottom: 14px; position: relative; overflow: hidden; }
+.mark { width: 64px; height: 64px; border-radius: 18px; background: var(--grad-soft); display: grid; place-items: center; color: #fff; }
+.soon { background: linear-gradient(120deg, #4A43E8 0%, #8A3FE0 55%, #D63AA8 100%); color: #fff; border-radius: 22px; padding: 22px 18px; margin-bottom: 14px; position: relative; overflow: hidden; }
 .soon h2 { font-size: 26px; line-height: 1.2; }
 .soon p { color: rgba(255, 255, 255, .78); font-size: 13px; margin-top: 8px; max-width: 220px; }
 .soon svg.deco { position: absolute; right: -10px; bottom: -10px; opacity: .9; }
@@ -284,6 +287,30 @@ details.faq p { padding: 0 16px 14px; color: var(--muted); font-size: 14px; }
   .console.open { display: block; }
   .console-toggle { display: block; }
 }
+
+/* ---------- 开户流程版式（参考 FinX 样板） ---------- */
+.steps { display: flex; gap: 6px; margin: 6px 0 10px; }
+.steps i { flex: 1; height: 4px; border-radius: 2px; background: var(--line); }
+.steps i.done { background: var(--grad-soft); }
+.step-tag { font-size: 12px; font-weight: 700; letter-spacing: .18em; color: var(--muted); margin-bottom: 10px; }
+.q-title { font-size: 28px; font-weight: 800; letter-spacing: -.3px; line-height: 1.2; margin-bottom: 8px; }
+.q-sub { font-size: 15px; color: var(--muted); line-height: 1.55; margin-bottom: 18px; }
+.opt { padding: 16px; border-radius: 16px; }
+.opt .radio { order: 2; margin-left: auto; }
+.opt > div:not(.radio) { order: 1; }
+.footer { flex-wrap: wrap; }
+.footer .btn { width: auto; flex: 1; }
+.footer .btn.ghost[data-act="saveExit"] { flex: none; }
+.trust-note { width: 100%; text-align: center; font-size: 12px; color: var(--faint); padding-top: 8px; display: flex; align-items: center; justify-content: center; gap: 5px; }
+
+/* ---------- FinX 品牌素材 ---------- */
+.screen.white { background: #fff; }
+.brand-logo { display: block; margin: 0 auto; width: 210px; max-width: 70%; }
+.mascot { display: block; margin: 0 auto; }
+.mascot.pill { width: 300px; max-width: 86%; }
+.mascot.paw { width: 150px; }
+.soon .mascot-side { position: absolute; right: 10px; bottom: -6px; width: 104px; opacity: .97; filter: drop-shadow(0 4px 10px rgba(30,20,80,.25)); }
+.ava-img { width: 64px; height: 64px; border-radius: 50%; display: block; }
 
 /* 多选标签（资金来源） */
 .chip{padding:7px 12px;border-radius:16px;border:1px solid var(--line);background:var(--surface);font-size:13px;color:var(--text);cursor:pointer}
