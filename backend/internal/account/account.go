@@ -39,6 +39,17 @@ type Account struct {
 	OpenedAt    *time.Time `json:"openedAt"`
 	DWAccountID string     `json:"-"`
 	DWUserID    string     `json:"-"`
+	// DW：仅演示环境返回（见 SetExposeDWIdentifiers），供 App 的"DW 沙盒凭证"区与 DW 当场对照。
+	DW *DWIdentifiers `json:"dw,omitempty"`
+}
+
+// DWIdentifiers：DW 侧编号与状态（演示验真用；生产不返回）。
+type DWIdentifiers struct {
+	UserID    string     `json:"userId"`
+	AccountID string     `json:"accountId"`
+	AccountNo string     `json:"accountNo"`
+	KYCStatus string     `json:"kycStatus"`
+	SyncedAt  *time.Time `json:"syncedAt"` // 最近一次与 DW 同步（KYC 对账或账户状态更新）的时间
 }
 
 // Pending：KYC 已通过但尚未开户的申请。
@@ -54,6 +65,7 @@ type Repo interface {
 	NotOpen(ctx context.Context, limit int) ([]Account, error)
 	UpdateStatus(ctx context.Context, dwAccountID, status string, openedAt *time.Time, now time.Time) error
 	ForUser(ctx context.Context, userID string) (*Account, error)
+	SyncInfo(ctx context.Context, dwUserID string) (kycStatus string, syncedAt *time.Time, err error)
 	Audit(ctx context.Context, actor, action, target string, detail map[string]any) error
 }
 
@@ -68,7 +80,13 @@ type Service struct {
 	dw     DW
 	logger *slog.Logger
 	now    func() time.Time
+	// exposeDW：GET /account 附带 DW 编号（仅演示环境；调用方须保证不在 production 开启）。
+	exposeDW bool
 }
+
+// SetExposeDWIdentifiers 开启后 GET /account 附带 dw{userId, accountId, accountNo, kycStatus, syncedAt}。
+// 仅用于沙盒演示验真；main 只在 OTP_DEV_LOG=true（config 禁止 production 开启）时调用。
+func (s *Service) SetExposeDWIdentifiers(on bool) { s.exposeDW = on }
 
 // New 创建模块；dw 为 nil 时只提供查询。
 func New(repo Repo, dw DW, logger *slog.Logger) *Service {
@@ -92,6 +110,14 @@ func (s *Service) handleGet(w http.ResponseWriter, r *http.Request) {
 	if a == nil {
 		httpx.Fail(w, r, httpx.Conflict("交易账户尚未开立"))
 		return
+	}
+	if s.exposeDW {
+		kyc, synced, err := s.repo.SyncInfo(r.Context(), a.DWUserID)
+		if err != nil {
+			httpx.Fail(w, r, err)
+			return
+		}
+		a.DW = &DWIdentifiers{UserID: a.DWUserID, AccountID: a.DWAccountID, AccountNo: a.AccountNo, KYCStatus: kyc, SyncedAt: synced}
 	}
 	httpx.OK(w, a)
 }
@@ -328,6 +354,17 @@ func (p PGRepo) ForUser(ctx context.Context, userID string) (*Account, error) {
 		   JOIN applications ap ON ap.id = d.application_id
 		  WHERE ap.user_id = $1 AND ap.deleted_at IS NULL
 		  ORDER BY a.created_at LIMIT 1`, userID))
+}
+
+func (p PGRepo) SyncInfo(ctx context.Context, dwUserID string) (string, *time.Time, error) {
+	var kyc string
+	var synced *time.Time
+	err := p.DB.QueryRowContext(ctx, `
+		SELECT d.kyc_status, nullif(greatest(coalesce(d.kyc_checked_at, 'epoch'), coalesce(max(a.updated_at), 'epoch')), 'epoch'::timestamptz)
+		  FROM dw_users d LEFT JOIN accounts a ON a.dw_user_id = d.dw_user_id
+		 WHERE d.dw_user_id = $1
+		 GROUP BY d.kyc_status, d.kyc_checked_at`, dwUserID).Scan(&kyc, &synced)
+	return kyc, synced, err
 }
 
 func (p PGRepo) Audit(ctx context.Context, actor, action, target string, detail map[string]any) error {

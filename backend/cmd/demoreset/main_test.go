@@ -1,7 +1,10 @@
 package main
 
 import (
+	"bytes"
+	"context"
 	"encoding/json"
+	"strings"
 	"testing"
 )
 
@@ -58,5 +61,34 @@ func TestResetStepsOrder(t *testing.T) {
 		if idx[pair[0]] >= idx[pair[1]] {
 			t.Errorf("%s 应在 %s 之前删除", pair[0], pair[1])
 		}
+	}
+}
+
+// fakeDW：按路径返回预设 JSON。
+type fakeDW map[string]string
+
+func (f fakeDW) Do(_ context.Context, _, path string, _, out any) error {
+	return json.Unmarshal([]byte(f[path]), out)
+}
+
+func TestPrintVerify(t *testing.T) {
+	dw := fakeDW{
+		"/users/u-1":                    `{"id":"u-1","status":{"name":"APPROVED"},"firstName":"Should","lastName":"NotPrint"}`,
+		"/users/u-1/kyc-status":         `{"status":{"name":"KYC_APPROVED"}}`,
+		"/users/u-1/accounts":           `[{"id":"acc-1","accountNo":"TEST000001","status":{"name":"OPEN"},"accountType":{"name":"LIVE"},"openedWhen":"2026-11-19T15:00:00Z"}]`,
+		"/accounts/acc-1/summary/money": `{"updated":"2026-11-20T01:00:00Z","cash":{"cashBalance":1000,"cashAvailableForTrade":0,"cashAvailableForWithdrawal":0}}`,
+	}
+	var buf bytes.Buffer
+	if err := printVerify(context.Background(), dw, "u-1", &buf); err != nil {
+		t.Fatal(err)
+	}
+	out := buf.String()
+	for _, want := range []string{"userID        u-1", "user.status   APPROVED", "kyc.status    KYC_APPROVED", "accountID     acc-1", "accountNo     TEST000001", "LIVE · OPEN", "cash 1000 · buyingPower 0 · withdrawable 0"} {
+		if !strings.Contains(out, want) {
+			t.Errorf("缺少 %q：\n%s", want, out)
+		}
+	}
+	if strings.Contains(out, "Should") || strings.Contains(out, "NotPrint") {
+		t.Error("不应打印姓名")
 	}
 }

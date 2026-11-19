@@ -84,7 +84,19 @@ func (m *memRepo) UpdateStatus(_ context.Context, dwID, st string, opened *time.
 	return nil
 }
 
-func (m *memRepo) ForUser(_ context.Context, uid string) (*Account, error) { return m.byUser[uid], nil }
+func (m *memRepo) ForUser(_ context.Context, uid string) (*Account, error) {
+	if a := m.byUser[uid]; a != nil {
+		cp := *a
+		return &cp, nil
+	}
+	return nil, nil
+}
+
+var syncTime = time.Date(2026, 11, 20, 1, 2, 3, 0, time.UTC)
+
+func (m *memRepo) SyncInfo(context.Context, string) (string, *time.Time, error) {
+	return "KYC_APPROVED", &syncTime, nil
+}
 func (m *memRepo) Audit(context.Context, string, string, string, map[string]any) error {
 	return nil
 }
@@ -238,9 +250,39 @@ func TestGetAccount(t *testing.T) {
 			if env.Data["accountNo"] != "TEST000001" || env.Data["managementType"] != "SELF" {
 				t.Fatalf("响应: %v", env.Data)
 			}
-			if strings.Contains(rec.Body.String(), "secret-dw-id") {
-				t.Fatal("不应返回 DW 内部 id")
+			if strings.Contains(rec.Body.String(), "secret-dw-id") || env.Data["dw"] != nil {
+				t.Fatal("默认不应返回 DW 内部 id")
 			}
+		}
+	}
+}
+
+func TestGetAccountDemoExposesDWIdentifiers(t *testing.T) {
+	r := &memRepo{byUser: map[string]*Account{"u1": {ID: "a1", AccountNo: "TEST000001", Status: "OPEN", AccountType: "LIVE", TradingType: "CASH", Management: "SELF", DWAccountID: "dw-acc-1", DWUserID: "dw-user-1"}}}
+	s := newSvc(r, nil)
+	s.SetExposeDWIdentifiers(true)
+	mux := http.NewServeMux()
+	auth := func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+			next.ServeHTTP(w, req.WithContext(httpx.WithUser(req.Context(), "u1")))
+		})
+	}
+	s.Routes(mux, "/api/v1", auth)
+	rec := httptest.NewRecorder()
+	mux.ServeHTTP(rec, httptest.NewRequest("GET", "/api/v1/account", nil))
+	var env struct {
+		Code int `json:"code"`
+		Data struct {
+			DW map[string]any `json:"dw"`
+		} `json:"data"`
+	}
+	if err := json.Unmarshal(rec.Body.Bytes(), &env); err != nil || env.Code != 0 {
+		t.Fatalf("%v %s", err, rec.Body.String())
+	}
+	want := map[string]any{"userId": "dw-user-1", "accountId": "dw-acc-1", "accountNo": "TEST000001", "kycStatus": "KYC_APPROVED", "syncedAt": "2026-11-20T01:02:03Z"}
+	for k, v := range want {
+		if env.Data.DW[k] != v {
+			t.Fatalf("dw.%s = %v, want %v", k, env.Data.DW[k], v)
 		}
 	}
 }

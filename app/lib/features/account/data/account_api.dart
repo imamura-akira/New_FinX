@@ -60,6 +60,23 @@ class ApplicationProgress {
   }
 }
 
+/// DW 侧编号与状态（GET /account 的 dw，仅演示环境返回）。
+class DwIdentifiers {
+  const DwIdentifiers({required this.userId, required this.accountId, required this.accountNo, required this.kycStatus, this.syncedAt});
+  factory DwIdentifiers.fromJson(Map<String, dynamic> j) => DwIdentifiers(
+    userId: j['userId'] as String? ?? '',
+    accountId: j['accountId'] as String? ?? '',
+    accountNo: j['accountNo'] as String? ?? '',
+    kycStatus: j['kycStatus'] as String? ?? '',
+    syncedAt: _time(j['syncedAt']),
+  );
+  final String userId;
+  final String accountId;
+  final String accountNo;
+  final String kycStatus;
+  final DateTime? syncedAt;
+}
+
 /// GET /account。
 class AccountInfo {
   const AccountInfo({
@@ -69,6 +86,7 @@ class AccountInfo {
     this.tradingType = 'CASH',
     this.managementType = 'SELF',
     this.openedAt,
+    this.dw,
   });
 
   factory AccountInfo.fromJson(Map<String, dynamic> j) => AccountInfo(
@@ -78,6 +96,7 @@ class AccountInfo {
     tradingType: j['tradingType'] as String? ?? 'CASH',
     managementType: j['managementType'] as String? ?? 'SELF',
     openedAt: _time(j['openedAt']),
+    dw: j['dw'] is Map ? DwIdentifiers.fromJson((j['dw'] as Map).cast<String, dynamic>()) : null,
   );
 
   final String accountNo;
@@ -86,6 +105,9 @@ class AccountInfo {
   final String tradingType;
   final String managementType;
   final DateTime? openedAt;
+
+  /// 仅演示环境由后端返回。
+  final DwIdentifiers? dw;
 }
 
 /// GET /account/money（一律展示 DW money summary 返回值，F12）。

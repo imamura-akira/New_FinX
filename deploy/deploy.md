@@ -93,7 +93,13 @@ ssh root@72.60.104.228 'cd /opt/finx/deploy && sed -i "/^IMAGE_TAG=/d" .env && e
 ssh root@72.60.104.228 'cd /opt/finx/deploy && for u in funded-1000 funded-5000; do docker compose run --rm --no-deps --user 0 -v /opt/finx/backend/demo-users.local.json:/app/demo-users.local.json:ro --entrypoint /app/demoreset backend import -local $u; done'
 ```
 
-其他命令（`list`、`reset -email X [-yes]`）同理，把参数换掉即可，用法见 `backend/cmd/demoreset/main.go`。
+演示验真（直接读 DW 沙盒，原样打印编号与状态，与 App"DW 沙盒凭证"对照）：
+
+```bash
+ssh root@72.60.104.228 'cd /opt/finx/deploy && docker compose run --rm --no-deps --entrypoint /app/demoreset backend verify -email funded1@example.com'
+```
+
+其他命令（`list`、`reset -email X [-yes]`）同理，把参数换掉即可，用法见 `backend/cmd/demoreset/main.go`。每次 `import` / `verify` 会申请一次 DW token（每小时上限 6 次，与运行中的服务共用预算），不要连续频繁执行。
 
 ## 6. App 连接
 

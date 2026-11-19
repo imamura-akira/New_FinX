@@ -121,3 +121,4 @@ Base URL：`/api/v1`　认证：`Authorization: Bearer <sessionToken>`（除 /au
 | 2026-11-19 | 开户与 KYC 模块（`/application/*`，对应 P-03–P-06、P-30、P-34–P-36）的 `message` 与 `fields[].reason`、KYC 问题项 `userMessage` 改为英文（文案取自原型；行业/职位两条为新增），其余模块仍为中文（pages.md 定稿说明、ui-signoff 第 3 节） | 文案变更，字段与结构不变 |
 | 2026-11-19 | 5.5 市场数据（F11）落地：`/market/quotes`、`/market/instruments/{symbol}` 写入 openapi.yaml；两接口**无需登录**（虚拟行情、不含用户信息，P-01"先逛逛行情"需未登录可看）；`/market/instruments` 响应新增 `exchange`、`type`；`chgPct` 为百分数；`symbols` 单次最多 50 个、未知代码忽略、为空返回全部；未知个股返回 42200 | 新增，向后兼容 |
 | 2026-11-19 | 沙盒实测：`rule14b` 为 false（P-05 选"否"）时 DW 拒绝开户（U040），`GET /application/status` 将停在 KYC_APPROVED、accountStatus 为空。接口不变；处理方式待 Q-DW-11 与用户决定 | 记录，无接口变更 |
+| 2026-11-20 | `GET /account` 新增可选字段 `dw{userId, accountId, accountNo, kycStatus, syncedAt}`：**仅演示环境**（`OTP_DEV_LOG=true`，config 禁止 production 开启）返回，供 App P-08"DW 沙盒凭证"区与 DW 当场对照；生产不返回 | 新增，向后兼容 |

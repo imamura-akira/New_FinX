@@ -85,6 +85,10 @@ func TestPGAccountRepo(t *testing.T) {
 	if a.Status != "OPEN" || a.OpenedAt == nil {
 		t.Fatalf("应为 OPEN: %+v", a)
 	}
+	kyc, synced, err := r.SyncInfo(ctx, dwUser)
+	if err != nil || kyc == "" || synced == nil || synced.Before(now.Add(-time.Minute)) {
+		t.Fatalf("SyncInfo: %q %v %v", kyc, synced, err)
+	}
 	list, _ := r.NotOpen(ctx, 1000)
 	for _, x := range list {
 		if x.DWAccountID == dwAcc {

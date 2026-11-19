@@ -6,6 +6,9 @@
 //	import -email <邮箱> -dw-user <id>    从 DW 沙盒读取已有测试用户（姓名、KYC、账户），在本地重建关联；
 //	       [-bank-id <id> -bank-mask <4位> -bank-type CHECKING|SAVINGS -bank-nickname <名>]
 //	import -local <label>                 同上，参数取自 backend/demo-users.local.json（已 gitignore）
+//	verify -email <邮箱> | -dw-user <id>  演示验真：直接调 DW 沙盒 GET /users/{id}、kyc-status、/accounts、money summary，
+//	                                      原样打印 DW 返回的编号与状态，与 App"DW 沙盒凭证"区当场对照。
+//	                                      -email 只用本地库查出 DW 用户 id，其余数据全部来自 DW（不读本地库）。
 //
 // 虚拟行情（marketsim）用固定种子在服务启动时初始化：重启服务即重置行情。
 //
@@ -22,6 +25,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"io"
 	"os"
 	"regexp"
 	"strings"
@@ -82,6 +86,12 @@ func main() {
 			}
 		}
 		err = runImport(ctx, cfg, st.DB, in)
+	case "verify":
+		fs := flag.NewFlagSet("verify", flag.ExitOnError)
+		email := fs.String("email", "", "本地登录邮箱（仅用于查出 DW 用户 id）")
+		dwUser := fs.String("dw-user", "", "直接指定 DW 用户 id（完全不读本地库）")
+		_ = fs.Parse(args)
+		err = verify(ctx, cfg, st.DB, *email, *dwUser, os.Stdout)
 	default:
 		usage()
 	}
@@ -91,7 +101,7 @@ func main() {
 }
 
 func usage() {
-	fmt.Fprintln(os.Stderr, "用法：demoreset list | reset -email X [-yes] | import (-local LABEL | -email X -dw-user ID [-bank-id ...])")
+	fmt.Fprintln(os.Stderr, "用法：demoreset list | reset -email X [-yes] | import (-local LABEL | -email X -dw-user ID [-bank-id ...]) | verify (-email X | -dw-user ID)")
 	os.Exit(2)
 }
 
@@ -447,4 +457,96 @@ func newRef(now time.Time) (string, error) {
 		return "", err
 	}
 	return "FX" + now.Format("060102") + "-" + refEncoding.EncodeToString(b), nil
+}
+
+// ---------- verify ----------
+
+// dwGetter：verify 需要的 DW 能力（测试中替换为假实现）。
+type dwGetter interface {
+	Do(ctx context.Context, method, path string, reqBody, out any) error
+}
+
+func verify(ctx context.Context, cfg *config.Config, db *sql.DB, email, dwUser string, out io.Writer) error {
+	if dwUser == "" {
+		if strings.TrimSpace(email) == "" {
+			return errors.New("需要 -email 或 -dw-user")
+		}
+		err := db.QueryRowContext(ctx, `
+			SELECT d.dw_user_id FROM users_app u
+			  JOIN applications a ON a.user_id = u.id AND a.deleted_at IS NULL
+			  JOIN dw_users d ON d.application_id = a.id
+			 WHERE lower(u.email) = lower($1) AND u.deleted_at IS NULL AND d.dw_user_id IS NOT NULL`, strings.TrimSpace(email)).Scan(&dwUser)
+		if errors.Is(err, sql.ErrNoRows) {
+			return fmt.Errorf("本地没有 %s 的 DW 用户关联", email)
+		}
+		if err != nil {
+			return err
+		}
+	}
+	if !cfg.DWConfigured() {
+		return errors.New("需要 DW 凭据")
+	}
+	dw, err := dwclient.New(dwclient.Config{
+		BaseURL: cfg.DW.BaseURL, AppKey: cfg.DW.AppKey, ClientID: cfg.DW.ClientID, ClientSecret: cfg.DW.ClientSecret,
+		Timeout: cfg.DW.HTTPTimeout, TokenRequestsPerHour: cfg.DW.TokenRequestsPerHour, TokenRefreshSkew: cfg.DW.TokenRefreshSkew,
+	})
+	if err != nil {
+		return err
+	}
+	return printVerify(ctx, dw, dwUser, out)
+}
+
+// printVerify 直接读取 DW 并打印编号与状态（不打印姓名等 PII）。
+func printVerify(ctx context.Context, dw dwGetter, dwUser string, out io.Writer) error {
+	fmt.Fprintf(out, "DW 沙盒原始数据（%s）\n", time.Now().UTC().Format(time.RFC3339))
+	var u struct {
+		ID     string `json:"id"`
+		Status any    `json:"status"`
+	}
+	if err := dw.Do(ctx, "GET", "/users/"+dwUser, nil, &u); err != nil {
+		return fmt.Errorf("GET /users/{id}：%w", err)
+	}
+	fmt.Fprintf(out, "  userID        %s\n  user.status   %s\n", u.ID, nameOf(u.Status))
+
+	var kyc struct {
+		Status any `json:"status"`
+		KYC    *struct {
+			Status any `json:"status"`
+		} `json:"kyc"`
+	}
+	if err := dw.Do(ctx, "GET", "/users/"+dwUser+"/kyc-status", nil, &kyc); err != nil {
+		return fmt.Errorf("GET kyc-status：%w", err)
+	}
+	k := nameOf(kyc.Status)
+	if kyc.KYC != nil && nameOf(kyc.KYC.Status) != "" {
+		k = nameOf(kyc.KYC.Status)
+	}
+	fmt.Fprintf(out, "  kyc.status    %s\n", k)
+
+	var accts []dwAccount
+	if err := dw.Do(ctx, "GET", "/users/"+dwUser+"/accounts", nil, &accts); err != nil {
+		return fmt.Errorf("GET /users/{id}/accounts：%w", err)
+	}
+	if len(accts) == 0 {
+		fmt.Fprintln(out, "  （无账户）")
+	}
+	for _, a := range accts {
+		fmt.Fprintf(out, "  accountID     %s\n  accountNo     %s\n  account       %s · %s · opened %s\n",
+			a.ID, a.AccountNo, nameOf(a.AccountType), nameOf(a.Status), a.Opened)
+		var m struct {
+			Updated string `json:"updated"`
+			Cash    struct {
+				CashBalance                json.Number `json:"cashBalance"`
+				CashAvailableForTrade      json.Number `json:"cashAvailableForTrade"`
+				CashAvailableForWithdrawal json.Number `json:"cashAvailableForWithdrawal"`
+			} `json:"cash"`
+		}
+		if err := dw.Do(ctx, "GET", "/accounts/"+a.ID+"/summary/money", nil, &m); err != nil {
+			fmt.Fprintf(out, "  money         读取失败：%v\n", err)
+			continue
+		}
+		fmt.Fprintf(out, "  money         cash %s · buyingPower %s · withdrawable %s · updated %s\n",
+			m.Cash.CashBalance, m.Cash.CashAvailableForTrade, m.Cash.CashAvailableForWithdrawal, m.Updated)
+	}
+	return nil
 }

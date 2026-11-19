@@ -8,6 +8,7 @@ import '../../../app/theme.dart';
 import '../../../core/format.dart';
 import '../../../core/widgets/form_widgets.dart';
 import '../../../core/widgets/widgets.dart';
+import '../data/account_api.dart';
 import '../domain/account_overview.dart';
 
 /// 入金入口（P-13）。
@@ -124,6 +125,8 @@ class AccountDrawer extends StatelessWidget {
                 ListRow(icon: Icons.help_outline_rounded, title: '帮助中心', onTap: () => _notInDemo(context)),
                 ListRow(key: const Key('drawer.logout'), icon: Icons.logout_rounded, title: '退出登录', onTap: () => _logout(context)),
               ]),
+              // 演示验真：仅 DEMO_MODE=true 构建渲染；正式构建完全不出现
+              if (AppScope.of(context).config.demoMode) DwSandboxPanel(overview: overview),
               const Center(
                 child: Text('${AppConfig.appName} Demo-1', style: TextStyle(fontSize: 12, color: AppColors.faint)),
               ),
@@ -274,5 +277,111 @@ class AccountDrawer extends StatelessWidget {
       ),
     );
     if (ok == true) await session.signOut();
+  }
+}
+
+/// "DW 沙盒凭证"折叠区（演示验真）：显示 DW 返回的 userID、accountID、accountNo、KYC 状态与最近同步时间，
+/// 每项可点击复制，用于和 `demoreset verify` 打印的 DW 原始值当场对照。只在 DEMO_MODE=true 时被使用。
+class DwSandboxPanel extends StatefulWidget {
+  const DwSandboxPanel({super.key, required this.overview});
+  final AccountOverview overview;
+
+  @override
+  State<DwSandboxPanel> createState() => _DwSandboxPanelState();
+}
+
+class _DwSandboxPanelState extends State<DwSandboxPanel> {
+  bool _open = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final DwIdentifiers? dw = widget.overview.account?.dw;
+    final rows = dw == null
+        ? const <(String, String)>[]
+        : [
+            ('userID', dw.userId),
+            ('accountID', dw.accountId),
+            ('accountNo', dw.accountNo),
+            ('KYC 状态', dw.kycStatus),
+            ('最近同步', dw.syncedAt == null ? '—' : fmtDateTime(dw.syncedAt)),
+          ];
+    return Container(
+      key: const Key('drawer.dwPanel'),
+      margin: const EdgeInsets.only(top: 4, bottom: 12),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppShape.radius),
+        border: Border.all(color: AppColors.line),
+      ),
+      child: Column(
+        children: [
+          InkWell(
+            key: const Key('drawer.dwPanel.toggle'),
+            onTap: () => setState(() => _open = !_open),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              child: Row(
+                children: [
+                  const Icon(Icons.verified_outlined, size: 18, color: AppColors.primary),
+                  const SizedBox(width: 8),
+                  const Expanded(
+                    child: Text('DW 沙盒凭证', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                  ),
+                  const StatusBadge('仅演示', kind: BadgeKind.warn),
+                  Icon(_open ? Icons.expand_less_rounded : Icons.expand_more_rounded, color: AppColors.faint),
+                ],
+              ),
+            ),
+          ),
+          if (_open)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(14, 0, 6, 10),
+              child: dw == null
+                  ? const Padding(
+                      padding: EdgeInsets.only(bottom: 4, right: 8),
+                      child: Text('暂无 DW 编号：账户尚未开立，或后端未开启演示环境（OTP_DEV_LOG）。', style: TextStyle(fontSize: 12, color: AppColors.muted)),
+                    )
+                  : Column(
+                      children: [
+                        for (final (k, v) in rows)
+                          InkWell(
+                            key: Key('drawer.dw.$k'),
+                            onTap: () {
+                              Clipboard.setData(ClipboardData(text: v));
+                              showToast(context, '已复制 $k');
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 6),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  SizedBox(
+                                    width: 78,
+                                    child: Text(k, style: const TextStyle(fontSize: 12, color: AppColors.muted)),
+                                  ),
+                                  Expanded(
+                                    child: Text(
+                                      v.isEmpty ? '—' : v,
+                                      style: const TextStyle(fontSize: 12, fontFamily: 'Menlo', fontFamilyFallback: ['Courier']),
+                                    ),
+                                  ),
+                                  const Padding(
+                                    padding: EdgeInsets.only(left: 6, right: 6),
+                                    child: Icon(Icons.copy_rounded, size: 14, color: AppColors.faint),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        const Padding(
+                          padding: EdgeInsets.only(top: 4, right: 8),
+                          child: Text('以上为 DW 沙盒返回值，可与 demoreset verify 的输出逐项对照。', style: TextStyle(fontSize: 11, color: AppColors.faint)),
+                        ),
+                      ],
+                    ),
+            ),
+        ],
+      ),
+    );
   }
 }

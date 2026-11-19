@@ -449,6 +449,15 @@ paths:
                           tradingType: { type: string, enum: [CASH] }
                           managementType: { type: string, enum: [SELF] }
                           openedAt: { type: string, format: date-time, nullable: true }
+                          dw:
+                            type: object
+                            description: 仅演示环境（OTP_DEV_LOG=true）返回，供 App"DW 沙盒凭证"区与 DW 当场对照；生产不返回。
+                            properties:
+                              userId: { type: string }
+                              accountId: { type: string }
+                              accountNo: { type: string }
+                              kycStatus: { type: string }
+                              syncedAt: { type: string, format: date-time, nullable: true }
         "401": { $ref: "#/components/responses/Unauthorized" }
         "404": { $ref: "#/components/responses/NotFound" }
 

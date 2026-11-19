@@ -139,6 +139,9 @@ func run(migrateCmd string, logger *slog.Logger) error {
 		}
 		acctRepo := account.PGRepo{DB: st.DB}
 		acctSvc := account.New(acctRepo, dwAPI, logger)
+		if cfg.OTPDevLog { // 演示环境：GET /account 附带 DW 编号供 App 对照（config 已禁止 production 开启 OTP_DEV_LOG）
+			acctSvc.SetExposeDWIdentifiers(true)
+		}
 		var fundSvc *funding.Service
 		if dw != nil {
 			fundSvc = funding.New(funding.Deps{

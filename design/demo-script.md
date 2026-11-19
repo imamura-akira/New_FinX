@@ -81,6 +81,7 @@ cd "/Users/ak/Desktop/Claude FinX New/backend" && (set -a; source ./.env; set +a
 | B9 | P-30 Review & submit | 核对后 Submit | 各分组可返回修改；FinX 把资料提交给 DriveWealth 核验 |
 | B10 | P-06 Application status | 等待数秒 | **提交后数秒自动通过并开户**：四步进度条依次变绿，出现 "Your live account is open" 与账户号码（PDF-6 要求 App 内可见）。页面每 5 秒自动刷新，只显示 DW 真实返回的状态，没有任何模拟进度 |
 | B11 | 点 Later → 资产页；点右上角头像 → 账户抽屉 P-08 | — | 抽屉显示账户号码、LIVE · CASH · SELF、市值 / 购买力 / 现金（DW 实时数据） |
+| B12（可选）| 抽屉底部展开"DW 沙盒凭证"（仅 DEMO_MODE 构建显示） | 同时在终端运行 `demoreset verify -email <演示邮箱>`（本机或服务器，见 deploy.md 第 5 节） | **当场对照**：App 显示的 userID、accountID、accountNo 与 DW 原样返回值一致。KYC 状态 DW 原文为 `APPROVED`，App 显示规范化后的 `KYC_APPROVED`，为同一状态 |
 
 **话术**：
 - 核验由 DriveWealth 执行（页面底部有说明）。沙盒环境核验即时完成；正式环境的审核时长待 DW 确认。
