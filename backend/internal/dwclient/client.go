@@ -131,6 +131,22 @@ func New(cfg Config, opts ...Option) (*Client, error) {
 	return c, nil
 }
 
+type ctxKey int
+
+const idemKey ctxKey = 1
+
+// WithIdempotencyKey 为该 context 内的 DW 写请求附加 Idempotency-Key 头（DW 文档：Create Deposit 支持，保存 4 天）。
+// 带键的写请求在网络错误 / 5xx / 429 时会按 GET 的策略重试。
+func WithIdempotencyKey(ctx context.Context, key string) context.Context {
+	return context.WithValue(ctx, idemKey, key)
+}
+
+// IdempotencyKey 返回 context 中的幂等键（测试与日志用）。
+func IdempotencyKey(ctx context.Context) string {
+	k, _ := ctx.Value(idemKey).(string)
+	return k
+}
+
 // Do 发送请求到 DW。path 相对 BaseURL（如 "/users"）。reqBody 为 nil 时不发请求体；
 // out 非 nil 时把 2xx 响应 JSON 解码进去。
 func (c *Client) Do(ctx context.Context, method, path string, reqBody, out any) error {
@@ -143,7 +159,8 @@ func (c *Client) Do(ctx context.Context, method, path string, reqBody, out any) 
 		payload = b
 	}
 
-	idempotent := method == http.MethodGet || method == http.MethodHead
+	// GET/HEAD 天然幂等；写操作只有带 Idempotency-Key（WithIdempotencyKey）时才允许重试（DW 保存 4 天，防重复入金）
+	idempotent := method == http.MethodGet || method == http.MethodHead || IdempotencyKey(ctx) != ""
 	maxAttempts := 1
 	if idempotent {
 		maxAttempts = 1 + c.cfg.GetRetries
@@ -202,6 +219,9 @@ func (c *Client) send(ctx context.Context, method, path string, payload []byte, 
 	req.Header.Set("Authorization", "Bearer "+token)
 	if payload != nil {
 		req.Header.Set("Content-Type", "application/json")
+	}
+	if k := IdempotencyKey(ctx); k != "" {
+		req.Header.Set("Idempotency-Key", k)
 	}
 
 	start := c.now()

@@ -58,6 +58,15 @@ func SessionExpired() *Error {
 	return &Error{HTTP: http.StatusUnauthorized, Code: CodeSessionExpired, Message: "登录已过期，请重新登录"}
 }
 
+// Restricted：40301 账户受限（附 restriction）。
+func Restricted(restriction string) *Error {
+	msg := map[string]string{"FROZEN": "账户已冻结，暂不能进行此操作", "CLOSED": "账户已关闭，暂不能进行此操作"}[restriction]
+	if msg == "" {
+		msg = "账户受限，暂不能进行此操作"
+	}
+	return &Error{HTTP: http.StatusForbidden, Code: CodeRestricted, Message: msg, Data: map[string]string{"restriction": restriction}}
+}
+
 func Conflict(msg string) *Error {
 	return &Error{HTTP: http.StatusConflict, Code: CodeConflict, Message: msg}
 }

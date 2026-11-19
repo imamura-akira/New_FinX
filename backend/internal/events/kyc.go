@@ -65,7 +65,11 @@ type Reconciler struct {
 	interval time.Duration
 	logger   *slog.Logger
 	now      func() time.Time
+	jobs     []func(ctx context.Context) // 其他对账任务（如在途出入金）
 }
+
+// AddJob 增加每轮执行的对账任务。
+func (r *Reconciler) AddJob(f func(ctx context.Context)) { r.jobs = append(r.jobs, f) }
 
 // NewReconciler 创建对账器；interval 为轮询周期（KYC_POLL_INTERVAL）。
 func NewReconciler(repo KYCRepo, dw DW, accounts Accounts, interval time.Duration, logger *slog.Logger) *Reconciler {
@@ -101,6 +105,9 @@ func (r *Reconciler) Tick(ctx context.Context) {
 	if r.accounts != nil {
 		r.accounts.EnsureAccounts(ctx)
 		r.accounts.RefreshStatuses(ctx)
+	}
+	for _, job := range r.jobs {
+		job(ctx)
 	}
 }
 

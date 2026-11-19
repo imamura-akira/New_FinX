@@ -95,7 +95,11 @@ func TestMigrateIntegration(t *testing.T) {
 		t.Fatalf("dw_users.dw_user_id 应可空: %q %v", nullable, err)
 	}
 	// 每一步都能回滚再重放
-	for i := 0; i < 2; i++ {
+	var idem bool
+	if err := s.DB.QueryRow(`SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'transfers' AND column_name = 'idempotency_key')`).Scan(&idem); err != nil || !idem {
+		t.Fatalf("000003：transfers.idempotency_key 未创建: %v", err)
+	}
+	for i := 0; i < 3; i++ {
 		if err := s.MigrateDown(); err != nil {
 			t.Fatal(err)
 		}

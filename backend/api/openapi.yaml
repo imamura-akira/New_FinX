@@ -477,6 +477,12 @@ paths:
                           buyingPower: { $ref: "#/components/schemas/Money" }
                           cashAvailableForWithdrawal: { $ref: "#/components/schemas/Money" }
                           unsettled: { $ref: "#/components/schemas/Money" }
+                          pendingDeposits:
+                            allOf: [{ $ref: "#/components/schemas/Money" }]
+                            description: 尚未计入购买力的在途入金（DW payments.buyingPower.pendingDepositsAmountNotAvailable；新增字段）
+                          withheldForSeasoning:
+                            allOf: [{ $ref: "#/components/schemas/Money" }]
+                            description: 因入金观察期未计入可提现的金额（DW payments.redemptions.amountWithheldFromRedemptions；新增字段）
                           updatedAt: { type: string, format: date-time }
         "401": { $ref: "#/components/responses/Unauthorized" }
         "502": { $ref: "#/components/responses/DWError" }
@@ -700,6 +706,10 @@ paths:
                       data:
                         type: array
                         items: { $ref: "#/components/schemas/Transfer" }
+          headers:
+            X-Next-Cursor:
+              description: 还有更多记录时返回，作为下一页的 cursor 参数（每页 50 条；新增）
+              schema: { type: string }
         "401": { $ref: "#/components/responses/Unauthorized" }
 
   # ───────────── 6. 文件与通知 ─────────────
@@ -1005,10 +1015,15 @@ components:
         type: { type: string, enum: [DEPOSIT, WITHDRAWAL] }
         method: { type: string, enum: [ACH, WIRE] }
         amount: { $ref: "#/components/schemas/Money" }
-        status: { type: string, description: 入金按 DepositStatus；出金枚举待 Q-DW-8d }
-        failureReason: { type: string, nullable: true }
+        status:
+          type: string
+          description: |
+            入金按 DepositStatus；出金按 DW Redemption Status（STARTED / PENDING / SUCCESSFUL / FAILED / OTHER / RIA_* / APPROVED / REJECTED / ON_HOLD；Q-DW-8d 复核）。
+            我方新增 SUBMITTING：已记录、正在提交给 DW 或提交结果待确认（新增取值）。
+        failureReason: { type: string, nullable: true, description: 可展示的中文原因（不透出 DW 原文） }
         submittedAt: { type: string, format: date-time }
         doneAt: { type: string, format: date-time, nullable: true }
+        bankAccountId: { type: string, nullable: true, description: 关联的银行账户（WIRE 出金为空；新增字段） }
 
   responses:
     OkEmpty:

@@ -27,6 +27,7 @@ import (
 	"github.com/imamura-akira/New_FinX/backend/internal/crypto"
 	"github.com/imamura-akira/New_FinX/backend/internal/dwclient"
 	"github.com/imamura-akira/New_FinX/backend/internal/events"
+	"github.com/imamura-akira/New_FinX/backend/internal/funding"
 	"github.com/imamura-akira/New_FinX/backend/internal/store"
 )
 
@@ -121,11 +122,21 @@ func run(migrateCmd string, logger *slog.Logger) error {
 		if dw != nil {
 			dwAPI = dw
 		}
-		acctSvc := account.New(account.PGRepo{DB: st.DB}, dwAPI, logger)
+		acctRepo := account.PGRepo{DB: st.DB}
+		acctSvc := account.New(acctRepo, dwAPI, logger)
+		var fundSvc *funding.Service
+		if dw != nil {
+			fundSvc = funding.New(funding.Deps{
+				Repo: funding.PGRepo{DB: st.DB}, DW: dw, Cipher: cipher,
+				Account: acctRepo.ForUser, LegalName: appSvc.LegalName,
+				Limits: cfg.Limits, BankLink: cfg.BankLinkMethod, Logger: logger,
+			})
+		}
 		if dw != nil {
 			rec := events.NewReconciler(events.PGRepo{DB: st.DB}, dw, acctSvc, cfg.KYCPollInterval, logger)
 			orch := application.NewOrchestrator(appRepo, dw, cipher, cfg.UserSubmitMode, logger)
 			orch.OnUserCreated = rec.RefreshApp // DW User 创建后立即查一次 KYC
+			rec.AddJob(func(ctx context.Context) { fundSvc.Sync(ctx, cfg.KYCPollInterval) })
 			appSvc.WithOrchestrator(orch, appRepo, cfg.KYCMode)
 			go orch.Start(ctx, time.Minute) // 后台续传未完成的提交
 			go rec.Start(ctx)               // KYC / 开户 / 账户状态对账
@@ -137,6 +148,9 @@ func run(migrateCmd string, logger *slog.Logger) error {
 			authSvc.Routes(mux, apiPrefix)
 			appSvc.Routes(mux, apiPrefix, authSvc.RequireAuth)
 			acctSvc.Routes(mux, apiPrefix, authSvc.RequireAuth)
+			if fundSvc != nil {
+				fundSvc.Routes(mux, apiPrefix, authSvc.RequireAuth)
+			}
 		})
 	} else {
 		logger.Warn("API routes disabled: DATABASE_URL, PII_ENCRYPTION_KEY and JWT_SECRET are all required")

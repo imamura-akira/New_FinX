@@ -101,7 +101,12 @@ func TestReconcilerTick(t *testing.T) {
 	}
 	acc := &fakeAccounts{}
 	r := NewReconciler(repo, dw, acc, time.Minute, slog.New(slog.NewTextHandler(io.Discard, nil)))
+	jobRuns := 0
+	r.AddJob(func(context.Context) { jobRuns++ })
 	r.Tick(context.Background())
+	if jobRuns != 1 {
+		t.Fatal("附加对账任务应每轮执行")
+	}
 	if repo.saved["a1"] != "KYC_APPROVED" {
 		t.Fatalf("a1 应保存 APPROVED: %v", repo.saved)
 	}

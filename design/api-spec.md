@@ -37,7 +37,7 @@ Base URL：`/api/v1`　认证：`Authorization: Bearer <sessionToken>`（除 /au
 | 方法 路径 | 响应 data | 说明 |
 |---|---|---|
 | GET /account | `{accountId, accountNo, status, accountType:"LIVE", tradingType:"CASH", managementType:"SELF", openedAt}` | status: PENDING/OPEN/OPEN_NO_NEW_TRADES/FROZEN/CLOSED |
-| GET /account/money | `{cash, settledCash, buyingPower, cashAvailableForWithdrawal, unsettled, updatedAt}` | 来自 DW 账户资金汇总【Q-DW-8d 复核字段名】；**可提现一律用 DW 返回值** |
+| GET /account/money | `{cash, settledCash, buyingPower, cashAvailableForWithdrawal, unsettled, pendingDeposits, withheldForSeasoning, updatedAt}` | 来自 DW 账户资金汇总【Q-DW-8d 复核字段名】；**可提现一律用 DW 返回值** |
 
 ## 4. 银行账户（F7，P-31/P-32）
 
@@ -104,3 +104,4 @@ Base URL：`/api/v1`　认证：`Authorization: Bearer <sessionToken>`（除 /au
 | 2026-11-19 | `GET /application` 响应新增 `documents[]{documentId, docType, side, uploadedAt}`（已暂存证件，不含影像）；`data.tin` 读取时只返回后 4 位，客户端回传打码值视为未修改；`accountType/tradingType/accountManagementType` 由后端固定为 LIVE/CASH/SELF | 新增，向后兼容 |
 | 2026-11-19 | `GET /application/status` 新增 `applicationRef`、`submittedAt`、`submitState`（NOT_SUBMITTED / SUBMITTING / SUBMITTED / NEEDS_ATTENTION）。kycStatus 只反映 DW 真实返回，DW User 创建前为 KYC_NOT_READY；`GET /account` 在账户未开立时返回 40901 | 新增，向后兼容 |
 | 2026-11-19 | `ApplicationData` 新增 `industry`（DW EMPLOYMENT_INFO.type 枚举，受雇/自雇时必填）与 `position`（DW position 枚举，选填）；`occupation` 保留但不再发送给 DW（停用，后续版本删除需升版本）。选项见 pages.md 3.1.6 | 新增，向后兼容 |
+| 2026-11-19 | 资金（Demo-1 #6）：`GET /account/money` 新增 `pendingDeposits`、`withheldForSeasoning`；`Transfer` 新增 `bankAccountId`，status 新增我方取值 `SUBMITTING`（已记录、提交结果待确认）；`GET /funding/transfers` 每页 50 条，下一页游标放在响应头 `X-Next-Cursor`；资金接口在账户冻结/关闭时返回 40301（附 restriction），账户未开立返回 40901；入金提交结果不明时返回 50001 并附 `transferId`；出金超过 DW 可提现金额返回 42201（附 limits.available）；`POST /funding/bank-accounts` 不接受客户端户名（后端写入开户姓名） | 新增，向后兼容 |

@@ -139,3 +139,21 @@ func (p PGRepo) Progress(ctx context.Context, userID string) (*Progress, error) 
 	}
 	return &pr, nil
 }
+
+// LegalName 返回开户资料中的法定姓名（"First Last"），供资金模块强制写入绑卡户名与 WIRE 收款人。
+// 只允许已提交的申请（草稿中的姓名可能还会修改）。
+func (s *Service) LegalName(ctx context.Context, userID string) (string, error) {
+	a, err := s.repo.GetByUser(ctx, userID)
+	if err != nil || a == nil || a.Status == "DRAFT" {
+		return "", err
+	}
+	st, err := s.load(a)
+	if err != nil {
+		return "", err
+	}
+	d, err := decodeData(st.Data)
+	if err != nil {
+		return "", err
+	}
+	return FullName(d), nil
+}

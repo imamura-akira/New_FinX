@@ -255,19 +255,25 @@ func TestRetryPolicy(t *testing.T) {
 		statuses  []int
 		wantCalls int32
 		wantErr   bool
+		idemKey   string
 	}{
-		{"GET 503 后成功", http.MethodGet, []int{503, 503, 200}, 3, false},
-		{"GET 一直 503：1+3 次后失败", http.MethodGet, []int{503, 503, 503, 503, 503}, 4, true},
-		{"GET 429 后成功", http.MethodGet, []int{429, 200}, 2, false},
-		{"GET 400 不重试", http.MethodGet, []int{400, 200}, 1, true},
-		{"POST 503 不重试（防重复入金）", http.MethodPost, []int{503, 200}, 1, true},
-		{"PATCH 500 不重试", http.MethodPatch, []int{500, 200}, 1, true},
+		{"GET 503 后成功", http.MethodGet, []int{503, 503, 200}, 3, false, ""},
+		{"GET 一直 503：1+3 次后失败", http.MethodGet, []int{503, 503, 503, 503, 503}, 4, true, ""},
+		{"GET 429 后成功", http.MethodGet, []int{429, 200}, 2, false, ""},
+		{"GET 400 不重试", http.MethodGet, []int{400, 200}, 1, true, ""},
+		{"POST 503 不重试（防重复入金）", http.MethodPost, []int{503, 200}, 1, true, ""},
+		{"PATCH 500 不重试", http.MethodPatch, []int{500, 200}, 1, true, ""},
+		{"POST 带幂等键 503 后重试成功", http.MethodPost, []int{503, 200}, 2, false, "idem-1"},
+		{"POST 带幂等键 400 不重试", http.MethodPost, []int{400, 200}, 1, true, "idem-2"},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			var calls atomic.Int32
 			f := &fakeDW{t: t, expiresIn: 3600}
 			f.handler = func(w http.ResponseWriter, r *http.Request) {
+				if r.Header.Get("Idempotency-Key") != tc.idemKey {
+					t.Errorf("Idempotency-Key = %q，期望 %q", r.Header.Get("Idempotency-Key"), tc.idemKey)
+				}
 				n := int(calls.Add(1)) - 1
 				st := tc.statuses[len(tc.statuses)-1]
 				if n < len(tc.statuses) {
@@ -277,7 +283,11 @@ func TestRetryPolicy(t *testing.T) {
 				_, _ = w.Write([]byte(`{"message":"x"}`))
 			}
 			c, _, _ := newTestClient(t, f, 6)
-			err := c.Do(context.Background(), tc.method, "/funding/deposits", map[string]any{"amount": 1}, nil)
+			ctx := context.Background()
+			if tc.idemKey != "" {
+				ctx = WithIdempotencyKey(ctx, tc.idemKey)
+			}
+			err := c.Do(ctx, tc.method, "/funding/deposits", map[string]any{"amount": 1}, nil)
 			if (err != nil) != tc.wantErr {
 				t.Fatalf("err=%v wantErr=%v", err, tc.wantErr)
 			}
