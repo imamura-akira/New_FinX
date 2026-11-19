@@ -3,9 +3,10 @@ package application
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"errors"
 	"time"
+
+	"github.com/imamura-akira/New_FinX/backend/internal/store"
 )
 
 // ---------- OrchRepo 的 Postgres 实现 ----------
@@ -137,10 +138,5 @@ func (p PGRepo) MarkDocumentUploaded(ctx context.Context, docID, dwDocumentID st
 }
 
 func (p PGRepo) Audit(ctx context.Context, actor, action, target string, detail map[string]any) error {
-	var raw []byte
-	if detail != nil {
-		raw, _ = json.Marshal(detail)
-	}
-	_, err := p.DB.ExecContext(ctx, `INSERT INTO audit_log (actor, action, target, detail) VALUES ($1, $2, $3, $4)`, actor, action, target, raw)
-	return err
+	return store.Audit(ctx, p.DB, actor, action, target, detail)
 }

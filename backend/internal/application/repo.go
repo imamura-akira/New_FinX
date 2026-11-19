@@ -48,7 +48,8 @@ type Repo interface {
 	SaveDraft(ctx context.Context, appID, step string, dataEnc []byte, now time.Time) error // 非草稿返回 ErrNotDraft
 	PutDocument(ctx context.Context, appID, docType, side, contentType string, imageEnc []byte) (string, error)
 	ListDocuments(ctx context.Context, appID string) ([]DocMeta, error)
-	KYC(ctx context.Context, appID string) (*KYCInfo, error) // 尚未创建 DW User 时返回 nil, nil
+	KYC(ctx context.Context, appID string) (*KYCInfo, error)        // 尚未创建 DW User 时返回 nil, nil
+	Progress(ctx context.Context, userID string) (*Progress, error) // 无申请时返回 nil, nil
 }
 
 // PGRepo：Postgres 实现。

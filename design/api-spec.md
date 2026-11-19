@@ -25,7 +25,7 @@ Base URL：`/api/v1`　认证：`Authorization: Bearer <sessionToken>`（除 /au
 | PUT /application/draft | `{step, data{...}}` | `{savedAt}` | 自动保存；字段名与 pages.md P-03 数据字段一致 |
 | POST /application/documents | `{docType, side: "FRONT"\|"BACK", image(base64)}` | `{documentId}` | P-04/P-35 证件；后端转 DW `POST /documents` |
 | POST /application/submit | `{signatureName, disclosures[]}` | `{applicationRef, submittedAt}` | 后端：`POST /users`（BASIC/IDENTIFICATION/PERSONAL/ADDRESS_INFO）→ `PATCH /users/{userID}`（其余 documents）【Q-DW-3】→ 证件上传。username/password 后端生成【Q-DW-4】 |
-| GET /application/status | — | `{kycStatus, kycUpdatedAt, issues[]{code,field,userMessage}, requiredDocs[], accountStatus, accountNo}` | P-06 轮询/推送合一接口；kycStatus 为 DW 8 状态 |
+| GET /application/status | — | `{kycStatus, kycUpdatedAt, issues[]{code,field,userMessage}, requiredDocs[], accountStatus, accountNo, applicationRef, submittedAt, submitState}` | P-06 轮询/推送合一接口；kycStatus 为 DW 8 状态 |
 | PATCH /application/remediate | `{fields{...}}` | `{resubmittedAt}` | P-34；后端 `PATCH /users/{userID}`，DW 重跑 KYC |
 
 **KYC 状态枚举**（与 DW 一致，已核实）：`KYC_NOT_READY / KYC_READY / KYC_PROCESSING / KYC_INFO_REQUIRED / KYC_DOC_REQUIRED / KYC_MANUAL_REVIEW / KYC_APPROVED / KYC_DENIED`
@@ -102,3 +102,4 @@ Base URL：`/api/v1`　认证：`Authorization: Bearer <sessionToken>`（除 /au
 | 2026-11-19 | 第 8 节补充具体错误码 40101、40102、42200、42901、50000、50003（原仅定义 401xx / 422xx 范围；42901、50000、50003 为新增） | 新增，向后兼容 |
 | 2026-11-19 | 开户资料字段名以 `backend/api/openapi.yaml` 的 `ApplicationData` 为准（含 `residentialAddress{}`、`annualIncomeRange`、`netWorthRange`、`netWorthLiquidRange`、`investmentExperience`、`investmentObjective`、`riskTolerance`、`isAffiliatedBD` 等布尔字段，以及 `phone`、`language`、`usTaxPayer`、`irsBackup`、`taxTreaty`、`tinConfirm`、`affiliatedAck`、`pepCountry`、`pepRoles[]`、`controlCompanySymbol`）。原型 `prototype/` 中的字段名只属于已冻结的原型，Flutter 直接使用接口字段名，不做旧名转换 | 澄清，不改路径 |
 | 2026-11-19 | `GET /application` 响应新增 `documents[]{documentId, docType, side, uploadedAt}`（已暂存证件，不含影像）；`data.tin` 读取时只返回后 4 位，客户端回传打码值视为未修改；`accountType/tradingType/accountManagementType` 由后端固定为 LIVE/CASH/SELF | 新增，向后兼容 |
+| 2026-11-19 | `GET /application/status` 新增 `applicationRef`、`submittedAt`、`submitState`（NOT_SUBMITTED / SUBMITTING / SUBMITTED / NEEDS_ATTENTION）。kycStatus 只反映 DW 真实返回，DW User 创建前为 KYC_NOT_READY；`GET /account` 在账户未开立时返回 40901 | 新增，向后兼容 |

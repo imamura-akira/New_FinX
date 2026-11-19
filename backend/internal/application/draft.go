@@ -77,6 +77,7 @@ func (s *Service) Routes(mux *http.ServeMux, prefix string, auth func(http.Handl
 	mux.Handle("GET "+prefix+"/application", auth(http.HandlerFunc(s.handleGet)))
 	mux.Handle("PUT "+prefix+"/application/draft", auth(http.HandlerFunc(s.handleSaveDraft)))
 	mux.Handle("POST "+prefix+"/application/documents", auth(http.HandlerFunc(s.handleUploadDocument)))
+	mux.Handle("GET "+prefix+"/application/status", auth(http.HandlerFunc(s.handleStatus)))
 	s.routesSubmit(mux, prefix, auth)
 }
 

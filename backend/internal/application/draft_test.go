@@ -32,12 +32,13 @@ type memRepo struct {
 	mu   sync.Mutex
 	apps map[string]*App // by user
 	docs []*memDoc
-	kyc  map[string]*KYCInfo // by app
+	kyc  map[string]*KYCInfo  // by app
+	prog map[string]*Progress // by user
 	seq  int
 }
 
 func newMemRepo() *memRepo {
-	return &memRepo{apps: map[string]*App{}, kyc: map[string]*KYCInfo{}}
+	return &memRepo{apps: map[string]*App{}, kyc: map[string]*KYCInfo{}, prog: map[string]*Progress{}}
 }
 
 func (m *memRepo) id(p string) string { m.seq++; return fmt.Sprintf("%s-%d", p, m.seq) }
@@ -110,6 +111,12 @@ func (m *memRepo) KYC(_ context.Context, appID string) (*KYCInfo, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	return m.kyc[appID], nil
+}
+
+func (m *memRepo) Progress(_ context.Context, uid string) (*Progress, error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	return m.prog[uid], nil
 }
 
 // ---------- 测试夹具 ----------

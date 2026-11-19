@@ -20,11 +20,13 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/imamura-akira/New_FinX/backend/internal/account"
 	"github.com/imamura-akira/New_FinX/backend/internal/application"
 	"github.com/imamura-akira/New_FinX/backend/internal/auth"
 	"github.com/imamura-akira/New_FinX/backend/internal/config"
 	"github.com/imamura-akira/New_FinX/backend/internal/crypto"
 	"github.com/imamura-akira/New_FinX/backend/internal/dwclient"
+	"github.com/imamura-akira/New_FinX/backend/internal/events"
 	"github.com/imamura-akira/New_FinX/backend/internal/store"
 )
 
@@ -114,16 +116,26 @@ func run(migrateCmd string, logger *slog.Logger) error {
 		}
 		appRepo := application.PGRepo{DB: st.DB}
 		appSvc := application.New(appRepo, cipher, logger)
+		var dwAPI account.DW
 		if dw != nil {
+			dwAPI = dw
+		}
+		acctSvc := account.New(account.PGRepo{DB: st.DB}, dwAPI, logger)
+		if dw != nil {
+			rec := events.NewReconciler(events.PGRepo{DB: st.DB}, dw, acctSvc, cfg.KYCPollInterval, logger)
 			orch := application.NewOrchestrator(appRepo, dw, cipher, cfg.UserSubmitMode, logger)
+			orch.OnUserCreated = rec.RefreshApp // DW User 创建后立即查一次 KYC
 			appSvc.WithOrchestrator(orch, appRepo, cfg.KYCMode)
 			go orch.Start(ctx, time.Minute) // 后台续传未完成的提交
+			go rec.Start(ctx)               // KYC / 开户 / 账户状态对账
+			logger.Info("dw reconciler started", slog.Duration("interval", cfg.KYCPollInterval))
 		} else {
-			logger.Warn("application submit disabled: DW credentials not configured")
+			logger.Warn("application submit and DW sync disabled: DW credentials not configured")
 		}
 		routes = append(routes, func(mux *http.ServeMux) {
 			authSvc.Routes(mux, apiPrefix)
 			appSvc.Routes(mux, apiPrefix, authSvc.RequireAuth)
+			acctSvc.Routes(mux, apiPrefix, authSvc.RequireAuth)
 		})
 	} else {
 		logger.Warn("API routes disabled: DATABASE_URL, PII_ENCRYPTION_KEY and JWT_SECRET are all required")

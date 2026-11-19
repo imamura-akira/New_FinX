@@ -374,6 +374,14 @@ paths:
                             allOf: [{ $ref: "#/components/schemas/AccountStatus" }]
                             nullable: true
                           accountNo: { type: string, nullable: true }
+                          applicationRef: { type: string, nullable: true, description: 申请参考号（新增字段） }
+                          submittedAt: { type: string, format: date-time, nullable: true, description: 提交时间（新增字段） }
+                          submitState:
+                            type: string
+                            enum: [NOT_SUBMITTED, SUBMITTING, SUBMITTED, NEEDS_ATTENTION]
+                            description: |
+                              我方提交给 DW 的进度（新增字段）。DW User 创建前 kycStatus 保持 KYC_NOT_READY，
+                              由本字段区分"草稿"与"正在提交"；NEEDS_ATTENTION 表示 DW 拒绝了请求，需人工处理。
         "401": { $ref: "#/components/responses/Unauthorized" }
 
   /application/remediate:

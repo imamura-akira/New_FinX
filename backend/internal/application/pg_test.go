@@ -165,3 +165,27 @@ func containsID(ids []string, id string) bool {
 	}
 	return false
 }
+
+func TestPGProgress(t *testing.T) {
+	r, uid := pgRepo(t)
+	ctx := context.Background()
+	if p, err := r.Progress(ctx, uid); err != nil || p != nil {
+		t.Fatalf("无申请应 nil: %v %v", p, err)
+	}
+	a, _ := r.EnsureDraft(ctx, uid)
+	now := time.Now().UTC()
+	_ = r.MarkSubmitted(ctx, a.ID, "FXIT-"+a.ID[:8], []byte{1}, []byte{2}, []byte{3}, now)
+	p, err := r.Progress(ctx, uid)
+	if err != nil || p.AppStatus != "SUBMITTED" || p.HasDWUser || p.KYCStatus != "KYC_NOT_READY" {
+		t.Fatalf("提交后进度: %+v %v", p, err)
+	}
+	dw := "it-prog-" + a.ID[:8]
+	_ = r.SetDWUser(ctx, a.ID, dw, StateDocsDone, now)
+	_, _ = r.DB.Exec(`UPDATE dw_users SET kyc_status = 'KYC_APPROVED' WHERE application_id = $1`, a.ID)
+	_, _ = r.DB.Exec(`INSERT INTO kyc_issues (dw_user_id, code, field, user_message) VALUES ($1, 'X', 'tin', 'm')`, dw)
+	_, _ = r.DB.Exec(`INSERT INTO accounts (dw_user_id, dw_account_id, account_no, status) VALUES ($1, $2, $3, 'OPEN')`, dw, "it-prog-acc-"+a.ID[:8], "ITP"+a.ID[:8])
+	p, _ = r.Progress(ctx, uid)
+	if !p.HasDWUser || p.KYCStatus != "KYC_APPROVED" || p.AccountStatus == nil || *p.AccountStatus != "OPEN" || len(p.Issues) != 1 || *p.Issues[0].Field != "tin" {
+		t.Fatalf("完整进度不正确: %+v", p)
+	}
+}

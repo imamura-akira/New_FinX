@@ -87,6 +87,8 @@ type Config struct {
 	SessionTTL time.Duration // 会话有效期，默认 24h（契约暂无刷新接口）
 	// OTPDevLog：把邮箱验证码打印到日志，并启用演示固定验证码 000000（仅开发/演示；production 禁止开启）。
 	OTPDevLog bool
+	// KYCPollInterval：KYC / 账户状态对账周期（第一阶段不接 SQS，以轮询为准；演示可调短）。
+	KYCPollInterval time.Duration
 	// CORSAllowedOrigins：允许跨域的来源（逗号分隔；空 = 不启用 CORS；iOS 原生 App 不需要）。
 	CORSAllowedOrigins []string
 
@@ -132,6 +134,7 @@ func LoadFrom(get Getenv) (*Config, error) {
 		SessionTTL:         p.dur("SESSION_TTL", 24*time.Hour),
 		OTPDevLog:          p.bool("OTP_DEV_LOG", false),
 		CORSAllowedOrigins: splitList(get("CORS_ALLOWED_ORIGINS")),
+		KYCPollInterval:    p.dur("KYC_POLL_INTERVAL", time.Minute),
 		KYCMode:            KYCMode(p.str("KYC_MODE", string(KYCModeDoKYC))),
 		BankLinkMethod:     BankLinkMethod(p.str("BANK_LINK_METHOD", string(BankLinkDirect))),
 		UserSubmitMode:     UserSubmitMode(p.str("USER_SUBMIT_MODE", string(SubmitPostPatch))),
@@ -224,6 +227,9 @@ func (c *Config) Validate() error {
 	}
 	if c.SessionTTL < time.Minute || c.SessionTTL > 30*24*time.Hour {
 		errs = append(errs, "SESSION_TTL 超出范围 1m–720h")
+	}
+	if c.KYCPollInterval < 5*time.Second || c.KYCPollInterval > time.Hour {
+		errs = append(errs, "KYC_POLL_INTERVAL 超出范围 5s–1h")
 	}
 	if c.OTPDevLog && c.Env == "production" {
 		errs = append(errs, "production 环境禁止开启 OTP_DEV_LOG")

@@ -5,6 +5,7 @@ import (
 	"context"
 	"database/sql"
 	"embed"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
@@ -96,4 +97,14 @@ func sanitize(err error) error {
 		return errors.New("连接超时")
 	}
 	return errors.New("无法连接（详情已省略，避免泄露连接串）")
+}
+
+// Audit 写一条审计日志（audit_log）。detail 不得包含 PII。
+func Audit(ctx context.Context, db *sql.DB, actor, action, target string, detail map[string]any) error {
+	var raw []byte
+	if detail != nil {
+		raw, _ = json.Marshal(detail)
+	}
+	_, err := db.ExecContext(ctx, `INSERT INTO audit_log (actor, action, target, detail) VALUES ($1, $2, $3, $4)`, actor, action, target, raw)
+	return err
 }
