@@ -1,35 +1,37 @@
 # 开发进度（progress.md）
 
-> 最近更新：2026-11-19（暂停点）
+> 最近更新：2026-11-19（第二个暂停点）
 
 ## 1. 当前位置
 
-- **里程碑**：M0 已完成，并已推送（`5108696`、`769397c`）。
-- **当前**：M1（节点 1，F1–F4）进行中，后端部分约完成三分之一。
+- **里程碑**：M0 已完成，并已推送。
+- **当前**：M1（节点 1，F1–F4）进行中。后端完成 F1 与 dwmapper；F2–F4 业务接口与 Flutter 还没开始。
 
 ## 2. 已完成
 
 | 编号 | 内容 | 位置 | 状态 |
 |---|---|---|---|
-| M0 | 后端骨架、config、store（11 张表）、crypto、dwclient（token 缓存/限流/脱敏）、openapi.yaml | `backend/` | 已提交 |
-| M0 | 迁移已在真实 Postgres 16（Docker 临时容器）上验证 up/down 与约束 | — | 已验证 |
-| 沙盒 | DW token 接口真实调用返回 200，有效期 3600 秒；凭据正确 | `backend/cmd/dwcheck` | 已验证 |
-| — | 配置：`DW_BASE_URL` 误填 `/auth/tokens` 时报错；新增 `JWT_SECRET`、`SESSION_TTL`、`OTP_DEV_LOG`（production 禁止开启） | `backend/internal/config` | 有单测 |
-| — | 统一响应包装与错误码、请求解析、鉴权 context | `backend/internal/httpx` | 已完成 |
-| F1 | 邮箱 OTP（6 位、5 分钟有效、60 秒重发、每邮箱每小时 5 次、每 IP 每小时 20 次、错 5 次作废、一次性）、HS256 会话 JWT（库中只存哈希，可注销）、`/auth/otp/request`、`/auth/otp/verify`、`/auth/logout`、`/me`；`/auth/oauth` 返回 50003"暂未开通" | `backend/internal/auth` | 有表驱动单测，**尚未挂到服务器路由** |
-| 环境 | Flutter 3.50.0 已安装到 `~/development/flutter`（PATH 已写入 `~/.zshrc`）；Go 1.27.4；Docker Desktop | — | — |
+| M0 | 后端骨架、config、store（11 张表）、crypto、dwclient、openapi.yaml | `backend/` | 已推送 |
+| 沙盒 | DW token 真实调用返回 200（有效期 3600 秒），凭据正确 | `backend/cmd/dwcheck` | 已验证 |
+| — | 统一响应、错误码、请求解析 | `backend/internal/httpx` | 已完成 |
+| F1 | 邮箱 OTP、会话 JWT（24 小时，无刷新接口）、`/auth/otp/request`、`/auth/otp/verify`、`/auth/logout`、`/me`；`/auth/oauth` 返回 50003 | `backend/internal/auth` | 有表驱动单测；**已挂载到 `/api/v1`**；已在真实 Postgres 上完成端到端冒烟测试（发码 → 限频 → 错码 → 登录 → /me → 注销 → 40102；日志里没有未打码的邮箱或 token） |
+| F2/F3 | dwmapper：App 字段 → 9 类 DW documents，拆为 POST 四类核心 + PATCH 五类；POST/PATCH 请求体；取值无法映射时返回只含字段名的错误 | `backend/internal/dwmapper`（`data.go`、`enums.go`、`mapper.go`） | 9 个测试，覆盖美国/非美国纳税人、PEP/控制人、披露、映射错误不泄露取值、对照表完整性；并有一项契约测试：`Data` 字段与 openapi `ApplicationData` 完全一致 |
+| 契约 | 6 个错误码（40101、40102、42200、42901、50000、50003）写入 api-spec.md 第 8 节与 openapi.yaml；api-spec.md 新增第 10 节变更记录（错误码、字段名以 openapi 为准）；openapi `ApplicationData` 补上 `tinConfirm`、`affiliatedAck`、`pepCountry`、`pepRoles`、`controlCompanySymbol`；oauth 增加 501 响应 | `design/api-spec.md`、`backend/api/openapi.yaml` | 契约测试已覆盖错误码枚举 |
+| 环境 | `backend/.env` 已追加 `PII_ENCRYPTION_KEY`、`JWT_SECRET`；Flutter 3.50.0（`~/development/flutter`）；临时 Postgres 容器 `finx-pg`（已迁移到版本 1） | — | — |
 
-## 3. 做到一半 / 未开始
+## 3. 未开始 / 待办
 
-| 事项 | 位置 | 状态 |
+| 事项 | 位置 | 说明 |
 |---|---|---|
-| F1 路由挂载 | `backend/cmd/server/main.go`（有 TODO 注释） | 未做：服务器启动后还不能调用 `/api/v1/*` |
-| F2/F3 dwmapper（App 字段 → DW documents） | `backend/internal/dwmapper/`（目前只有 doc.go） | 未开始。设计已定：字段名用 openapi `ApplicationData`；DW 枚举集中在一个 enums.go，全部标"待沙盒验证" |
-| F2 草稿保存/读取（data_enc 加密） | `backend/internal/application/` | 未开始 |
-| F3 提交编排（CREATED→PATCHED→DOCS_DONE、断点续传、后台重试） | 同上 | 未开始。需要迁移 000002：`dw_users.dw_user_id` 改为可空（先存生成的 username/password 再调 POST /users，防止重复创建）、`applications` 加重试字段、新增 `application_documents` 表（提交前暂存证件） |
-| F4 `/application/status` + KYC 状态对账轮询 | `backend/internal/application/`、`internal/events/` | 未开始 |
-| Flutter 工程 `app/`（P-01–P-06、P-30） | — | 未开始 |
-| 沙盒创建测试 User、`design/sandbox-log.md` | — | 未开始 |
+| 迁移 000002 | `backend/internal/store/migrations/` | `dw_users.dw_user_id` 改为可空（先存后端生成的 username/password，再调 POST /users，防止重复创建）；`applications` 加 `submit_attempts`、`submit_error`、`submit_blocked`、`last_attempt_at`；新增 `application_documents`（提交前暂存加密证件，提交时转 DW `POST /documents`） |
+| F2 草稿接口 | `backend/internal/application/` | `GET /application`、`PUT /application/draft`：顶层字段浅合并、data_enc 加密（AAD 绑定行）、读取时税号打码；客户端回传打码值视为未修改；不在 `ApplicationData` 中的字段丢弃 |
+| F2 证件上传 | 同上 | `POST /application/documents`：加密暂存，提交时上传 |
+| F3 提交与编排 | 同上 | 完整校验（文案与原型 P-03 一致，可选值用 `dwmapper.Allowed`）、披露全部确认、签名等于法定姓名、非美国纳税人必须有证件；编排 CREATED→PATCHED→DOCS_DONE，`USER_SUBMIT_MODE=SINGLE_POST` 时合并为一次提交；后台每分钟重试，4xx 错误转人工处理 |
+| F4 状态 | `backend/internal/application/`、`internal/events/` | `GET /application/status`；非终态 KYC 每分钟调 `GET /users/{id}/kyc-status` 对账 |
+| Flutter `app/` | — | P-01、P-02、P-03a–g、P-04、P-05、P-30、P-06；字段名直接用接口字段名 |
+| 沙盒创建测试 User | `design/sandbox-log.md`（新建） | 按报错修正 `dwmapper/enums.go`，并回写 pages.md 3.1.2；记录首次 POST /users 是否直接返回 APPROVED（Q-DW-1） |
+| 邮件服务选型（SES 等） | — | 第一阶段不接入，验证码通过 `OTP_DEV_LOG=true` 打印到日志；生产前必须完成 |
+| 会话刷新 | — | 第一阶段维持 24 小时后重新登录；生产前再评估 |
 
 ## 4. 下次恢复的第一步
 
@@ -37,24 +39,33 @@
 cd "/Users/ak/Desktop/Claude FinX New/backend" && go build ./... && go test ./...
 ```
 
-通过后对 Claude Code 说："继续节点 1：先挂载 auth 路由（main.go 的 TODO），然后写 dwmapper 及其单测"。
+确认临时数据库还在。电脑重启或 Docker 退出后容器会消失，需要重新起一个并迁移：
 
-本地联调还需在 `backend/.env` 里补两项，并临时起一个数据库：
-- `PII_ENCRYPTION_KEY`：用 `openssl rand -base64 32` 生成
-- `JWT_SECRET`：用 `openssl rand -base64 48` 生成
-- 临时数据库：`docker run -d --rm --name finx-pg -e POSTGRES_PASSWORD=dev -e POSTGRES_DB=finx -p 127.0.0.1:55432:5432 postgres:16-alpine`，对应 `DATABASE_URL=postgres://postgres:dev@127.0.0.1:55432/finx?sslmode=disable`
+```bash
+docker ps --filter name=finx-pg --format '{{.Names}}' | grep -q finx-pg || docker run -d --rm --name finx-pg -e POSTGRES_PASSWORD=dev -e POSTGRES_DB=finx -p 127.0.0.1:55432:5432 postgres:16-alpine
+```
 
-## 5. 需要你决定的事项
+```bash
+cd "/Users/ak/Desktop/Claude FinX New/backend" && (set -a; source ./.env; set +a; DATABASE_URL='postgres://postgres:dev@127.0.0.1:55432/finx?sslmode=disable' go run ./cmd/server -migrate up)
+```
 
-1. **错误码补充**：api-spec.md 第 8 节只定义了范围。代码中暂用下列具体码，均属新增，不破坏现有契约。确认后我会同步写入 api-spec.md 和 openapi.yaml：
-   - 40101：未登录 / token 无效
-   - 40102：会话过期或已注销
-   - 42200：字段校验失败
-   - 42901：请求过于频繁（HTTP 429）
-   - 50000：服务器内部错误
-   - 50003：功能暂未开通（HTTP 501）
-2. **开户字段名**：api-spec 要求与 pages.md P-03 一致，但原型（UI 定稿）用的是另一套名字，例如 `netWorth` / `pages.md: netWorthRange`、扁平地址 / `residentialAddress{}`。另外原型还有几个字段 pages.md 里没有：`phone`、`language`、`netWorthLiquid`、`usTaxPayer`、`irsBackup`、`taxTreaty`、`tinConfirm`、`affiliatedAck`。计划：接口一律用 openapi.yaml `ApplicationData` 里已写的名字（这些字段都已包含），Flutter 端负责转换；同时在 api-spec.md 变更记录里登记。
-3. **会话有效期**：契约没有刷新接口，暂定 24 小时后需要重新用验证码登录。是否需要新增刷新接口（属于新增，不破坏现有契约）？
-4. **邮件服务**：目前验证码只能在 `OTP_DEV_LOG=true` 时打印到日志。正式发送需要选定邮件服务商（如 SES），未接入前生产环境无法登录。
-5. **DW 枚举取值**（投资经验、风险承受、投资目标、资金来源、税号类型等）：DW 文档没给全，dwmapper 会先用最可能的取值，沙盒创建 User 时按报错修正，然后回写 pages.md 3.1.2。
-6. **token 额度**：本小时已用 3 次 token 请求，上限是 6 次（`DW_TOKEN_REQUESTS_PER_HOUR`）。日常运行时 token 会缓存 1 小时，不影响使用。
+然后对 Claude Code 说："继续节点 1：写迁移 000002，再实现 application 包的草稿接口（GET /application、PUT /application/draft）及其单测"。
+
+本地运行服务器时（`DATABASE_URL` 与 `OTP_DEV_LOG` 不写进 .env，在命令行传入）：
+
+```bash
+cd "/Users/ak/Desktop/Claude FinX New/backend" && (set -a; source ./.env; set +a; DATABASE_URL='postgres://postgres:dev@127.0.0.1:55432/finx?sslmode=disable' OTP_DEV_LOG=true go run ./cmd/server)
+```
+
+## 5. 已决定事项（2026-11-19）
+
+1. 六个错误码批准，已写入契约。
+2. 字段名以 openapi.yaml `ApplicationData` 为准；Flutter 不做旧名转换；已在 api-spec.md 第 10 节登记。
+3. 会话维持 24 小时后重新登录，不加刷新接口，生产前再评估。
+4. 第一阶段不接邮件服务商，验证码走开发态日志；SES 选型列入待办。
+5. DW 枚举先用最可能的取值（`dwmapper/enums.go`），沙盒报错时修正并回写 pages.md 3.1.2。
+6. token 额度无需处理。
+
+## 6. 需要你决定的事项
+
+暂无。

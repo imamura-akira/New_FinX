@@ -30,9 +30,15 @@ type healthData struct {
 	Time    string `json:"time"`
 }
 
-// newMux 注册路由。/healthz 为运维接口，不属于 /api/v1 契约。
-func newMux(d healthDeps) http.Handler {
+// apiPrefix：api-spec.md 的 Base URL。
+const apiPrefix = "/api/v1"
+
+// newMux 注册路由。/healthz 为运维接口，不属于 /api/v1 契约；业务路由由 register 挂载（可为 nil）。
+func newMux(d healthDeps, register ...func(*http.ServeMux)) http.Handler {
 	mux := http.NewServeMux()
+	for _, reg := range register {
+		reg(mux)
+	}
 	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, r *http.Request) {
 		h := healthData{Status: "ok", Env: d.env, Version: d.version, DB: "not_configured", DW: "not_configured", Time: time.Now().UTC().Format(time.RFC3339)}
 		if d.dwConfigured {

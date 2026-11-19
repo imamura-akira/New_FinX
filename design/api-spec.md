@@ -76,14 +76,28 @@ Base URL：`/api/v1`　认证：`Authorization: Bearer <sessionToken>`（除 /au
 | code | 含义 |
 |---|---|
 | 0 | 成功 |
-| 401xx | 未登录 / 会话过期（App → S-01 会话过期页） |
+| 401xx | 未登录 / 会话过期（App → S-01 会话过期页），具体码如下 |
+| 40101 | 未登录 / token 无效（HTTP 401） |
+| 40102 | 会话过期或已注销（HTTP 401；会话有效期 24 小时，无刷新接口，需重新验证码登录） |
 | 40301 | 账户受限（附 restriction: FROZEN / OPEN_NO_NEW_TRADES） |
 | 40901 | 状态冲突（在途资金禁止解绑、重复提交等） |
-| 422xx | 字段校验失败（附 fields[]{field, reason}，文案与 P-03 校验一致） |
+| 422xx | 字段校验失败类，具体码如下 |
+| 42200 | 字段校验失败（HTTP 422；附 fields[]{field, reason}，文案与 P-03 校验一致） |
+| 42201 | 金额超限（HTTP 422；附限额） |
+| 42901 | 请求过于频繁（HTTP 429；如验证码限频；附 retryAfter 秒数） |
+| 50000 | 服务器内部错误（HTTP 500；对用户显示"稍后重试"） |
 | 50001 | DW 调用失败（对用户显示"稍后重试"，不透出 DW 原始错误） |
 | 50002 | DW 返回数据异常（已记录，人工介入） |
+| 50003 | 功能暂未开通（HTTP 501；如阶段 1.5 的 Google / Apple 登录） |
 
 ## 9. 版本与冻结
 
 - 本契约 v1 随 UI 定稿冻结路径与字段名；新增字段向后兼容，破坏性变更升 /api/v2。
 - 【Q-DW-x】标注处的请求体结构已为两种方案预留，答复后删除未选方案并更新 OpenAPI。
+
+## 10. 变更记录
+
+| 日期 | 变更 | 性质 |
+|---|---|---|
+| 2026-11-19 | 第 8 节补充具体错误码 40101、40102、42200、42901、50000、50003（原仅定义 401xx / 422xx 范围；42901、50000、50003 为新增） | 新增，向后兼容 |
+| 2026-11-19 | 开户资料字段名以 `backend/api/openapi.yaml` 的 `ApplicationData` 为准（含 `residentialAddress{}`、`annualIncomeRange`、`netWorthRange`、`netWorthLiquidRange`、`investmentExperience`、`investmentObjective`、`riskTolerance`、`isAffiliatedBD` 等布尔字段，以及 `phone`、`language`、`usTaxPayer`、`irsBackup`、`taxTreaty`、`tinConfirm`、`affiliatedAck`、`pepCountry`、`pepRoles[]`、`controlCompanySymbol`）。原型 `prototype/` 中的字段名只属于已冻结的原型，Flutter 直接使用接口字段名，不做旧名转换 | 澄清，不改路径 |

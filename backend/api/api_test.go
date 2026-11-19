@@ -115,6 +115,7 @@ func TestEnumsMatchSpec(t *testing.T) {
 		"STARTED, PENDING, SUCCESSFUL, FAILED, RETURNED, APPROVED, REJECTED, ON_HOLD",
 		"PENDING, OPEN, OPEN_NO_NEW_TRADES, FROZEN, CLOSED",
 		"NONE, DRAFT, SUBMITTED, APPROVED, DENIED",
+		"0, 40101, 40102, 40301, 40901, 42200, 42201, 42901, 50000, 50001, 50002, 50003", // api-spec.md 第 8 节
 	} {
 		if !strings.Contains(s, v) {
 			t.Errorf("枚举与 api-spec.md 不一致或缺失: %s", v)

@@ -1,6 +1,6 @@
 // Command server 是后端入口。
 //
-//	go run ./cmd/server                 启动 HTTP 服务（GET /healthz）
+//	go run ./cmd/server                 启动 HTTP 服务（GET /healthz；配置齐全时挂载 /api/v1）
 //	go run ./cmd/server -migrate up     执行数据库迁移后退出
 //	go run ./cmd/server -migrate down   回滚一步后退出（开发用）
 //
@@ -20,6 +20,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/imamura-akira/New_FinX/backend/internal/auth"
 	"github.com/imamura-akira/New_FinX/backend/internal/config"
 	"github.com/imamura-akira/New_FinX/backend/internal/dwclient"
 	"github.com/imamura-akira/New_FinX/backend/internal/store"
@@ -90,15 +91,29 @@ func run(migrateCmd string, logger *slog.Logger) error {
 		logger.Warn("DW credentials not configured; DW calls disabled")
 	}
 
-	// TODO(M1-F1): 挂载 /api/v1 业务路由——cfg.APIReady() 时创建 auth.New(auth.PGRepo{DB: st.DB}, sender, cfg.JWTSecret, cfg.SessionTTL, logger)
-	// 并调用 Routes(mux, "/api/v1")；sender 在 cfg.OTPDevLog 时用 auth.DevLogSender，否则 auth.DisabledSender（邮件服务未接入）。
+	// 业务接口 /api/v1：需要数据库、PII 密钥与 JWT 密钥
+	var routes []func(*http.ServeMux)
+	if cfg.APIReady() && st != nil {
+		var sender auth.Sender = auth.DisabledSender{}
+		if cfg.OTPDevLog {
+			sender = auth.DevLogSender{Logger: logger}
+			logger.Warn("OTP_DEV_LOG enabled: OTP codes are written to the log (development only)")
+		} else {
+			logger.Warn("email provider not configured and OTP_DEV_LOG=false: OTP login will fail")
+		}
+		authSvc := auth.New(auth.PGRepo{DB: st.DB}, sender, cfg.JWTSecret, cfg.SessionTTL, logger)
+		routes = append(routes, func(mux *http.ServeMux) { authSvc.Routes(mux, apiPrefix) })
+	} else {
+		logger.Warn("API routes disabled: DATABASE_URL, PII_ENCRYPTION_KEY and JWT_SECRET are all required")
+	}
+
 	var pinger func(context.Context) error
 	if st != nil {
 		pinger = st.Ping
 	}
 	srv := &http.Server{
 		Addr:              cfg.HTTPAddr,
-		Handler:           newMux(healthDeps{env: cfg.Env, version: version, dbPing: pinger, dwConfigured: dw != nil}),
+		Handler:           newMux(healthDeps{env: cfg.Env, version: version, dbPing: pinger, dwConfigured: dw != nil}, routes...),
 		ReadHeaderTimeout: 10 * time.Second,
 	}
 
