@@ -218,6 +218,33 @@ func TestRequestOTPAllowlist(t *testing.T) {
 	}
 }
 
+// 旧接口 SetAllowedEmailSuffixes（远端 acd2e86 的用例）：仍按后缀放行，行为不变。
+func TestRequestOTPAllowlistSuffixesCompat(t *testing.T) {
+	cases := []struct {
+		name     string
+		suffixes []string
+		email    string
+		wantCode int
+	}{
+		{"白名单为空：不限制", nil, "someone@gmail.test", 0},
+		{"匹配后缀", []string{"@example.com"}, "Demo@Example.COM", 0},
+		{"多个后缀之一", []string{"@a.test", " @example.com "}, "x@example.com", 0},
+		{"不匹配：通用 42200", []string{"@example.com"}, "someone@gmail.test", 42200},
+		{"不能被相似域名绕过", []string{"@example.com"}, "x@evilexample.com", 42200},
+		{"子域名不算匹配", []string{"@example.com"}, "x@mail.example.com.cn", 42200},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			h := newHarness()
+			h.svc.SetAllowedEmailSuffixes(tc.suffixes)
+			r := h.do("POST", "/api/v1/auth/otp/request", "", map[string]string{"email": tc.email})
+			if r.Code != tc.wantCode {
+				t.Fatalf("got %d want %d (%s)", r.Code, tc.wantCode, r.Msg)
+			}
+		})
+	}
+}
+
 func TestOTPRateLimits(t *testing.T) {
 	h := newHarness()
 	body := map[string]string{"email": "a@example.com"}

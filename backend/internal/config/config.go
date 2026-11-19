@@ -107,6 +107,9 @@ type Config struct {
 	// AllowedEmails：登录邮箱白名单（ALLOWED_EMAILS，逗号分隔）。以 @ 开头的条目按域名后缀放行（如 "@example.com"），
 	// 完整邮箱按精确匹配（忽略大小写）。非空时 /auth/otp/request 只接受名单内的邮箱（公网演示部署用）；空 = 不限制。
 	AllowedEmails []string
+	// AllowedEmailSuffixes：旧变量 ALLOWED_EMAIL_SUFFIXES（仅后缀，每项以 @ 开头），兼容保留；
+	// 其条目合并进 AllowedEmails 生效。新部署请用 ALLOWED_EMAILS。
+	AllowedEmailSuffixes []string
 
 	DW DW
 
@@ -148,18 +151,19 @@ func LoadFrom(get Getenv) (*Config, error) {
 			TokenRefreshSkew:     p.dur("DW_TOKEN_REFRESH_SKEW", 5*time.Minute),
 			LogBodies:            p.bool("DW_LOG_BODIES", false),
 		},
-		SessionTTL:         p.dur("SESSION_TTL", 24*time.Hour),
-		OTPDevLog:          p.bool("OTP_DEV_LOG", false),
-		CORSAllowedOrigins: splitList(get("CORS_ALLOWED_ORIGINS")),
-		AllowedEmails:      splitList(strings.ToLower(get("ALLOWED_EMAILS"))),
-		KYCPollInterval:    p.dur("KYC_POLL_INTERVAL", time.Minute),
-		MarketDataMode:     MarketDataMode(p.str("MARKET_DATA_MODE", string(MarketSim))),
-		MarketTick:         p.dur("MARKET_TICK", 2*time.Second),
-		KYCMode:            KYCMode(p.str("KYC_MODE", string(KYCModeDoKYC))),
-		BankLinkMethod:     BankLinkMethod(p.str("BANK_LINK_METHOD", string(BankLinkDirect))),
-		UserSubmitMode:     UserSubmitMode(p.str("USER_SUBMIT_MODE", string(SubmitPostPatch))),
-		SeasoningDays:      p.int("SEASONING_DAYS", 30),
-		SeasoningStart:     SeasoningStart(p.str("SEASONING_START", string(SeasoningFromCleared))),
+		SessionTTL:           p.dur("SESSION_TTL", 24*time.Hour),
+		OTPDevLog:            p.bool("OTP_DEV_LOG", false),
+		CORSAllowedOrigins:   splitList(get("CORS_ALLOWED_ORIGINS")),
+		AllowedEmails:        splitList(strings.ToLower(get("ALLOWED_EMAILS"))),
+		AllowedEmailSuffixes: splitList(strings.ToLower(get("ALLOWED_EMAIL_SUFFIXES"))),
+		KYCPollInterval:      p.dur("KYC_POLL_INTERVAL", time.Minute),
+		MarketDataMode:       MarketDataMode(p.str("MARKET_DATA_MODE", string(MarketSim))),
+		MarketTick:           p.dur("MARKET_TICK", 2*time.Second),
+		KYCMode:              KYCMode(p.str("KYC_MODE", string(KYCModeDoKYC))),
+		BankLinkMethod:       BankLinkMethod(p.str("BANK_LINK_METHOD", string(BankLinkDirect))),
+		UserSubmitMode:       UserSubmitMode(p.str("USER_SUBMIT_MODE", string(SubmitPostPatch))),
+		SeasoningDays:        p.int("SEASONING_DAYS", 30),
+		SeasoningStart:       SeasoningStart(p.str("SEASONING_START", string(SeasoningFromCleared))),
 		Limits: Limits{
 			MinDeposit:    p.float("LIMIT_MIN_DEPOSIT", 10),
 			MaxDeposit:    p.float("LIMIT_MAX_DEPOSIT", 50000),
@@ -265,6 +269,13 @@ func (c *Config) Validate() error {
 	if c.OTPDevLog && c.Env == "production" {
 		errs = append(errs, "production 环境禁止开启 OTP_DEV_LOG")
 	}
+	for _, sfx := range c.AllowedEmailSuffixes {
+		if !strings.HasPrefix(sfx, "@") || len(sfx) < 4 || strings.Count(sfx, "@") != 1 {
+			errs = append(errs, "ALLOWED_EMAIL_SUFFIXES 每项须以 @ 开头，如 @example.com")
+			break
+		}
+	}
+	c.AllowedEmails = append(c.AllowedEmails, c.AllowedEmailSuffixes...) // 旧变量兼容：合并到同一名单
 	for _, e := range c.AllowedEmails {
 		if !allowedEmailEntryRE.MatchString(e) {
 			errs = append(errs, "ALLOWED_EMAILS 每项须为 @域名（如 @example.com）或完整邮箱")

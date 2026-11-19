@@ -72,6 +72,9 @@ func (s *Service) SetAllowedEmails(entries []string) {
 	}
 }
 
+// SetAllowedEmailSuffixes 旧接口（仅后缀名单），兼容保留：等同于只含 "@域名" 条目的 SetAllowedEmails。
+func (s *Service) SetAllowedEmailSuffixes(suffixes []string) { s.SetAllowedEmails(suffixes) }
+
 func (s *Service) emailAllowed(email string) bool {
 	if len(s.allowedSuffixes) == 0 && len(s.allowedExact) == 0 {
 		return true

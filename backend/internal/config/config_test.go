@@ -37,6 +37,10 @@ func TestDefaults(t *testing.T) {
 	if err != nil || len(c2.AllowedEmails) != 2 || c2.AllowedEmails[0] != "@example.com" || c2.AllowedEmails[1] != "someone@demo.test" {
 		t.Fatalf("白名单解析不符: %v %v", c2.AllowedEmails, err)
 	}
+	c3, err := LoadFrom(env(map[string]string{"ALLOWED_EMAILS": "a@demo.test", "ALLOWED_EMAIL_SUFFIXES": "@Example.com"}))
+	if err != nil || len(c3.AllowedEmails) != 2 || c3.AllowedEmails[1] != "@example.com" {
+		t.Fatalf("旧变量应合并进 AllowedEmails: %v %v", c3.AllowedEmails, err)
+	}
 }
 
 func TestValidation(t *testing.T) {
@@ -72,6 +76,8 @@ func TestValidation(t *testing.T) {
 		{"生产环境 CORS 不能为 *", map[string]string{"APP_ENV": "production", "CORS_ALLOWED_ORIGINS": "*"}, "CORS_ALLOWED_ORIGINS"},
 		{"登录白名单缺 @", map[string]string{"ALLOWED_EMAILS": "example.com"}, "ALLOWED_EMAILS"},
 		{"登录白名单条目含空格", map[string]string{"ALLOWED_EMAILS": "a b@example.com"}, "ALLOWED_EMAILS"},
+		{"旧变量 ALLOWED_EMAIL_SUFFIXES 缺 @", map[string]string{"ALLOWED_EMAIL_SUFFIXES": "example.com"}, "ALLOWED_EMAIL_SUFFIXES"},
+		{"旧变量 ALLOWED_EMAIL_SUFFIXES 合法", map[string]string{"ALLOWED_EMAIL_SUFFIXES": "@example.com, @demo.test"}, ""},
 		{"登录白名单合法（后缀与完整邮箱）", map[string]string{"ALLOWED_EMAILS": "@example.com, Demo.User@Mail.test"}, ""},
 		{"开发环境允许打印验证码", map[string]string{"OTP_DEV_LOG": "true", "JWT_SECRET": base64.StdEncoding.EncodeToString(make([]byte, 48))}, ""},
 	}
