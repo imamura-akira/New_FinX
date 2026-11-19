@@ -30,8 +30,10 @@ const (
 // CoreTypes：POST /users 首次提交的四类（已核实 creating-a-user）；其余由 PATCH /users/{userID} 补充。
 var CoreTypes = []string{DocBasicInfo, DocIdentification, DocPersonalInfo, DocAddressInfo}
 
-// dwNull：DW 示例中"无"用字符串 "NULL" 表示（仅见于 politicallyExposedNames 示例，其他字段沿用，待 DW 确认）。
-const dwNull = "NULL"
+// dwNone：非 PEP / 非董事时的取值。
+// 沙盒实测（2026-11-19，sandbox-log.md）：按文档示例发送 "NULL" 会被 DW 记为 politicallyExposed=true / director=true；
+// 发送空字符串得到 false。
+const dwNone = ""
 
 // Submission：除开户资料外，映射还需要的提交信息。
 type Submission struct {
@@ -81,7 +83,7 @@ func Build(d Data, s Submission) (core, rest []Document, err error) {
 		ident["issuingCountry"] = m.lookup("taxResidency", countryAlpha3, d.TaxResidency)
 	}
 
-	personal := map[string]any{"politicallyExposedNames": dwNull}
+	personal := map[string]any{"politicallyExposedNames": dwNone}
 	if dob, perr := time.Parse("2006-01-02", d.DateOfBirth); perr == nil {
 		personal["birthDay"], personal["birthMonth"], personal["birthYear"] = dob.Day(), int(dob.Month()), dob.Year()
 	} else {
@@ -108,15 +110,16 @@ func Build(d Data, s Submission) (core, rest []Document, err error) {
 	employment := map[string]any{
 		"status":     m.lookup("employmentStatus", employmentStatusDW, d.EmploymentStatus),
 		"broker":     isTrue(d.IsAffiliatedBD),
-		"directorOf": dwNull,
+		"directorOf": dwNone,
 	}
 	if isTrue(d.IsControlPerson) {
 		employment["directorOf"] = directorOf(d.ControlCompanyName, d.ControlCompanySymbol)
 	}
-	if d.EmploymentStatus == "EMPLOYED" || d.EmploymentStatus == "SELF_EMPLOYED" { // company / position 不在 DW 文档页中（[G]）
+	if d.EmploymentStatus == "EMPLOYED" || d.EmploymentStatus == "SELF_EMPLOYED" {
 		employment["company"] = strings.TrimSpace(d.EmployerName)
-		if p := strings.TrimSpace(d.Occupation); p != "" {
-			employment["position"] = p
+		employment["type"] = m.lookup("industry", industryDW, d.Industry) // 开户必需（沙盒实测 U040）
+		if d.Position != "" {
+			employment["position"] = m.lookup("position", positionDW, d.Position)
 		}
 	}
 
@@ -209,7 +212,7 @@ func directorOf(name, symbol string) string {
 	case symbol != "":
 		return symbol
 	}
-	return dwNull
+	return dwNone
 }
 
 func isTrue(b *bool) bool { return b != nil && *b }

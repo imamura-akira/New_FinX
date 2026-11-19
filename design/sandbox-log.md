@@ -59,7 +59,28 @@
 
 - 在 `DW_LOG_BODIES=true`（仅沙盒，production 禁止开启）下核对成功响应时，发现 DW 用户对象中有 `addressLine1`、`displayName`、`avatarURL`、`idNo`、`ackSignedBy`、`employerCompany` 几个字段不在原脱敏清单中，已补入 `dwclient` 脱敏规则并加了单测。
 
-### 需要决定（暂停点）
+### 第 4 轮（2026-11-19，用户批准增加行业与职位下拉之后）
+
+| 步骤 | 结果 |
+|---|---|
+| 写法实验（`cmd/dwprobe`，对第 3 轮测试用户反复 PATCH） | 发送字符串 `"NULL"` → DW 回显 `politicallyExposed=true`、`director=true`；发送空字符串 `""` → 两者均为 false（且能把已有的 true 改回 false）；JSON null 和省略字段在已为 false 时仍为 false。**结论：非 PEP / 非董事时发送空字符串**，dwmapper 已改 |
+| 新测试用户：`POST /users` → `PATCH`（含 `type=PROFESSIONAL`、`position=ENGINEER`、空字符串写法） | 均 200；DW 用户对象 `politicallyExposed=false`、`director=false`、`employmentPosition=ENGINEER` |
+| KYC | `POST /users` 后约 2 秒内对账得到 APPROVED（与第 3 轮相同：自动通过） |
+| `GET /users/{id}/accounts` → `POST /accounts`（LIVE / CASH / SELF，无 RIA 字段） | **200，账户直接 OPEN**（没有 PENDING 阶段）；从提交到账户 OPEN 约 9 秒 |
+| 第 3 轮测试用户 | 实验工具补上 `type` 后，对账器在剩余重试次数内自动开户成功，同样直接 OPEN |
+
+**`POST /accounts` 成功响应结构**：`id`、`accountNo`（10 位）、`status{name: OPEN, description: Open}`、`accountType{name: LIVE}`、`tradingType{name: CASH}`、`accountMgmtType{name: SELF}`（注意字段名是 `accountMgmtType`，与请求中的 `accountManagementType` 不同）、`openedWhen`、`bod{}`（盘前余额，开户时为空）。
+**Q-DW-7**：SELF 账户不发送任何 RIA 字段即可开户，沙盒已验证。
+
+**结论：主线 A（开户）与 B（KYC → 自动开户 → 显示账户号）在沙盒中已端到端跑通。** 沙盒中现有 2 个已开户的虚构测试用户，可用于 #7 出入金实测，以及演示的后备用户。
+
+### 需要决定（暂停点，2026-11-19 更新）
+
+- 第 1 条（行业 / 职位）：**已决定并实施**——P-03e 增加"所属行业"（必填）与"职位"（选填）下拉，见 pages.md 3.1.6、ui-signoff.md 第 3 节。
+- 第 3 条（PEP / 董事写法）：**已在沙盒验证**——发送空字符串；仍建议请 DW 书面确认。
+- 第 2、4 条：仍待决定（见下）。
+
+### 需要决定（第一次暂停时的原文）
 
 1. **`EMPLOYMENT_INFO.type`（行业）开户必填，`position` 为固定枚举**，但 P-03e 没有"行业"字段，"职位"是自由文本。属于页面规格缺口（UI 已定稿，按规则需要你决定）。建议：在职或自雇时，P-03e 增加"所属行业"下拉（DW 的 19 个行业），"职位"改为下拉（DW 枚举）；在 ui-signoff.md 第 3 节登记变更。另一种做法是后端填默认值，但那样提交给券商的 KYC 资料就不是用户本人的回答，不建议。
 2. **资金来源选项与 DW 不一一对应**："其他"没有对应值，"经营收入"只能近似映射为 EMP。建议把 P-03e 的选项改成 DW 的取值（工资、储蓄、投资收益、赠与/继承、退休金、家庭资助、出售资产、租金等），删除"其他"。

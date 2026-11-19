@@ -20,7 +20,7 @@ func usData() Data {
 		Citizenship: "US", TaxResidency: "US", Phone: "+1 415 555-0142", ContactEmail: "alex@example.com", Language: "zh_CN",
 		USTaxPayer: "YES", TINType: "SSN", TIN: "123-45-6789", IRSBackup: "NO", TINConfirm: true,
 		ResidentialAddress: &Address{Line1: "200 Market Street", Line2: "Apt 5B", City: "San Francisco", State: "CA", PostalCode: "94105", Country: "US"},
-		EmploymentStatus:   "EMPLOYED", EmployerName: "Example Corp", Occupation: "Engineer",
+		EmploymentStatus:   "EMPLOYED", EmployerName: "Example Corp", Industry: "PROFESSIONAL", Position: "ENGINEER",
 		AnnualIncomeRange: "100k-200k", NetWorthRange: "200k-500k", NetWorthLiquidRange: "50k-200k",
 		InvestmentExperience: "3-5", InvestmentObjective: "GROWTH", RiskTolerance: "MED",
 		FundingSources: []string{"EMPLOYMENT", "SAVINGS"},
@@ -104,13 +104,13 @@ func TestBuildFieldMapping(t *testing.T) {
 				{DocBasicInfo, "emailAddress", "alex@example.com"}, {DocBasicInfo, "language", "zh_CN"},
 				{DocIdentification, "value", "123456789"}, {DocIdentification, "type", "SSN"}, {DocIdentification, "citizenship", "USA"},
 				{DocPersonalInfo, "birthDay", 7}, {DocPersonalInfo, "birthMonth", 3}, {DocPersonalInfo, "birthYear", 1990},
-				{DocPersonalInfo, "politicallyExposedNames", "NULL"}, {DocPersonalInfo, "irsBackupWithholdings", false},
+				{DocPersonalInfo, "politicallyExposedNames", ""}, {DocPersonalInfo, "irsBackupWithholdings", false},
 				{DocAddressInfo, "street1", "200 Market Street"}, {DocAddressInfo, "street2", "Apt 5B"},
 				{DocAddressInfo, "city", "San Francisco"}, {DocAddressInfo, "province", "CA"},
 				{DocAddressInfo, "postalCode", "94105"}, {DocAddressInfo, "country", "USA"},
 				{DocEmploymentInfo, "status", "EMPLOYED"}, {DocEmploymentInfo, "broker", false},
-				{DocEmploymentInfo, "directorOf", "NULL"}, {DocEmploymentInfo, "company", "Example Corp"},
-				{DocEmploymentInfo, "position", "Engineer"},
+				{DocEmploymentInfo, "directorOf", ""}, {DocEmploymentInfo, "company", "Example Corp"},
+				{DocEmploymentInfo, "type", "PROFESSIONAL"}, {DocEmploymentInfo, "position", "ENGINEER"},
 				{DocInvestorProfile, "investmentExperience", "YRS_3_5"}, {DocInvestorProfile, "annualIncome", 150000},
 				{DocInvestorProfile, "networthTotal", 350000}, {DocInvestorProfile, "networthLiquid", 125000},
 				{DocInvestorProfile, "riskTolerance", "MODERATE"}, {DocInvestorProfile, "investmentObjectives", "GROWTH"},
@@ -154,7 +154,7 @@ func TestBuildFieldMapping(t *testing.T) {
 			data:   func() Data { d := usData(); d.EmploymentStatus = "UNEMPLOYED"; return d },
 			sub:    sub,
 			checks: []check{{DocEmploymentInfo, "status", "UNEMPLOYED"}},
-			absent: []check{{DocEmploymentInfo, "company", nil}, {DocEmploymentInfo, "position", nil}},
+			absent: []check{{DocEmploymentInfo, "company", nil}, {DocEmploymentInfo, "position", nil}, {DocEmploymentInfo, "type", nil}},
 		},
 		{
 			name: "联系邮箱为空时用登录邮箱；同意盘前盘后协议",
@@ -213,6 +213,9 @@ func TestBuildMappingErrors(t *testing.T) {
 		{"出生日期格式错误", func(d *Data) { d.DateOfBirth = "07/03/1990" }, []string{"dateOfBirth"}},
 		{"枚举取值未知", func(d *Data) { d.RiskTolerance = "EXTREME"; d.AnnualIncomeRange = "lots" }, []string{"annualIncomeRange", "riskTolerance"}},
 		{"缺少居住地址", func(d *Data) { d.ResidentialAddress = nil }, []string{"residentialAddress.country"}},
+		{"行业未知", func(d *Data) { d.Industry = "SPACE" }, []string{"industry"}},
+		{"职位未知", func(d *Data) { d.Position = "OTHER" }, []string{"position"}},
+		{"在职缺行业", func(d *Data) { d.Industry = "" }, []string{"industry"}},
 		{"资金来源未知", func(d *Data) { d.FundingSources = []string{"LOTTERY"} }, []string{"fundingSources"}},
 	}
 	for _, tc := range cases {
@@ -254,7 +257,7 @@ func TestNormalizers(t *testing.T) {
 
 // 每个 App 合法取值都必须能映射（防止对照表与校验列表不一致）。
 func TestAllowedValuesAllMap(t *testing.T) {
-	for _, field := range []string{"citizenship", "tinType", "employmentStatus", "investmentExperience", "investmentObjective", "riskTolerance", "fundingSources", "language", "annualIncomeRange", "netWorthRange"} {
+	for _, field := range []string{"industry", "position", "citizenship", "tinType", "employmentStatus", "investmentExperience", "investmentObjective", "riskTolerance", "fundingSources", "language", "annualIncomeRange", "netWorthRange"} {
 		vals := Allowed(field)
 		if len(vals) == 0 {
 			t.Fatalf("%s 没有合法取值", field)
@@ -262,12 +265,19 @@ func TestAllowedValuesAllMap(t *testing.T) {
 		for _, v := range vals {
 			d := usData()
 			switch field {
+			case "industry":
+				d.Industry = v
+			case "position":
+				d.Position = v
 			case "citizenship":
 				d.Citizenship = v
 			case "tinType":
 				d.TINType = v
 			case "employmentStatus":
 				d.EmploymentStatus = v
+				if v != "EMPLOYED" && v != "SELF_EMPLOYED" {
+					d.Industry, d.Position = "", ""
+				}
 			case "investmentExperience":
 				d.InvestmentExperience = v
 			case "investmentObjective":

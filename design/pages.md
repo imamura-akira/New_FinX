@@ -146,7 +146,7 @@ flowchart TD
   - **P-03b 基本身份**：法定名、法定姓（只允许标准 ASCII 字母，实时校验 → **1**）、出生日期（不满 18 岁拦截 → **4**）、国籍、税务居民国；**第 4 版新增"联系邮箱"**：默认取登录邮箱，Apple 中转邮箱（`emailIsRelay=true`）时要求填写真实邮箱，作为 DW `BASIC_INFO.emailAddress`（能否使用中转邮箱待 DW 确认）。
   - **P-03c 税号**：TIN 类型（SSN / ITIN / 外国 TIN / NIN）与号码，说明须为本人报税用的政府签发号码 → **3**。
   - **P-03d 地址**：实际居住地址（检测并拦截 P.O. Box → **2**），可另填邮寄地址（允许 P.O. Box，按 PDF-1）。
-  - **P-03e 就业与财务**：就业状态，在职时必填雇主名称和职位；年收入、净资产等投资者画像字段（必填项见 3.1.2）→ **PDF-1**；**第 4 版新增"资金来源"**（多选，对应 DW `COMPLIANCE_AML_INFO.fundingSources`，选项枚举待 DW 确认）。
+  - **P-03e 就业与财务**：就业状态，在职或自雇时必填雇主名称与**所属行业**（下拉），**职位**为下拉（选填）——Demo-1 变更，选项见 3.1.6；年收入、净资产等投资者画像字段（必填项见 3.1.2）→ **PDF-1**；**第 4 版新增"资金来源"**（多选，对应 DW `COMPLIANCE_AML_INFO.fundingSources`，选项枚举待 DW 确认）。
   - **P-03f 三项监管问题** → **5、PDF-2**：
     1. 本人或账户受益人是否受雇于注册经纪商、FINRA 或证券交易所？是 → 填写机构名称，并展示需向雇主报备的说明。
     2. 是否为政治公众人物（PEP）？页面内给出 PEP 定义。是 → 填写 PEP 姓名（必填）、相关国家、职务及任职年份、离任年份（可选）。
@@ -154,7 +154,7 @@ flowchart TD
   - **P-03g 账户类型** → **6**：首期固定为 `accountType=LIVE`、`tradingType=CASH`、`accountManagementType=SELF`，只读展示"现金账户 · 自主交易"，用户不可选择。保证金（`MARGIN`）与顾问管理（`RIA_MANAGED`，原文件称 ADVISORY）在 DW 确认前不展示，或仅以"暂未开放"只读展示，不可选择（待 DW 确认）。DW 文档未给出这三个字段的完整组合矩阵，所有组合以 DW 沙盒测试结果为准（见 3.1.1 注）。 合作方配置中的 `riaID`、`riaProductID` 不在开户文档（creating-a-user、opening-accounts）中出现，**不写入首期 API 规格**。RIA_MANAGED 所需的是 DW 分配的 `riaUserID`（已核实，opening-accounts）。首期 SELF 账户不发送任何 RIA 字段（已核实：SELF 组合示例不含 riaUserID）；合作方配置中的两个字段是否仍需提供，待 Q-DW-7 确认。
 - **主要组件**：顶部进度条、分步表单、字段级校验提示、"保存并稍后继续"、返回 / 关闭（关闭时确认是否保存）。
 - **跳转**：P-07"继续开户"卡片 → P-03a → … → P-03g → P-04；会话失效 → S-01（会话过期）。
-- **数据字段**：`applicationId`、`currentStep`、`firstName`、`lastName`、`dateOfBirth`、`contactEmail`、`citizenship`、`taxResidency`、`tinType`、`tin`、`residentialAddress{line1,line2,city,state,postalCode,country}`、`mailingAddress{…}`、`isPOBox`、`employmentStatus`、`employerName`、`occupation`、`fundingSources[]`、`annualIncomeRange`、`netWorthRange`、`investmentExperience`、`investmentObjective`、`riskTolerance`、`isAffiliatedBD`、`affiliatedFirmName`、`isPEP`、`pepName`、`pepCountry`、`pepRoles[]{role,startYear,endYear}`、`isControlPerson`、`controlCompanyName`、`controlCompanySymbol`、`accountType`（首期固定 LIVE）、`tradingType`（首期固定 CASH；MARGIN 待 DW 确认）、`accountManagementType`（首期固定 SELF；RIA_MANAGED 待 DW 确认）。
+- **数据字段**：`applicationId`、`currentStep`、`firstName`、`lastName`、`dateOfBirth`、`contactEmail`、`citizenship`、`taxResidency`、`tinType`、`tin`、`residentialAddress{line1,line2,city,state,postalCode,country}`、`mailingAddress{…}`、`isPOBox`、`employmentStatus`、`employerName`、`industry`、`position`（Demo-1 新增；原 `occupation` 自由文本停用）、`fundingSources[]`、`annualIncomeRange`、`netWorthRange`、`investmentExperience`、`investmentObjective`、`riskTolerance`、`isAffiliatedBD`、`affiliatedFirmName`、`isPEP`、`pepName`、`pepCountry`、`pepRoles[]{role,startYear,endYear}`、`isControlPerson`、`controlCompanyName`、`controlCompanySymbol`、`accountType`（首期固定 LIVE）、`tradingType`（首期固定 CASH；MARGIN 待 DW 确认）、`accountManagementType`（首期固定 SELF；RIA_MANAGED 待 DW 确认）。
 - **合规编号**：1, 2, 3, 4, 5, 6, PDF-1, PDF-2
 
 ### P-04 身份验证
@@ -408,10 +408,10 @@ flowchart TD
 |---|---|---|---|---|---|
 | BASIC_INFO | **必填**：firstName、lastName、country、phone、emailAddress | `language` 不在 Required data 列表中（[B] 未使用；[C] 响应中出现 `"language": "en_US"`），按可选处理 | [A]；language：[B][C] | 待 DW 确认 | P-03b（emailAddress 取"联系邮箱"；Apple 中转邮箱能否使用待 DW 确认） |
 | IDENTIFICATION_INFO | **必填**：value、type、citizenship | 原文："non-SSN types require issuingCountry" | [A]；issuingCountry：[D] | 待 DW 确认 | P-03c |
-| PERSONAL_INFO | **必填**：birthDay、birthMonth、birthYear、politicallyExposedNames | 非 PEP 时传 `"NULL"`：仅见于示例 `"politicallyExposedNames": "NULL"`，文档未说明规则；`irsBackupWithholdings` 不在 DW 文档页中 | [A]；"NULL"：[B]；irsBackupWithholdings：[G] | **待 DW 确认**（"NULL" 用法、irsBackupWithholdings） | P-03b、P-03f |
+| PERSONAL_INFO | **必填**：birthDay、birthMonth、birthYear、politicallyExposedNames | **沙盒实测（2026-11-19）**：按示例传 `"NULL"` 会被 DW 记为 politicallyExposed=true；非 PEP 时传空字符串 `""` 得到 false；`irsBackupWithholdings` 不在 DW 文档页中 | [A]；"NULL"：[B]；irsBackupWithholdings：[G] | **待 DW 确认**（"NULL" 用法、irsBackupWithholdings） | P-03b、P-03f |
 | ADDRESS_INFO | **必填**：street1、city、province、postalCode、country | street2 见于示例；地址不得为 P.O. Box | [A]；street2：[B]；P.O. Box：[F] | 待 DW 确认 | P-03d |
 | COMPLIANCE_AML_INFO | **必填**：fundingSources | [F] 表中标为"May be required based on client and expected funding methods"；fundingSources 枚举值文档未给出 | [A]；是否必需：[F] | 待 DW 确认（是否必需、枚举值） | P-03e"资金来源" |
-| EMPLOYMENT_INFO | [A] 的 Required data 列写有 status、broker、directorOf | 三者是否均为必填，文档未进一步说明；company、position 不在 DW 文档页中 | [A]；company / position：[G] | **待 DW 确认**（是否必填） | P-03e、P-03f（监管问题 1 → `broker`，问题 3 → `directorOf`） |
+| EMPLOYMENT_INFO | [A] 的 Required data 列写有 status、broker、directorOf | **沙盒实测（2026-11-19）**：缺 `type`（行业）时 `POST /accounts` 返回 U040；post_users 参考页：type 在 EMPLOYED / SELF_EMPLOYED 时必填，position 仅在使用 DW 行情服务时必填，二者均为固定枚举（见 3.1.6）；非董事时 `directorOf` 发送空字符串（发送 "NULL" 会被 DW 记为 director=true） | [A]；post_users 参考页；sandbox-log.md | 行业必填已实测；其余待 DW 确认 | P-03e（行业、职位）、P-03f（监管问题 1 → `broker`，问题 3 → `directorOf`） |
 | INVESTOR_PROFILE_INFO | investmentExperience、annualIncome、networthTotal、riskTolerance、investmentObjectives、networthLiquid | — | [A] | 待 DW 确认 | P-03e |
 | DISCLOSURES | [A] 的 Required data 列写有 termsOfUse、marketDataAgreement、customerAgreement、rule14b、privacyPolicy、dataSharing、signedBy | customerAgreement、signedBy 的必填情况：仅见于 [A] 列表，未见其他说明；extendedHoursAgreement 不在 DW 文档页中 | [A]；extendedHoursAgreement：[G] | **待 DW 确认**（customerAgreement、signedBy 是否必填；extendedHoursAgreement） | P-05 |
 | TAX_INFO | taxTreatyWithUS | usTaxpayer 的归属：[C] 响应示例中 usTaxpayer 出现在 TAX_INFO 内，并说明"DriveWealth defaults usTaxpayer / taxTreatyWithUS from citizenship"；[A] 未把 usTaxpayer 列为任何 document 的 Required data。税务声明 attestation 通过 `PATCH /users` 提交 | [A]；usTaxpayer：[C][D]；attestation：[E] | **待 DW 确认**（usTaxpayer 属于 TAX_INFO 还是 IDENTIFICATION_INFO） | P-03c |
@@ -525,6 +525,126 @@ flowchart TD
 3. **观察期起算点**：https://info.drivewealth.com/funding-withdrawal-policies 写"after the funds clear"（待复核原文）；https://developer.drivewealth.com/apis/docs/depositing-1 未说明。原型按到账日起算。
 
 - **P-16a 个人资料**：保存后调用 `PATCH /users/{userID}`，**会触发 KYC 重跑**，页面需提示"资料变更将重新核验身份，期间部分功能可能受限"。
+
+### 3.1.6 P-03e 所属行业与职位选项（Demo-1 新增，2026-11-19）
+
+- 来源：DW `post_users` 参考页 `EMPLOYMENT_INFO.type`（19 项）与 `position`（89 项）枚举，代码与 DW 一致；中文名称为我方翻译（**文案待产品确认**）。
+- 显示规则：就业状态为"受雇"或"自雇"时显示。**所属行业必填**（沙盒实测开户必需）；**职位选填**（DW 仅在使用其行情服务时要求）。DW 无"其他"职位。
+- 接口字段：`industry`、`position`（`ApplicationData`，见 api-spec.md 第 10 节）。
+
+| industry | 显示名称 |
+|---|---|
+| `AGRICULTURE` | 农业、林业与渔业 |
+| `MINING` | 采矿业 |
+| `UTILITIES` | 公用事业 |
+| `CONSTRUCTION` | 建筑业 |
+| `MANUFACTURING` | 制造业 |
+| `WHOLESALE` | 批发业 |
+| `RETAIL` | 零售业 |
+| `TRANSPORT` | 交通运输与仓储 |
+| `INFORMATION` | 信息与传媒 |
+| `FINANCE` | 金融与保险 |
+| `REAL_ESTATE` | 房地产与租赁 |
+| `PROFESSIONAL` | 专业、科学与技术服务 |
+| `MANAGEMENT` | 企业管理 |
+| `EDUCATION` | 教育 |
+| `HEALTH` | 医疗与社会救助 |
+| `ART` | 艺术、娱乐与休闲 |
+| `FOOD` | 住宿与餐饮 |
+| `PUBLIC` | 公共管理 |
+| `WASTE` | 废弃物管理与环境治理 |
+
+| position | 显示名称 |
+|---|---|
+| `ACCOUNTANT` | 会计 / 审计 / 簿记 |
+| `ACTUARY` | 精算师 |
+| `ADJUSTER` | 理赔 / 定损员 |
+| `ADMINISTRATOR` | 行政管理 |
+| `ADVERTISER` | 广告 / 营销 |
+| `AGENT` | 代理人 |
+| `ATC` | 空中交通管制员 |
+| `AMBASSADOR` | 外交人员 |
+| `ANALYST` | 分析师 |
+| `APPRAISER` | 评估师 |
+| `ARCHITECT` | 建筑师 |
+| `ARTIST` | 艺术工作者 |
+| `ASSISTANT` | 助理 |
+| `ATHLETE` | 运动员 |
+| `ATTENDANT` | 服务员 / 乘务员 |
+| `ATTORNEY` | 律师 |
+| `AUCTIONEER` | 拍卖师 |
+| `AUDITOR` | 审计员 |
+| `BARBER` | 美发师 |
+| `BROKER` | 经纪人 |
+| `BUSINESS_EXEC` | 企业高管 |
+| `BUSINESS_OWNER` | 企业主 |
+| `CAREGIVER` | 护理员 |
+| `CARPENTER` | 木工 |
+| `CASHIER` | 收银员 |
+| `CHEF` | 厨师 |
+| `CHIROPRACTOR` | 脊椎按摩师 |
+| `CIVIL` | 公务员 |
+| `CLERGY` | 宗教人员 |
+| `CLERK` | 文员 |
+| `COMPLIANCE` | 合规人员 |
+| `CONSULTANT` | 顾问 |
+| `CONTRACTOR` | 承包商 |
+| `COUNSELOR` | 咨询师 / 辅导员 |
+| `CUSTOMER_SERVICE` | 客户服务 |
+| `DEALER` | 交易商 / 经销商 |
+| `DEVELOPER` | 开发人员 |
+| `DISTRIBUTOR` | 分销商 |
+| `DOCTOR` | 医生 |
+| `DRIVER` | 司机 |
+| `ENGINEER` | 工程师 |
+| `EXAMINER` | 检验 / 审查员 |
+| `EXTERMINATOR` | 虫害防治员 |
+| `FACTORY` | 工厂工人 |
+| `FARMER` | 农民 |
+| `FINANCIAL` | 财务人员 |
+| `FISHERMAN` | 渔民 |
+| `FLIGHT` | 机组人员 |
+| `HR` | 人力资源 |
+| `IMPEX` | 进出口贸易 |
+| `INSPECTOR` | 检查员 |
+| `INTERN` | 实习生 |
+| `INVESTMENT` | 投资从业人员 |
+| `INVESTOR` | 投资人 |
+| `IT` | 信息技术 |
+| `JANITOR` | 保洁员 |
+| `JEWELER` | 珠宝从业人员 |
+| `LABORER` | 体力劳动者 |
+| `LANDSCAPER` | 园林工 |
+| `LENDING` | 信贷从业人员 |
+| `MANAGER` | 经理 |
+| `MECHANIC` | 机修工 |
+| `MILITARY` | 军人 |
+| `MORTICIAN` | 殡葬从业人员 |
+| `NURSE` | 护士 |
+| `NUTRITIONIST` | 营养师 |
+| `OFFICE` | 办公室职员 |
+| `PHARMACIST` | 药剂师 |
+| `PHYSICAL` | 物理治疗师 |
+| `PILOT` | 飞行员 |
+| `POLICE` | 警察 |
+| `POLITICIAN` | 政界人士 |
+| `PM` | 项目经理 |
+| `REP` | 销售代表 |
+| `RESEARCHER` | 研究员 |
+| `SAILOR` | 海员 |
+| `SALES` | 销售 |
+| `SCIENTIST` | 科学家 |
+| `SEAMSTRESS` | 裁缝 |
+| `SECURITY` | 安保人员 |
+| `SOCIAL` | 社会工作者 |
+| `TEACHER` | 教师 |
+| `TECHNICIAN` | 技术员 |
+| `TELLER` | 柜员 |
+| `TRADESPERSON` | 技术工人 |
+| `TRAINER` | 培训师 |
+| `TRANSPORTER` | 运输从业人员 |
+| `UNDERWRITER` | 核保员 |
+| `WRITER` | 作家 / 编辑 |
 
 ## 3.2 第 3 版：KYC 未通过 / 补齐页面重新设计；资金完全按 DW 支持的方式
 

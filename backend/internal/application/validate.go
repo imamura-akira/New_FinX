@@ -161,8 +161,16 @@ func ValidateSubmission(d dwmapper.Data, docs []DocMeta, disclosures []dwmapper.
 	if !in("employmentStatus", d.EmploymentStatus) {
 		add("employmentStatus", "请选择就业状态")
 	}
-	if (d.EmploymentStatus == "EMPLOYED" || d.EmploymentStatus == "SELF_EMPLOYED") && strings.TrimSpace(d.EmployerName) == "" {
-		add("employerName", "在职时须填写雇主名称")
+	if d.EmploymentStatus == "EMPLOYED" || d.EmploymentStatus == "SELF_EMPLOYED" {
+		if strings.TrimSpace(d.EmployerName) == "" {
+			add("employerName", "在职时须填写雇主名称")
+		}
+		if !in("industry", d.Industry) { // 沙盒实测：开户必需
+			add("industry", "请选择所属行业")
+		}
+		if d.Position != "" && !in("position", d.Position) {
+			add("position", "请从列表中选择职位")
+		}
 	}
 	for _, c := range []struct{ field, v, msg string }{
 		{"annualIncomeRange", d.AnnualIncomeRange, "请选择年收入"},

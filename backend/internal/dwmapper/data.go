@@ -48,7 +48,9 @@ type Data struct {
 	// P-03e 就业与财务
 	EmploymentStatus     string   `json:"employmentStatus,omitempty"`
 	EmployerName         string   `json:"employerName,omitempty"`
-	Occupation           string   `json:"occupation,omitempty"`
+	Occupation           string   `json:"occupation,omitempty"` // 已停用（自由文本），不发送给 DW
+	Industry             string   `json:"industry,omitempty"`   // DW EMPLOYMENT_INFO.type
+	Position             string   `json:"position,omitempty"`   // DW EMPLOYMENT_INFO.position
 	AnnualIncomeRange    string   `json:"annualIncomeRange,omitempty"`
 	NetWorthRange        string   `json:"netWorthRange,omitempty"`
 	NetWorthLiquidRange  string   `json:"netWorthLiquidRange,omitempty"`
