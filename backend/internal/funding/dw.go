@@ -139,8 +139,26 @@ func redemptionBody(accountNo string, cents int64, method, dwBankID, beneficiary
 }
 
 type dwTransferRes struct {
-	ID     string `json:"id"`
-	Status any    `json:"status"`
+	ID        string `json:"id"`
+	Status    any    `json:"status"`
+	Seasoning *struct {
+		BuyingPowerHoldExpires string `json:"depositBuyingPowerHoldExpires"`
+		SeasoningPeriodExpires string `json:"seasoningPeriodExpires"`
+	} `json:"seasoningDetails"` // 沙盒实测：GET /funding/deposits/{id} 返回
+}
+
+// availability 返回购买力可用日与可提现日（无数据时为 nil）。
+func (r dwTransferRes) availability() (bp, wd *time.Time) {
+	if r.Seasoning == nil {
+		return nil, nil
+	}
+	parse := func(s string) *time.Time {
+		if t, err := time.Parse(time.RFC3339, s); err == nil {
+			return &t
+		}
+		return nil
+	}
+	return parse(r.Seasoning.BuyingPowerHoldExpires), parse(r.Seasoning.SeasoningPeriodExpires)
 }
 
 // statusOf：DW 状态可能是 {id, message, updated}（入金文档）、{name}、或字符串；
@@ -168,8 +186,9 @@ func statusOf(v any) string {
 }
 
 // statusByNumber：DW Deposit / Redemption Status 编号（deposit-status.md、redemption-status.md）。
+// 17 PROCESSING 不在文档枚举中，沙盒实测（2026-11-19）入金创建后即返回 {"id":17,"message":"Processing"}。
 var statusByNumber = map[int]string{0: "STARTED", 1: "PENDING", 2: "SUCCESSFUL", 3: "FAILED", 4: "OTHER", 5: "RETURNED",
-	11: "RIA_PENDING", 12: "RIA_APPROVED", 13: "RIA_REJECTED", 14: "APPROVED", 15: "REJECTED", 16: "ON_HOLD"}
+	11: "RIA_PENDING", 12: "RIA_APPROVED", 13: "RIA_REJECTED", 14: "APPROVED", 15: "REJECTED", 16: "ON_HOLD", 17: "PROCESSING"}
 
 // failureText：给用户看的失败原因（不透出 DW 原文）。
 func failureText(status string) *string {

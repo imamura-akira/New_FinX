@@ -2,11 +2,14 @@ package store
 
 import (
 	"context"
+	"fmt"
 	"io/fs"
+	"net/url"
 	"os"
 	"regexp"
 	"strings"
 	"testing"
+	"time"
 )
 
 // 11 张表必须都在首版迁移中（backend-design.md 第 6 节）。
@@ -71,7 +74,23 @@ func TestMigrateIntegration(t *testing.T) {
 	if dsn == "" {
 		t.Skip("未设置 TEST_DATABASE_URL，跳过数据库集成测试")
 	}
-	s, err := Open(context.Background(), dsn)
+	// 回滚测试会删表：在独立的临时数据库中进行，避免与其他包并行的集成测试互相干扰
+	admin, err := Open(context.Background(), dsn)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer admin.Close()
+	tmp := fmt.Sprintf("finx_migtest_%d", time.Now().UnixNano())
+	if _, err := admin.DB.Exec(`CREATE DATABASE ` + tmp); err != nil {
+		t.Fatalf("创建临时数据库失败: %v", err)
+	}
+	defer func() { _, _ = admin.DB.Exec(`DROP DATABASE IF EXISTS ` + tmp + ` WITH (FORCE)`) }()
+	u, err := url.Parse(dsn)
+	if err != nil {
+		t.Fatal(err)
+	}
+	u.Path = "/" + tmp
+	s, err := Open(context.Background(), u.String())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -99,7 +118,7 @@ func TestMigrateIntegration(t *testing.T) {
 	if err := s.DB.QueryRow(`SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'transfers' AND column_name = 'idempotency_key')`).Scan(&idem); err != nil || !idem {
 		t.Fatalf("000003：transfers.idempotency_key 未创建: %v", err)
 	}
-	for i := 0; i < 3; i++ {
+	for i := 0; i < 4; i++ {
 		if err := s.MigrateDown(); err != nil {
 			t.Fatal(err)
 		}

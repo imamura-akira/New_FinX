@@ -84,9 +84,9 @@ func TestPGFundingRepo(t *testing.T) {
 	if err := r.DeleteTransfer(ctx, tid); err != nil {
 		t.Fatal(err)
 	}
-	list, _ := r.ListTransfers(ctx, accID, "", nil, 50)
-	if len(list) != 1 {
-		t.Fatal("已有 DW 编号的记录不应被删除")
+	list, err := r.ListTransfers(ctx, accID, "", nil, 50)
+	if err != nil || len(list) != 1 {
+		t.Fatalf("已有 DW 编号的记录不应被删除: %d %v", len(list), err)
 	}
 	done := now
 	reason := "银行已退回"

@@ -19,7 +19,7 @@ type Bank struct {
 	OwnerName   string    `json:"ownerName"`
 	Status      string    `json:"status"`
 	CreatedAt   time.Time `json:"createdAt"`
-	Nickname    string    `json:"-"`
+	Nickname    string    `json:"nickname"` // 新增字段：DW 不返回银行名称时用于显示（沙盒实测）
 	DWBankID    string    `json:"-"`
 	AccountID   string    `json:"-"`
 	DWAccountNo string    `json:"-"`
@@ -27,23 +27,26 @@ type Bank struct {
 
 // Transfer：transfers 行。
 type Transfer struct {
-	ID             string      `json:"transferId"`
-	Type           string      `json:"type"`   // DEPOSIT / WITHDRAWAL
-	Method         string      `json:"method"` // ACH / WIRE
-	Amount         string      `json:"-"`      // 两位小数字符串（数据库 numeric 文本），避免浮点误差
-	AmountJSON     json.Number `json:"amount"` // 契约 Money 为 JSON number；输出时由 Amount 生成
-	Status         string      `json:"status"`
-	FailureReason  *string     `json:"failureReason"`
-	SubmittedAt    time.Time   `json:"submittedAt"`
-	DoneAt         *time.Time  `json:"doneAt"`
-	BankAccountID  *string     `json:"bankAccountId"` // 新增字段：关联的银行账户（P-18 显示）
-	AccountID      string      `json:"-"`
-	DWRef          string      `json:"-"`
-	IdempotencyKey string      `json:"-"`
-	CreatedBy      string      `json:"-"`
-	WireEnc        []byte      `json:"-"`
-	DWAccountNo    string      `json:"-"`
-	DWBankID       string      `json:"-"`
+	ID            string      `json:"transferId"`
+	Type          string      `json:"type"`   // DEPOSIT / WITHDRAWAL
+	Method        string      `json:"method"` // ACH / WIRE
+	Amount        string      `json:"-"`      // 两位小数字符串（数据库 numeric 文本），避免浮点误差
+	AmountJSON    json.Number `json:"amount"` // 契约 Money 为 JSON number；输出时由 Amount 生成
+	Status        string      `json:"status"`
+	FailureReason *string     `json:"failureReason"`
+	SubmittedAt   time.Time   `json:"submittedAt"`
+	DoneAt        *time.Time  `json:"doneAt"`
+	BankAccountID *string     `json:"bankAccountId"` // 新增字段：关联的银行账户（P-18 显示）
+	// 新增字段（入金）：DW 返回的购买力可用日与可提现日（seasoningDetails），P-13 / P-14 / P-18 显示
+	BuyingPowerAt  *time.Time `json:"buyingPowerAvailableAt"`
+	WithdrawableAt *time.Time `json:"withdrawableAt"`
+	AccountID      string     `json:"-"`
+	DWRef          string     `json:"-"`
+	IdempotencyKey string     `json:"-"`
+	CreatedBy      string     `json:"-"`
+	WireEnc        []byte     `json:"-"`
+	DWAccountNo    string     `json:"-"`
+	DWBankID       string     `json:"-"`
 }
 
 // 我方状态（DW 返回前）。DW 状态见 api-spec.md 第 5 节。
@@ -81,6 +84,7 @@ type Repo interface {
 	// 对账
 	DueTransfers(ctx context.Context, checkedBefore, successSince time.Time, limit int) ([]Transfer, error)
 	UpdateTransfer(ctx context.Context, id, status string, reason *string, done *time.Time, now time.Time) error
+	SetAvailability(ctx context.Context, id string, buyingPowerAt, withdrawableAt *time.Time) error
 	TouchTransfer(ctx context.Context, id string, now time.Time) error
 	Audit(ctx context.Context, actor, action, target string, detail map[string]any) error
 }
@@ -187,6 +191,7 @@ func (p PGRepo) SumDeposits(ctx context.Context, accountID string, since time.Ti
 }
 
 const transferCols = `t.id, t.type, t.method, t.amount::text, t.status, t.failure_reason, t.submitted_at, t.done_at, t.bank_account_id::text,
+	t.buying_power_at, t.withdrawable_at,
 	t.account_id, coalesce(t.dw_ref, ''), coalesce(t.idempotency_key::text, ''), coalesce(t.created_by::text, ''), t.wire_enc,
 	coalesce(a.account_no, ''), coalesce(b.dw_bank_account_id, '')`
 
@@ -195,7 +200,7 @@ const transferFrom = ` FROM transfers t JOIN accounts a ON a.id = t.account_id L
 func scanTransfer(row interface{ Scan(...any) error }) (Transfer, error) {
 	var t Transfer
 	err := row.Scan(&t.ID, &t.Type, &t.Method, &t.Amount, &t.Status, &t.FailureReason, &t.SubmittedAt, &t.DoneAt, &t.BankAccountID,
-		&t.AccountID, &t.DWRef, &t.IdempotencyKey, &t.CreatedBy, &t.WireEnc, &t.DWAccountNo, &t.DWBankID)
+		&t.BuyingPowerAt, &t.WithdrawableAt, &t.AccountID, &t.DWRef, &t.IdempotencyKey, &t.CreatedBy, &t.WireEnc, &t.DWAccountNo, &t.DWBankID)
 	t.AmountJSON = json.Number(t.Amount)
 	return t, err
 }
@@ -244,6 +249,11 @@ func (p PGRepo) UpdateTransfer(ctx context.Context, id, status string, reason *s
 	_, err := p.DB.ExecContext(ctx,
 		`UPDATE transfers SET status = $2, failure_reason = $3, done_at = coalesce($4, done_at), checked_at = $5, updated_at = $5 WHERE id = $1`,
 		id, status, reason, done, now)
+	return err
+}
+
+func (p PGRepo) SetAvailability(ctx context.Context, id string, bp, wd *time.Time) error {
+	_, err := p.DB.ExecContext(ctx, `UPDATE transfers SET buying_power_at = $2, withdrawable_at = $3 WHERE id = $1`, id, bp, wd)
 	return err
 }
 

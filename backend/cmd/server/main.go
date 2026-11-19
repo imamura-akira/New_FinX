@@ -35,6 +35,8 @@ import (
 var version = "dev"
 
 func main() {
+	// api-spec.md：时间一律 ISO-8601 UTC。数据库驱动按进程本地时区解码 timestamptz，统一设为 UTC。
+	time.Local = time.UTC
 	migrateCmd := flag.String("migrate", "", "执行数据库迁移：up 或 down，完成后退出")
 	flag.Parse()
 

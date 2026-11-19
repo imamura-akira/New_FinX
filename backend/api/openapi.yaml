@@ -880,8 +880,8 @@ components:
 
     DepositStatus:
       type: string
-      description: DW Deposit Status
-      enum: [STARTED, PENDING, SUCCESSFUL, FAILED, RETURNED, APPROVED, REJECTED, ON_HOLD]
+      description: DW Deposit Status。PROCESSING（编号 17）不在 DW 文档枚举中，沙盒实测入金创建后即返回（2026-11-19 新增）
+      enum: [STARTED, PENDING, SUCCESSFUL, FAILED, RETURNED, APPROVED, REJECTED, ON_HOLD, PROCESSING]
 
     Money:
       type: number
@@ -987,6 +987,7 @@ components:
         mask: { type: string, pattern: "^[0-9]{4}$" }
         type: { type: string, enum: [CHECKING, SAVINGS] }
         ownerName: { type: string }
+        nickname: { type: string, description: 用户填写的备注名；DW 不返回银行名称时用于显示（新增字段） }
         status: { type: string }
         createdAt: { type: string, format: date-time }
 
@@ -1024,6 +1025,8 @@ components:
         submittedAt: { type: string, format: date-time }
         doneAt: { type: string, format: date-time, nullable: true }
         bankAccountId: { type: string, nullable: true, description: 关联的银行账户（WIRE 出金为空；新增字段） }
+        buyingPowerAvailableAt: { type: string, format: date-time, nullable: true, description: 入金的购买力可用日（DW seasoningDetails.depositBuyingPowerHoldExpires；新增字段） }
+        withdrawableAt: { type: string, format: date-time, nullable: true, description: 入金的可提现日（DW seasoningDetails.seasoningPeriodExpires；新增字段） }
 
   responses:
     OkEmpty:

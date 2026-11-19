@@ -18,6 +18,7 @@ var (
 		"street1": true, "street2": true,
 		// 沙盒实测：DW User 对象的地址行、头像（邮箱哈希）字段名
 		"addressline1": true, "addressline2": true, "avatarurl": true,
+		"username": true, // 沙盒实测：绑卡响应 userDetails 回显后端生成的 DW 用户名
 	}
 	// 保留尾 4 位：税号、证件号、银行与账户号码、电话
 	redactLast4 = map[string]bool{
@@ -26,7 +27,8 @@ var (
 		"accountnumber": true, "routingnumber": true, "accountno": true,
 		"beneficiaryaccountnumber": true, "beneficiaryroutingnumber": true, "beneficiaryswiftaba": true,
 		"phone": true, "phonenumber": true,
-		"idno": true, // 沙盒实测：DW User 对象中的证件号字段
+		"idno":           true, // 沙盒实测：DW User 对象中的证件号字段
+		"account_number": true, // 沙盒实测：入金响应中的账户号（下划线写法）
 	}
 	// 保留首字符：姓名、邮箱本地部分
 	redactInitial = map[string]bool{

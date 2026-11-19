@@ -86,3 +86,42 @@
 2. **资金来源选项与 DW 不一一对应**："其他"没有对应值，"经营收入"只能近似映射为 EMP。建议把 P-03e 的选项改成 DW 的取值（工资、储蓄、投资收益、赠与/继承、退休金、家庭资助、出售资产、租金等），删除"其他"。
 3. **PEP / 董事为"否"时 DW 被记为"是"**。下一轮先在沙盒对比三种写法；同时建议列入 DW 问题清单（Q-DW 新增），请 DW 书面确认非 PEP 时的正确写法。
 4. **P-06 的细分 KYC 状态在沙盒中观察不到**。演示时 P-06 会在提交后几秒内直接显示"核验通过"，演示脚本需按此准备口径；P-34/35/36 页面按既定方案保留，入口标"待沙盒验证"。
+
+## 2026-11-19 · Demo-1 #7 · 出入金（C）
+
+> 使用 #5 中已开户的 2 个虚构测试用户；银行账号为虚构号码，路由号使用结构合法的公开 ABA 号码。
+
+### 运行记录
+
+| 步骤 | 我方请求 → DW | DW 结果 | 结论 |
+|---|---|---|---|
+| 资金汇总（入金前） | `GET /accounts/{id}/summary/money` | 200，各项为 0 | 字段名与参考页一致：`cash.cashBalance / cashAvailableForTrade / cashAvailableForWithdrawal / cashPendingSettlement`、`payments.buyingPower.*`、`payments.redemptions.amountWithheldFromRedemptions` |
+| 绑卡（DIRECT） | `POST /bank-accounts`（账号、路由号、CHECKING/SAVINGS、昵称、`beneficiaryDetails.accountHolderName` = 开户姓名） | **201**，`status: ACTIVE`，返回 `bank_` 前缀 id；**不返回银行名称** | 无需微存款验证，立即可用。因 DW 不返回银行名称，`BankAccount` 新增 `nickname` 供显示 |
+| ACH 入金 $1,000 | `POST /funding/deposits`（带 Idempotency-Key） | 200，`status: {id: 17, message: "Processing"}` | **状态 17 PROCESSING 不在 DW 文档枚举中**，已加入契约 |
+| 入金状态 | `GET /funding/deposits/{id}` | 约 2 秒内 `Successful`；`statusHistory`：Started → Pending（"Auto-move"）→ Processing → Approved（"Payment successfully submitted"）→ Successful（"MMW Open. Moving to Successful"） | **沙盒入金自动批准、自动到账**，无需人工操作 |
+| 资金可用时间 | 同上 `seasoningDetails` | `depositBuyingPowerHoldExpires` 与 `seasoningPeriodExpires` 均为 **2026-11-23**（提交日 2026-11-19，约 2 个工作日）；`statusMessage: AWAITING_BUYING_POWER` | 见下文"结算与观察期" |
+| 资金汇总（入金后） | 同上 | `cashBalance 1000`、`cashAvailableForTrade 0`、`cashAvailableForWithdrawal 0`、`pendingDepositsAmountNotAvailable 1000`、`amountWithheldFromRedemptions 1000` | 余额立即变动；购买力与可提现在可用日之前为 0。`/account/money` 新增的 `pendingDeposits`、`withheldForSeasoning` 正好对应 |
+| 出金 $10（ACH） | 我方先查 DW 可提现金额 | 可提现 $0 → 我方返回 **42201 "超过可提现金额 $0.00"**，未调用 DW | 后端强制校验按设计生效 |
+| 电汇入金指引 | `GET /accounts/{id}/funding/deposit-instructions` | 200，返回收款行名称/地址/SWIFT、账号、路由号；收款人为 DriveWealth | 已映射到 `/funding/deposit-instructions`；附言（reference）= 账户号 + 开户姓名 |
+| 后备用户 | 绑卡（SAVINGS）+ ACH 入金 $5,000 | 同样约 2 秒 Successful，可用日 2026-11-23 | 后备出金演示用户 |
+
+### 结算与观察期（回答"沙盒是否加速"）
+
+- **入金本身是加速的**：提交后约 2 秒即为 Successful，余额立即增加。
+- **购买力与可提现不是即时的**：DW 为每笔入金返回明确的可用日（本次为提交后约 2 个工作日，2026-11-23），在此之前购买力与可提现均为 0。可提现等待期远短于文档默认的 30 天，说明合作方配置已调整（文档称可定制）。生产环境的取值仍待 DW 书面确认（Q-DW-8e）。
+- **结论**：演示出金**仍需要后备用户**。本日已为两个测试用户入金（$1,000、$5,000），**自 2026-11-23 起可用于出金演示**。演示前请先用 `GET /account/money` 确认 `cashAvailableForWithdrawal > 0`。
+- 建议：P-13 / P-14 / P-18 直接显示 DW 返回的日期（`Transfer.buyingPowerAvailableAt`、`withdrawableAt`），比"通常 4–5 个工作日（待 DW 确认）"更准确。文案调整属于页面变更，待你确认后再改。
+
+### 待补测（2026-11-23 之后）
+
+- `POST /funding/redemptions` 的成功响应结构与出金状态推进（ACH 与 WIRE）。出金的参考页未能读取，目前按文档示例实现。
+- 出金后资金汇总的变化。
+- `GET /funding/redemptions/{id}` 路径（入金对应路径 `GET /funding/deposits/{id}` 已实测可用）。
+
+### 本轮修正
+
+- 入金状态新增 `PROCESSING`（编号 17）；出金 `On_Hold` 统一为 `ON_HOLD`。
+- 对账时保存 DW 返回的购买力可用日与可提现日（迁移 000004）。
+- 时间输出统一为 UTC（之前随本机时区输出 +08:00，不符合 api-spec "时间一律 ISO-8601 UTC"）。
+- 日志脱敏补充 `username`（绑卡响应回显后端生成的 DW 用户名）与 `account_number`。
+- 集成测试隔离：迁移回滚测试改为在临时数据库中进行，避免与其他包并行的集成测试互相干扰。

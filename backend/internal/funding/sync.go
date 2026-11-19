@@ -49,6 +49,9 @@ func (s *Service) refresh(ctx context.Context, t Transfer, now time.Time) {
 		_ = s.Repo.TouchTransfer(ctx, t.ID, now)
 		return
 	}
+	if bp, wd := res.availability(); (bp != nil || wd != nil) && (!sameTime(bp, t.BuyingPowerAt) || !sameTime(wd, t.WithdrawableAt)) {
+		_ = s.Repo.SetAvailability(ctx, t.ID, bp, wd)
+	}
 	st := statusOf(res.Status)
 	if st == "" || st == t.Status {
 		_ = s.Repo.TouchTransfer(ctx, t.ID, now)
@@ -64,4 +67,11 @@ func (s *Service) refresh(ctx context.Context, t Transfer, now time.Time) {
 	}
 	_ = s.Repo.Audit(ctx, "system", "transfer.status", "transfer:"+t.ID, map[string]any{"from": t.Status, "to": st})
 	s.Logger.InfoContext(ctx, "transfer status changed", slog.String("transfer_id", t.ID), slog.String("type", t.Type), slog.String("from", t.Status), slog.String("to", st))
+}
+
+func sameTime(a, b *time.Time) bool {
+	if a == nil || b == nil {
+		return a == b
+	}
+	return a.Equal(*b)
 }

@@ -194,6 +194,14 @@ func (m *memRepo) UpdateTransfer(_ context.Context, id, st string, reason *strin
 }
 
 func (m *memRepo) TouchTransfer(context.Context, string, time.Time) error { return nil }
+
+func (m *memRepo) SetAvailability(_ context.Context, id string, bp, wd *time.Time) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	t := m.find(id)
+	t.BuyingPowerAt, t.WithdrawableAt = bp, wd
+	return nil
+}
 func (m *memRepo) Audit(context.Context, string, string, string, map[string]any) error {
 	return nil
 }
@@ -377,6 +385,8 @@ func TestStatusOf(t *testing.T) {
 		{map[string]any{"id": 1.0, "message": "PENDING"}, "PENDING"},
 		{map[string]any{"id": 2.0}, "SUCCESSFUL"},
 		{map[string]any{"name": "On_Hold"}, "ON_HOLD"},
+		{map[string]any{"id": 17.0, "message": "Processing", "updated": "2026-11-19T13:18:00Z"}, "PROCESSING"},
+		{map[string]any{"id": 17.0}, "PROCESSING"},
 		{"approved", "APPROVED"},
 		{nil, ""},
 	}
@@ -669,11 +679,16 @@ func TestSyncUpdatesStatus(t *testing.T) {
 	f := newFx(t)
 	bank := f.link(t)
 	f.call("POST", "/api/v1/funding/deposits", `{"bankAccountId":"`+bank+`","amount":100}`)
-	f.dw.resp["GET /funding/deposits/"] = `{"id":"DEP-1","status":{"id":2,"message":"SUCCESSFUL"}}`
+	// 沙盒实测结构：status 带 comment，seasoningDetails 给出购买力与可提现日期
+	f.dw.resp["GET /funding/deposits/"] = `{"id":"DEP-1","status":{"comment":"MMW Open. Moving to Successful","id":2,"message":"Successful"},` +
+		`"seasoningDetails":{"depositBuyingPowerHoldExpires":"2026-11-23T00:00:00Z","seasoningPeriodExpires":"2026-11-23T00:00:00Z","status":6,"statusMessage":"AWAITING_BUYING_POWER"}}`
 	f.svc.Sync(context.Background(), time.Minute)
 	tr := f.repo.transfers[0]
 	if tr.Status != "SUCCESSFUL" || tr.DoneAt == nil || tr.FailureReason != nil {
 		t.Fatalf("应更新为 SUCCESSFUL: %+v", tr)
+	}
+	if tr.WithdrawableAt == nil || tr.WithdrawableAt.Format("2006-01-02") != "2026-11-23" || tr.BuyingPowerAt == nil {
+		t.Fatalf("应记录 DW 返回的可用日期: %+v", tr)
 	}
 	f.dw.resp["GET /funding/deposits/"] = `{"id":"DEP-1","status":{"id":5,"message":"RETURNED"}}`
 	f.svc.Sync(context.Background(), time.Minute)
