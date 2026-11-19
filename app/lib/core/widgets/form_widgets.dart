@@ -389,9 +389,13 @@ class KvRow extends StatelessWidget {
     padding: const EdgeInsets.symmetric(vertical: 7),
     child: Row(
       crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween, // 键未用满的空间留在中间，值贴右
       children: [
         // 键与值都可换行，避免长英文键名溢出
-        Flexible(flex: 5, child: Text(k, style: const TextStyle(fontSize: 14, color: AppColors.muted))),
+        Flexible(
+          flex: 5,
+          child: Text(k, style: const TextStyle(fontSize: 14, color: AppColors.muted)),
+        ),
         const SizedBox(width: 12),
         Expanded(
           flex: 6,

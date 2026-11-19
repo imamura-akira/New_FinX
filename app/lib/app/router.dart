@@ -2,6 +2,8 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../core/session/session.dart';
+import '../features/account/presentation/application_status_page.dart';
+import '../features/account/presentation/kyc_action_pages.dart';
 import '../features/auth/presentation/login_page.dart';
 import '../features/auth/presentation/welcome_page.dart';
 import '../features/common/session_expired_page.dart';
@@ -20,6 +22,9 @@ abstract final class Routes {
   static const splash = '/splash';
   static const onboarding = '/onboarding';
   static const applicationStatus = '/application/status';
+  static const kycInfo = '/application/info'; // P-34
+  static const kycDocument = '/application/document'; // P-35
+  static const kycResult = '/application/result'; // P-36
 }
 
 GoRouter buildRouter(SessionController session) {
@@ -72,8 +77,11 @@ GoRouter buildRouter(SessionController session) {
           ),
         ],
       ),
-      // P-06 开户进度（Demo-1 #10 实现）
-      GoRoute(path: Routes.applicationStatus, builder: (_, _) => const ApplicationStatusPlaceholder()),
+      // P-06 开户进度；P-34/35/36 KYC 补齐与未通过
+      GoRoute(path: Routes.applicationStatus, builder: (_, _) => const ApplicationStatusPage()),
+      GoRoute(path: Routes.kycInfo, builder: (_, _) => const KycInfoRequiredPage()),
+      GoRoute(path: Routes.kycDocument, builder: (_, _) => const KycDocRequiredPage()),
+      GoRoute(path: Routes.kycResult, builder: (_, _) => const KycDeniedPage()),
     ],
   );
 }

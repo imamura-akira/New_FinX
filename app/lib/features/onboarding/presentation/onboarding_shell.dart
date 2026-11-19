@@ -208,7 +208,9 @@ class OnboardingScaffold extends StatelessWidget {
                         children: [
                           Icon(Icons.lock_outline_rounded, size: 12, color: AppColors.faint),
                           SizedBox(width: 5),
-                          Flexible(child: Text('Encrypted in transit and at rest', style: TextStyle(fontSize: 12, color: AppColors.faint))),
+                          Flexible(
+                            child: Text('Encrypted in transit and at rest', style: TextStyle(fontSize: 12, color: AppColors.faint)),
+                          ),
                         ],
                       ),
                     ),
@@ -280,20 +282,4 @@ Future<void> continueFrom(BuildContext context, String step) async {
   }
   final next = c.nextOf(step);
   if (next != null) context.go(routeOf(next));
-}
-
-/// P-06 占位（Demo-1 #10 替换为真实开户进度页）。
-class ApplicationStatusPlaceholder extends StatelessWidget {
-  const ApplicationStatusPlaceholder({super.key});
-
-  @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Application status')),
-    body: StateView(
-      icon: Icons.verified_user_outlined,
-      title: 'Application submitted',
-      message: 'We are sending your details to DriveWealth for identity verification.',
-      actions: [AppButton('Back to home', onPressed: () => context.go('/home'))],
-    ),
-  );
 }

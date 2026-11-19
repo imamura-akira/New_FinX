@@ -63,3 +63,10 @@ Future<(FakeBackend, SessionController, MemoryTokenStore)> pumpApp(
   await tester.pumpAndSettle();
   return (be, session, store);
 }
+
+/// 页面含无限动画（转圈）时代替 pumpAndSettle。
+Future<void> frames(WidgetTester tester, [int n = 10]) async {
+  for (var i = 0; i < n; i++) {
+    await tester.pump(const Duration(milliseconds: 100));
+  }
+}

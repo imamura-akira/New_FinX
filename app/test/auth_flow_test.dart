@@ -88,14 +88,26 @@ void main() {
 
     expect(session.status, SessionStatus.signedIn);
     expect(store.value, 'tok-1');
-    expect(find.byKey(const Key('home.email')), findsOneWidget);
-    expect(find.text('demo@example.com'), findsOneWidget);
-    expect(find.text('尚未开户'), findsOneWidget);
+    expect(find.byKey(const Key('home.hero')), findsOneWidget);
+    expect(find.text('开通证券账户'), findsOneWidget, reason: '未开户显示开户提示卡');
     // 后续请求带 Bearer token
     final meReq = be.requests.lastWhere((r) => r.url.path.endsWith('/me'));
     expect(meReq.headers['Authorization'], 'Bearer tok-1');
 
-    await tester.tap(find.byKey(const Key('home.logout')));
+    // P-08 抽屉：邮箱与退出登录（二次确认）
+    await tester.tap(find.byKey(const Key('home.avatar')));
+    await tester.pumpAndSettle();
+    expect(find.text('demo@example.com'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('drawer.logout')),
+      200,
+      scrollable: find.descendant(of: find.byType(Drawer), matching: find.byType(Scrollable)).first,
+    );
+    await tester.ensureVisible(find.byKey(const Key('drawer.logout')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('drawer.logout')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('drawer.logout.confirm')));
     await tester.pumpAndSettle();
     expect(store.value, isNull);
     expect(find.byKey(const Key('welcome.login')), findsOneWidget);
@@ -103,7 +115,7 @@ void main() {
 
   testWidgets('已保存的 token 启动即进入首页', (tester) async {
     await pumpApp(tester, backend: _backend(), storedToken: 'tok-saved');
-    expect(find.byKey(const Key('home.email')), findsOneWidget);
+    expect(find.byKey(const Key('home.hero')), findsOneWidget);
   });
 
   testWidgets('会话过期（40102）进入 S-01，返回登录', (tester) async {

@@ -132,7 +132,18 @@ void main() {
     tester.view.devicePixelRatio = 3;
     addTearDown(tester.view.reset);
     final be = _backend(status: 'DRAFT', data: validData())
-      ..on('POST /application/submit', (_) => FakeBackend.ok({'applicationRef': 'FX261119-TEST', 'submittedAt': '2026-11-19T12:00:00Z'}));
+      ..on('POST /application/submit', (_) => FakeBackend.ok({'applicationRef': 'FX261119-TEST', 'submittedAt': '2026-11-19T12:00:00Z'}))
+      ..on(
+        'GET /application/status',
+        (_) => FakeBackend.ok({
+          'kycStatus': 'KYC_NOT_READY',
+          'issues': [],
+          'requiredDocs': [],
+          'applicationRef': 'FX261119-TEST',
+          'submittedAt': '2026-11-19T12:00:00Z',
+          'submitState': 'SUBMITTING',
+        }),
+      );
     await pumpApp(tester, backend: be, storedToken: 'tok');
     await _openOnboarding(tester);
     for (final title in [
@@ -187,7 +198,10 @@ void main() {
     expect(find.text('Professional, scientific & technical services'), findsOneWidget);
     expect(find.text('Employment income'), findsOneWidget);
 
-    await _continue(tester); // Submit
+    // Submit → P-06（有转圈动画，不能 pumpAndSettle）
+    await tester.ensureVisible(find.byKey(const Key('onboarding.continue')));
+    await tester.tap(find.byKey(const Key('onboarding.continue')));
+    await frames(tester);
     final body = be.lastBody('POST /application/submit');
     expect(body['signatureName'], 'demo tester');
     final ds = (body['disclosures'] as List).cast<Map>();
@@ -195,7 +209,10 @@ void main() {
     expect(ds.firstWhere((x) => x['id'] == 'rule14b')['accepted'], false);
     expect(ds.firstWhere((x) => x['id'] == 'esign')['accepted'], true);
     expect(ds.any((x) => x['id'] == 'extendedHoursAgreement'), isFalse, reason: '未勾选的可选协议不发送');
-    expect(find.text('Application submitted'), findsOneWidget);
+    expect(find.text('Application submitted'), findsOneWidget, reason: '进入 P-06 开户进度');
+    expect(find.text('Submitting your application'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('p06.home'))); // 离开页面，停止轮询
+    await frames(tester);
   });
 
   testWidgets('已提交的申请再次进入开户页显示提示', (tester) async {

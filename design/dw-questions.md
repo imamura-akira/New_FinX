@@ -53,6 +53,9 @@ The creating-a-user example sends `"politicallyExposedNames": "NULL"` for non-PE
 **Q-DW-10 — ITIN holders and `IDENTIFICATION_INFO.type`**
 The `userTaxIDType` enum in the post_users reference lists `SSN`, `EIN`, `FTIN`, `PASSPORT`, `ALIEN_ID`, `OTHER` — there is no ITIN value. For U.S. taxpayers who have an ITIN (Individual Taxpayer Identification Number, 9XX-XX-XXXX) instead of an SSN, which `type` should we send? We currently send `SSN` as a placeholder. Related: for our non-U.S. applicants' national ID numbers we send `OTHER`, and `FTIN` for foreign tax IDs — please confirm.
 
+**Q-DW-11 — `DISCLOSURES.rule14b` when the customer declines**
+Rule 14b-1(c) is a customer choice (consent to share name/address/positions with issuers). In sandbox (2026-11-19), a user created with `"rule14b": false` cannot open an account: `POST /accounts` returns U040 "Missing/Incomplete documents: [Document: DISCLOSURES - Missing fields: [ rule14b ]]". With `true` the account opens normally. Is `false` a valid value? If so, how should a decline be encoded so that account opening succeeds? If not, is consent mandatory for our program?
+
 ---
 
 *Prepared 2026-11-19. Sources verified against developer.drivewealth.com (creating-a-user, opening-accounts, depositing-1, individual-funding), legal.drivewealth.com and info.drivewealth.com funding policies.*
