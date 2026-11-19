@@ -16,10 +16,12 @@ var wantOps = []string{
 	"get /funding/bank-accounts", "post /funding/bank-accounts", "delete /funding/bank-accounts/{id}",
 	"get /funding/deposit-instructions", "post /funding/deposits", "post /funding/withdrawals", "get /funding/transfers",
 	"get /documents", "get /notifications", "post /notifications/read",
+	"get /market/quotes", "get /market/instruments/{symbol}",
 }
 
 // 无需登录的接口（api-spec.md：除 /auth/* 外均需 Bearer；logout 需要会话）。
-var publicOps = map[string]bool{"post /auth/otp/request": true, "post /auth/otp/verify": true, "post /auth/oauth": true}
+var publicOps = map[string]bool{"post /auth/otp/request": true, "post /auth/otp/verify": true, "post /auth/oauth": true,
+	"get /market/quotes": true, "get /market/instruments/{symbol}": true} // 虚拟行情公开（api-spec.md 第 10 节）
 
 type doc struct {
 	OpenAPI    string                            `yaml:"openapi"`

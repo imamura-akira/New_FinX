@@ -712,6 +712,92 @@ paths:
               schema: { type: string }
         "401": { $ref: "#/components/responses/Unauthorized" }
 
+  # ───────────── 5.5 市场数据（F11，虚拟行情） ─────────────
+  /market/quotes:
+    get:
+      tags: [market]
+      operationId: getQuotes
+      summary: 批量报价（P-07 自选、P-09 列表；虚拟行情）
+      description: |
+        第一阶段由后端虚拟行情服务提供（随机游走），响应带 simulated=true；接真实行情时只换实现、不改契约。
+        App 轮询间隔 3–5 秒。行情为模拟数据、不含用户信息，P-01"先逛逛行情"需未登录可看，故无需登录（api-spec.md 第 10 节）。
+      security: []
+      parameters:
+        - name: symbols
+          in: query
+          description: 逗号分隔的代码（最多 50 个，大小写不敏感，未知代码忽略）；为空时返回全部标的
+          schema: { type: string, example: "AAPL,SPY" }
+      responses:
+        "200":
+          description: 报价
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        required: [simulated, ts, quotes]
+                        properties:
+                          simulated: { type: boolean, description: 虚拟行情时恒为 true }
+                          ts: { type: string, format: date-time }
+                          quotes:
+                            type: array
+                            items: { $ref: "#/components/schemas/Quote" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /market/instruments/{symbol}:
+    get:
+      tags: [market]
+      operationId: getInstrument
+      summary: 个股详情（P-10；虚拟行情与当日分时）
+      security: []
+      parameters:
+        - name: symbol
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: 个股
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        required: [simulated, symbol, name, last, chg, chgPct, dayHigh, dayLow, prevClose, candles]
+                        properties:
+                          simulated: { type: boolean }
+                          symbol: { type: string }
+                          name: { type: string }
+                          exchange: { type: string, description: 新增字段 }
+                          type: { type: string, enum: [STOCK, ETF], description: 新增字段 }
+                          last: { type: number }
+                          chg: { type: number }
+                          chgPct: { type: number, description: 涨跌幅（百分数，1.07 表示 +1.07%） }
+                          dayHigh: { type: number }
+                          dayLow: { type: number }
+                          prevClose: { type: number }
+                          candles:
+                            type: array
+                            description: 当日 1 分钟模拟分时（最多 390 根）
+                            items:
+                              type: object
+                              required: [t, o, h, l, c]
+                              properties:
+                                t: { type: string, format: date-time }
+                                o: { type: number }
+                                h: { type: number }
+                                l: { type: number }
+                                c: { type: number }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
   # ───────────── 6. 文件与通知 ─────────────
   /documents:
     get:
@@ -1007,6 +1093,17 @@ components:
       required: [plaidProcessorToken]
       properties:
         plaidProcessorToken: { type: string, writeOnly: true }
+
+    Quote:
+      type: object
+      required: [symbol, last, chg, chgPct, bid, ask]
+      properties:
+        symbol: { type: string }
+        last: { type: number }
+        chg: { type: number, description: 相对昨收的涨跌额 }
+        chgPct: { type: number, description: 涨跌幅（百分数） }
+        bid: { type: number }
+        ask: { type: number }
 
     Transfer:
       type: object

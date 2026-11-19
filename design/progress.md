@@ -16,9 +16,24 @@
 | 6 | 资金接口（绑卡 DIRECT、ACH 入金、ACH/WIRE 出金、资金记录、资金汇总、电汇指引、在途对账） | 完成（fake DW + Postgres 测试；沙盒实测在 #7） | 见 git log |
 | 7 | 沙盒实测 C | 完成：绑卡、ACH 入金（约 2 秒到账，可用日 DW 返回）、出金拦截、电汇指引均实测；**出金成功路径待 2026-11-23 资金可用后补测** | 见 sandbox-log.md |
 | 8 | Flutter 工程骨架 + P-01 / P-02 | 完成：按 feature 分层；ApiClient（信封、错误码、401xx → S-01）；token 存 Keychain；原型设计令牌主题；P-01 欢迎、P-02 邮箱验证码登录、P-07 最小外壳、S-01 会话过期；16 个测试；iPhone 17 模拟器连本机后端实测登录与会话恢复 | 见 git log |
-| 9–12 | Flutter 开户流、KYC 与资金页面、演示辅助 | 未开始 | — |
+| 9–12 | 见下方"剩余任务（2026-11-19 修订）" | 未开始 | — |
 
-**恢复步骤**：从 #9 Flutter 开户流（P-03a–g、P-04、P-05、P-30）开始。2026-11-23 之后另行补测出金（sandbox-log.md "待补测"）。
+### 剩余任务（2026-11-19 修订：纳入 F11 虚拟行情、F12 账户余额、FinX 主题、开户模块英文化）
+
+| # | 任务 | 依赖 | 规模 |
+|---|---|---|---|
+| 8b ✅ | **Flutter 换 FinX 主题**（design/theme.md：紫罗兰色、渐变主按钮、圆角 18/全圆角按钮、紫味投影）+ 品牌素材（logo、Fifi）入 Flutter assets；P-01 换为 FinX 品牌版式 | #8 | S |
+| 8c ✅ | **后端开户模块文案英文化**：提交校验（validate.go）与开户相关接口的报错改为原型英文文案（P-03–P-06、P-30、P-34–P-36）；其余模块保持中文 | #3 | S |
+| F11a ✅ | **F11 后端虚拟行情** `internal/marketsim`：随机游走（2s tick，σ 0.0008，均值回归，bid/ask ±1–2bp）、约 30 只标的固定种子、当日分时/日 K；`GET /market/quotes`、`GET /market/instruments/{symbol}`（`simulated: true`）；`MARKET_DATA_MODE=SIM|REAL`；openapi 同步 api-spec 5.5 | #1 | M |
+| 9 | Flutter 开户流（**英文**，新版式：分段进度条、STEP X OF N、税号遮罩 Show/Hide、Save & exit + Continue）：P-03a–g、P-04、P-05、P-30 | 8b、8c | L |
+| 10 | Flutter KYC 与账户：P-06（轮询）、P-34/35/36（入口标"待沙盒验证"）、P-08 抽屉；**F12**：P-07 资产卡与 P-08 接 `/account/money`（余额/购买力/可提现取 DW 返回值，未开户显示开户引导） | #4、#9 | M+ |
+| F11b | **F11 Flutter 行情**：P-07 自选、P-09 市场列表、P-10 个股（仅展示，无下单）；轮询 3–5 秒，价格变动时涨跌色刷新 | F11a、#10（共用 P-07） | M |
+| 11 | Flutter 资金流：P-31/32 绑卡、P-13 入金、P-14 出金、P-18 资金记录 | #6、#10 | L |
+| 12 | 演示辅助：`cmd/demoreset`（含 marketsim 重置）、`design/demo-script.md`、真机说明 | 全部 | S |
+
+DoD 对应：第 9 条（首页真实余额、入金后可见变化）→ #10 + #11；第 10 条（行情可见变动）→ F11a + F11b。
+
+**恢复步骤**：按上表从 #9 开始（8b、8c、F11a 已完成）。用户要求任务间不停顿连续执行（停止条件见记忆 continuous-execution）。2026-11-23 之后另行补测出金（sandbox-log.md "待补测"）。
 App 运行方式见 `app/README.md`。注意：项目在 iCloud 同步的桌面目录，`app/build` 是指向 `~/Library/Caches/finx-app-build` 的符号链接（否则 codesign 因 iCloud 扩展属性失败）；若误删，重建：`cd app && ln -s ~/Library/Caches/finx-app-build build`。
 本地运行（演示模式 + 沙盒分析日志）：
 
@@ -68,7 +83,7 @@ cd "/Users/ak/Desktop/Claude FinX New/backend" && go build ./... && go test ./..
 确认临时数据库还在。电脑重启或 Docker 退出后容器会消失，需要重新起一个并迁移：
 
 ```bash
-docker ps --filter name=finx-pg --format '{{.Names}}' | grep -q finx-pg || docker run -d --rm --name finx-pg -e POSTGRES_PASSWORD=dev -e POSTGRES_DB=finx -p 127.0.0.1:55432:5432 postgres:16-alpine
+docker ps --filter name=finx-pg --format '{{.Names}}' | grep -q finx-pg || docker run -d --name finx-pg --restart unless-stopped -v finx-pgdata:/var/lib/postgresql/data -e POSTGRES_PASSWORD=dev -e POSTGRES_DB=finx -p 127.0.0.1:55432:5432 postgres:16-alpine
 ```
 
 ```bash

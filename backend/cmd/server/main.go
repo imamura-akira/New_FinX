@@ -28,6 +28,7 @@ import (
 	"github.com/imamura-akira/New_FinX/backend/internal/dwclient"
 	"github.com/imamura-akira/New_FinX/backend/internal/events"
 	"github.com/imamura-akira/New_FinX/backend/internal/funding"
+	"github.com/imamura-akira/New_FinX/backend/internal/marketsim"
 	"github.com/imamura-akira/New_FinX/backend/internal/store"
 )
 
@@ -101,6 +102,14 @@ func run(migrateCmd string, logger *slog.Logger) error {
 
 	// 业务接口 /api/v1：需要数据库、PII 密钥与 JWT 密钥
 	var routes []func(*http.ServeMux)
+
+	// F11 虚拟行情：不依赖数据库与 DW，始终可用（MARKET_DATA_MODE=REAL 时未挂载，接口返回 50003）
+	if cfg.MarketDataMode == config.MarketSim {
+		market := marketsim.New(marketsim.DefaultInstruments, marketsim.Params{Tick: cfg.MarketTick}, nil)
+		go market.Start(ctx)
+		routes = append(routes, func(mux *http.ServeMux) { market.Routes(mux, apiPrefix) })
+		logger.Info("market simulator started", slog.Int("instruments", len(marketsim.DefaultInstruments)), slog.Duration("tick", cfg.MarketTick))
+	}
 	if cfg.APIReady() && st != nil {
 		var sender auth.Sender = auth.DisabledSender{}
 		if cfg.OTPDevLog {

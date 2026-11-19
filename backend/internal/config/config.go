@@ -45,6 +45,14 @@ const (
 	SeasoningFromInitiated SeasoningStart = "INITIATED" // 发起日起算
 )
 
+// MarketDataMode：F11 行情来源。
+type MarketDataMode string
+
+const (
+	MarketSim  MarketDataMode = "SIM"  // 后端虚拟行情（第一阶段）
+	MarketReal MarketDataMode = "REAL" // 二期接真实行情源的挂载点（当前未实现，接口返回 50003）
+)
+
 // ErrPartnerKYCNotImplemented：kyc_mode=PARTNER_KYC 时业务层应返回此错误（backend-design.md 第 4 节）。
 var ErrPartnerKYCNotImplemented = errors.New("kyc_mode=PARTNER_KYC 本阶段未实现（Q-DW-1）")
 
@@ -88,6 +96,9 @@ type Config struct {
 	SessionTTL time.Duration // 会话有效期，默认 24h（契约暂无刷新接口）
 	// OTPDevLog：把邮箱验证码打印到日志，并启用演示固定验证码 000000（仅开发/演示；production 禁止开启）。
 	OTPDevLog bool
+	// MarketDataMode / MarketTick：F11 虚拟行情（backend-design.md 6.5）。
+	MarketDataMode MarketDataMode
+	MarketTick     time.Duration
 	// KYCPollInterval：KYC / 账户状态对账周期（第一阶段不接 SQS，以轮询为准；演示可调短）。
 	KYCPollInterval time.Duration
 	// CORSAllowedOrigins：允许跨域的来源（逗号分隔；空 = 不启用 CORS；iOS 原生 App 不需要）。
@@ -137,6 +148,8 @@ func LoadFrom(get Getenv) (*Config, error) {
 		OTPDevLog:          p.bool("OTP_DEV_LOG", false),
 		CORSAllowedOrigins: splitList(get("CORS_ALLOWED_ORIGINS")),
 		KYCPollInterval:    p.dur("KYC_POLL_INTERVAL", time.Minute),
+		MarketDataMode:     MarketDataMode(p.str("MARKET_DATA_MODE", string(MarketSim))),
+		MarketTick:         p.dur("MARKET_TICK", 2*time.Second),
 		KYCMode:            KYCMode(p.str("KYC_MODE", string(KYCModeDoKYC))),
 		BankLinkMethod:     BankLinkMethod(p.str("BANK_LINK_METHOD", string(BankLinkDirect))),
 		UserSubmitMode:     UserSubmitMode(p.str("USER_SUBMIT_MODE", string(SubmitPostPatch))),
@@ -229,6 +242,14 @@ func (c *Config) Validate() error {
 	}
 	if c.SessionTTL < time.Minute || c.SessionTTL > 30*24*time.Hour {
 		errs = append(errs, "SESSION_TTL 超出范围 1m–720h")
+	}
+	switch c.MarketDataMode {
+	case MarketSim, MarketReal:
+	default:
+		errs = append(errs, "MARKET_DATA_MODE 只能是 SIM 或 REAL")
+	}
+	if c.MarketTick < 500*time.Millisecond || c.MarketTick > time.Minute {
+		errs = append(errs, "MARKET_TICK 超出范围 500ms–1m")
 	}
 	if c.KYCPollInterval < 5*time.Second || c.KYCPollInterval > time.Hour {
 		errs = append(errs, "KYC_POLL_INTERVAL 超出范围 5s–1h")

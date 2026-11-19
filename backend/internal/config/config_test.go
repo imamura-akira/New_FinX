@@ -59,6 +59,8 @@ func TestValidation(t *testing.T) {
 		{"OTP 开关非布尔", map[string]string{"OTP_DEV_LOG": "yes"}, "OTP_DEV_LOG"},
 		{"生产环境禁止打印验证码", map[string]string{"APP_ENV": "production", "OTP_DEV_LOG": "true"}, "OTP_DEV_LOG"},
 		{"生产环境禁止记录 DW 响应体", map[string]string{"APP_ENV": "production", "DW_LOG_BODIES": "true"}, "DW_LOG_BODIES"},
+		{"行情模式非法", map[string]string{"MARKET_DATA_MODE": "FAKE"}, "MARKET_DATA_MODE"},
+		{"行情 tick 过短", map[string]string{"MARKET_TICK": "10ms"}, "MARKET_TICK"},
 		{"对账周期过短", map[string]string{"KYC_POLL_INTERVAL": "1s"}, "KYC_POLL_INTERVAL"},
 		{"生产环境 CORS 不能为 *", map[string]string{"APP_ENV": "production", "CORS_ALLOWED_ORIGINS": "*"}, "CORS_ALLOWED_ORIGINS"},
 		{"开发环境允许打印验证码", map[string]string{"OTP_DEV_LOG": "true", "JWT_SECRET": base64.StdEncoding.EncodeToString(make([]byte, 48))}, ""},
