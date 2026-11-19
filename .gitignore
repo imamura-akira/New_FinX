@@ -1,0 +1,34 @@
+# 系统文件
+.DS_Store
+**/.DS_Store
+
+# 参考资料：他方 App 截图与 DW 合作方文件，不得上传仓库
+design/reference/
+
+# 凭据与环境变量：任何情况下不得入库
+.env
+.env.*
+*.pem
+*.key
+**/credentials*
+**/secrets*
+
+# 构建产物
+backend/bin/
+backend/tmp/
+app/build/
+app/.dart_tool/
+app/.flutter-plugins*
+node_modules/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# 例外：变量名模板需要入库（只含变量名，不含值）
+!.env.example
+!**/.env.example
+
+# 本地工具配置（预览服务器等，含本机路径）
+.claude/

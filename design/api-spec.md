@@ -1,0 +1,89 @@
+# 接口方案（api-spec.md）— App ↔ 我方后端 v1
+
+> 原则：**App 只调用我方后端，绝不直接调用 DW**；后端是 DW 的唯一出口（见 backend-design.md）。
+> 契约先行：本文件冻结后生成 OpenAPI（`backend/api/openapi.yaml`），前后端各自生成代码。
+> 所有响应为 `{"code":0,"message":"ok","data":{...}}` 包装；错误码见第 8 节。时间一律 ISO-8601 UTC。
+> 标注【Q-DW-x】的字段/行为依赖 DW 答复，实现时走配置开关。
+
+Base URL：`/api/v1`　认证：`Authorization: Bearer <sessionToken>`（除 /auth/* 外均必须）
+
+## 1. 认证（F1，P-01/P-02）
+
+| 方法 路径 | 请求 | 响应 data | 说明 |
+|---|---|---|---|
+| POST /auth/otp/request | `{email}` | `{ttl, resendAfter}` | 发验证码；限频 |
+| POST /auth/otp/verify | `{email, code}` | `{sessionToken, isNewUser}` | 登录/注册合一 |
+| POST /auth/oauth | `{provider: "GOOGLE"\|"APPLE", idToken}` | `{sessionToken, isNewUser, emailIsRelay}` | 阶段 1.5；Apple 中转邮箱置 emailIsRelay=true【Q-DW-6b】 |
+| POST /auth/logout | — | — | 注销会话 |
+| GET /me | — | `{email, loginProvider, applicationId, accountStatus}` | 启动时取全局状态 |
+
+## 2. 开户申请（F2/F3，P-03–P-05、P-30）
+
+| 方法 路径 | 请求 | 响应 data | 说明 |
+|---|---|---|---|
+| GET /application | — | `{applicationId, status, step, data, disclosures, kyc}` | status: NONE/DRAFT/SUBMITTED/APPROVED/DENIED |
+| PUT /application/draft | `{step, data{...}}` | `{savedAt}` | 自动保存；字段名与 pages.md P-03 数据字段一致 |
+| POST /application/documents | `{docType, side: "FRONT"\|"BACK", image(base64)}` | `{documentId}` | P-04/P-35 证件；后端转 DW `POST /documents` |
+| POST /application/submit | `{signatureName, disclosures[]}` | `{applicationRef, submittedAt}` | 后端：`POST /users`（BASIC/IDENTIFICATION/PERSONAL/ADDRESS_INFO）→ `PATCH /users/{userID}`（其余 documents）【Q-DW-3】→ 证件上传。username/password 后端生成【Q-DW-4】 |
+| GET /application/status | — | `{kycStatus, kycUpdatedAt, issues[]{code,field,userMessage}, requiredDocs[], accountStatus, accountNo}` | P-06 轮询/推送合一接口；kycStatus 为 DW 8 状态 |
+| PATCH /application/remediate | `{fields{...}}` | `{resubmittedAt}` | P-34；后端 `PATCH /users/{userID}`，DW 重跑 KYC |
+
+**KYC 状态枚举**（与 DW 一致，已核实）：`KYC_NOT_READY / KYC_READY / KYC_PROCESSING / KYC_INFO_REQUIRED / KYC_DOC_REQUIRED / KYC_MANUAL_REVIEW / KYC_APPROVED / KYC_DENIED`
+
+**App 数据 → DW document 映射**：见 pages.md 3.1.2 表（后端据此组装；App 不感知 DW 字段名）。
+
+## 3. 账户（F6，P-06/P-08/S-01）
+
+| 方法 路径 | 响应 data | 说明 |
+|---|---|---|
+| GET /account | `{accountId, accountNo, status, accountType:"LIVE", tradingType:"CASH", managementType:"SELF", openedAt}` | status: PENDING/OPEN/OPEN_NO_NEW_TRADES/FROZEN/CLOSED |
+| GET /account/money | `{cash, settledCash, buyingPower, cashAvailableForWithdrawal, unsettled, updatedAt}` | 来自 DW 账户资金汇总【Q-DW-8d 复核字段名】；**可提现一律用 DW 返回值** |
+
+## 4. 银行账户（F7，P-31/P-32）
+
+| 方法 路径 | 请求 | 响应 data | 说明 |
+|---|---|---|---|
+| GET /funding/bank-accounts | — | `[{id, bankName, mask, type, ownerName, status, createdAt}]` | |
+| POST /funding/bank-accounts | 方案 A：`{accountNumber, routingNumber, type, nickname}`；方案 B：`{plaidProcessorToken}` | `{id, status}` | 【Q-DW-2 二选一】后端转 DW `POST /back-office/bank-accounts`（方案 A 已核实）；户名一致性校验方式随 Q-DW-2 |
+| DELETE /funding/bank-accounts/{id} | — | — | 有在途入/出金时返回 40901 |
+
+## 5. 出入金（F8/F9，P-13/P-14/P-33/P-18）
+
+| 方法 路径 | 请求 | 响应 data | 说明 |
+|---|---|---|---|
+| GET /funding/deposit-instructions | — | `{beneficiaryName, bankName, bankAddress, accountNumber, routingNumber, swift, reference}` | 电汇指引；后端转 DW `GET /accounts/{id}/funding/deposit-instructions`；reference 必含账户号+姓名 |
+| POST /funding/deposits | `{bankAccountId, amount}` | `{transferId, status}` | ACH；后端转 DW `POST /back-office/funding/deposits`（type=ACH，已核实） |
+| POST /funding/withdrawals | `{method:"ACH"\|"WIRE", amount, bankAccountId?, wire?{bankName, accountNumber, swiftOrAba, country, intermediarySwift?}}` | `{transferId, status}` | 后端转 DW `POST /funding/redemptions`【Q-DW-8d 字段待核】；WIRE 收款人固定为本人，后端强制 |
+| GET /funding/transfers | `?type=&cursor=` | `[{transferId, type, method, amount, status, failureReason, submittedAt, doneAt}]` | P-18 时间线 |
+
+**入金状态枚举**（DW Deposit Status）：`STARTED / PENDING / SUCCESSFUL / FAILED / RETURNED / APPROVED / REJECTED / ON_HOLD`；出金状态枚举待 Q-DW-8d。
+**金额校验**：限额走后端配置 `limits.*`（当前示例值）；超限返回 42201 并带限额。
+
+## 6. 文件与通知（F10，P-15/P-17）
+
+| 方法 路径 | 响应 data | 说明 |
+|---|---|---|
+| GET /documents?type= | `[{docId, type, title, period, date, url}]` | 交易确认书/对账单/税务；url 为短时效签名链接 |
+| GET /notifications?cursor= | `[{id, category, title, body, createdAt, read, deepLink}]` | |
+| POST /notifications/read | `{ids[]}` | — | |
+
+## 7. 状态推送
+
+第一阶段 App 用**轮询**（P-06 在 KYC 非终态时 5–10s 轮询 /application/status；资金详情页同理）。后端内部由 SQS 事件驱动更新（kyc.created/updated、deposits.*、bankAccounts.created【事件名待 DW 确认】），轮询 DW 仅用于对账。阶段 1.5 评估 WebSocket/推送。
+
+## 8. 错误码
+
+| code | 含义 |
+|---|---|
+| 0 | 成功 |
+| 401xx | 未登录 / 会话过期（App → S-01 会话过期页） |
+| 40301 | 账户受限（附 restriction: FROZEN / OPEN_NO_NEW_TRADES） |
+| 40901 | 状态冲突（在途资金禁止解绑、重复提交等） |
+| 422xx | 字段校验失败（附 fields[]{field, reason}，文案与 P-03 校验一致） |
+| 50001 | DW 调用失败（对用户显示"稍后重试"，不透出 DW 原始错误） |
+| 50002 | DW 返回数据异常（已记录，人工介入） |
+
+## 9. 版本与冻结
+
+- 本契约 v1 随 UI 定稿冻结路径与字段名；新增字段向后兼容，破坏性变更升 /api/v2。
+- 【Q-DW-x】标注处的请求体结构已为两种方案预留，答复后删除未选方案并更新 OpenAPI。
