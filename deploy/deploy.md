@@ -65,7 +65,7 @@ curl -s https://finxnew.akira.diy/healthz
 deploy/deploy.sh
 ```
 
-脚本只同步 `backend/` 与 `deploy/`，不会覆盖或删除服务器上的 `.env`、`*.local.json`、`RELEASES`。镜像标签为 git 短提交号（有未提交改动时加 `-dirty`），每次部署追加一行到 `/opt/finx/deploy/RELEASES`。
+服务器端的构建与启动由 `remote-up.sh` 在后台执行（日志 `/opt/finx/deploy/last-deploy.log`，SSH 断开也不会中断），本机轮询直到成功或失败。脚本只同步 `backend/` 与 `deploy/`，不会覆盖或删除服务器上的 `.env`、`*.local.json`、`RELEASES`。镜像标签为 git 短提交号（有未提交改动时加 `-dirty`），每次部署追加一行到 `/opt/finx/deploy/RELEASES`。
 
 ## 4. 回滚
 

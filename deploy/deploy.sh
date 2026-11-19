@@ -28,19 +28,16 @@ RSYNC_EXCLUDES=(--include '.env.example' --exclude '.env' --exclude '.env.*' --e
 rsync -az --delete "${RSYNC_EXCLUDES[@]}" backend/ "$HOST:$DIR/backend/"
 rsync -az --delete "${RSYNC_EXCLUDES[@]}" deploy/ "$HOST:$DIR/deploy/"
 
-ssh "$HOST" bash -s -- "$DIR" "$TAG" <<'REMOTE'
-set -euo pipefail
-DIR=$1 TAG=$2
-cd "$DIR/deploy"
-[[ -f ../backend/.env && -f .env ]] || { echo "服务器缺少配置，先运行 init-env.sh（见 deploy.md）" >&2; exit 1; }
-export IMAGE_TAG=$TAG
-docker compose build migrate
-docker compose up -d --remove-orphans postgres migrate backend
-printf '%s %s\n' "$(date -u +%FT%TZ)" "$TAG" >> RELEASES
-for i in $(seq 1 30); do
-	if curl -fsS "http://${BACKEND_BIND:-172.16.0.1:18082}/healthz" >/dev/null 2>&1; then echo "==> backend 健康检查通过（$TAG）"; exit 0; fi
-	sleep 2
+# 服务器端步骤脱离 SSH 会话在后台执行（会话断开也不会中断构建），本机轮询结果
+ssh "$HOST" "cd '$DIR/deploy' && chmod +x remote-up.sh init-env.sh && setsid nohup ./remote-up.sh '$TAG' > last-deploy.log 2>&1 < /dev/null &"
+echo "==> 服务器开始构建与启动（日志 $DIR/deploy/last-deploy.log）"
+for _ in $(seq 1 120); do
+	sleep 5
+	last=$(ssh "$HOST" "tail -n 1 '$DIR/deploy/last-deploy.log'" 2>/dev/null || true)
+	case "$last" in
+	DEPLOY_OK*) echo "==> 部署成功：$TAG"; exit 0 ;;
+	DEPLOY_FAIL*) echo "$last" >&2; ssh "$HOST" "tail -n 30 '$DIR/deploy/last-deploy.log'" >&2; exit 1 ;;
+	esac
 done
-echo "backend 60 秒内未就绪，查看：docker compose logs --tail 100 backend migrate" >&2
+echo "10 分钟内未完成，查看：ssh $HOST tail -f $DIR/deploy/last-deploy.log" >&2
 exit 1
-REMOTE
