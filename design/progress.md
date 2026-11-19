@@ -98,7 +98,7 @@ cd "/Users/ak/Desktop/Claude FinX New/backend" && (set -a; source ./.env; set +a
 | 项 | 内容 |
 |---|---|
 | 地址 | `https://finxnew.akira.diy`（`/healthz`、`/api/v1/*`）；App：`--dart-define=API_BASE_URL=https://finxnew.akira.diy/api/v1` |
-| 状态 | 已部署版本 `6ba0933`；healthz `db: ok`、`dw: configured`；证书有效（Let's Encrypt，TLS-ALPN） |
+| 状态 | 已部署版本 `d0bf6de`（含演示验真）；healthz `db: ok`、`dw: configured`；证书有效（Let's Encrypt，TLS-ALPN） |
 | 服务器 | Hostinger VPS（Ubuntu 24.04）root@72.60.104.228；与其他项目共用，80/443 由其他项目占用 |
 | 路径 | `/opt/finx/backend`（代码 + `.env` + `demo-users.local.json`，均 600）、`/opt/finx/deploy`（compose、脚本、`.env` 含 POSTGRES_PASSWORD 与 IMAGE_TAG、`RELEASES`、`last-deploy.log`） |
 | 组成 | compose 项目 `finxnew`：postgres（内部网络、无端口映射、卷 `finxnew-pgdata`）、migrate（一次性）、backend（仅绑 `172.16.0.1:18082`） |
@@ -107,6 +107,8 @@ cd "/Users/ak/Desktop/Claude FinX New/backend" && (set -a; source ./.env; set +a
 | 演示数据 | 服务器上已导入 funded1 / funded2@example.com（DW 实时资金正常） |
 | 部署 | 本机 `deploy/deploy.sh`（同步 backend/、deploy/ → 服务器后台构建、迁移、启动、健康检查） |
 | 回滚 | 改 `/opt/finx/deploy/.env` 的 `IMAGE_TAG` 为 `RELEASES` 中的旧标签 → `docker compose up -d --no-build backend`；撤销 HTTPS 接入：用上述备份覆盖 Caddyfile.https 后重启 `web`。详见 `deploy/deploy.md` |
+| 共用 Caddy 重启 | 2026-11-19 16:27:45 UTC 重启一次（已备份 + 已校验 + 失败自动回滚），容器停止到启动约 0.26 秒；重启后 liveright.cloud 200、staging.finx 401（原有 Basic Auth），均正常 |
+| 演示验真 | App（DEMO_MODE）P-08 抽屉底部"DW 沙盒凭证"；服务器上 `demoreset verify -email X` 直接读 DW 原样打印编号与状态，用于当场对照（deploy.md 第 5 节、demo-script B12） |
 | 注意 | 服务器对短时间内的多个新 SSH 连接会断开，deploy.sh 已用连接复用；本机代理（fake-IP）下 dig 结果不准，以公共 DNS 为准 |
 
 ## 1. 当前位置
