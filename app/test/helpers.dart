@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:finx_app/app/config.dart';
 import 'package:finx_app/core/api/api_client.dart';
 import 'package:finx_app/core/session/session.dart';
+import 'package:finx_app/features/market/domain/instruments.dart';
 import 'package:finx_app/main.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
@@ -49,6 +50,9 @@ Future<(FakeBackend, SessionController, MemoryTokenStore)> pumpApp(
   bool demo = true,
 }) async {
   final be = backend ?? FakeBackend();
+  // 行情默认模拟（虚拟行情，价格随请求次数变化）；测试可自行覆盖
+  be.handlers.putIfAbsent('GET /market/quotes', () => fakeQuotes());
+  Watchlist.instance.reset();
   final api = ApiClient(baseUrl: 'http://test/api/v1', httpClient: be.client);
   final store = MemoryTokenStore()..value = storedToken;
   final session = SessionController(api: api, store: store);
@@ -69,4 +73,37 @@ Future<void> frames(WidgetTester tester, [int n = 10]) async {
   for (var i = 0; i < n; i++) {
     await tester.pump(const Duration(milliseconds: 100));
   }
+}
+
+/// 虚拟行情假数据：每次请求价格 +0.01 * n，便于验证刷新。
+http.Response Function(http.Request) fakeQuotes() {
+  var n = 0;
+  return (req) {
+    n++;
+    final want = req.url.queryParameters['symbols']?.split(',');
+    final all = <String, double>{
+      'AAPL': 226.10,
+      'NVDA': 129.40,
+      'TSLA': 241.20,
+      'MSFT': 418.02,
+      'SPY': 592.00,
+      'QQQ': 508.70,
+      'DIA': 440.90,
+      'GLD': 241.20,
+      'TLT': 92.60,
+    };
+    final quotes = [
+      for (final e in all.entries)
+        if (want == null || want.contains(e.key))
+          {
+            'symbol': e.key,
+            'last': e.value + n * 0.01,
+            'chg': e.key == 'TSLA' ? -1.5 : 1.0,
+            'chgPct': e.key == 'TSLA' ? -0.62 : (e.key == 'NVDA' ? 2.1 : 0.4),
+            'bid': e.value - 0.03,
+            'ask': e.value + 0.03,
+          },
+    ];
+    return FakeBackend.ok({'simulated': true, 'ts': '2026-11-19T15:00:00Z', 'quotes': quotes});
+  };
 }

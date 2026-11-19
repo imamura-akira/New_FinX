@@ -223,7 +223,7 @@ class _KycDeniedPageState extends State<KycDeniedPage> with ProgressLoader {
               icon: Icons.show_chart_rounded,
               title: 'Keep browsing markets',
               subtitle: 'Quotes and watchlists remain available',
-              onTap: () => showToast(context, 'Markets arrive in the next build'), // F11b 接入 P-09
+              onTap: () => context.go('/market'),
             ),
             ListRow(
               icon: Icons.delete_outline_rounded,

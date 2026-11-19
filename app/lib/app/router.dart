@@ -8,9 +8,12 @@ import '../features/auth/presentation/login_page.dart';
 import '../features/auth/presentation/welcome_page.dart';
 import '../features/common/session_expired_page.dart';
 import '../features/home/presentation/home_page.dart';
+import '../features/market/presentation/instrument_page.dart';
+import '../features/market/presentation/market_page.dart';
 import '../features/onboarding/presentation/final_pages.dart';
 import '../features/onboarding/presentation/onboarding_shell.dart';
 import '../features/onboarding/presentation/step_pages.dart';
+import 'main_tabs.dart';
 
 /// 路由（pages.md 第 2 节导航结构）。会话状态驱动重定向：
 ///   未登录 → P-01 / P-02；已登录 → P-07；会话过期 → S-01。
@@ -21,6 +24,7 @@ abstract final class Routes {
   static const expired = '/expired';
   static const splash = '/splash';
   static const onboarding = '/onboarding';
+  static const market = '/market'; // P-09（未登录也可浏览）
   static const applicationStatus = '/application/status';
   static const kycInfo = '/application/info'; // P-34
   static const kycDocument = '/application/document'; // P-35
@@ -40,7 +44,7 @@ GoRouter buildRouter(SessionController session) {
         case SessionStatus.expired:
           return loc == Routes.expired ? null : Routes.expired;
         case SessionStatus.signedOut:
-          return publicRoutes.contains(loc) ? null : Routes.welcome;
+          return publicRoutes.contains(loc) || loc.startsWith(Routes.market) ? null : Routes.welcome;
         case SessionStatus.signedIn:
           return (publicRoutes.contains(loc) || loc == Routes.splash || loc == Routes.expired) ? Routes.home : null;
       }
@@ -56,7 +60,25 @@ GoRouter buildRouter(SessionController session) {
         builder: (_, state) =>
             LoginPage(initialMode: state.uri.queryParameters['mode'] == 'register' ? LoginMode.register : LoginMode.login),
       ),
-      GoRoute(path: Routes.home, builder: (_, _) => const HomePage()),
+      // 底部 Tab：资产 P-07 / 市场 P-09
+      ShellRoute(
+        builder: (_, state, child) => MainTabs(location: state.matchedLocation, child: child),
+        routes: [
+          GoRoute(
+            path: Routes.home,
+            pageBuilder: (_, _) => const NoTransitionPage(child: HomePage()),
+          ),
+          GoRoute(
+            path: Routes.market,
+            pageBuilder: (_, _) => const NoTransitionPage(child: MarketPage()),
+          ),
+        ],
+      ),
+      // P-10 个股详情（全屏，push 进入）
+      GoRoute(
+        path: '${Routes.market}/:symbol',
+        builder: (_, state) => InstrumentPage(symbol: state.pathParameters['symbol']!.toUpperCase()),
+      ),
       GoRoute(path: Routes.expired, builder: (_, _) => const SessionExpiredPage()),
       // P-03a–g、P-04、P-05、P-30：同一个 OnboardingController（ShellRoute 内创建）
       ShellRoute(

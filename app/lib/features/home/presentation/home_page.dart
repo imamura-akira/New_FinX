@@ -10,9 +10,12 @@ import '../../../core/widgets/widgets.dart';
 import '../../account/data/account_api.dart';
 import '../../account/domain/account_overview.dart';
 import '../../account/presentation/account_drawer.dart';
+import '../../market/data/market_api.dart';
+import '../../market/domain/instruments.dart';
+import '../../market/presentation/market_widgets.dart';
 
 /// P-07 资产首页（Demo-1：资产卡取 DW 真实资金汇总 F12；未开户 / 开户中显示开户提示卡）。
-/// 行情与自选股在 F11b 接入；持仓、订单、智能组合等不在 Demo-1 范围。
+/// 自选股报价来自虚拟行情（F11），每 3 秒刷新；持仓、订单、智能组合等不在 Demo-1 范围。
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -25,6 +28,8 @@ class _HomePageState extends State<HomePage> {
   SessionController? _session;
   String? _loadedFor;
   bool _hide = false;
+  QuoteFeed? _feed;
+  final _watch = Watchlist.instance;
 
   @override
   void didChangeDependencies() {
@@ -34,6 +39,8 @@ class _HomePageState extends State<HomePage> {
       _overview = AccountOverview(AccountApi(scope.api));
       _session = scope.session..addListener(_onSession);
       _onSession();
+      _feed = QuoteFeed(MarketApi(scope.api), symbols: _watch.symbols)..start();
+      _watch.addListener(_onWatch);
     }
   }
 
@@ -44,6 +51,8 @@ class _HomePageState extends State<HomePage> {
       _overview!.load(st);
     }
   }
+
+  void _onWatch() => _feed!.symbols = _watch.symbols;
 
   Future<void> _refresh() async {
     final session = AppScope.of(context).session;
@@ -60,6 +69,8 @@ class _HomePageState extends State<HomePage> {
   void dispose() {
     _session?.removeListener(_onSession);
     _overview?.dispose();
+    _watch.removeListener(_onWatch);
+    _feed?.dispose();
     super.dispose();
   }
 
@@ -68,7 +79,7 @@ class _HomePageState extends State<HomePage> {
     final session = AppScope.of(context).session;
     final ov = _overview!;
     return ListenableBuilder(
-      listenable: Listenable.merge([session, ov]),
+      listenable: Listenable.merge([session, ov, _feed!]),
       builder: (context, _) {
         final me = session.me;
         final cue = OnboardingCue.of(me?.accountStatus, ov.progress);
@@ -137,6 +148,18 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
                 if (cue != null) _cueCard(context, cue),
+                if (!opened && !(ov.loading && ov.progress == null)) // 首次加载完成前不显示，避免闪现
+                  AppButton('先看看行情', key: const Key('home.market'), kind: ButtonKind.ghost, onPressed: () => context.go('/market')),
+                SectionTitle('自选股', trailing: LinkButton('去市场', fontSize: 13, onPressed: () => context.go('/market'))),
+                if (_watch.symbols.isEmpty)
+                  const AppCard(
+                    child: Text('还没有自选股。在个股页点击右上角星标即可加入。', style: TextStyle(fontSize: 13, color: AppColors.muted)),
+                  )
+                else
+                  ListGroup(
+                    children: [for (final s in _watch.symbols) QuoteRow(symbol: s, quote: _feed!.quotes[s], moved: _feed!.moved[s] ?? 0)],
+                  ),
+                MarketDataNote(ts: _feed!.ts),
               ],
             ),
           ),

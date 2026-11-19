@@ -1,0 +1,141 @@
+import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
+
+import '../../../app/scope.dart';
+import '../../../app/theme.dart';
+import '../../../core/widgets/form_widgets.dart';
+import '../../../core/widgets/widgets.dart';
+import '../data/market_api.dart';
+import '../domain/instruments.dart';
+import 'market_widgets.dart';
+
+/// P-09 市场（Tab 2，仅展示）。数据来自后端虚拟行情（F11）。
+/// Demo-1 范围：指数卡片、涨幅榜 / 跌幅榜、ETF 排行（分类筛选）。涨跌分布、内部人增减持、
+/// 今日热点与成交额没有数据源，不展示（不造假数据）。
+class MarketPage extends StatefulWidget {
+  const MarketPage({super.key});
+
+  @override
+  State<MarketPage> createState() => _MarketPageState();
+}
+
+class _MarketPageState extends State<MarketPage> {
+  QuoteFeed? _feed;
+  String _seg = 'STOCK';
+  String _etfCat = '全部';
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _feed ??= QuoteFeed(MarketApi(AppScope.of(context).api))..start();
+  }
+
+  @override
+  void dispose() {
+    _feed?.dispose();
+    super.dispose();
+  }
+
+  List<InstrumentInfo> _sorted(String type, {bool desc = true, String? cat}) {
+    final qs = _feed!.quotes;
+    final list = instruments.where((i) => i.type == type && qs.containsKey(i.symbol) && (cat == null || i.etfCategory == cat)).toList()
+      ..sort((a, b) => (desc ? -1 : 1) * qs[a.symbol]!.chgPct.compareTo(qs[b.symbol]!.chgPct));
+    return list;
+  }
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(title: const Text('市场')),
+    body: ListenableBuilder(
+      listenable: _feed!,
+      builder: (context, _) {
+        final f = _feed!;
+        final children = <Widget>[
+          Seg2<String>(items: const [('STOCK', '股票'), ('ETF', 'ETF')], value: _seg, onChanged: (v) => setState(() => _seg = v)),
+          const SizedBox(height: 12),
+          if (f.error != null) Notice('行情暂时无法刷新：${f.error}', kind: NoticeKind.warn),
+          if (f.quotes.isEmpty && f.error == null)
+            const Padding(
+              padding: EdgeInsets.all(40),
+              child: Center(child: CircularProgressIndicator()),
+            ),
+        ];
+        if (f.quotes.isNotEmpty) {
+          if (_seg == 'STOCK') {
+            children.addAll([
+              Row(
+                children: [
+                  for (final (k, s) in ['SPY', 'QQQ', 'DIA'].indexed) ...[
+                    if (k > 0) const SizedBox(width: 8),
+                    Expanded(child: _indexCard(s, f)),
+                  ],
+                ],
+              ),
+              const SectionTitle('涨幅榜'),
+              _list([for (final i in _sorted('STOCK').take(5)) i.symbol], f),
+              const SectionTitle('跌幅榜'),
+              _list([for (final i in _sorted('STOCK', desc: false).take(3)) i.symbol], f),
+            ]);
+          } else {
+            const cats = ['全部', '大盘指数', '大宗商品', '债券', '行业', '海外市场', '波动率'];
+            children.addAll([
+              const SectionTitle('ETF 排行'),
+              SizedBox(
+                height: 36,
+                child: ListView(
+                  scrollDirection: Axis.horizontal,
+                  children: [
+                    for (final c in cats)
+                      Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: ChipToggle(label: c, selected: _etfCat == c, onTap: () => setState(() => _etfCat = c)),
+                      ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 10),
+              _list([for (final i in _sorted('ETF', cat: _etfCat == '全部' ? null : _etfCat)) i.symbol], f),
+            ]);
+          }
+        }
+        children.add(MarketDataNote(ts: f.ts));
+        return ListView(padding: const EdgeInsets.fromLTRB(16, 12, 16, 16), children: children);
+      },
+    ),
+  );
+
+  Widget _indexCard(String symbol, QuoteFeed f) {
+    final q = f.quotes[symbol];
+    return InkWell(
+      key: Key('market.index.$symbol'),
+      onTap: () => context.push('/market/$symbol'),
+      child: AppCard(
+        padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(symbol, style: const TextStyle(fontSize: 12, color: AppColors.muted)),
+            const SizedBox(height: 4),
+            Text(
+              q == null ? '—' : fmtPx(q.last),
+              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700, fontFeatures: [FontFeature.tabularFigures()]),
+            ),
+            if (q != null)
+              Text(
+                fmtSigned(q.chgPct, suffix: '%'),
+                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: chgColor(q.chgPct)),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _list(List<String> symbols, QuoteFeed f) => symbols.isEmpty
+      ? const AppCard(
+          child: Text('暂无', style: TextStyle(color: AppColors.muted)),
+        )
+      : ListGroup(
+          children: [for (final s in symbols) QuoteRow(symbol: s, quote: f.quotes[s], moved: f.moved[s] ?? 0)],
+        );
+}

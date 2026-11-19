@@ -38,8 +38,7 @@ class WelcomePage extends StatelessWidget {
                   onPressed: () => context.push('/login?mode=login'),
                 ),
                 const SizedBox(height: 12),
-                // 原型中的"先逛逛行情"入口：F11 行情页（P-09）完成后接入
-                LinkButton('先逛逛行情', onPressed: () => showToast(context, '行情功能即将开放')),
+                LinkButton('先逛逛行情', key: const Key('welcome.market'), onPressed: () => context.go('/market')), // 未登录可浏览；资产 Tab 回到欢迎页
                 const SizedBox(height: 24),
                 const Text('证券服务由合作券商提供。投资有风险。', style: TextStyle(fontSize: 12, color: AppColors.faint)),
               ],

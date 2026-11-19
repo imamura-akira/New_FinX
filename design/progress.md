@@ -27,11 +27,19 @@
 | F11a ✅ | **F11 后端虚拟行情** `internal/marketsim`：随机游走（2s tick，σ 0.0008，均值回归，bid/ask ±1–2bp）、约 30 只标的固定种子、当日分时/日 K；`GET /market/quotes`、`GET /market/instruments/{symbol}`（`simulated: true`）；`MARKET_DATA_MODE=SIM|REAL`；openapi 同步 api-spec 5.5 | #1 | M |
 | 9 ✅ | Flutter 开户流（**英文**，新版式：分段进度条、STEP X OF N、税号遮罩 Show/Hide、Save & exit + Continue）：P-03a–g、P-04、P-05、P-30 | 8b、8c | L |
 | 10 ✅ | Flutter KYC 与账户：P-06（轮询）、P-34/35/36（入口标"待沙盒验证"）、P-08 抽屉；**F12**：P-07 资产卡与 P-08 接 `/account/money`（余额/购买力/可提现取 DW 返回值，未开户显示开户引导） | #4、#9 | M+ |
-| F11b | **F11 Flutter 行情**：P-07 自选、P-09 市场列表、P-10 个股（仅展示，无下单）；轮询 3–5 秒，价格变动时涨跌色刷新 | F11a、#10（共用 P-07） | M |
+| F11b ✅ | **F11 Flutter 行情**：P-07 自选、P-09 市场列表、P-10 个股（仅展示，无下单）；轮询 3–5 秒，价格变动时涨跌色刷新 | F11a、#10（共用 P-07） | M |
 | 11 | Flutter 资金流：P-31/32 绑卡、P-13 入金、P-14 出金、P-18 资金记录 | #6、#10 | L |
 | 12 | 演示辅助：`cmd/demoreset`（含 marketsim 重置）、`design/demo-script.md`、真机说明 | 全部 | S |
 
 **已决定（2026-11-19）**：Rule 14b-1(c) 选"否"时沙盒拒绝开户（Q-DW-11）。用户决定：App 保持现状（不强制选"是"），演示用户在 P-05 选"是"；等 DW 回复后再定正式处理。
+
+**待确认决定（无人值守期间按"不改变合规语义、可逆、影响面最小"自行选择，请用户确认）**
+
+| 编号 | 事项 | 当前选择 | 备选 / 影响 |
+|---|---|---|---|
+| D-1 | P-09 / P-10 中没有数据源的区块（涨跌分布、内部人增减持、今日热点、成交额、多周期 K 线、NBBO 数量与交易所、成交量） | 不显示，不造假数据；ui-signoff 第 3 节已登记 | 若演示需要完整版式，可用原型的示例数据补齐（会显示非行情接口来源的数字） |
+| D-2 | 自选股没有后端接口 | 存在 App 内存中，默认 AAPL / NVDA / TSLA / SPY / QQQ，重启 App 恢复默认 | 第二阶段加 `/watchlist` 接口 |
+| D-3 | 个股接口（`/market/instruments/{symbol}`）不含买一 / 卖一价 | P-10 另调 `/market/quotes?symbols=X` 取 bid/ask，不改接口契约 | 也可在个股接口增加 bid/ask（向后兼容的新增字段） |
 
 **待办（日期相关）**：**2026-11-23 之后**补测出金——用 #7 中已入金的两个虚构测试用户（$1,000、$5,000；本地数据库曾重建，需先用 #12 的"导入已有沙盒用户"恢复本地关联），验证 `POST /funding/redemptions` 成功响应结构与状态推进（ACH，必要时 WIRE）、出金后资金汇总变化，并走通演示出金路径；结果回写 sandbox-log.md 与 api-spec.md。
 
