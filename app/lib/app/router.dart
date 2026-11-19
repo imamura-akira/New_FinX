@@ -7,6 +7,7 @@ import '../features/account/presentation/kyc_action_pages.dart';
 import '../features/auth/presentation/login_page.dart';
 import '../features/auth/presentation/welcome_page.dart';
 import '../features/common/session_expired_page.dart';
+import '../features/discover/presentation/discover_pages.dart';
 import '../features/funding/presentation/bank_pages.dart';
 import '../features/funding/presentation/transfer_pages.dart';
 import '../features/home/presentation/home_page.dart';
@@ -74,7 +75,25 @@ GoRouter buildRouter(SessionController session) {
             path: Routes.market,
             pageBuilder: (_, _) => const NoTransitionPage(child: MarketPage()),
           ),
+          GoRoute(
+            path: '/masters',
+            pageBuilder: (_, _) => const NoTransitionPage(child: MastersPage()),
+          ), // P-23
+          GoRoute(
+            path: '/fifi',
+            pageBuilder: (_, _) => const NoTransitionPage(child: FifiPage()),
+          ), // P-26
+          GoRoute(
+            path: '/rewards',
+            pageBuilder: (_, _) => const NoTransitionPage(child: RewardsPage()),
+          ), // P-27
         ],
+      ),
+      // P-24 全部机构 / 机构详情（全屏，push 进入）
+      GoRoute(path: '/masters/all', builder: (_, _) => const InstitutionListPage()),
+      GoRoute(
+        path: '/masters/:id',
+        builder: (_, state) => InstitutionDetailPage(id: state.pathParameters['id']!),
       ),
       // P-10 个股详情（全屏，push 进入）
       GoRoute(
