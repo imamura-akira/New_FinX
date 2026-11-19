@@ -15,9 +15,11 @@
 | 5 | 沙盒实测 A/B | 完成：沙盒中 提交 → KYC 通过 → 账户 OPEN 端到端跑通；P-03e 增加行业/职位下拉（已登记）；PEP/董事写法改为空字符串 | 见 `design/sandbox-log.md` |
 | 6 | 资金接口（绑卡 DIRECT、ACH 入金、ACH/WIRE 出金、资金记录、资金汇总、电汇指引、在途对账） | 完成（fake DW + Postgres 测试；沙盒实测在 #7） | 见 git log |
 | 7 | 沙盒实测 C | 完成：绑卡、ACH 入金（约 2 秒到账，可用日 DW 返回）、出金拦截、电汇指引均实测；**出金成功路径待 2026-11-23 资金可用后补测** | 见 sandbox-log.md |
-| 8–12 | Flutter、演示辅助 | 未开始 | — |
+| 8 | Flutter 工程骨架 + P-01 / P-02 | 完成：按 feature 分层；ApiClient（信封、错误码、401xx → S-01）；token 存 Keychain；原型设计令牌主题；P-01 欢迎、P-02 邮箱验证码登录、P-07 最小外壳、S-01 会话过期；16 个测试；iPhone 17 模拟器连本机后端实测登录与会话恢复 | 见 git log |
+| 9–12 | Flutter 开户流、KYC 与资金页面、演示辅助 | 未开始 | — |
 
-**恢复步骤**：从 #8 Flutter 工程骨架开始。2026-11-23 之后另行补测出金（sandbox-log.md "待补测"）。
+**恢复步骤**：从 #9 Flutter 开户流（P-03a–g、P-04、P-05、P-30）开始。2026-11-23 之后另行补测出金（sandbox-log.md "待补测"）。
+App 运行方式见 `app/README.md`。注意：项目在 iCloud 同步的桌面目录，`app/build` 是指向 `~/Library/Caches/finx-app-build` 的符号链接（否则 codesign 因 iCloud 扩展属性失败）；若误删，重建：`cd app && ln -s ~/Library/Caches/finx-app-build build`。
 本地运行（演示模式 + 沙盒分析日志）：
 
 ```bash
