@@ -1,0 +1,136 @@
+# Demo-1 演示脚本（demo-script.md）
+
+> 适用：Demo-1 客户演示（iOS 模拟器或真机 + 本机后端 + DriveWealth UAT 沙盒）。
+> 三条主线：A 注册登录与行情 → B 开户（KYC → 自动开户 → 显示账户号码）→ C 资金（绑卡、ACH 入金、出金、资金记录）。
+> P-34 / P-35 / P-36（补资料、补证件、开户未通过）沙盒无法触发，用**原型的模拟模式**演示（见第 5 节）。
+> 文中所有人名、证件号、银行账号均为虚构测试数据；不要在演示中使用任何真实个人信息。
+
+---
+
+## 1. 演示前准备（提前 30 分钟）
+
+| # | 事项 | 命令 / 操作 | 确认 |
+|---|---|---|---|
+| 1 | Docker 已启动，数据库容器在运行 | `docker ps` 能看到 `finx-pg`（`--restart unless-stopped`，数据卷 `finx-pgdata`） | 列表中有 finx-pg |
+| 2 | 启动后端（演示模式） | 见第 1.1 节 | `curl -s 127.0.0.1:8080/healthz` 显示 `"db":"ok","dw":"configured"` |
+| 3 | 启动 App | 见第 1.2 节 | 模拟器主屏显示 **FinX Stocks** 紫色爪印图标 |
+| 4 | 准备演示邮箱 | 每场演示用一个新邮箱（如 `demo-0120@example.com`）；要重复使用旧邮箱，先 `demoreset reset`（第 1.3 节） | — |
+| 5 | 准备备用用户 | `go run ./cmd/demoreset list` 中应有：`sim-open@example.com`（已开户、未入金）、`funded1@example.com`（$1,000）、`funded2@example.com`（$5,000） | 四列状态为 APPROVED / KYC_APPROVED / OPEN |
+| 6 | 打开原型（P-34–P-36 段落用） | `prototype` 目录下启动静态服务器，浏览器打开 http://localhost:8765 （见 `prototype/README.md`） | 右侧有"原型控制"面板 |
+| 7 | 模拟器键盘 | 设置为英文键盘（中文输入法会把邮箱打乱） | — |
+
+### 1.1 启动后端
+
+```bash
+cd "/Users/ak/Desktop/Claude FinX New/backend" && (set -a; source ./.env; set +a; OTP_DEV_LOG=true KYC_POLL_INTERVAL=10s go run ./cmd/server)
+```
+
+- `OTP_DEV_LOG=true`：演示验证码固定为 **000000**（仅 sandbox 允许，生产配置会拒绝启动）。
+- `KYC_POLL_INTERVAL=10s`：后台对账间隔；沙盒中提交后数秒即可看到开户结果。
+- **不要频繁重启后端**：DW token 每小时最多申请 6 次（后端有限流），每次启动会申请一次。
+- 虚拟行情用固定种子初始化：**重启后端即重置行情**（不需要单独的重置命令）。
+
+### 1.2 启动 App
+
+```bash
+cd "/Users/ak/Desktop/Claude FinX New/app" && flutter run --dart-define=API_BASE_URL=http://127.0.0.1:8080/api/v1 --dart-define=DEMO_MODE=true
+```
+
+真机演示见 `app/README.md`"真机运行"。
+
+### 1.3 演示数据工具（`cmd/demoreset`，仅 sandbox）
+
+```bash
+cd "/Users/ak/Desktop/Claude FinX New/backend" && (set -a; source ./.env; set +a; go run ./cmd/demoreset list)
+```
+
+- `reset -email X`：预览将删除的本地记录；加 `-yes` 才真正删除。只删本地数据库，DW 沙盒里的用户保留（无法也不需要删除）。
+- `import -local funded-1000` / `funded-5000`：从 DW 沙盒恢复两个已入金测试用户的本地关联（数据来自 `backend/demo-users.local.json`，已 gitignore，不提交）。本地数据库重建后需要重新导入。
+
+---
+
+## 2. 主线 A：登录与行情（约 3 分钟）
+
+| 步骤 | 操作 | 讲解要点 |
+|---|---|---|
+| A1 | 打开 App，欢迎页 | FinX 品牌与吉祥物 Fifi；"注册 / 登录"与"先逛逛行情" |
+| A2 | 点"先逛逛行情"→ 市场页 P-09 | 未登录也能看行情；股票 / ETF 切换、指数卡片、涨幅榜 / 跌幅榜；**价格每 3 秒刷新，变动时行内闪色**（美式绿涨红跌） |
+| A3 | 点任一股票 → 个股 P-10 | 最新价、买一 / 卖一、分时图（虚线为昨收）、关键数据；右上角星标加自选 |
+| A4 | 返回 → 点"资产"Tab → 回到欢迎页 → "登录" | 邮箱验证码登录；演示环境验证码 **000000**（页面有提示） |
+| A5 | 登录后进入资产页 P-07 | 未开户时资产卡显示占位，下方"开通证券账户"卡片；自选股实时报价 |
+
+**话术**：行情为演示用虚拟数据（页面底部注明"演示数据：虚拟行情"），接口形状与真实行情一致，接入正式行情源时 App 不需要改。
+
+---
+
+## 3. 主线 B：开户 → KYC → 自动开户（约 6 分钟）
+
+开户与 KYC 模块界面为**英文**（与 DW 提交要求一致，用户输入须为英文 ASCII）。
+
+| 步骤 | 页面 | 填写（虚构测试数据） | 讲解要点 |
+|---|---|---|---|
+| B1 | P-03a | 点 Start application | 账户由合作券商 DriveWealth 开立和托管；美国纳税人用税号核验，无需上传证件 |
+| B2 | P-03b Your identity | First / Last name：任意英文名（如 Riley / Demo）；DOB：1990-03-07；Citizenship / Tax residence：United States；Phone：+1 415 555 0142 | 分段进度条与 STEP X OF N；姓名只允许 ASCII（可演示输入中文时的报错） |
+| B3 | P-03c Tax information | U.S. taxpayer：Yes；SSN：**每场换一个虚构号码**（规则：前三位 100–665 且不是 666，中间两位 01–99，后四位 0001–9999；不要用 123-45-6789，沙盒会拒绝）；IRS backup withholding：No；勾选确认 | 税号打码显示；"Encrypted in transit and at rest" |
+| B4 | P-03d Home address | 200 Market Street / San Francisco / CA / 94105 | 不接受 P.O. Box |
+| B5 | P-03e Employment & finances | Employed / Example Corp / Industry：Professional, scientific & technical services / Position：Engineer；收入、净资产等任选；Sources of funds：Employment income + Savings | 行业为 DW 开户必填（沙盒实测）；资金来源与 DW 取值一一对应 |
+| B6 | P-03f Compliance | 三题都选 No | 监管问题 |
+| B7 | P-03g Account type | Continue | 首期固定现金账户、自主管理（LIVE · CASH · SELF） |
+| B8 | P-05 Disclosures | 勾选全部协议；**Rule 14b-1(c) 选 Yes**；E-Sign 勾选；签名输入与开户姓名一致 | DW 披露由 DW 提供；E-Sign 电子签名。**必须选 Yes**：沙盒中选 No 会导致无法开户（Q-DW-11，等待 DW 回复） |
+| B9 | P-30 Review & submit | 核对后 Submit | 各分组可返回修改；FinX 把资料提交给 DriveWealth 核验 |
+| B10 | P-06 Application status | 等待数秒 | **提交后数秒自动通过并开户**：四步进度条依次变绿，出现 "Your live account is open" 与账户号码（PDF-6 要求 App 内可见）。页面每 5 秒自动刷新，只显示 DW 真实返回的状态，没有任何模拟进度 |
+| B11 | 点 Later → 资产页；点右上角头像 → 账户抽屉 P-08 | — | 抽屉显示账户号码、LIVE · CASH · SELF、市值 / 购买力 / 现金（DW 实时数据） |
+
+**话术**：
+- 核验由 DriveWealth 执行（页面底部有说明）。沙盒环境核验即时完成；正式环境的审核时长待 DW 确认。
+- 如 B10 超过 1 分钟仍未开户：先看后端日志是否有 `open account failed`；可切换到备用用户 `sim-open@example.com`（已开户）继续演示。
+
+---
+
+## 4. 主线 C：资金（约 6 分钟）
+
+| 步骤 | 操作 | 讲解要点 |
+|---|---|---|
+| C1 | 资产页"入金开始投资"→ 入金 P-13 | 两种方式：ACH（本人美国银行账户）与电汇 |
+| C2 | 点"银行转账（ACH）"→ 未绑卡时进入绑定 P-32 | 只能绑定本人名下账户，户名由系统按开户姓名登记；路由号码：`021000021`（公开的结构合法 ABA 号码）；账号：任意 8–12 位虚构数字；账户类型：支票 | 沙盒中绑卡立即生效（DW 不返回银行名称，列表显示备注名 + 尾号） |
+| C3 | 回到入金，输入 1000 → 下一步 → 确认入金 | 先演示输入 5 时的"单笔最低入金"提示；确认页说明扣款授权 | 金额限额由后端强制校验（示例值，以券商为准） |
+| C4 | 结果页 → 查看资金记录 P-18 → 点该笔 | 状态约 2 秒内变为"已完成"；详情显示 **DW 返回的购买力可用日与可提现日**（沙盒中约 2 个工作日后可用、30 天后可提现） | 时效以 DW 返回的日期为准；无返回值时才显示"通常 4–5 个工作日（待 DW 确认）" |
+| C5 | 回资产页下拉刷新 | 现金变为 $1,000.00，购买力仍为 $0（未到购买力可用日），可提现 $0 | 所有余额均为 DW 实时返回值，App 不自行计算 |
+| C6 | 抽屉 → 出金 P-14（或登录 `funded2@example.com`） | 可提现金额、账户现金、观察期内金额分开显示；输入任意金额 → "超过可提现金额 $0.00" | 可提现以 DW 返回为准，后端再次强制校验；电汇出金本次演示暂不开放 |
+| C7 | 抽屉 → 电汇入金信息（P-33） | DW 返回的收款信息，附言须含本人账户号码 | 只接受本人名下账户汇款 |
+
+**2026-11-23 之后**：`funded1` / `funded2` 的入金过了购买力可用日，可演示真实出金（ACH）。出金尚未在沙盒实测，正式演示前先按 progress.md 待办补测。
+
+---
+
+## 5. P-34 / P-35 / P-36（原型模拟模式，约 3 分钟）
+
+沙盒中提交后 KYC 直接通过，无法触发"需补资料 / 需补证件 / 未通过"。这三个页面在 App 中已实现（入口标注"待沙盒验证"），演示用原型：
+
+1. 浏览器打开原型 → 右侧"原型控制"→ 场景选"开户审核中（KYC 处理中）"。
+2. "模拟 DW 返回 KYC 结果"依次点：
+   - **需补资料** → P-34：只列 DW 标记的问题项，内联修改，提交前逐项确认"修改前 → 修改后"。
+   - **需补证件** → P-35：证件类型、拍摄指引、正反面上传。
+   - **拒绝** → P-36：中性措辞，不展示具体原因；参考号可复制；可继续看行情。
+3. **话术**：这三个分支的触发方式和原因码待 DW 确认（Q-DW-5）。App 端页面已就绪，DW 提供测试方法后接入重新提交接口。
+
+---
+
+## 6. 常见问题与预案
+
+| 情况 | 处理 |
+|---|---|
+| 模拟器输入邮箱乱码 | 切换为英文键盘（中文拼音输入法会干扰） |
+| 登录后资产卡一直显示"—" | 检查后端是否在运行、`healthz` 中 `db` 是否为 ok |
+| 开户停在"交易账户开立中" | 多半是 P-05 中 Rule 14b 选了 No（Q-DW-11）；改用备用用户 `sim-open@example.com` 继续 |
+| 行情不动 | 后端重启后行情从初始价开始；确认后端在运行即可 |
+| DW 接口报错 / 超时 | 已登录页面会显示"暂时无法刷新"并保留上次数据；稍后下拉刷新。不要连续重启后端（token 限流） |
+| 需要重复使用演示邮箱 | `demoreset reset -email X -yes` 后重新登录 |
+
+---
+
+## 7. 演示范围说明（被问到时）
+
+- 不在 Demo-1 范围：交易下单、持仓与订单、股票大师 / Fifi / 奖励 Tab、通知、文件、设置、模拟账户、电汇出金（待实测）。
+- 行情为虚拟数据；P-09 中涨跌分布、内部人增减持、今日热点、成交额等没有数据源的区块暂不显示。
+- 时效与限额相关文案保留"待 DW 确认"字样，正式值以 DW 确认为准。

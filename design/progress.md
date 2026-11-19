@@ -29,7 +29,7 @@
 | 10 ✅ | Flutter KYC 与账户：P-06（轮询）、P-34/35/36（入口标"待沙盒验证"）、P-08 抽屉；**F12**：P-07 资产卡与 P-08 接 `/account/money`（余额/购买力/可提现取 DW 返回值，未开户显示开户引导） | #4、#9 | M+ |
 | F11b ✅ | **F11 Flutter 行情**：P-07 自选、P-09 市场列表、P-10 个股（仅展示，无下单）；轮询 3–5 秒，价格变动时涨跌色刷新 | F11a、#10（共用 P-07） | M |
 | 11 ✅ | Flutter 资金流：P-31/32 绑卡、P-13 入金、P-14 出金、P-18 资金记录 | #6、#10 | L |
-| 12 | 演示辅助：`cmd/demoreset`（含 marketsim 重置）、`design/demo-script.md`、真机说明 | 全部 | S |
+| 12 ✅ | 演示辅助：`cmd/demoreset`（含 marketsim 重置）、`design/demo-script.md`、真机说明 | 全部 | S |
 
 **已决定（2026-11-19）**：Rule 14b-1(c) 选"否"时沙盒拒绝开户（Q-DW-11）。用户决定：App 保持现状（不强制选"是"），演示用户在 P-05 选"是"；等 DW 回复后再定正式处理。
 
@@ -42,8 +42,11 @@
 | D-3 | 个股接口（`/market/instruments/{symbol}`）不含买一 / 卖一价 | P-10 另调 `/market/quotes?symbols=X` 取 bid/ask，不改接口契约 | 也可在个股接口增加 bid/ask（向后兼容的新增字段） |
 | D-4 | P-14 电汇出金（WIRE）未经沙盒实测（可提现为 0，需等 2026-11-23） | App 暂不开放电汇出金表单，只做 ACH 出金；后端已支持 | 11-23 补测出金时一并实测后开放 |
 | D-5 | P-18 历史记录 | 只显示资金进出，最近 50 条（后端分页游标在响应头，暂未接） | 后续加分页与交易流水 |
+| D-6 | `cmd/demoreset` 的"行情重置" | 不新增 HTTP 管理接口；虚拟行情用固定种子初始化，重启后端即重置（demo-script 已写明） | 若需不重启重置，可加仅 sandbox、仅本机可用的管理接口 |
+| D-7 | 已入金测试用户的 DW 用户 id、银行 id | 存在 `backend/demo-users.local.json`（`*.local.json` 已 gitignore，不提交），`demoreset import -local` 使用；两用户已于 2026-11-19 恢复本地关联（funded1 / funded2@example.com） | 也可每次手动传 `-dw-user` 等参数 |
+| D-8 | CLAUDE.md 规则 7"用户可见文字用简体中文"与开户 / KYC 模块英文化（ui-signoff 已登记）字面冲突 | 未改 CLAUDE.md（项目规则文件由用户维护） | 建议在规则 7 后补一句"开户与 KYC 模块（P-03–P-06、P-30、P-34–P-36）为英文，见 ui-signoff 第 3 节" |
 
-**待办（日期相关）**：**2026-11-23 之后**补测出金——用 #7 中已入金的两个虚构测试用户（$1,000、$5,000；本地数据库曾重建，需先用 #12 的"导入已有沙盒用户"恢复本地关联），验证 `POST /funding/redemptions` 成功响应结构与状态推进（ACH，必要时 WIRE）、出金后资金汇总变化，并走通演示出金路径；结果回写 sandbox-log.md 与 api-spec.md。
+**待办（日期相关）**：**2026-11-23 之后**补测出金——用 #7 中已入金的两个虚构测试用户（$1,000、$5,000；本地数据库曾重建，本地关联已于 2026-11-19 用 `demoreset import` 恢复，登录 funded1 / funded2@example.com 即可），验证 `POST /funding/redemptions` 成功响应结构与状态推进（ACH，必要时 WIRE）、出金后资金汇总变化，并走通演示出金路径；结果回写 sandbox-log.md 与 api-spec.md。
 
 DoD 对应：第 9 条（首页真实余额、入金后可见变化）→ #10 + #11；第 10 条（行情可见变动）→ F11a + F11b。
 
