@@ -85,8 +85,20 @@ func TestMigrateIntegration(t *testing.T) {
 			t.Fatalf("表 %s 未创建: %v", tbl, err)
 		}
 	}
-	if err := s.MigrateDown(); err != nil {
-		t.Fatal(err)
+	// 000002：提交编排字段与证件暂存表
+	var docs bool
+	if err := s.DB.QueryRow(`SELECT to_regclass('application_documents') IS NOT NULL`).Scan(&docs); err != nil || !docs {
+		t.Fatalf("application_documents 未创建: %v", err)
+	}
+	var nullable string
+	if err := s.DB.QueryRow(`SELECT is_nullable FROM information_schema.columns WHERE table_name = 'dw_users' AND column_name = 'dw_user_id'`).Scan(&nullable); err != nil || nullable != "YES" {
+		t.Fatalf("dw_users.dw_user_id 应可空: %q %v", nullable, err)
+	}
+	// 每一步都能回滚再重放
+	for i := 0; i < 2; i++ {
+		if err := s.MigrateDown(); err != nil {
+			t.Fatal(err)
+		}
 	}
 	if err := s.MigrateUp(); err != nil {
 		t.Fatal(err)

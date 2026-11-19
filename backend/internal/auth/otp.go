@@ -73,8 +73,11 @@ type otpLimitErr struct{ retryAfter int }
 
 func (e otpLimitErr) Error() string { return "otp rate limited" }
 
-// issue 生成新验证码；受重发间隔与每小时次数限制。
-func (s *otpStore) issue(email, ip string, now time.Time) (string, error) {
+// DevFixedCode：演示模式固定验证码（仅 OTP_DEV_LOG=true 时启用；production 禁止开启该开关）。
+const DevFixedCode = "000000"
+
+// issue 生成新验证码；受重发间隔与每小时次数限制。fixed 非空时使用固定码（演示模式）。
+func (s *otpStore) issue(email, ip, fixed string, now time.Time) (string, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if e, ok := s.codes[email]; ok && now.Sub(e.sentAt) < OTPResendAfter {
@@ -88,11 +91,14 @@ func (s *otpStore) issue(email, ip string, now time.Time) (string, error) {
 	if len(s.byIP[ip]) >= OTPMaxSendsPerIP {
 		return "", otpLimitErr{int(time.Hour.Seconds()) - int(now.Sub(s.byIP[ip][0]).Seconds())}
 	}
-	n, err := rand.Int(rand.Reader, big.NewInt(1_000_000))
-	if err != nil {
-		return "", err
+	code := fixed
+	if code == "" {
+		n, err := rand.Int(rand.Reader, big.NewInt(1_000_000))
+		if err != nil {
+			return "", err
+		}
+		code = fmt.Sprintf("%06d", n.Int64())
 	}
-	code := fmt.Sprintf("%06d", n.Int64())
 	s.codes[email] = &otpEntry{mac: mac(s.secret, email+":"+code), expires: now.Add(OTPTTL), sentAt: now}
 	s.byEmail[email] = append(s.byEmail[email], now)
 	s.byIP[ip] = append(s.byIP[ip], now)

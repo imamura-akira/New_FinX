@@ -85,8 +85,10 @@ type Config struct {
 	// JWTSecret：会话 JWT（HS256）签名密钥，至少 32 字节，环境变量中为 base64。
 	JWTSecret  []byte
 	SessionTTL time.Duration // 会话有效期，默认 24h（契约暂无刷新接口）
-	// OTPDevLog：把邮箱验证码打印到日志（仅开发联调；production 禁止开启）。
+	// OTPDevLog：把邮箱验证码打印到日志，并启用演示固定验证码 000000（仅开发/演示；production 禁止开启）。
 	OTPDevLog bool
+	// CORSAllowedOrigins：允许跨域的来源（逗号分隔；空 = 不启用 CORS；iOS 原生 App 不需要）。
+	CORSAllowedOrigins []string
 
 	DW DW
 
@@ -127,13 +129,14 @@ func LoadFrom(get Getenv) (*Config, error) {
 			TokenRequestsPerHour: p.int("DW_TOKEN_REQUESTS_PER_HOUR", 6),
 			TokenRefreshSkew:     p.dur("DW_TOKEN_REFRESH_SKEW", 5*time.Minute),
 		},
-		SessionTTL:     p.dur("SESSION_TTL", 24*time.Hour),
-		OTPDevLog:      p.bool("OTP_DEV_LOG", false),
-		KYCMode:        KYCMode(p.str("KYC_MODE", string(KYCModeDoKYC))),
-		BankLinkMethod: BankLinkMethod(p.str("BANK_LINK_METHOD", string(BankLinkDirect))),
-		UserSubmitMode: UserSubmitMode(p.str("USER_SUBMIT_MODE", string(SubmitPostPatch))),
-		SeasoningDays:  p.int("SEASONING_DAYS", 30),
-		SeasoningStart: SeasoningStart(p.str("SEASONING_START", string(SeasoningFromCleared))),
+		SessionTTL:         p.dur("SESSION_TTL", 24*time.Hour),
+		OTPDevLog:          p.bool("OTP_DEV_LOG", false),
+		CORSAllowedOrigins: splitList(get("CORS_ALLOWED_ORIGINS")),
+		KYCMode:            KYCMode(p.str("KYC_MODE", string(KYCModeDoKYC))),
+		BankLinkMethod:     BankLinkMethod(p.str("BANK_LINK_METHOD", string(BankLinkDirect))),
+		UserSubmitMode:     UserSubmitMode(p.str("USER_SUBMIT_MODE", string(SubmitPostPatch))),
+		SeasoningDays:      p.int("SEASONING_DAYS", 30),
+		SeasoningStart:     SeasoningStart(p.str("SEASONING_START", string(SeasoningFromCleared))),
 		Limits: Limits{
 			MinDeposit:    p.float("LIMIT_MIN_DEPOSIT", 10),
 			MaxDeposit:    p.float("LIMIT_MAX_DEPOSIT", 50000),
@@ -225,6 +228,11 @@ func (c *Config) Validate() error {
 	if c.OTPDevLog && c.Env == "production" {
 		errs = append(errs, "production 环境禁止开启 OTP_DEV_LOG")
 	}
+	for _, o := range c.CORSAllowedOrigins {
+		if o == "*" && c.Env == "production" {
+			errs = append(errs, "production 环境 CORS_ALLOWED_ORIGINS 不能为 *")
+		}
+	}
 	l := c.Limits
 	if l.MinDeposit <= 0 || l.MaxDeposit < l.MinDeposit || l.DailyDeposit < l.MaxDeposit {
 		errs = append(errs, "入金限额不合理（需 0 < 最低 ≤ 最高 ≤ 每日）")
@@ -262,6 +270,16 @@ func (c *Config) RequireDoKYC() error {
 		return ErrPartnerKYCNotImplemented
 	}
 	return nil
+}
+
+func splitList(v string) []string {
+	var out []string
+	for _, s := range strings.Split(v, ",") {
+		if s = strings.TrimSpace(s); s != "" {
+			out = append(out, s)
+		}
+	}
+	return out
 }
 
 type parser struct {

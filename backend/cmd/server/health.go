@@ -39,6 +39,7 @@ func newMux(d healthDeps, register ...func(*http.ServeMux)) http.Handler {
 	for _, reg := range register {
 		reg(mux)
 	}
+	defer registerPending(mux) // 契约中尚未实现的接口统一返回 50003
 	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, r *http.Request) {
 		h := healthData{Status: "ok", Env: d.env, Version: d.version, DB: "not_configured", DW: "not_configured", Time: time.Now().UTC().Format(time.RFC3339)}
 		if d.dwConfigured {

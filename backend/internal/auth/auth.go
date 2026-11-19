@@ -45,7 +45,13 @@ type Service struct {
 	ttl    time.Duration
 	now    func() time.Time
 	logger *slog.Logger
+	// fixedCode：演示模式下所有验证码固定为 DevFixedCode（见 EnableDemoCode）。
+	fixedCode string
 }
+
+// EnableDemoCode 开启演示固定验证码 000000。调用方须确保仅在 config.OTPDevLog=true 时调用
+// （config 已禁止 production 开启 OTP_DEV_LOG）。限频、有效期、一次性规则照常生效。
+func (s *Service) EnableDemoCode() { s.fixedCode = DevFixedCode }
 
 // New：secret 为 JWT 签名密钥（同时用于 OTP 的 HMAC 存储）。
 func New(repo Repo, sender Sender, secret []byte, ttl time.Duration, logger *slog.Logger) *Service {
@@ -83,7 +89,7 @@ func (s *Service) handleRequestOTP(w http.ResponseWriter, r *http.Request) {
 		httpx.Fail(w, r, httpx.Validation("", httpx.FieldError{Field: "email", Reason: "请输入有效的邮箱地址"}))
 		return
 	}
-	code, err := s.otp.issue(email, httpx.ClientIP(r), s.now())
+	code, err := s.otp.issue(email, httpx.ClientIP(r), s.fixedCode, s.now())
 	if err != nil {
 		var le otpLimitErr
 		if errors.As(err, &le) {

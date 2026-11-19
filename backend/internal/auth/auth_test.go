@@ -361,3 +361,41 @@ func TestDevLogSenderMasksEmail(t *testing.T) {
 		t.Fatalf("email not masked: %s", buf.String())
 	}
 }
+
+func TestDemoFixedCode(t *testing.T) {
+	cases := []struct {
+		name     string
+		demo     bool
+		wantCode int
+	}{
+		{"演示模式接受 000000", true, 0},
+		{"非演示模式拒绝 000000", false, 42200},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			h := newHarness()
+			if tc.demo {
+				h.svc.EnableDemoCode()
+			}
+			h.do("POST", "/api/v1/auth/otp/request", "", map[string]string{"email": "demo@example.com"})
+			if tc.demo && h.sender.codes["demo@example.com"] != DevFixedCode {
+				t.Fatalf("演示模式下发送的码应为 %s", DevFixedCode)
+			}
+			code := DevFixedCode
+			if !tc.demo && h.sender.codes["demo@example.com"] == DevFixedCode {
+				t.Skip("随机码恰好为 000000")
+			}
+			r := h.do("POST", "/api/v1/auth/otp/verify", "", map[string]string{"email": "demo@example.com", "code": code})
+			if r.Code != tc.wantCode {
+				t.Fatalf("got %d want %d", r.Code, tc.wantCode)
+			}
+		})
+	}
+	// 演示模式下固定码仍然一次性
+	h := newHarness()
+	h.svc.EnableDemoCode()
+	h.login(t, "demo@example.com")
+	if r := h.do("POST", "/api/v1/auth/otp/verify", "", map[string]string{"email": "demo@example.com", "code": DevFixedCode}); r.Code != 42200 {
+		t.Fatalf("固定码不应可重复使用: %+v", r)
+	}
+}

@@ -102,6 +102,10 @@ func run(migrateCmd string, logger *slog.Logger) error {
 			logger.Warn("email provider not configured and OTP_DEV_LOG=false: OTP login will fail")
 		}
 		authSvc := auth.New(auth.PGRepo{DB: st.DB}, sender, cfg.JWTSecret, cfg.SessionTTL, logger)
+		if cfg.OTPDevLog { // 演示固定验证码 000000（config 已禁止 production 开启 OTP_DEV_LOG）
+			authSvc.EnableDemoCode()
+			logger.Warn("demo OTP enabled: code 000000 is accepted (development only)")
+		}
 		routes = append(routes, func(mux *http.ServeMux) { authSvc.Routes(mux, apiPrefix) })
 	} else {
 		logger.Warn("API routes disabled: DATABASE_URL, PII_ENCRYPTION_KEY and JWT_SECRET are all required")
@@ -112,8 +116,9 @@ func run(migrateCmd string, logger *slog.Logger) error {
 		pinger = st.Ping
 	}
 	srv := &http.Server{
-		Addr:              cfg.HTTPAddr,
-		Handler:           newMux(healthDeps{env: cfg.Env, version: version, dbPing: pinger, dwConfigured: dw != nil}, routes...),
+		Addr: cfg.HTTPAddr,
+		Handler: withAccessLog(logger, withCORS(cfg.CORSAllowedOrigins,
+			newMux(healthDeps{env: cfg.Env, version: version, dbPing: pinger, dwConfigured: dw != nil}, routes...))),
 		ReadHeaderTimeout: 10 * time.Second,
 	}
 
