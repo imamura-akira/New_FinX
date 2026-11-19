@@ -81,3 +81,87 @@ func TestPGDraftRepo(t *testing.T) {
 		t.Fatalf("非草稿应返回 ErrNotDraft，实际 %v", err)
 	}
 }
+
+func TestPGOrchRepo(t *testing.T) {
+	r, uid := pgRepo(t)
+	ctx := context.Background()
+	now := time.Now().UTC().Truncate(time.Millisecond)
+	a, _ := r.EnsureDraft(ctx, uid)
+	if _, err := r.PutDocument(ctx, a.ID, "PASSPORT", "FRONT", "image/jpeg", []byte{1}); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := r.MarkSubmitted(ctx, a.ID, "FX261119-TEST"+a.ID[:4], []byte{5}, []byte{6}, []byte{7}, now); err != nil {
+		t.Fatal(err)
+	}
+	if err := r.MarkSubmitted(ctx, a.ID, "FX261119-AGAIN", nil, nil, nil, now); !errors.Is(err, ErrNotDraft) {
+		t.Fatalf("重复提交应 ErrNotDraft: %v", err)
+	}
+	o, err := r.LoadOrch(ctx, a.ID)
+	if err != nil || o == nil || o.Status != "SUBMITTED" || o.DWUserID != "" || len(o.UsernameEnc) != 1 {
+		t.Fatalf("LoadOrch: %+v %v", o, err)
+	}
+	if o.LoginEmail == "" {
+		t.Fatal("应带出登录邮箱")
+	}
+	if k, _ := r.KYC(ctx, a.ID); k == nil || k.Status != "KYC_NOT_READY" || k.DWUserID != "" {
+		t.Fatalf("提交后应有 dw_users 影子行: %+v", k)
+	}
+
+	ids, _ := r.PendingSubmissions(ctx, now.Add(time.Minute), 100)
+	if !containsID(ids, a.ID) {
+		t.Fatal("新提交应在待续传列表中")
+	}
+	if err := r.RecordAttempt(ctx, a.ID, "DW HTTP 503", false, now); err != nil {
+		t.Fatal(err)
+	}
+	if ids, _ := r.PendingSubmissions(ctx, now.Add(-time.Second), 100); containsID(ids, a.ID) {
+		t.Fatal("刚尝试过的不应立即重试")
+	}
+
+	dwID := "it-dw-" + a.ID[:8]
+	if err := r.SetDWUser(ctx, a.ID, dwID, StateCreated, now); err != nil {
+		t.Fatal(err)
+	}
+	if err := r.SetOrchState(ctx, a.ID, StatePatched); err != nil {
+		t.Fatal(err)
+	}
+	docs, _ := r.StagedDocuments(ctx, a.ID)
+	if len(docs) != 1 {
+		t.Fatalf("应有 1 份待上传证件: %d", len(docs))
+	}
+	if err := r.MarkDocumentUploaded(ctx, docs[0].ID, "dw-doc-1", now); err != nil {
+		t.Fatal(err)
+	}
+	if docs, _ := r.StagedDocuments(ctx, a.ID); len(docs) != 0 {
+		t.Fatal("已上传证件不应再出现")
+	}
+	if err := r.SetOrchState(ctx, a.ID, StateDocsDone); err != nil {
+		t.Fatal(err)
+	}
+	o, _ = r.LoadOrch(ctx, a.ID)
+	if o.DWUserID != dwID || o.OrchState != StateDocsDone || o.SubmitAttempts != 1 {
+		t.Fatalf("最终状态不正确: %+v", o)
+	}
+	if ids, _ := r.PendingSubmissions(ctx, now.Add(time.Hour), 100); containsID(ids, a.ID) {
+		t.Fatal("已完成的不应在待续传列表中")
+	}
+	if err := r.RecordAttempt(ctx, a.ID, "DW HTTP 400", true, now); err != nil {
+		t.Fatal(err)
+	}
+	if o, _ = r.LoadOrch(ctx, a.ID); !o.SubmitBlocked {
+		t.Fatal("blocked 应被记录")
+	}
+	if err := r.Audit(ctx, "system", "test.event", "application:"+a.ID, map[string]any{"k": "v"}); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func containsID(ids []string, id string) bool {
+	for _, x := range ids {
+		if x == id {
+			return true
+		}
+	}
+	return false
+}

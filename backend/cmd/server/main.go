@@ -112,7 +112,15 @@ func run(migrateCmd string, logger *slog.Logger) error {
 		if err != nil {
 			return err
 		}
-		appSvc := application.New(application.PGRepo{DB: st.DB}, cipher, logger)
+		appRepo := application.PGRepo{DB: st.DB}
+		appSvc := application.New(appRepo, cipher, logger)
+		if dw != nil {
+			orch := application.NewOrchestrator(appRepo, dw, cipher, cfg.UserSubmitMode, logger)
+			appSvc.WithOrchestrator(orch, appRepo, cfg.KYCMode)
+			go orch.Start(ctx, time.Minute) // 后台续传未完成的提交
+		} else {
+			logger.Warn("application submit disabled: DW credentials not configured")
+		}
 		routes = append(routes, func(mux *http.ServeMux) {
 			authSvc.Routes(mux, apiPrefix)
 			appSvc.Routes(mux, apiPrefix, authSvc.RequireAuth)

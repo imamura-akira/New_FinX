@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/imamura-akira/New_FinX/backend/internal/config"
 	"github.com/imamura-akira/New_FinX/backend/internal/crypto"
 	"github.com/imamura-akira/New_FinX/backend/internal/dwmapper"
 	"github.com/imamura-akira/New_FinX/backend/internal/httpx"
@@ -57,7 +58,10 @@ type Service struct {
 	cipher *crypto.Cipher
 	logger *slog.Logger
 	now    func() time.Time
-	orch   *Orchestrator // 提交编排（#3）；nil 时 submit 返回 50003
+	orch   *Orchestrator // 提交编排；nil 时 submit 由服务器统一返回 50003
+	orepo  OrchRepo
+	// kycMode：PARTNER_KYC 本阶段未实现（Q-DW-1）
+	kycMode config.KYCMode
 }
 
 // New 创建模块。
