@@ -1,6 +1,6 @@
 # 开发进度（progress.md）
 
-> 最近更新：2026-11-19（Demo-1 #5 完成）
+> 最近更新：2026-11-19 夜（Demo-1 全部任务完成，见第 0.1 节完成汇报；待确认决定 D-1–D-8 见第 0 节）
 
 ## 0. 当前里程碑：Demo-1（客户演示）
 
@@ -16,7 +16,13 @@
 | 6 | 资金接口（绑卡 DIRECT、ACH 入金、ACH/WIRE 出金、资金记录、资金汇总、电汇指引、在途对账） | 完成（fake DW + Postgres 测试；沙盒实测在 #7） | 见 git log |
 | 7 | 沙盒实测 C | 完成：绑卡、ACH 入金（约 2 秒到账，可用日 DW 返回）、出金拦截、电汇指引均实测；**出金成功路径待 2026-11-23 资金可用后补测** | 见 sandbox-log.md |
 | 8 | Flutter 工程骨架 + P-01 / P-02 | 完成：按 feature 分层；ApiClient（信封、错误码、401xx → S-01）；token 存 Keychain；原型设计令牌主题；P-01 欢迎、P-02 邮箱验证码登录、P-07 最小外壳、S-01 会话过期；16 个测试；iPhone 17 模拟器连本机后端实测登录与会话恢复 | 见 git log |
-| 9–12 | 见下方"剩余任务（2026-11-19 修订）" | 未开始 | — |
+| 8b / 8c / F11a | FinX 主题、后端开户提示英文化、后端虚拟行情 | 完成 | 9e880fe / 80a6122 / a1de760 |
+| 9 | Flutter 开户流程（英文、新版式） | 完成 | 3bffaf3 |
+| 10 | Flutter P-06 开户进度、P-34/35/36、P-07 资产卡、P-08 抽屉（F12） | 完成 | 8beb241 |
+| F11b | Flutter 行情：P-07 自选、P-09、P-10、底部 Tab | 完成 | 5c8f2d0 |
+| 11 | Flutter 资金：P-31/32、P-13、P-14、P-18、P-33 | 完成 | e998b7d |
+| — | App 图标与显示名称 FinX Stocks（theme.md v1.2） | 完成 | b3c2052 |
+| 12 | cmd/demoreset、demo-script.md、真机说明 | 完成 | 9998e82 |
 
 ### 剩余任务（2026-11-19 修订：纳入 F11 虚拟行情、F12 账户余额、FinX 主题、开户模块英文化）
 
@@ -50,7 +56,7 @@
 
 DoD 对应：第 9 条（首页真实余额、入金后可见变化）→ #10 + #11；第 10 条（行情可见变动）→ F11a + F11b。
 
-**恢复步骤**：按上表从 #9 开始（8b、8c、F11a 已完成）。用户要求任务间不停顿连续执行（停止条件见记忆 continuous-execution）。2026-11-23 之后另行补测出金（sandbox-log.md "待补测"）。
+**恢复步骤**：Demo-1 清单已全部完成。下一步：① 用户确认待确认决定 D-1–D-8；② 2026-11-23 之后补测出金（上方待办）；③ 按 design/demo-script.md 彩排一次。
 App 运行方式见 `app/README.md`。注意：项目在 iCloud 同步的桌面目录，`app/build` 是指向 `~/Library/Caches/finx-app-build` 的符号链接（否则 codesign 因 iCloud 扩展属性失败）；若误删，重建：`cd app && ln -s ~/Library/Caches/finx-app-build build`。
 本地运行（演示模式 + 沙盒分析日志）：
 
@@ -60,10 +66,32 @@ cd "/Users/ak/Desktop/Claude FinX New/backend" && (set -a; source ./.env; set +a
 
 ---
 
+## 0.1 Demo-1 完成汇报（2026-11-19 夜，无人值守执行）
+
+**结论**：Demo-1 清单（8b–12、F11、F12）全部完成，每项单独提交（未推送）。三条主线均可在 iOS 模拟器上连接本机后端与 DW 沙盒演示：
+- **A 登录与行情**：邮箱验证码登录；P-09 / P-10 / P-07 自选的虚拟行情每 3 秒刷新、涨跌闪色；未登录可浏览行情。
+- **B 开户**：英文开户流程 → 提交后数秒 KYC 通过、自动开户 → P-06 显示账户号码；P-07 资产卡与 P-08 抽屉显示 DW 实时资金。
+- **C 资金**：绑卡（DIRECT）、ACH 入金、出金（DW 可提现校验）、资金记录（显示 DW 返回的可用日）、电汇入金指引。
+
+**验证**：
+- 后端 `go vet` / `go test ./...` 全部通过。
+- Flutter `flutter analyze` 无问题，`flutter test` 68 项通过（开户表单、出入金金额校验均有 widget / 单元测试）。
+- 模拟器联调覆盖：开户中与已开户两种状态、行情三个页面、P-13 / P-33 / P-14（DW 真实数据），以及主屏图标与名称。
+- 未在模拟器上亲手输入银行账号绑卡（只用测试与 #7 的接口级沙盒实测覆盖）。
+
+**夜间新发现**：
+- **沙盒：Rule 14b-1(c) 选 No 时 DW 拒绝开户**（U040，Q-DW-11）。已按用户决定保持现状，演示时选 Yes。
+- **后端二进制过旧**：运行中的服务早于"资金来源"修正，导致草稿被拒；已重新编译并重启。`backend/.env` 的 `DATABASE_URL` 原为空值，已按用户指示补上。
+
+**待确认决定**：D-1–D-8（第 0 节表格）。均为可逆、不改变合规语义的保守选择。
+
+**需要用户处理**：
+- 推送本地提交：5c8f2d0（F11b）→ 本次汇报提交，共 5 个（3bffaf3、8beb241、60d4ba2 已推送）。
+- 未跟踪的 `design/brand/`、`design/screens/`、`design/theme.md`、`prototype/assets/`，以及已修改的 `design/prd.md`、`design/backend-design.md`、`prototype/` 改动，均为用户自己的文件，未纳入提交，请自行决定是否提交。
+
 ## 1. 当前位置
 
-- **里程碑**：M0 已完成，并已推送。
-- **当前**：M1（节点 1，F1–F4）进行中。后端完成 F1 与 dwmapper；F2–F4 业务接口与 Flutter 还没开始。
+- **里程碑**：M0 已完成；M1 剩余工作并入 Demo-1，Demo-1 已全部完成（见第 0、0.1 节）。下文第 2–4 节为早期记录，保留备查。
 
 ## 2. 已完成
 
@@ -97,7 +125,7 @@ cd "/Users/ak/Desktop/Claude FinX New/backend" && (set -a; source ./.env; set +a
 cd "/Users/ak/Desktop/Claude FinX New/backend" && go build ./... && go test ./...
 ```
 
-确认临时数据库还在。电脑重启或 Docker 退出后容器会消失，需要重新起一个并迁移：
+确认数据库容器在运行（现为 `--restart unless-stopped` + 数据卷 `finx-pgdata`，Docker 重启后数据保留）。容器不存在时重新创建并迁移：
 
 ```bash
 docker ps --filter name=finx-pg --format '{{.Names}}' | grep -q finx-pg || docker run -d --name finx-pg --restart unless-stopped -v finx-pgdata:/var/lib/postgresql/data -e POSTGRES_PASSWORD=dev -e POSTGRES_DB=finx -p 127.0.0.1:55432:5432 postgres:16-alpine
@@ -107,9 +135,9 @@ docker ps --filter name=finx-pg --format '{{.Names}}' | grep -q finx-pg || docke
 cd "/Users/ak/Desktop/Claude FinX New/backend" && (set -a; source ./.env; set +a; DATABASE_URL='postgres://postgres:dev@127.0.0.1:55432/finx?sslmode=disable' go run ./cmd/server -migrate up)
 ```
 
-然后对 Claude Code 说："继续节点 1：写迁移 000002，再实现 application 包的草稿接口（GET /application、PUT /application/draft）及其单测"。
+（早期记录，已完成）当时的下一步："继续节点 1：写迁移 000002，再实现 application 包的草稿接口（GET /application、PUT /application/draft）及其单测"。
 
-本地运行服务器时（`DATABASE_URL` 与 `OTP_DEV_LOG` 不写进 .env，在命令行传入）：
+本地运行服务器时（`DATABASE_URL` 已写入 .env；`OTP_DEV_LOG` 仍在命令行传入）。演示用启动方式见 design/demo-script.md 第 1 节：
 
 ```bash
 cd "/Users/ak/Desktop/Claude FinX New/backend" && (set -a; source ./.env; set +a; DATABASE_URL='postgres://postgres:dev@127.0.0.1:55432/finx?sslmode=disable' OTP_DEV_LOG=true go run ./cmd/server)
