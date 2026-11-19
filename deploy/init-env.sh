@@ -15,6 +15,7 @@ APP_ENV_FILE=../backend/.env
 
 set_kv() { # set_kv FILE KEY VALUE
 	local file=$1 key=$2 val=$3
+	touch "$file"
 	sed -i "/^${key}=/d" "$file"
 	printf '%s=%s\n' "$key" "$val" >>"$file"
 }
