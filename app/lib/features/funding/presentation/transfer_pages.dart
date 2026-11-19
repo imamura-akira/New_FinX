@@ -7,6 +7,7 @@ import '../../../app/scope.dart';
 import '../../../app/theme.dart';
 import '../../../core/api/api_client.dart';
 import '../../../core/format.dart';
+import '../../../core/widgets/celebration.dart';
 import '../../../core/widgets/form_widgets.dart';
 import '../../../core/widgets/widgets.dart';
 import '../../account/data/account_api.dart';
@@ -173,6 +174,12 @@ class _DepositPageState extends State<DepositPage> {
         _result = r;
         _step = 'done';
       });
+      // 入金提交成功：轻量版庆祝（结果待确认时不播放）；同一流水只播一次
+      if (!r.pending) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) Celebration.show(context, key: 'deposit:${r.transferId}', level: CelebrationLevel.light);
+        });
+      }
     } on ApiException catch (e) {
       if (!mounted) return;
       setState(() {

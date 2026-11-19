@@ -8,6 +8,7 @@ import '../../../app/scope.dart';
 import '../../../app/theme.dart';
 import '../../../core/api/api_client.dart';
 import '../../../core/format.dart';
+import '../../../core/widgets/celebration.dart';
 import '../../../core/widgets/form_widgets.dart';
 import '../../../core/widgets/widgets.dart';
 import '../data/account_api.dart';
@@ -42,6 +43,9 @@ mixin ProgressLoader<T extends StatefulWidget> on State<T> {
 
   bool get pollWhileVisible => true;
 
+  /// 每次拿到新的进度后调用（prev 为上一次，首次加载为 null）。
+  void onProgress(ApplicationProgress? prev, ApplicationProgress next) {}
+
   @override
   void initState() {
     super.initState();
@@ -54,10 +58,12 @@ mixin ProgressLoader<T extends StatefulWidget> on State<T> {
     try {
       final p = await AccountApi(AppScope.of(context).api).progress();
       if (!mounted) return;
+      final prev = progress;
       setState(() {
         progress = p;
         loadError = null;
       });
+      onProgress(prev, p);
       _schedule(p.shouldPoll && pollWhileVisible);
     } on ApiException catch (e) {
       if (!mounted) return;
@@ -263,6 +269,23 @@ class ApplicationStatusPage extends StatefulWidget {
 }
 
 class _ApplicationStatusPageState extends State<ApplicationStatusPage> with ProgressLoader {
+  /// 刚提交的申请：首次加载时账户已开立也算"开户成功时刻"（沙盒数秒即开户）。
+  static const _freshWindow = Duration(minutes: 15);
+
+  /// 开户成功时刻（theme.md 第 7 节）：从未开户变为 OPEN 的那一刻播放一次庆祝动画与触感；
+  /// 同一账户只播一次（Celebration 按 key 去重），轮询刷新、页面重建都不重播。
+  @override
+  void onProgress(ApplicationProgress? prev, ApplicationProgress next) {
+    if (next.accountStatus != 'OPEN') return;
+    final transition = prev != null && !prev.accountOpened;
+    final fresh = prev == null && next.submittedAt != null && DateTime.now().difference(next.submittedAt!) < _freshWindow;
+    if (!transition && !fresh) return;
+    final key = 'account-open:${next.accountNo ?? next.applicationRef ?? ''}';
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) Celebration.show(context, key: key, haptic: true);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final p = progress;

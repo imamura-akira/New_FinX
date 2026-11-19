@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:finx_app/app/config.dart';
 import 'package:finx_app/core/api/api_client.dart';
 import 'package:finx_app/core/session/session.dart';
+import 'package:finx_app/core/widgets/celebration.dart';
 import 'package:finx_app/features/market/domain/instruments.dart';
 import 'package:finx_app/main.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -53,6 +54,7 @@ Future<(FakeBackend, SessionController, MemoryTokenStore)> pumpApp(
   // 行情默认模拟（虚拟行情，价格随请求次数变化）；测试可自行覆盖
   be.handlers.putIfAbsent('GET /market/quotes', () => fakeQuotes());
   Watchlist.instance.reset();
+  Celebration.resetForTest();
   final api = ApiClient(baseUrl: 'http://test/api/v1', httpClient: be.client);
   final store = MemoryTokenStore()..value = storedToken;
   final session = SessionController(api: api, store: store);

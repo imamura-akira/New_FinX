@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:finx_app/core/widgets/celebration.dart';
 import 'package:finx_app/features/funding/domain/funding_rules.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
@@ -169,10 +170,17 @@ void main() {
     await tester.pumpAndSettle();
     expect(tester.widget<Text>(find.byKey(const Key('p13.confirm.amount'))).data, r'$1,000.00');
     await tester.tap(find.byKey(const Key('p13.submit')));
-    await tester.pumpAndSettle();
+    for (var i = 0; i < 5; i++) {
+      await tester.pump(const Duration(milliseconds: 100)); // 逐帧推进：pumpAndSettle 会把 2 秒庆祝动画跑完
+    }
     expect(be.lastBody('POST /funding/deposits'), {'bankAccountId': 'bank-1', 'amount': 1000});
     expect(find.text('入金已提交'), findsWidgets);
     expect(find.text('tr-1'), findsOneWidget);
+    // 入金提交成功：轻量版庆祝
+    expect(find.byType(ConfettiBurst), findsOneWidget);
+    expect(tester.widget<ConfettiBurst>(find.byType(ConfettiBurst)).level, CelebrationLevel.light);
+    await tester.pumpAndSettle();
+    expect(find.byType(ConfettiBurst), findsNothing);
   });
 
   testWidgets('P-13：券商结果不明（50001 附 transferId）显示"已记录"，不报错', (tester) async {
@@ -191,6 +199,7 @@ void main() {
     expect(find.text('入金已记录'), findsWidgets);
     expect(find.text('tr-9'), findsOneWidget);
     expect(find.text('提交中'), findsOneWidget);
+    expect(find.byType(ConfettiBurst), findsNothing, reason: '结果待确认时不庆祝');
   });
 
   testWidgets('P-14：可提现为 0 时拦截；服务端 42201 显示限额信息', (tester) async {
