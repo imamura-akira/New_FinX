@@ -35,7 +35,14 @@ TEST_DATABASE_URL=postgres://... go test ./internal/store/   # 可选：在真�
 
 其余包（auth、application、account、funding、notification、dwmapper、events）目前只有占位，按里程碑 M1–M4 实现。
 
-## 待沙盒验证
+## 凭据自检
 
-- DW token 响应字段名（当前兼容 `access_token` / `accessToken` / `token` 与 `expires_in` / `expiresIn`）
-- DW 请求 id 响应头名（当前兼容 `dw-request-id` / `X-Request-Id`）
+```bash
+set -a; source .env; set +a; go run ./cmd/dwcheck   # 申请一次 token，只报告结果；消耗 1 次每小时 token 预算
+```
+
+## 沙盒已验证（2026-11-19）
+
+- `POST /auth/tokens` 返回 200，现有 token 响应解析可用，有效期 3600 秒
+- 响应带请求 id 头（已能被现有兼容逻辑读取）
+- `DW_BASE_URL` 只填基础地址 `https://bo-api.drivewealth.io/back-office`；误填含 `/auth/tokens` 的完整路径会被 API 网关以 403 "Missing Authentication Token" 拒绝（配置校验已拦截）

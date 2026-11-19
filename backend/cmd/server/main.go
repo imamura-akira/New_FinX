@@ -90,6 +90,8 @@ func run(migrateCmd string, logger *slog.Logger) error {
 		logger.Warn("DW credentials not configured; DW calls disabled")
 	}
 
+	// TODO(M1-F1): 挂载 /api/v1 业务路由——cfg.APIReady() 时创建 auth.New(auth.PGRepo{DB: st.DB}, sender, cfg.JWTSecret, cfg.SessionTTL, logger)
+	// 并调用 Routes(mux, "/api/v1")；sender 在 cfg.OTPDevLog 时用 auth.DevLogSender，否则 auth.DisabledSender（邮件服务未接入）。
 	var pinger func(context.Context) error
 	if st != nil {
 		pinger = st.Ping

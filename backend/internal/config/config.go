@@ -82,6 +82,12 @@ type Config struct {
 	// PIIKey：AES-256-GCM 字段级加密密钥（32 字节，环境变量中为 base64）。
 	PIIKey []byte
 
+	// JWTSecret：会话 JWT（HS256）签名密钥，至少 32 字节，环境变量中为 base64。
+	JWTSecret  []byte
+	SessionTTL time.Duration // 会话有效期，默认 24h（契约暂无刷新接口）
+	// OTPDevLog：把邮箱验证码打印到日志（仅开发联调；production 禁止开启）。
+	OTPDevLog bool
+
 	DW DW
 
 	// —— 待 DW 确认的开关 ——
@@ -121,6 +127,8 @@ func LoadFrom(get Getenv) (*Config, error) {
 			TokenRequestsPerHour: p.int("DW_TOKEN_REQUESTS_PER_HOUR", 6),
 			TokenRefreshSkew:     p.dur("DW_TOKEN_REFRESH_SKEW", 5*time.Minute),
 		},
+		SessionTTL:     p.dur("SESSION_TTL", 24*time.Hour),
+		OTPDevLog:      p.bool("OTP_DEV_LOG", false),
 		KYCMode:        KYCMode(p.str("KYC_MODE", string(KYCModeDoKYC))),
 		BankLinkMethod: BankLinkMethod(p.str("BANK_LINK_METHOD", string(BankLinkDirect))),
 		UserSubmitMode: UserSubmitMode(p.str("USER_SUBMIT_MODE", string(SubmitPostPatch))),
@@ -144,6 +152,14 @@ func LoadFrom(get Getenv) (*Config, error) {
 			p.errs = append(p.errs, "PII_ENCRYPTION_KEY 不是合法的 base64")
 		} else {
 			c.PIIKey = key
+		}
+	}
+	if raw := get("JWT_SECRET"); raw != "" {
+		key, err := base64.StdEncoding.DecodeString(raw)
+		if err != nil {
+			p.errs = append(p.errs, "JWT_SECRET 不是合法的 base64")
+		} else {
+			c.JWTSecret = key
 		}
 	}
 	if len(p.errs) > 0 {
@@ -194,8 +210,20 @@ func (c *Config) Validate() error {
 	if !strings.HasPrefix(c.DW.BaseURL, "https://") && !strings.HasPrefix(c.DW.BaseURL, "http://127.0.0.1") && !strings.HasPrefix(c.DW.BaseURL, "http://localhost") {
 		errs = append(errs, "DW_BASE_URL 必须使用 https")
 	}
+	if strings.Contains(c.DW.BaseURL, "/auth/tokens") {
+		errs = append(errs, "DW_BASE_URL 只填基础地址（如 https://bo-api.drivewealth.io/back-office），不要包含 /auth/tokens")
+	}
 	if c.PIIKey != nil && len(c.PIIKey) != 32 {
 		errs = append(errs, "PII_ENCRYPTION_KEY 解码后必须是 32 字节（AES-256）")
+	}
+	if c.JWTSecret != nil && len(c.JWTSecret) < 32 {
+		errs = append(errs, "JWT_SECRET 解码后至少 32 字节")
+	}
+	if c.SessionTTL < time.Minute || c.SessionTTL > 30*24*time.Hour {
+		errs = append(errs, "SESSION_TTL 超出范围 1m–720h")
+	}
+	if c.OTPDevLog && c.Env == "production" {
+		errs = append(errs, "production 环境禁止开启 OTP_DEV_LOG")
 	}
 	l := c.Limits
 	if l.MinDeposit <= 0 || l.MaxDeposit < l.MinDeposit || l.DailyDeposit < l.MaxDeposit {
@@ -221,6 +249,11 @@ func (c *Config) Validate() error {
 // DWConfigured：DW 凭据是否齐全（不返回任何凭据内容）。
 func (c *Config) DWConfigured() bool {
 	return c.DW.AppKey != "" && c.DW.ClientID != "" && c.DW.ClientSecret != ""
+}
+
+// APIReady：业务接口所需的数据库、PII 密钥、JWT 密钥是否齐全。
+func (c *Config) APIReady() bool {
+	return c.DatabaseURL != "" && len(c.PIIKey) == 32 && len(c.JWTSecret) >= 32
 }
 
 // RequireDoKYC：PARTNER_KYC 时返回未实现错误。
@@ -254,6 +287,19 @@ func (p *parser) int(key string, def int) int {
 		return def
 	}
 	return n
+}
+
+func (p *parser) bool(key string, def bool) bool {
+	v := strings.TrimSpace(p.get(key))
+	if v == "" {
+		return def
+	}
+	b, err := strconv.ParseBool(v)
+	if err != nil {
+		p.errs = append(p.errs, key+" 必须是 true 或 false")
+		return def
+	}
+	return b
 }
 
 func (p *parser) float(key string, def float64) float64 {

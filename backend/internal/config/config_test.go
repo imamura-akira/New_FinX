@@ -47,11 +47,18 @@ func TestValidation(t *testing.T) {
 		{"观察期起算点非法", map[string]string{"SEASONING_START": "TODAY"}, "SEASONING_START"},
 		{"token 预算越界", map[string]string{"DW_TOKEN_REQUESTS_PER_HOUR": "0"}, "DW_TOKEN_REQUESTS_PER_HOUR"},
 		{"base URL 非 https", map[string]string{"DW_BASE_URL": "http://example.com"}, "DW_BASE_URL"},
+		{"base URL 误填 token 完整路径", map[string]string{"DW_BASE_URL": "https://bo-api.drivewealth.io/back-office/auth/tokens"}, "不要包含 /auth/tokens"},
 		{"密钥长度错误", map[string]string{"PII_ENCRYPTION_KEY": base64.StdEncoding.EncodeToString(make([]byte, 16))}, "32 字节"},
 		{"密钥非 base64", map[string]string{"PII_ENCRYPTION_KEY": "%%%"}, "base64"},
 		{"限额倒挂", map[string]string{"LIMIT_MIN_DEPOSIT": "100", "LIMIT_MAX_DEPOSIT": "50"}, "入金限额"},
 		{"截止时间格式", map[string]string{"LIMIT_ACH_CUTOFF_ET": "4pm"}, "LIMIT_ACH_CUTOFF_ET"},
 		{"环境非法", map[string]string{"APP_ENV": "prod"}, "APP_ENV"},
+		{"JWT 密钥过短", map[string]string{"JWT_SECRET": base64.StdEncoding.EncodeToString(make([]byte, 16))}, "JWT_SECRET"},
+		{"JWT 密钥非 base64", map[string]string{"JWT_SECRET": "%%%"}, "JWT_SECRET"},
+		{"会话时长越界", map[string]string{"SESSION_TTL": "10s"}, "SESSION_TTL"},
+		{"OTP 开关非布尔", map[string]string{"OTP_DEV_LOG": "yes"}, "OTP_DEV_LOG"},
+		{"生产环境禁止打印验证码", map[string]string{"APP_ENV": "production", "OTP_DEV_LOG": "true"}, "OTP_DEV_LOG"},
+		{"开发环境允许打印验证码", map[string]string{"OTP_DEV_LOG": "true", "JWT_SECRET": base64.StdEncoding.EncodeToString(make([]byte, 48))}, ""},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
