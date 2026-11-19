@@ -20,8 +20,10 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/imamura-akira/New_FinX/backend/internal/application"
 	"github.com/imamura-akira/New_FinX/backend/internal/auth"
 	"github.com/imamura-akira/New_FinX/backend/internal/config"
+	"github.com/imamura-akira/New_FinX/backend/internal/crypto"
 	"github.com/imamura-akira/New_FinX/backend/internal/dwclient"
 	"github.com/imamura-akira/New_FinX/backend/internal/store"
 )
@@ -106,7 +108,15 @@ func run(migrateCmd string, logger *slog.Logger) error {
 			authSvc.EnableDemoCode()
 			logger.Warn("demo OTP enabled: code 000000 is accepted (development only)")
 		}
-		routes = append(routes, func(mux *http.ServeMux) { authSvc.Routes(mux, apiPrefix) })
+		cipher, err := crypto.New(cfg.PIIKey)
+		if err != nil {
+			return err
+		}
+		appSvc := application.New(application.PGRepo{DB: st.DB}, cipher, logger)
+		routes = append(routes, func(mux *http.ServeMux) {
+			authSvc.Routes(mux, apiPrefix)
+			appSvc.Routes(mux, apiPrefix, authSvc.RequireAuth)
+		})
 	} else {
 		logger.Warn("API routes disabled: DATABASE_URL, PII_ENCRYPTION_KEY and JWT_SECRET are all required")
 	}

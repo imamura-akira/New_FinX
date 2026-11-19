@@ -205,6 +205,16 @@ paths:
                             properties:
                               status: { $ref: "#/components/schemas/KycStatus" }
                               updatedAt: { type: string, format: date-time, nullable: true }
+                          documents:
+                            type: array
+                            description: 已暂存的证件（不含影像），供 P-04 断点续填与 P-30 汇总（新增字段）
+                            items:
+                              type: object
+                              properties:
+                                documentId: { type: string }
+                                docType: { type: string }
+                                side: { type: string, enum: [FRONT, BACK] }
+                                uploadedAt: { type: string, format: date-time }
         "401": { $ref: "#/components/responses/Unauthorized" }
 
   /application/draft:
