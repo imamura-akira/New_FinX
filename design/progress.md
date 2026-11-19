@@ -1,6 +1,6 @@
 # 开发进度（progress.md）
 
-> 最近更新：2026-11-19 夜（Demo-1 全部任务与 F13 完成；决定 D-1–D-8 已确认，D-9、D-10 待确认，见第 0 节）
+> 最近更新：2026-11-20（后端已部署到 VPS，见第 0.2 节；Demo-1 全部任务与 F13 完成；决定 D-1–D-8 已确认，D-9、D-10 待确认，见第 0 节）
 
 ## 0. 当前里程碑：Demo-1（客户演示）
 
@@ -92,6 +92,22 @@ cd "/Users/ak/Desktop/Claude FinX New/backend" && (set -a; source ./.env; set +a
 **需要用户处理**：
 - 推送本地提交：5c8f2d0（F11b）→ 本次汇报提交，共 5 个（3bffaf3、8beb241、60d4ba2 已推送）。
 - 未跟踪的 `design/brand/`、`design/screens/`、`design/theme.md`、`prototype/assets/`，以及已修改的 `design/prd.md`、`design/backend-design.md`、`prototype/` 改动，均为用户自己的文件，未纳入提交，请自行决定是否提交。
+
+## 0.2 沙盒演示部署（2026-11-20）
+
+| 项 | 内容 |
+|---|---|
+| 地址 | `https://finxnew.akira.diy`（`/healthz`、`/api/v1/*`）；App：`--dart-define=API_BASE_URL=https://finxnew.akira.diy/api/v1` |
+| 状态 | 已部署版本 `6ba0933`；healthz `db: ok`、`dw: configured`；证书有效（Let's Encrypt，TLS-ALPN） |
+| 服务器 | Hostinger VPS（Ubuntu 24.04）root@72.60.104.228；与其他项目共用，80/443 由其他项目占用 |
+| 路径 | `/opt/finx/backend`（代码 + `.env` + `demo-users.local.json`，均 600）、`/opt/finx/deploy`（compose、脚本、`.env` 含 POSTGRES_PASSWORD 与 IMAGE_TAG、`RELEASES`、`last-deploy.log`） |
+| 组成 | compose 项目 `finxnew`：postgres（内部网络、无端口映射、卷 `finxnew-pgdata`）、migrate（一次性）、backend（仅绑 `172.16.0.1:18082`） |
+| HTTPS | 共用 Caddy `/opt/elefenjoy-hostinger-demo/Caddyfile.https` 末尾追加了 finxnew 站点块（备份：`Caddyfile.https.bak-20261119-162744-finxnew`）；该 Caddy 为 admin off，改动需重启 `web` 容器（同机站点中断数秒） |
+| 安全 | 登录白名单 `ALLOWED_EMAILS`（@example.com + 指定个人邮箱，名单外返回通用 42200）；演示验证码 000000；ufw 未启用（用户决定：其他服务依赖 8443/8795/Tailscale，本项目未新增公网端口） |
+| 演示数据 | 服务器上已导入 funded1 / funded2@example.com（DW 实时资金正常） |
+| 部署 | 本机 `deploy/deploy.sh`（同步 backend/、deploy/ → 服务器后台构建、迁移、启动、健康检查） |
+| 回滚 | 改 `/opt/finx/deploy/.env` 的 `IMAGE_TAG` 为 `RELEASES` 中的旧标签 → `docker compose up -d --no-build backend`；撤销 HTTPS 接入：用上述备份覆盖 Caddyfile.https 后重启 `web`。详见 `deploy/deploy.md` |
+| 注意 | 服务器对短时间内的多个新 SSH 连接会断开，deploy.sh 已用连接复用；本机代理（fake-IP）下 dig 结果不准，以公共 DNS 为准 |
 
 ## 1. 当前位置
 

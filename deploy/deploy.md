@@ -90,7 +90,7 @@ ssh root@72.60.104.228 'cd /opt/finx/deploy && sed -i "/^IMAGE_TAG=/d" .env && e
 在服务器上恢复两个已入金测试用户的本地关联（只读 DW，写本地数据库）：
 
 ```bash
-ssh root@72.60.104.228 'cd /opt/finx/deploy && for u in funded-1000 funded-5000; do docker compose run --rm --no-deps -v /opt/finx/backend/demo-users.local.json:/app/demo-users.local.json:ro --entrypoint /app/demoreset backend import -local $u; done'
+ssh root@72.60.104.228 'cd /opt/finx/deploy && for u in funded-1000 funded-5000; do docker compose run --rm --no-deps --user 0 -v /opt/finx/backend/demo-users.local.json:/app/demo-users.local.json:ro --entrypoint /app/demoreset backend import -local $u; done'
 ```
 
 其他命令（`list`、`reset -email X [-yes]`）同理，把参数换掉即可，用法见 `backend/cmd/demoreset/main.go`。
