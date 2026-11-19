@@ -1,0 +1,1012 @@
+openapi: 3.0.3
+info:
+  title: 美股交易 App 后端接口
+  version: "1.0.0"
+  description: |
+    App ↔ 我方后端接口契约 v1，依据 design/api-spec.md（已冻结）。
+    - App 只调用本后端，绝不直接调用 DriveWealth（DW）。
+    - 所有响应为 `{"code":0,"message":"ok","data":{...}}` 包装；错误码见 components.schemas.ErrorCode。
+    - 时间一律 ISO-8601 UTC；金额单位 USD。
+    - 标注【Q-DW-x】的字段/行为依赖 DW 答复，后端走配置开关（backend-design.md 第 7 节）。
+    - 本文件与 api-spec.md 必须同步修改；破坏性变更升 /api/v2（需用户同意）。
+servers:
+  - url: /api/v1
+security:
+  - bearerAuth: []
+tags:
+  - name: auth
+    description: 认证（F1，P-01/P-02）
+  - name: application
+    description: 开户申请（F2–F5，P-03–P-06、P-30、P-34–P-36）
+  - name: account
+    description: 账户（F6，P-06/P-08/S-01）
+  - name: bank-accounts
+    description: 银行账户（F7，P-31/P-32）
+  - name: funding
+    description: 出入金（F8/F9，P-13/P-14/P-33/P-18）
+  - name: documents
+    description: 文件（F10，P-15）
+  - name: notifications
+    description: 通知（F10，P-17）
+
+paths:
+  # ───────────── 1. 认证 ─────────────
+  /auth/otp/request:
+    post:
+      tags: [auth]
+      operationId: requestOtp
+      summary: 发送邮箱验证码（限频）
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email: { type: string, format: email }
+      responses:
+        "200":
+          description: 已发送
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        required: [ttl, resendAfter]
+                        properties:
+                          ttl: { type: integer, description: 验证码有效期（秒） }
+                          resendAfter: { type: integer, description: 多少秒后可重发 }
+        "422": { $ref: "#/components/responses/ValidationError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+
+  /auth/otp/verify:
+    post:
+      tags: [auth]
+      operationId: verifyOtp
+      summary: 校验验证码（登录 / 注册合一）
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, code]
+              properties:
+                email: { type: string, format: email }
+                code: { type: string, pattern: "^[0-9]{6}$" }
+      responses:
+        "200":
+          description: 登录成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        required: [sessionToken, isNewUser]
+                        properties:
+                          sessionToken: { type: string }
+                          isNewUser: { type: boolean }
+        "422": { $ref: "#/components/responses/ValidationError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+
+  /auth/oauth:
+    post:
+      tags: [auth]
+      operationId: oauthLogin
+      summary: Google / Apple 登录（阶段 1.5）
+      description: 提供 Google 登录时必须同时提供 Apple 登录。Apple 返回中转邮箱时 emailIsRelay=true【Q-DW-6b】。
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [provider, idToken]
+              properties:
+                provider: { type: string, enum: [GOOGLE, APPLE] }
+                idToken: { type: string }
+      responses:
+        "200":
+          description: 登录成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        required: [sessionToken, isNewUser, emailIsRelay]
+                        properties:
+                          sessionToken: { type: string }
+                          isNewUser: { type: boolean }
+                          emailIsRelay: { type: boolean }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /auth/logout:
+    post:
+      tags: [auth]
+      operationId: logout
+      summary: 注销会话
+      responses:
+        "200": { $ref: "#/components/responses/OkEmpty" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+  /me:
+    get:
+      tags: [auth]
+      operationId: getMe
+      summary: 启动时获取全局状态
+      responses:
+        "200":
+          description: 当前用户
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        required: [email, loginProvider, accountStatus]
+                        properties:
+                          email: { type: string, format: email }
+                          loginProvider: { $ref: "#/components/schemas/LoginProvider" }
+                          applicationId: { type: string, nullable: true }
+                          accountStatus: { $ref: "#/components/schemas/ApplicationStatus" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+  # ───────────── 2. 开户申请 ─────────────
+  /application:
+    get:
+      tags: [application]
+      operationId: getApplication
+      summary: 获取开户申请（草稿与状态）
+      responses:
+        "200":
+          description: 开户申请
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        required: [status]
+                        properties:
+                          applicationId: { type: string, nullable: true }
+                          status: { $ref: "#/components/schemas/ApplicationStatus" }
+                          step: { type: string, nullable: true, description: 当前子步骤（如 a–g、p04、p05、p30） }
+                          data: { $ref: "#/components/schemas/ApplicationData" }
+                          disclosures:
+                            type: array
+                            items: { $ref: "#/components/schemas/DisclosureAck" }
+                          kyc:
+                            type: object
+                            nullable: true
+                            properties:
+                              status: { $ref: "#/components/schemas/KycStatus" }
+                              updatedAt: { type: string, format: date-time, nullable: true }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+  /application/draft:
+    put:
+      tags: [application]
+      operationId: saveApplicationDraft
+      summary: 自动保存草稿
+      description: 字段名与 pages.md P-03 数据字段一致；提交后不可修改（补资料走 /application/remediate）。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [step, data]
+              properties:
+                step: { type: string }
+                data: { $ref: "#/components/schemas/ApplicationData" }
+      responses:
+        "200":
+          description: 已保存
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        required: [savedAt]
+                        properties:
+                          savedAt: { type: string, format: date-time }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /application/documents:
+    post:
+      tags: [application]
+      operationId: uploadApplicationDocument
+      summary: 上传证件（P-04 / P-35）
+      description: 后端转 DW `POST /documents`（待沙盒验证）。影像加密存储。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [docType, side, image]
+              properties:
+                docType: { type: string, description: 如 PASSPORT / DRIVER_LICENSE / NATIONAL_ID_CARD / RESIDENCE_PERMIT（以 DW 支持为准） }
+                side: { type: string, enum: [FRONT, BACK] }
+                image: { type: string, format: byte, description: base64 编码的影像 }
+      responses:
+        "200":
+          description: 已上传
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        required: [documentId]
+                        properties:
+                          documentId: { type: string }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+        "502": { $ref: "#/components/responses/DWError" }
+
+  /application/submit:
+    post:
+      tags: [application]
+      operationId: submitApplication
+      summary: 提交开户申请
+      description: |
+        后端编排：`POST /users`（BASIC/IDENTIFICATION/PERSONAL/ADDRESS_INFO）→ `PATCH /users/{userID}`（其余 documents）【Q-DW-3】→ 证件上传。
+        DW username/password 由后端生成【Q-DW-4】。重复提交返回 40901。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [signatureName, disclosures]
+              properties:
+                signatureName: { type: string, description: 须与法定姓名一致 }
+                disclosures:
+                  type: array
+                  items: { $ref: "#/components/schemas/DisclosureAck" }
+      responses:
+        "200":
+          description: 已提交
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        required: [applicationRef, submittedAt]
+                        properties:
+                          applicationRef: { type: string }
+                          submittedAt: { type: string, format: date-time }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+        "502": { $ref: "#/components/responses/DWError" }
+
+  /application/status:
+    get:
+      tags: [application]
+      operationId: getApplicationStatus
+      summary: 开户进度（P-06 轮询）
+      description: KYC 非终态时 App 每 5–10 秒轮询；后端由 SQS 事件驱动更新，轮询 DW 仅用于对账。
+      responses:
+        "200":
+          description: 当前进度
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        required: [kycStatus]
+                        properties:
+                          kycStatus: { $ref: "#/components/schemas/KycStatus" }
+                          kycUpdatedAt: { type: string, format: date-time, nullable: true }
+                          issues:
+                            type: array
+                            items:
+                              type: object
+                              required: [code, userMessage]
+                              properties:
+                                code: { type: string }
+                                field: { type: string, nullable: true }
+                                userMessage: { type: string }
+                          requiredDocs:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                type: { type: string }
+                                sides:
+                                  type: array
+                                  items: { type: string, enum: [FRONT, BACK] }
+                                reason: { type: string }
+                          accountStatus:
+                            allOf: [{ $ref: "#/components/schemas/AccountStatus" }]
+                            nullable: true
+                          accountNo: { type: string, nullable: true }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+  /application/remediate:
+    patch:
+      tags: [application]
+      operationId: remediateApplication
+      summary: 补充开户资料（P-34）
+      description: 后端 `PATCH /users/{userID}`，DW 重跑 KYC。仅 kycStatus=KYC_INFO_REQUIRED 时允许，否则 40901。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [fields]
+              properties:
+                fields:
+                  type: object
+                  additionalProperties: true
+                  description: 只包含被标记的字段，字段名与 P-03 数据字段一致
+      responses:
+        "200":
+          description: 已重新提交
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        required: [resubmittedAt]
+                        properties:
+                          resubmittedAt: { type: string, format: date-time }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+        "502": { $ref: "#/components/responses/DWError" }
+
+  # ───────────── 3. 账户 ─────────────
+  /account:
+    get:
+      tags: [account]
+      operationId: getAccount
+      summary: 交易账户
+      responses:
+        "200":
+          description: 账户信息
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        required: [accountId, status, accountType, tradingType, managementType]
+                        properties:
+                          accountId: { type: string }
+                          accountNo: { type: string, nullable: true }
+                          status: { $ref: "#/components/schemas/AccountStatus" }
+                          accountType: { type: string, enum: [LIVE] }
+                          tradingType: { type: string, enum: [CASH] }
+                          managementType: { type: string, enum: [SELF] }
+                          openedAt: { type: string, format: date-time, nullable: true }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /account/money:
+    get:
+      tags: [account]
+      operationId: getAccountMoney
+      summary: 资金汇总
+      description: 来自 DW 账户资金汇总【Q-DW-8d 复核字段名】。**可提现一律用 DW 返回的 cashAvailableForWithdrawal。**
+      responses:
+        "200":
+          description: 资金汇总
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        required: [cash, settledCash, buyingPower, cashAvailableForWithdrawal, unsettled, updatedAt]
+                        properties:
+                          cash: { $ref: "#/components/schemas/Money" }
+                          settledCash: { $ref: "#/components/schemas/Money" }
+                          buyingPower: { $ref: "#/components/schemas/Money" }
+                          cashAvailableForWithdrawal: { $ref: "#/components/schemas/Money" }
+                          unsettled: { $ref: "#/components/schemas/Money" }
+                          updatedAt: { type: string, format: date-time }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "502": { $ref: "#/components/responses/DWError" }
+
+  # ───────────── 4. 银行账户 ─────────────
+  /funding/bank-accounts:
+    get:
+      tags: [bank-accounts]
+      operationId: listBankAccounts
+      summary: 已绑定银行账户
+      responses:
+        "200":
+          description: 列表
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items: { $ref: "#/components/schemas/BankAccount" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+    post:
+      tags: [bank-accounts]
+      operationId: linkBankAccount
+      summary: 绑定银行账户【Q-DW-2 二选一】
+      description: |
+        方案 A（DIRECT，已核实）：直接录入账号与路由号，后端转 DW `POST /back-office/bank-accounts`。
+        方案 B（PLAID）：Plaid processor token。由配置 bank_link_method 决定接受哪一种；答复后删除未选方案。
+        账号全文不落库（只存 DW id + 尾号）。超过绑定上限返回 40901。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: "#/components/schemas/BankLinkDirect"
+                - $ref: "#/components/schemas/BankLinkPlaid"
+      responses:
+        "200":
+          description: 已提交绑定
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        required: [id, status]
+                        properties:
+                          id: { type: string }
+                          status: { type: string }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Restricted" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+        "502": { $ref: "#/components/responses/DWError" }
+
+  /funding/bank-accounts/{id}:
+    delete:
+      tags: [bank-accounts]
+      operationId: unlinkBankAccount
+      summary: 解绑银行账户
+      description: 有在途入金 / 出金时返回 40901。
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200": { $ref: "#/components/responses/OkEmpty" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+
+  # ───────────── 5. 出入金 ─────────────
+  /funding/deposit-instructions:
+    get:
+      tags: [funding]
+      operationId: getDepositInstructions
+      summary: 电汇入金指引（P-33）
+      description: 后端转 DW `GET /accounts/{id}/funding/deposit-instructions`（待沙盒验证）；reference 必含账户号 + 姓名。
+      responses:
+        "200":
+          description: 电汇收款信息
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        required: [beneficiaryName, bankName, accountNumber, reference]
+                        properties:
+                          beneficiaryName: { type: string }
+                          bankName: { type: string }
+                          bankAddress: { type: string }
+                          accountNumber: { type: string }
+                          routingNumber: { type: string }
+                          swift: { type: string }
+                          reference: { type: string }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Restricted" }
+        "502": { $ref: "#/components/responses/DWError" }
+
+  /funding/deposits:
+    post:
+      tags: [funding]
+      operationId: createDeposit
+      summary: ACH 入金（P-13）
+      description: 后端转 DW `POST /back-office/funding/deposits`（type=ACH，已核实）。限额走后端配置 limits.*，超限返回 42201 并带限额。写操作不自动重试。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [bankAccountId, amount]
+              properties:
+                bankAccountId: { type: string }
+                amount: { $ref: "#/components/schemas/Money" }
+      responses:
+        "200":
+          description: 已提交
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        required: [transferId, status]
+                        properties:
+                          transferId: { type: string }
+                          status: { $ref: "#/components/schemas/DepositStatus" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Restricted" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+        "502": { $ref: "#/components/responses/DWError" }
+
+  /funding/withdrawals:
+    post:
+      tags: [funding]
+      operationId: createWithdrawal
+      summary: 出金（P-14）
+      description: |
+        后端转 DW `POST /funding/redemptions`【Q-DW-8d 字段待核】。
+        WIRE 收款人固定为开户姓名，后端强制，不接受客户端传入；金额与限额后端二次校验；可提现以 DW 返回为准。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [method, amount]
+              properties:
+                method: { type: string, enum: [ACH, WIRE] }
+                amount: { $ref: "#/components/schemas/Money" }
+                bankAccountId: { type: string, description: method=ACH 时必填 }
+                wire:
+                  type: object
+                  description: method=WIRE 时必填
+                  required: [bankName, accountNumber, swiftOrAba, country]
+                  properties:
+                    bankName: { type: string }
+                    accountNumber: { type: string }
+                    swiftOrAba: { type: string }
+                    country: { type: string, description: ISO 3166-1 alpha-2 }
+                    intermediarySwift: { type: string }
+      responses:
+        "200":
+          description: 已提交
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        required: [transferId, status]
+                        properties:
+                          transferId: { type: string }
+                          status: { type: string, description: 出金状态枚举待 Q-DW-8d }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Restricted" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+        "502": { $ref: "#/components/responses/DWError" }
+
+  /funding/transfers:
+    get:
+      tags: [funding]
+      operationId: listTransfers
+      summary: 出入金记录（P-18 时间线）
+      parameters:
+        - name: type
+          in: query
+          schema: { type: string, enum: [DEPOSIT, WITHDRAWAL] }
+        - $ref: "#/components/parameters/Cursor"
+      responses:
+        "200":
+          description: 列表
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items: { $ref: "#/components/schemas/Transfer" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+  # ───────────── 6. 文件与通知 ─────────────
+  /documents:
+    get:
+      tags: [documents]
+      operationId: listDocuments
+      summary: 交易确认书 / 对账单 / 税务文件
+      parameters:
+        - name: type
+          in: query
+          schema: { type: string, enum: [TRADE_CONFIRM, STATEMENT, TAX] }
+      responses:
+        "200":
+          description: 列表
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          type: object
+                          required: [docId, type, title, date, url]
+                          properties:
+                            docId: { type: string }
+                            type: { type: string, enum: [TRADE_CONFIRM, STATEMENT, TAX] }
+                            title: { type: string }
+                            period: { type: string }
+                            date: { type: string, format: date }
+                            url: { type: string, description: 短时效签名链接 }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+  /notifications:
+    get:
+      tags: [notifications]
+      operationId: listNotifications
+      summary: 站内通知
+      parameters:
+        - $ref: "#/components/parameters/Cursor"
+      responses:
+        "200":
+          description: 列表
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          type: object
+                          required: [id, category, title, body, createdAt, read]
+                          properties:
+                            id: { type: string }
+                            category: { type: string, enum: [VIOLATION, TRADE, FUNDS, ACCOUNT, SYSTEM] }
+                            title: { type: string }
+                            body: { type: string }
+                            createdAt: { type: string, format: date-time }
+                            read: { type: boolean }
+                            deepLink: { type: string, nullable: true }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+  /notifications/read:
+    post:
+      tags: [notifications]
+      operationId: markNotificationsRead
+      summary: 标记已读
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [ids]
+              properties:
+                ids:
+                  type: array
+                  items: { type: string }
+      responses:
+        "200": { $ref: "#/components/responses/OkEmpty" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: "Authorization: Bearer <sessionToken>（除 /auth/otp/*、/auth/oauth 外均必须）"
+
+  parameters:
+    Cursor:
+      name: cursor
+      in: query
+      required: false
+      schema: { type: string }
+      description: 分页游标
+
+  schemas:
+    Envelope:
+      type: object
+      required: [code, message]
+      properties:
+        code: { type: integer, description: 0 表示成功 }
+        message: { type: string }
+        data: {}
+
+    ErrorCode:
+      type: integer
+      description: |
+        0 成功；401xx 未登录 / 会话过期（App → S-01 会话过期页）；40301 账户受限（附 restriction）；
+        40901 状态冲突（在途资金禁止解绑、重复提交等）；422xx 字段校验失败（附 fields[]）；
+        42201 金额超限（附 limits）；
+        50001 DW 调用失败（对用户显示"稍后重试"，不透出 DW 原始错误）；50002 DW 返回数据异常（已记录，人工介入）。
+        注：HTTP 404（资源不存在）与 429（OTP 限频）的业务错误码 api-spec.md 第 8 节尚未定义，待补充后同步本文件。
+
+    ErrorResponse:
+      type: object
+      required: [code, message]
+      properties:
+        code: { $ref: "#/components/schemas/ErrorCode" }
+        message: { type: string, description: 可展示给用户的简体中文文案 }
+        data:
+          type: object
+          nullable: true
+          properties:
+            fields:
+              type: array
+              description: 422xx 时的字段错误，文案与 P-03 校验一致
+              items:
+                type: object
+                required: [field, reason]
+                properties:
+                  field: { type: string }
+                  reason: { type: string }
+            restriction:
+              type: string
+              enum: [FROZEN, OPEN_NO_NEW_TRADES]
+              description: 40301 时的受限类型
+            limits:
+              type: object
+              description: 42201 时返回的当前限额（示例值，待确认）
+              additionalProperties: { type: number }
+
+    LoginProvider:
+      type: string
+      enum: [EMAIL, GOOGLE, APPLE]
+
+    ApplicationStatus:
+      type: string
+      enum: [NONE, DRAFT, SUBMITTED, APPROVED, DENIED]
+
+    KycStatus:
+      type: string
+      description: 与 DW kyc.status.name 一致
+      enum: [KYC_NOT_READY, KYC_READY, KYC_PROCESSING, KYC_INFO_REQUIRED, KYC_DOC_REQUIRED, KYC_MANUAL_REVIEW, KYC_APPROVED, KYC_DENIED]
+
+    AccountStatus:
+      type: string
+      enum: [PENDING, OPEN, OPEN_NO_NEW_TRADES, FROZEN, CLOSED]
+
+    DepositStatus:
+      type: string
+      description: DW Deposit Status
+      enum: [STARTED, PENDING, SUCCESSFUL, FAILED, RETURNED, APPROVED, REJECTED, ON_HOLD]
+
+    Money:
+      type: number
+      format: double
+      minimum: 0
+      multipleOf: 0.01
+      description: 金额，USD，两位小数
+
+    ApplicationData:
+      type: object
+      description: |
+        开户资料，字段名与 pages.md P-03 数据字段一致（后端按 pages.md 3.1.2 映射为 DW documents；App 不感知 DW 字段名）。
+        草稿阶段字段均可缺省；提交时由后端统一校验（422xx）。
+      additionalProperties: true
+      properties:
+        firstName: { type: string }
+        lastName: { type: string }
+        dateOfBirth: { type: string, format: date }
+        citizenship: { type: string, description: ISO 3166-1 alpha-2 }
+        taxResidency: { type: string }
+        phone: { type: string }
+        contactEmail: { type: string, format: email }
+        language: { type: string }
+        usTaxPayer: { type: string, enum: [YES, NO] }
+        tinType: { type: string, enum: [SSN, ITIN, FOREIGN_TIN, NIN] }
+        tin: { type: string, writeOnly: true, description: 只写；读取时后端返回打码值 }
+        taxTreaty: { type: string, enum: [YES, NO] }
+        irsBackup: { type: string, enum: [YES, NO] }
+        residentialAddress:
+          type: object
+          properties:
+            line1: { type: string }
+            line2: { type: string }
+            city: { type: string }
+            state: { type: string }
+            postalCode: { type: string }
+            country: { type: string }
+        mailingAddress:
+          type: object
+          nullable: true
+          additionalProperties: true
+        employmentStatus: { type: string, enum: [EMPLOYED, SELF_EMPLOYED, UNEMPLOYED, RETIRED, STUDENT] }
+        employerName: { type: string }
+        occupation: { type: string }
+        annualIncomeRange: { type: string }
+        netWorthRange: { type: string }
+        netWorthLiquidRange: { type: string }
+        investmentExperience: { type: string }
+        investmentObjective: { type: string }
+        riskTolerance: { type: string }
+        fundingSources:
+          type: array
+          items: { type: string }
+          description: 对应 DW COMPLIANCE_AML_INFO.fundingSources，枚举待 DW 确认
+        isAffiliatedBD: { type: boolean }
+        affiliatedFirmName: { type: string }
+        isPEP: { type: boolean }
+        pepName: { type: string }
+        isControlPerson: { type: boolean }
+        controlCompanyName: { type: string }
+        accountType: { type: string, enum: [LIVE], description: 首期固定 }
+        tradingType: { type: string, enum: [CASH], description: 首期固定 }
+        accountManagementType: { type: string, enum: [SELF], description: 首期固定 }
+
+    DisclosureAck:
+      type: object
+      required: [id, accepted]
+      properties:
+        id:
+          type: string
+          description: DW 披露 termsOfUse / customerAgreement / marketDataAgreement / privacyPolicy / dataSharing / rule14b / extendedHoursAgreement，或平台条款 id
+        source: { type: string, enum: [DW, PARTNER] }
+        version: { type: string }
+        accepted: { type: boolean, description: rule14b 时表示用户的选择 }
+        acceptedAt: { type: string, format: date-time }
+
+    BankAccount:
+      type: object
+      required: [id, mask, status]
+      properties:
+        id: { type: string }
+        bankName: { type: string }
+        mask: { type: string, pattern: "^[0-9]{4}$" }
+        type: { type: string, enum: [CHECKING, SAVINGS] }
+        ownerName: { type: string }
+        status: { type: string }
+        createdAt: { type: string, format: date-time }
+
+    BankLinkDirect:
+      type: object
+      description: 方案 A（bank_link_method=DIRECT）
+      required: [accountNumber, routingNumber, type]
+      properties:
+        accountNumber: { type: string, writeOnly: true }
+        routingNumber: { type: string, writeOnly: true }
+        type: { type: string, enum: [CHECKING, SAVINGS] }
+        nickname: { type: string }
+
+    BankLinkPlaid:
+      type: object
+      description: 方案 B（bank_link_method=PLAID）
+      required: [plaidProcessorToken]
+      properties:
+        plaidProcessorToken: { type: string, writeOnly: true }
+
+    Transfer:
+      type: object
+      required: [transferId, type, method, amount, status, submittedAt]
+      properties:
+        transferId: { type: string }
+        type: { type: string, enum: [DEPOSIT, WITHDRAWAL] }
+        method: { type: string, enum: [ACH, WIRE] }
+        amount: { $ref: "#/components/schemas/Money" }
+        status: { type: string, description: 入金按 DepositStatus；出金枚举待 Q-DW-8d }
+        failureReason: { type: string, nullable: true }
+        submittedAt: { type: string, format: date-time }
+        doneAt: { type: string, format: date-time, nullable: true }
+
+  responses:
+    OkEmpty:
+      description: 成功（无数据）
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Envelope" }
+    Unauthorized:
+      description: 401xx 未登录 / 会话过期
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
+    Restricted:
+      description: 40301 账户受限
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
+    NotFound:
+      description: 资源不存在（业务错误码待 api-spec.md 补充）
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
+    Conflict:
+      description: 40901 状态冲突
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
+    ValidationError:
+      description: 422xx 字段校验失败 / 42201 金额超限
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
+    RateLimited:
+      description: 请求过于频繁（OTP 限频；业务错误码待 api-spec.md 补充）
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
+    DWError:
+      description: 50001 DW 调用失败 / 50002 DW 返回数据异常（不透出 DW 原始错误）
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }

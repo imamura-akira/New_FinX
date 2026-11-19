@@ -1,0 +1,283 @@
+// Package config 集中管理后端配置与"待 DW 确认"开关（backend-design.md 第 7 节、ui-signoff.md 第 2 节）。
+// 规则（CLAUDE.md 硬性规则 3）：标注 Q-DW-x 的行为一律读这里的开关，不许写死。
+// 凭据只从环境变量读取，不设默认值，不写日志。
+package config
+
+import (
+	"encoding/base64"
+	"errors"
+	"fmt"
+	"os"
+	"strconv"
+	"strings"
+	"time"
+)
+
+// KYCMode：Q-DW-1。
+type KYCMode string
+
+const (
+	KYCModeDoKYC      KYCMode = "DO_KYC"      // DW 执行 KYC（当前实现）
+	KYCModePartnerKYC KYCMode = "PARTNER_KYC" // 我方 KYC + KYC_VERIFICATION_INFO（本阶段不实现，只留开关与报错）
+)
+
+// BankLinkMethod：Q-DW-2。
+type BankLinkMethod string
+
+const (
+	BankLinkDirect BankLinkMethod = "DIRECT" // 方案 A：直接录入账号/路由号 → POST /back-office/bank-accounts
+	BankLinkPlaid  BankLinkMethod = "PLAID"  // 方案 B：Plaid processor token
+)
+
+// UserSubmitMode：Q-DW-3。
+type UserSubmitMode string
+
+const (
+	SubmitPostPatch  UserSubmitMode = "POST_PATCH"  // POST 四类核心 documents + PATCH 其余
+	SubmitSinglePost UserSubmitMode = "SINGLE_POST" // 一次 POST 全部 documents
+)
+
+// SeasoningStart：Q-DW-8e 观察期起算点。
+type SeasoningStart string
+
+const (
+	SeasoningFromCleared   SeasoningStart = "CLEARED"   // 到账（清算）日起算（当前实现）
+	SeasoningFromInitiated SeasoningStart = "INITIATED" // 发起日起算
+)
+
+// ErrPartnerKYCNotImplemented：kyc_mode=PARTNER_KYC 时业务层应返回此错误（backend-design.md 第 4 节）。
+var ErrPartnerKYCNotImplemented = errors.New("kyc_mode=PARTNER_KYC 本阶段未实现（Q-DW-1）")
+
+// Limits：示例值，待业务与 DW 确认（Q-DW-8）。金额单位 USD。
+type Limits struct {
+	MinDeposit    float64
+	MaxDeposit    float64
+	DailyDeposit  float64
+	MinWithdrawal float64
+	MaxWithdrawal float64
+	MinWire       float64
+	MaxBanks      int
+	ACHCutoffET   string // 示例 "16:00"，美东时间，待 DW 确认
+	WireCutoffET  string // 示例 "15:00"，美东时间，待 DW 确认
+}
+
+// DW：DriveWealth 客户端配置。凭据字段只从环境变量读取。
+type DW struct {
+	BaseURL      string // 沙盒 https://bo-api.drivewealth.io/back-office
+	AppKey       string // 请求头 dw-client-app-key
+	ClientID     string
+	ClientSecret string
+
+	HTTPTimeout          time.Duration // 默认 10s
+	TokenRequestsPerHour int           // token 请求预算，约 5–10 次/小时
+	TokenRefreshSkew     time.Duration // 到期前多久刷新
+}
+
+// Config：全部配置。
+type Config struct {
+	Env         string // sandbox | production（沙盒与生产配置完全隔离）
+	HTTPAddr    string
+	DatabaseURL string
+
+	// PIIKey：AES-256-GCM 字段级加密密钥（32 字节，环境变量中为 base64）。
+	PIIKey []byte
+
+	DW DW
+
+	// —— 待 DW 确认的开关 ——
+	KYCMode        KYCMode
+	BankLinkMethod BankLinkMethod
+	UserSubmitMode UserSubmitMode
+	SeasoningDays  int // 展示用；可提现以 DW 返回为准
+	SeasoningStart SeasoningStart
+	Limits         Limits
+}
+
+// 默认值（backend-design.md 第 7 节）。
+const (
+	DefaultDWBaseURL = "https://bo-api.drivewealth.io/back-office"
+	DefaultHTTPAddr  = ":8080"
+)
+
+// Getenv 抽象，便于测试。
+type Getenv func(string) string
+
+// Load 从进程环境变量加载并校验。
+func Load() (*Config, error) { return LoadFrom(os.Getenv) }
+
+// LoadFrom 从给定的 getenv 加载并校验。
+func LoadFrom(get Getenv) (*Config, error) {
+	p := parser{get: get}
+	c := &Config{
+		Env:         p.str("APP_ENV", "sandbox"),
+		HTTPAddr:    p.str("HTTP_ADDR", DefaultHTTPAddr),
+		DatabaseURL: p.str("DATABASE_URL", ""),
+		DW: DW{
+			BaseURL:              strings.TrimRight(p.str("DW_BASE_URL", DefaultDWBaseURL), "/"),
+			AppKey:               get("DW_APP_KEY"),
+			ClientID:             get("DW_CLIENT_ID"),
+			ClientSecret:         get("DW_CLIENT_SECRET"),
+			HTTPTimeout:          p.dur("DW_HTTP_TIMEOUT", 10*time.Second),
+			TokenRequestsPerHour: p.int("DW_TOKEN_REQUESTS_PER_HOUR", 6),
+			TokenRefreshSkew:     p.dur("DW_TOKEN_REFRESH_SKEW", 5*time.Minute),
+		},
+		KYCMode:        KYCMode(p.str("KYC_MODE", string(KYCModeDoKYC))),
+		BankLinkMethod: BankLinkMethod(p.str("BANK_LINK_METHOD", string(BankLinkDirect))),
+		UserSubmitMode: UserSubmitMode(p.str("USER_SUBMIT_MODE", string(SubmitPostPatch))),
+		SeasoningDays:  p.int("SEASONING_DAYS", 30),
+		SeasoningStart: SeasoningStart(p.str("SEASONING_START", string(SeasoningFromCleared))),
+		Limits: Limits{
+			MinDeposit:    p.float("LIMIT_MIN_DEPOSIT", 10),
+			MaxDeposit:    p.float("LIMIT_MAX_DEPOSIT", 50000),
+			DailyDeposit:  p.float("LIMIT_DAILY_DEPOSIT", 50000),
+			MinWithdrawal: p.float("LIMIT_MIN_WITHDRAWAL", 1),
+			MaxWithdrawal: p.float("LIMIT_MAX_WITHDRAWAL", 50000),
+			MinWire:       p.float("LIMIT_MIN_WIRE", 100),
+			MaxBanks:      p.int("LIMIT_MAX_BANKS", 2),
+			ACHCutoffET:   p.str("LIMIT_ACH_CUTOFF_ET", "16:00"),
+			WireCutoffET:  p.str("LIMIT_WIRE_CUTOFF_ET", "15:00"),
+		},
+	}
+	if raw := get("PII_ENCRYPTION_KEY"); raw != "" {
+		key, err := base64.StdEncoding.DecodeString(raw)
+		if err != nil {
+			p.errs = append(p.errs, "PII_ENCRYPTION_KEY 不是合法的 base64")
+		} else {
+			c.PIIKey = key
+		}
+	}
+	if len(p.errs) > 0 {
+		return nil, fmt.Errorf("配置错误: %s", strings.Join(p.errs, "; "))
+	}
+	if err := c.Validate(); err != nil {
+		return nil, err
+	}
+	return c, nil
+}
+
+// Validate 校验枚举与取值范围。凭据缺失不在此报错（允许无凭据启动 health），
+// 由 DWConfigured() / dwclient 在实际调用时报错。
+func (c *Config) Validate() error {
+	var errs []string
+	if c.Env != "sandbox" && c.Env != "production" {
+		errs = append(errs, "APP_ENV 只能是 sandbox 或 production")
+	}
+	switch c.KYCMode {
+	case KYCModeDoKYC, KYCModePartnerKYC:
+	default:
+		errs = append(errs, "KYC_MODE 只能是 DO_KYC 或 PARTNER_KYC")
+	}
+	switch c.BankLinkMethod {
+	case BankLinkDirect, BankLinkPlaid:
+	default:
+		errs = append(errs, "BANK_LINK_METHOD 只能是 DIRECT 或 PLAID")
+	}
+	switch c.UserSubmitMode {
+	case SubmitPostPatch, SubmitSinglePost:
+	default:
+		errs = append(errs, "USER_SUBMIT_MODE 只能是 POST_PATCH 或 SINGLE_POST")
+	}
+	switch c.SeasoningStart {
+	case SeasoningFromCleared, SeasoningFromInitiated:
+	default:
+		errs = append(errs, "SEASONING_START 只能是 CLEARED 或 INITIATED")
+	}
+	if c.SeasoningDays < 0 || c.SeasoningDays > 365 {
+		errs = append(errs, "SEASONING_DAYS 超出范围 0–365")
+	}
+	if c.DW.TokenRequestsPerHour < 1 || c.DW.TokenRequestsPerHour > 60 {
+		errs = append(errs, "DW_TOKEN_REQUESTS_PER_HOUR 超出范围 1–60（建议 5–10）")
+	}
+	if c.DW.HTTPTimeout <= 0 {
+		errs = append(errs, "DW_HTTP_TIMEOUT 必须大于 0")
+	}
+	if !strings.HasPrefix(c.DW.BaseURL, "https://") && !strings.HasPrefix(c.DW.BaseURL, "http://127.0.0.1") && !strings.HasPrefix(c.DW.BaseURL, "http://localhost") {
+		errs = append(errs, "DW_BASE_URL 必须使用 https")
+	}
+	if c.PIIKey != nil && len(c.PIIKey) != 32 {
+		errs = append(errs, "PII_ENCRYPTION_KEY 解码后必须是 32 字节（AES-256）")
+	}
+	l := c.Limits
+	if l.MinDeposit <= 0 || l.MaxDeposit < l.MinDeposit || l.DailyDeposit < l.MaxDeposit {
+		errs = append(errs, "入金限额不合理（需 0 < 最低 ≤ 最高 ≤ 每日）")
+	}
+	if l.MinWithdrawal <= 0 || l.MaxWithdrawal < l.MinWithdrawal || l.MinWire <= 0 {
+		errs = append(errs, "出金限额不合理")
+	}
+	if l.MaxBanks < 1 {
+		errs = append(errs, "LIMIT_MAX_BANKS 至少为 1")
+	}
+	for name, v := range map[string]string{"LIMIT_ACH_CUTOFF_ET": l.ACHCutoffET, "LIMIT_WIRE_CUTOFF_ET": l.WireCutoffET} {
+		if _, err := time.Parse("15:04", v); err != nil {
+			errs = append(errs, name+" 格式应为 HH:MM")
+		}
+	}
+	if len(errs) > 0 {
+		return fmt.Errorf("配置错误: %s", strings.Join(errs, "; "))
+	}
+	return nil
+}
+
+// DWConfigured：DW 凭据是否齐全（不返回任何凭据内容）。
+func (c *Config) DWConfigured() bool {
+	return c.DW.AppKey != "" && c.DW.ClientID != "" && c.DW.ClientSecret != ""
+}
+
+// RequireDoKYC：PARTNER_KYC 时返回未实现错误。
+func (c *Config) RequireDoKYC() error {
+	if c.KYCMode == KYCModePartnerKYC {
+		return ErrPartnerKYCNotImplemented
+	}
+	return nil
+}
+
+type parser struct {
+	get  Getenv
+	errs []string
+}
+
+func (p *parser) str(key, def string) string {
+	if v := strings.TrimSpace(p.get(key)); v != "" {
+		return v
+	}
+	return def
+}
+
+func (p *parser) int(key string, def int) int {
+	v := strings.TrimSpace(p.get(key))
+	if v == "" {
+		return def
+	}
+	n, err := strconv.Atoi(v)
+	if err != nil {
+		p.errs = append(p.errs, key+" 必须是整数")
+		return def
+	}
+	return n
+}
+
+func (p *parser) float(key string, def float64) float64 {
+	v := strings.TrimSpace(p.get(key))
+	if v == "" {
+		return def
+	}
+	f, err := strconv.ParseFloat(v, 64)
+	if err != nil {
+		p.errs = append(p.errs, key+" 必须是数字")
+		return def
+	}
+	return f
+}
+
+func (p *parser) dur(key string, def time.Duration) time.Duration {
+	v := strings.TrimSpace(p.get(key))
+	if v == "" {
+		return def
+	}
+	d, err := time.ParseDuration(v)
+	if err != nil {
+		p.errs = append(p.errs, key+" 必须是时长（如 10s、5m）")
+		return def
+	}
+	return d
+}

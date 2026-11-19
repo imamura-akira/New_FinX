@@ -1,0 +1,11 @@
+DROP TABLE IF EXISTS audit_log;
+DROP TABLE IF EXISTS dw_events;
+DROP TABLE IF EXISTS documents_meta;
+DROP TABLE IF EXISTS transfers;
+DROP TABLE IF EXISTS bank_accounts;
+DROP TABLE IF EXISTS accounts;
+DROP TABLE IF EXISTS kyc_issues;
+DROP TABLE IF EXISTS dw_users;
+DROP TABLE IF EXISTS applications;
+DROP TABLE IF EXISTS sessions;
+DROP TABLE IF EXISTS users_app;
