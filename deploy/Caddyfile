@@ -1,0 +1,19 @@
+# 独立服务器用（docker compose --profile standalone up -d）：Caddy 自己占用 80/443 并自动申请证书。
+# 当前 VPS 的 80/443 已被其他项目占用，实际使用 caddy-site.snippet 接入共用 Caddy（见 deploy.md）。
+
+finxnew.akira.diy {
+	encode zstd gzip
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+		X-Frame-Options DENY
+		-Server
+	}
+	reverse_proxy backend:8080 {
+		transport http {
+			dial_timeout 3s
+			response_header_timeout 25s
+		}
+	}
+}

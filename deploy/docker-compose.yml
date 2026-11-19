@@ -1,0 +1,81 @@
+# FinX 后端沙盒演示部署（finxnew.akira.diy）。项目名固定为 finxnew，与服务器上其他项目隔离。
+#
+#   cd /opt/finx/deploy && IMAGE_TAG=<git sha> docker compose up -d
+#
+# - postgres：只在内部网络（internal: true），不映射任何端口；数据保存在卷 finxnew-pgdata。
+# - migrate：一次性服务，启动时执行 `server -migrate up`，成功后 backend 才启动。
+# - backend：只绑定 docker0 网关地址（BACKEND_BIND，默认 172.16.0.1:18082），公网经 Caddy 的 443 访问。
+# - caddy：仅独立服务器使用（profile standalone）。当前 VPS 的 443 由共用 Caddy 托管，见 deploy.md。
+#
+# 变量（deploy/.env，服务器上由 init-env.sh 生成，不进 git）：POSTGRES_PASSWORD；可选 BACKEND_BIND、IMAGE_TAG。
+# 后端配置：../backend/.env（服务器上，不进 git）。
+
+name: finxnew
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: finx
+      POSTGRES_USER: finx
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?run init-env.sh first}
+    volumes:
+      - finxnew-pgdata:/var/lib/postgresql/data
+    networks: [internal]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U finx -d finx"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  migrate:
+    image: finxnew-backend:${IMAGE_TAG:-latest}
+    build:
+      context: ../backend
+      dockerfile: ../deploy/Dockerfile
+      args:
+        VERSION: ${IMAGE_TAG:-latest}
+    command: ["-migrate", "up"]
+    env_file: ../backend/.env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks: [internal]
+    restart: "no"
+
+  backend:
+    image: finxnew-backend:${IMAGE_TAG:-latest}
+    env_file: ../backend/.env
+    environment:
+      HTTP_ADDR: 0.0.0.0:8080
+    ports:
+      - "${BACKEND_BIND:-172.16.0.1:18082}:8080"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    networks: [internal, egress]
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "5" }
+
+  caddy:
+    profiles: [standalone]
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports: ["80:80", "443:443"]
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - finxnew-caddy-data:/data
+    networks: [egress]
+    depends_on: [backend]
+
+networks:
+  internal:
+    internal: true
+  egress: {}
+
+volumes:
+  finxnew-pgdata:
+  finxnew-caddy-data:

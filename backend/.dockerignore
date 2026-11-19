@@ -1,0 +1,7 @@
+# 构建上下文排除凭据与本地数据（绝不进入镜像或构建缓存）
+.env
+.env.*
+!.env.example
+*.local.json
+**/*_test.go
+README.md
