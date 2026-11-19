@@ -29,6 +29,7 @@ void main() {
   testWidgets('P-01 未登录时显示欢迎页，可进入注册', (tester) async {
     await pumpApp(tester);
     expect(find.text('美股与 ETF 投资，开户、入金、交易一站完成。'), findsOneWidget);
+    expect(find.byKey(const Key('welcome.logo')), findsOneWidget, reason: 'FinX 字标（design/theme.md 第 4 节）');
     await _goLogin(tester, register: true);
     expect(find.text('注册并登录'), findsOneWidget);
     expect(find.textContaining('《用户服务协议》'), findsOneWidget);

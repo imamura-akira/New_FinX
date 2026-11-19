@@ -41,25 +41,31 @@ class AppButton extends StatelessWidget {
               Flexible(child: Text(label, overflow: TextOverflow.ellipsis, maxLines: 1)),
             ],
           );
+    final radius = BorderRadius.circular(small ? AppShape.smallButtonRadius : AppShape.buttonRadius);
+    // 主按钮为 FinX 渐变（design/theme.md grad）；其余为纯色
+    final gradient = kind == ButtonKind.primary ? AppGradients.grad : null;
     return Opacity(
       opacity: enabled || loading ? 1 : .4,
       child: SizedBox(
         height: small ? 34 : 48,
         width: small ? null : double.infinity,
-        child: TextButton(
-          onPressed: enabled ? onPressed : null,
-          style: TextButton.styleFrom(
-            backgroundColor: bg,
-            foregroundColor: fg,
-            disabledForegroundColor: fg,
-            padding: EdgeInsets.symmetric(horizontal: small ? 12 : 18),
-            textStyle: TextStyle(fontSize: small ? 14 : 16, fontWeight: FontWeight.w600),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(small ? 10 : AppShape.controlRadius),
-              side: BorderSide(color: border),
+        child: DecoratedBox(
+          decoration: BoxDecoration(gradient: gradient, color: gradient == null ? bg : null, borderRadius: radius),
+          child: TextButton(
+            onPressed: enabled ? onPressed : null,
+            style: TextButton.styleFrom(
+              backgroundColor: Colors.transparent,
+              foregroundColor: fg,
+              disabledForegroundColor: fg,
+              padding: EdgeInsets.symmetric(horizontal: small ? 12 : 18),
+              textStyle: TextStyle(fontSize: small ? 14 : 16, fontWeight: FontWeight.w600),
+              shape: RoundedRectangleBorder(
+                borderRadius: radius,
+                side: BorderSide(color: border),
+              ),
             ),
+            child: child,
           ),
-          child: child,
         ),
       ),
     );
@@ -164,7 +170,7 @@ class AppField extends StatelessWidget {
 
   static final _errBorder = OutlineInputBorder(
     borderRadius: BorderRadius.circular(AppShape.inputRadius),
-    borderSide: const BorderSide(color: AppColors.danger),
+    borderSide: const BorderSide(color: AppColors.danger, width: 1.5),
   );
 }
 

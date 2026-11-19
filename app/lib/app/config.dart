@@ -17,6 +17,6 @@ class AppConfig {
     demoMode: bool.fromEnvironment('DEMO_MODE'),
   );
 
-  /// 品牌名称待定（与原型一致的占位名称）。
-  static const String appName = '示例券商';
+  /// 品牌名（design/theme.md 第 5 节）。
+  static const String appName = 'FinX';
 }
