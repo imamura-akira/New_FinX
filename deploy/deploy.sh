@@ -17,6 +17,12 @@ TAG=$(git rev-parse --short HEAD)
 git diff --quiet HEAD -- backend deploy || TAG="${TAG}-dirty"
 echo "==> 部署 $TAG 到 $HOST:$DIR"
 
+# 复用同一条 SSH 连接：服务器对短时间内的多个新连接会断开（sshd 限流）
+CTL="/tmp/finx-deploy-%C"
+SSH_OPTS=(-o ControlMaster=auto -o ControlPath="$CTL" -o ControlPersist=120 -o ServerAliveInterval=15)
+ssh() { command ssh "${SSH_OPTS[@]}" "$@"; }
+export RSYNC_RSH="ssh ${SSH_OPTS[*]}"
+
 ssh "$HOST" "mkdir -p '$DIR/backend' '$DIR/deploy'"
 RSYNC_EXCLUDES=(--include '.env.example' --exclude '.env' --exclude '.env.*' --exclude '*.local.json' --exclude 'RELEASES' --exclude '.DS_Store')
 rsync -az --delete "${RSYNC_EXCLUDES[@]}" backend/ "$HOST:$DIR/backend/"
