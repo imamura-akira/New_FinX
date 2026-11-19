@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -103,6 +104,9 @@ type Config struct {
 	KYCPollInterval time.Duration
 	// CORSAllowedOrigins：允许跨域的来源（逗号分隔；空 = 不启用 CORS；iOS 原生 App 不需要）。
 	CORSAllowedOrigins []string
+	// AllowedEmails：登录邮箱白名单（ALLOWED_EMAILS，逗号分隔）。以 @ 开头的条目按域名后缀放行（如 "@example.com"），
+	// 完整邮箱按精确匹配（忽略大小写）。非空时 /auth/otp/request 只接受名单内的邮箱（公网演示部署用）；空 = 不限制。
+	AllowedEmails []string
 
 	DW DW
 
@@ -147,6 +151,7 @@ func LoadFrom(get Getenv) (*Config, error) {
 		SessionTTL:         p.dur("SESSION_TTL", 24*time.Hour),
 		OTPDevLog:          p.bool("OTP_DEV_LOG", false),
 		CORSAllowedOrigins: splitList(get("CORS_ALLOWED_ORIGINS")),
+		AllowedEmails:      splitList(strings.ToLower(get("ALLOWED_EMAILS"))),
 		KYCPollInterval:    p.dur("KYC_POLL_INTERVAL", time.Minute),
 		MarketDataMode:     MarketDataMode(p.str("MARKET_DATA_MODE", string(MarketSim))),
 		MarketTick:         p.dur("MARKET_TICK", 2*time.Second),
@@ -260,6 +265,12 @@ func (c *Config) Validate() error {
 	if c.OTPDevLog && c.Env == "production" {
 		errs = append(errs, "production 环境禁止开启 OTP_DEV_LOG")
 	}
+	for _, e := range c.AllowedEmails {
+		if !allowedEmailEntryRE.MatchString(e) {
+			errs = append(errs, "ALLOWED_EMAILS 每项须为 @域名（如 @example.com）或完整邮箱")
+			break
+		}
+	}
 	for _, o := range c.CORSAllowedOrigins {
 		if o == "*" && c.Env == "production" {
 			errs = append(errs, "production 环境 CORS_ALLOWED_ORIGINS 不能为 *")
@@ -287,6 +298,9 @@ func (c *Config) Validate() error {
 }
 
 // DWConfigured：DW 凭据是否齐全（不返回任何凭据内容）。
+// allowedEmailEntryRE：白名单条目，"@域名" 或 "本地部分@域名"。
+var allowedEmailEntryRE = regexp.MustCompile(`^[^\s@,]*@[^\s@,]+\.[^\s@,]+$`)
+
 func (c *Config) DWConfigured() bool {
 	return c.DW.AppKey != "" && c.DW.ClientID != "" && c.DW.ClientSecret != ""
 }

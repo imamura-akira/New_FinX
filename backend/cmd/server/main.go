@@ -119,6 +119,10 @@ func run(migrateCmd string, logger *slog.Logger) error {
 			logger.Warn("email provider not configured and OTP_DEV_LOG=false: OTP login will fail")
 		}
 		authSvc := auth.New(auth.PGRepo{DB: st.DB}, sender, cfg.JWTSecret, cfg.SessionTTL, logger)
+		if len(cfg.AllowedEmails) > 0 {
+			authSvc.SetAllowedEmails(cfg.AllowedEmails)
+			logger.Info("login email allowlist enabled", slog.Int("entries", len(cfg.AllowedEmails)))
+		}
 		if cfg.OTPDevLog { // 演示固定验证码 000000（config 已禁止 production 开启 OTP_DEV_LOG）
 			authSvc.EnableDemoCode()
 			logger.Warn("demo OTP enabled: code 000000 is accepted (development only)")

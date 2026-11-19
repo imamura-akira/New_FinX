@@ -47,6 +47,44 @@ type Service struct {
 	logger *slog.Logger
 	// fixedCode：演示模式下所有验证码固定为 DevFixedCode（见 EnableDemoCode）。
 	fixedCode string
+	// 登录邮箱白名单（见 SetAllowedEmails）；两者都为空 = 不限制。
+	allowedSuffixes []string
+	allowedExact    map[string]bool
+}
+
+// SetAllowedEmails 设置登录邮箱白名单：以 @ 开头的条目按域名后缀放行（如 "@example.com"），
+// 完整邮箱按精确匹配（忽略大小写）。非空时，名单外的邮箱在 /auth/otp/request 返回与
+// "邮箱格式错误"相同的 42200，不透露白名单的存在。
+func (s *Service) SetAllowedEmails(entries []string) {
+	s.allowedSuffixes, s.allowedExact = nil, nil
+	for _, x := range entries {
+		x = normEmail(x)
+		switch {
+		case x == "":
+		case strings.HasPrefix(x, "@"):
+			s.allowedSuffixes = append(s.allowedSuffixes, x)
+		default:
+			if s.allowedExact == nil {
+				s.allowedExact = map[string]bool{}
+			}
+			s.allowedExact[x] = true
+		}
+	}
+}
+
+func (s *Service) emailAllowed(email string) bool {
+	if len(s.allowedSuffixes) == 0 && len(s.allowedExact) == 0 {
+		return true
+	}
+	if s.allowedExact[email] {
+		return true
+	}
+	for _, x := range s.allowedSuffixes {
+		if strings.HasSuffix(email, x) {
+			return true
+		}
+	}
+	return false
 }
 
 // EnableDemoCode 开启演示固定验证码 000000。调用方须确保仅在 config.OTPDevLog=true 时调用
@@ -85,7 +123,7 @@ func (s *Service) handleRequestOTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	email := normEmail(in.Email)
-	if !emailRE.MatchString(email) || len(email) > 254 {
+	if !emailRE.MatchString(email) || len(email) > 254 || !s.emailAllowed(email) {
 		httpx.Fail(w, r, httpx.Validation("", httpx.FieldError{Field: "email", Reason: "请输入有效的邮箱地址"}))
 		return
 	}
