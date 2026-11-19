@@ -75,10 +75,10 @@ deploy/deploy.sh
 ssh root@72.60.104.228 'cat /opt/finx/deploy/RELEASES; docker image ls finxnew-backend'
 ```
 
-切回上一个镜像（不重新构建）：
+当前版本记录在 `/opt/finx/deploy/.env` 的 `IMAGE_TAG`（每次部署成功后自动更新），服务器上的 compose 命令默认使用它。切回上一个镜像（不重新构建）：
 
 ```bash
-ssh root@72.60.104.228 'cd /opt/finx/deploy && IMAGE_TAG=<旧标签> docker compose up -d --no-build backend'
+ssh root@72.60.104.228 'cd /opt/finx/deploy && sed -i "/^IMAGE_TAG=/d" .env && echo IMAGE_TAG=<旧标签> >> .env && docker compose up -d --no-build backend'
 ```
 
 - 数据库迁移只前进，回滚镜像不会回滚表结构；如新版本带了迁移且需要撤销，先评估后再用 `docker compose run --rm migrate -migrate down`（每次回退一步）。

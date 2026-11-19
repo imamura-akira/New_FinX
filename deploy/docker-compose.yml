@@ -7,7 +7,7 @@
 # - backend：只绑定 docker0 网关地址（BACKEND_BIND，默认 172.16.0.1:18082），公网经 Caddy 的 443 访问。
 # - caddy：仅独立服务器使用（profile standalone）。当前 VPS 的 443 由共用 Caddy 托管，见 deploy.md。
 #
-# 变量（deploy/.env，服务器上由 init-env.sh 生成，不进 git）：POSTGRES_PASSWORD；可选 BACKEND_BIND、IMAGE_TAG。
+# 变量（deploy/.env，服务器上生成，不进 git）：POSTGRES_PASSWORD（init-env.sh）；IMAGE_TAG（remote-up.sh 部署成功后写入）；可选 BACKEND_BIND。
 # 后端配置：../backend/.env（服务器上，不进 git）。
 
 name: finxnew

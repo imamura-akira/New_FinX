@@ -19,6 +19,8 @@ docker compose build migrate || fail "构建失败"
 echo "==> up"
 docker compose up -d --remove-orphans postgres migrate backend || fail "启动失败（docker compose logs --tail 100 migrate backend）"
 printf '%s %s\n' "$(date -u +%FT%TZ)" "$TAG" >>RELEASES
+# 记录当前版本：之后在服务器上执行的 compose 命令（run / restart）默认使用该镜像；回滚时改这一行
+sed -i '/^IMAGE_TAG=/d' .env && printf 'IMAGE_TAG=%s\n' "$TAG" >>.env
 
 for _ in $(seq 1 30); do
 	if curl -fsS "http://$BIND/healthz" >/dev/null 2>&1; then
