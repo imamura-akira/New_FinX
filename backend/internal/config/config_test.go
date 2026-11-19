@@ -30,6 +30,13 @@ func TestDefaults(t *testing.T) {
 	if c.DWConfigured() {
 		t.Fatal("无凭据时 DWConfigured 应为 false")
 	}
+	if len(c.AllowedEmailSuffixes) != 0 {
+		t.Fatal("登录白名单默认为空（本机开发不受影响）")
+	}
+	c2, err := LoadFrom(env(map[string]string{"ALLOWED_EMAIL_SUFFIXES": " @Example.com ,@demo.test"}))
+	if err != nil || len(c2.AllowedEmailSuffixes) != 2 || c2.AllowedEmailSuffixes[0] != "@example.com" {
+		t.Fatalf("白名单解析不符: %v %v", c2.AllowedEmailSuffixes, err)
+	}
 }
 
 func TestValidation(t *testing.T) {
@@ -63,6 +70,8 @@ func TestValidation(t *testing.T) {
 		{"行情 tick 过短", map[string]string{"MARKET_TICK": "10ms"}, "MARKET_TICK"},
 		{"对账周期过短", map[string]string{"KYC_POLL_INTERVAL": "1s"}, "KYC_POLL_INTERVAL"},
 		{"生产环境 CORS 不能为 *", map[string]string{"APP_ENV": "production", "CORS_ALLOWED_ORIGINS": "*"}, "CORS_ALLOWED_ORIGINS"},
+		{"登录白名单缺 @", map[string]string{"ALLOWED_EMAIL_SUFFIXES": "example.com"}, "ALLOWED_EMAIL_SUFFIXES"},
+		{"登录白名单合法", map[string]string{"ALLOWED_EMAIL_SUFFIXES": "@example.com, @demo.test"}, ""},
 		{"开发环境允许打印验证码", map[string]string{"OTP_DEV_LOG": "true", "JWT_SECRET": base64.StdEncoding.EncodeToString(make([]byte, 48))}, ""},
 	}
 	for _, tc := range cases {

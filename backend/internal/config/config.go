@@ -103,6 +103,9 @@ type Config struct {
 	KYCPollInterval time.Duration
 	// CORSAllowedOrigins：允许跨域的来源（逗号分隔；空 = 不启用 CORS；iOS 原生 App 不需要）。
 	CORSAllowedOrigins []string
+	// AllowedEmailSuffixes：登录邮箱白名单（逗号分隔，每项以 @ 开头，如 "@example.com"）。
+	// 非空时 /auth/otp/request 只接受匹配后缀的邮箱（公网演示部署用）；空 = 不限制。
+	AllowedEmailSuffixes []string
 
 	DW DW
 
@@ -144,17 +147,18 @@ func LoadFrom(get Getenv) (*Config, error) {
 			TokenRefreshSkew:     p.dur("DW_TOKEN_REFRESH_SKEW", 5*time.Minute),
 			LogBodies:            p.bool("DW_LOG_BODIES", false),
 		},
-		SessionTTL:         p.dur("SESSION_TTL", 24*time.Hour),
-		OTPDevLog:          p.bool("OTP_DEV_LOG", false),
-		CORSAllowedOrigins: splitList(get("CORS_ALLOWED_ORIGINS")),
-		KYCPollInterval:    p.dur("KYC_POLL_INTERVAL", time.Minute),
-		MarketDataMode:     MarketDataMode(p.str("MARKET_DATA_MODE", string(MarketSim))),
-		MarketTick:         p.dur("MARKET_TICK", 2*time.Second),
-		KYCMode:            KYCMode(p.str("KYC_MODE", string(KYCModeDoKYC))),
-		BankLinkMethod:     BankLinkMethod(p.str("BANK_LINK_METHOD", string(BankLinkDirect))),
-		UserSubmitMode:     UserSubmitMode(p.str("USER_SUBMIT_MODE", string(SubmitPostPatch))),
-		SeasoningDays:      p.int("SEASONING_DAYS", 30),
-		SeasoningStart:     SeasoningStart(p.str("SEASONING_START", string(SeasoningFromCleared))),
+		SessionTTL:           p.dur("SESSION_TTL", 24*time.Hour),
+		OTPDevLog:            p.bool("OTP_DEV_LOG", false),
+		CORSAllowedOrigins:   splitList(get("CORS_ALLOWED_ORIGINS")),
+		AllowedEmailSuffixes: splitList(strings.ToLower(get("ALLOWED_EMAIL_SUFFIXES"))),
+		KYCPollInterval:      p.dur("KYC_POLL_INTERVAL", time.Minute),
+		MarketDataMode:       MarketDataMode(p.str("MARKET_DATA_MODE", string(MarketSim))),
+		MarketTick:           p.dur("MARKET_TICK", 2*time.Second),
+		KYCMode:              KYCMode(p.str("KYC_MODE", string(KYCModeDoKYC))),
+		BankLinkMethod:       BankLinkMethod(p.str("BANK_LINK_METHOD", string(BankLinkDirect))),
+		UserSubmitMode:       UserSubmitMode(p.str("USER_SUBMIT_MODE", string(SubmitPostPatch))),
+		SeasoningDays:        p.int("SEASONING_DAYS", 30),
+		SeasoningStart:       SeasoningStart(p.str("SEASONING_START", string(SeasoningFromCleared))),
 		Limits: Limits{
 			MinDeposit:    p.float("LIMIT_MIN_DEPOSIT", 10),
 			MaxDeposit:    p.float("LIMIT_MAX_DEPOSIT", 50000),
@@ -259,6 +263,12 @@ func (c *Config) Validate() error {
 	}
 	if c.OTPDevLog && c.Env == "production" {
 		errs = append(errs, "production 环境禁止开启 OTP_DEV_LOG")
+	}
+	for _, sfx := range c.AllowedEmailSuffixes {
+		if !strings.HasPrefix(sfx, "@") || len(sfx) < 4 || strings.Count(sfx, "@") != 1 {
+			errs = append(errs, "ALLOWED_EMAIL_SUFFIXES 每项须以 @ 开头，如 @example.com")
+			break
+		}
 	}
 	for _, o := range c.CORSAllowedOrigins {
 		if o == "*" && c.Env == "production" {

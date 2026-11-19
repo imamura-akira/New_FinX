@@ -186,6 +186,35 @@ func TestRequestOTP(t *testing.T) {
 	}
 }
 
+func TestRequestOTPAllowlist(t *testing.T) {
+	cases := []struct {
+		name     string
+		suffixes []string
+		email    string
+		wantCode int
+	}{
+		{"白名单为空：不限制", nil, "someone@gmail.com", 0},
+		{"匹配后缀", []string{"@example.com"}, "Demo@Example.COM", 0},
+		{"多个后缀之一", []string{"@a.test", " @example.com "}, "x@example.com", 0},
+		{"不匹配：通用 42200", []string{"@example.com"}, "someone@gmail.com", 42200},
+		{"不能被相似域名绕过", []string{"@example.com"}, "x@evilexample.com", 42200},
+		{"子域名不算匹配", []string{"@example.com"}, "x@mail.example.com.cn", 42200},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			h := newHarness()
+			h.svc.SetAllowedEmailSuffixes(tc.suffixes)
+			r := h.do("POST", "/api/v1/auth/otp/request", "", map[string]string{"email": tc.email})
+			if r.Code != tc.wantCode {
+				t.Fatalf("got %d want %d (%s)", r.Code, tc.wantCode, r.Msg)
+			}
+			if tc.wantCode != 0 && (strings.Contains(r.Msg, "白名单") || strings.Contains(string(r.Data), "白名单")) {
+				t.Fatal("错误信息不应透露白名单")
+			}
+		})
+	}
+}
+
 func TestOTPRateLimits(t *testing.T) {
 	h := newHarness()
 	body := map[string]string{"email": "a@example.com"}
