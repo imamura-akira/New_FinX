@@ -101,6 +101,13 @@ KYC_APPROVED 事件 → 自动 POST /accounts → 存 account_no → 通知
 - 边界：虚拟行情只用于展示，不参与任何资金计算；账户余额、购买力、可提现一律来自 DW（见第 3 节），两者在 UI 上不混用。
 - 市场情绪（2026-11-20，`internal/marketsim/sentiment.go`，`GET /market/sentiment`）：恐慌贪婪指数 = 0.3×涨跌家数分（50 + 50×(涨−跌)/总数）+ 0.3×平均涨跌幅分（50 + 25×均值%）+ 0.2×动量分（50 + 100×近 10 根分时均涨幅%）+ 0.2×波动分（50 − 100×(近 10 根分时平均振幅% − 0.55) − 5×VXX 涨跌幅%），各分量夹在 0–100；每个 tick 以 α=0.08 指数平滑，使指数缓慢变化。平均涨跌幅与动量不含 VXX；涨跌家数统计全部标的，|涨跌幅| < 0.10% 计平盘。恐慌贪婪指数正式数据源待定（自行计算或采购，不得抓取第三方指数）。
 
+## 6.6 资产分布与每日资产快照（portfolio，F17）
+
+- 包 `internal/portfolio`：`DWSource` 读 DW summary/money（cash.cashBalance）与 summary/positions（marketValue），`PaperSource` 读模拟账户（`papertrade.Service.Holdings`）；按 `marketsim.InstrumentType` 的 STOCK / ETF 归类，列表外代码按股票计。占比千分位最大余数法，合计 100.0。
+- 表 `asset_snapshots`（迁移 000008）：主键 (user_id, mode REAL|PAPER, day 美东日期) 去重；`source` = CLOSE（收盘任务，覆盖当日记录）或 FIRST_REQUEST（当日首次请求兜底，仅在当日无记录时写入）。
+- 收盘任务：每 5 分钟检查，美东 16:10 之后当日未完成时，为全部已开户用户（accounts.dw_account_id 非空且未关闭）与全部模拟账户记录 CLOSE 快照；部分失败下一轮重试。每个实盘用户 2 次 DW 调用。
+- 边界：快照只用于趋势展示，不参与任何资金计算；`cmd/demoreset` 重置用户时一并删除其快照。
+
 ## 7. 配置开关（config，对应 ui-signoff.md 第 2 节）
 
 ```yaml

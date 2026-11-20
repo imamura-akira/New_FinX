@@ -38,6 +38,8 @@ Base URL：`/api/v1`　认证：`Authorization: Bearer <sessionToken>`（除 /au
 |---|---|---|
 | GET /account | `{accountId, accountNo, status, accountType:"LIVE", tradingType:"CASH", managementType:"SELF", openedAt}` | status: PENDING/OPEN/OPEN_NO_NEW_TRADES/FROZEN/CLOSED |
 | GET /account/money | `{cash, settledCash, buyingPower, cashAvailableForWithdrawal, unsettled, pendingDeposits, withheldForSeasoning, updatedAt}` | 来自 DW 账户资金汇总【Q-DW-8d 复核字段名】；**可提现一律用 DW 返回值** |
+| GET /account/allocation | `{simulated, total, items:[{type: "STOCK"\|"ETF"\|"CASH", amount, pct}], updatedAt}` | P-07 资产分布（F17，2026-11-20 新增）。现金取 DW summary/money 的 cash.cashBalance（与 /account/money 的 cash 同源），持仓市值取 DW summary/positions 的 marketValue，按我方标的列表 STOCK / ETF 归堆（列表外代码按股票计）；total = 现金 + 股票 + ETF；pct 由后端计算（一位小数，最大余数法合计 100.0，总额为 0 时全为 0）；items 固定 3 条、顺序 STOCK→ETF→CASH，0 金额照常返回。未开户 40901，DW 失败 50001 |
+| GET /account/history | `?range=7D\|30D\|90D\|ALL`（缺省 7D）→ `{simulated, range, points:[{date, total, cash, stock, etf}]}` | P-07 资产趋势（F17）。每日资产快照：每个用户 × 账户类型 × 美东日期一条，按日期升序；7D/30D/90D 为含今日的最近 N 个美东自然日。收盘后（美东 16:10 起）记录 CLOSE 快照；当日首次请求分布 / 趋势时若尚无记录兜底写入一条（之后被收盘快照覆盖）。有几天返回几天，不补造历史；快照为内部记录，金额以 DW 返回为基础。range 非法 42200 |
 
 ## 4. 银行账户（F7，P-31/P-32）
 
@@ -95,6 +97,8 @@ Base URL：`/api/v1`　认证：`Authorization: Bearer <sessionToken>`（除 /au
 |---|---|---|---|
 | GET /paper/account | — | `{simulated, initialCash, cash, reservedCash, buyingPower, positionsValue, totalValue, totalPL, totalPLPct, resetAt, updatedAt}` | 首次访问自动创建（初始资金 `PAPER_INITIAL_CASH`，默认 100000）。buyingPower = cash − reservedCash（限价买单冻结）；totalPL = totalValue − initialCash |
 | POST /paper/account/reset | — | 同上 | 一键重置：恢复初始资金，清空模拟持仓与订单 |
+| GET /paper/account/allocation | 同 /account/allocation（`simulated: true`） | 模拟账户资产分布（F17）：现金含限价买单冻结部分，持仓按虚拟行情估值，不调用 DW |
+| GET /paper/account/history | 同 /account/history（`simulated: true`） | 模拟账户每日快照（独立存储，mode=PAPER）；一键重置不删除历史快照 |
 | POST /paper/orders | `{symbol, side, orderType: "MARKET"\|"LIMIT", amount?, quantity?, limitPrice?, timeInForce?: "DAY"}` | `{orderId, status}` | 市价单：amount 与 quantity 二选一；限价单：必须按 quantity，`limitPrice` > 0（$1 以上最多两位小数，$1 以下最多四位），有效期只支持 DAY。超出可用资金 / 可卖数量 / 单笔最低 → 42201（附 limits）；无演示行情的代码 → 42200 |
 | GET /paper/orders | `?status=OPEN\|CLOSED&cursor=` | `[PaperOrder]` | 同 /orders 分页规则；查询前先撮合 |
 | GET /paper/orders/{id} | — | `PaperOrder` | 不存在或非本人 40901 |
@@ -161,3 +165,4 @@ Base URL：`/api/v1`　认证：`Authorization: Bearer <sessionToken>`（除 /au
 | 2026-11-20 | 新增 5.7 模拟交易 / 模拟盘（F15）：`/paper/account`、`/paper/account/reset`、`/paper/orders`、`/paper/orders/{id}`、`/paper/orders/{id}/cancel`、`/paper/positions`；结构与实盘 Order / Position 对齐并带 `simulated: true`；不调用 DW | 新增，向后兼容 |
 | 2026-11-20 | 5.6 交易扩展限价单：`POST /orders` 的 `orderType` 新增 `LIMIT`，新增请求字段 `limitPrice`、`timeInForce`（只支持 DAY）；`Order` 新增 `limitPrice`、`timeInForce`。市价单行为不变 | 新增，向后兼容 |
 | 2026-11-20 | 5.5 市场数据扩展（F11）：新增 `GET /market/sentiment`（恐慌贪婪指数 + 涨跌家数，`simulated: true`，无需登录）；P-09 指数卡新增 IWM（罗素 2000，复用 `/market/quotes`，标的池已含）。恐慌贪婪指数正式数据源待定（自行计算或采购，不得抓取第三方指数） | 新增，向后兼容 |
+| 2026-11-20 | F17 资产分布与资产趋势：新增 `GET /account/allocation`、`GET /account/history?range=`、`GET /paper/account/allocation`、`GET /paper/account/history`（每日资产快照，迁移 000008 asset_snapshots）；新增结构 `Allocation`、`AssetHistory` | 新增，向后兼容 |

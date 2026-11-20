@@ -12,13 +12,13 @@ var wantOps = []string{
 	"post /auth/otp/request", "post /auth/otp/verify", "post /auth/oauth", "post /auth/logout", "get /me",
 	"get /application", "put /application/draft", "post /application/documents", "post /application/submit",
 	"get /application/status", "patch /application/remediate",
-	"get /account", "get /account/money",
+	"get /account", "get /account/money", "get /account/allocation", "get /account/history",
 	"get /funding/bank-accounts", "post /funding/bank-accounts", "delete /funding/bank-accounts/{id}",
 	"get /funding/deposit-instructions", "post /funding/deposits", "post /funding/withdrawals", "get /funding/transfers",
 	"get /documents", "get /notifications", "post /notifications/read",
 	"get /market/quotes", "get /market/instruments/{symbol}", "get /market/sentiment",
 	"post /orders", "get /orders", "get /orders/{id}", "post /orders/{id}/cancel", "get /positions",
-	"get /paper/account", "post /paper/account/reset", "post /paper/orders", "get /paper/orders",
+	"get /paper/account", "post /paper/account/reset", "get /paper/account/allocation", "get /paper/account/history", "post /paper/orders", "get /paper/orders",
 	"get /paper/orders/{id}", "post /paper/orders/{id}/cancel", "get /paper/positions",
 }
 

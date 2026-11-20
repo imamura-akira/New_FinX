@@ -431,3 +431,24 @@ func TestListFilter(t *testing.T) {
 		t.Fatalf("%+v", r)
 	}
 }
+
+// F17：Holdings 返回现金（含冻结）与按虚拟行情估值的持仓市值（分）。
+func TestHoldings(t *testing.T) {
+	f := newFx(t)
+	if r := f.call("POST", "/api/v1/paper/orders", `{"symbol":"AAPL","side":"BUY","orderType":"MARKET","quantity":10}`); r.Code != 0 {
+		t.Fatalf("下单失败: %+v", r)
+	}
+	cash, vals, err := f.svc.Holdings(context.Background(), "u1")
+	if err != nil {
+		t.Fatal(err)
+	}
+	// 买入 10 股 @ 卖一 200 → 现金 100000 − 2000；市值按最新价 199.95
+	if cash != 9800000 || vals["AAPL"] != 199950 || len(vals) != 1 {
+		t.Fatalf("cash %d vals %v", cash, vals)
+	}
+	// 新用户：按初始资金创建，无持仓
+	cash, vals, err = f.svc.Holdings(context.Background(), "u-new")
+	if err != nil || cash != 10000000 || len(vals) != 0 {
+		t.Fatalf("新用户 cash %d vals %v err %v", cash, vals, err)
+	}
+}

@@ -81,6 +81,21 @@ func (s *Service) withBook(ctx context.Context, fn func(*Book) error) error {
 	})
 }
 
+// Holdings：用户模拟账户的现金（含冻结）与各持仓按虚拟行情的市值（单位分；F17 资产分布与每日快照用）。
+// 账户不存在时按初始资金创建（与 GET /paper/account 一致）；读取前先撮合一次限价单。
+func (s *Service) Holdings(ctx context.Context, userID string) (cash int64, values map[string]int64, err error) {
+	values = map[string]int64{}
+	err = s.Repo.WithBook(ctx, userID, s.initialCents(), func(b *Book) error {
+		b.Match(s.Quote, s.now().UTC(), s.et)
+		cash = b.Cash
+		for _, p := range b.Value(s.Quote, nil).Positions {
+			values[p.Symbol] = p.Value
+		}
+		return nil
+	})
+	return cash, values, err
+}
+
 // RunMatcher 周期撮合所有用户的未成交限价单（虚拟行情变动后价格到达即成交）。
 func (s *Service) RunMatcher(ctx context.Context, every time.Duration) {
 	t := time.NewTicker(every)

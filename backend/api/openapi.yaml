@@ -500,6 +500,60 @@ paths:
         "401": { $ref: "#/components/responses/Unauthorized" }
         "502": { $ref: "#/components/responses/DWError" }
 
+  /account/allocation:
+    get:
+      tags: [account]
+      operationId: getAccountAllocation
+      summary: 资产分布（P-07；F17）
+      description: |
+        数据来源：DW summary/money 的 cash.cashBalance（现金）与 summary/positions 的 marketValue（持仓市值）；持仓按我方标的列表的 STOCK / ETF 分类归堆（列表外代码按股票计）。
+        总资产 = 现金 + 股票市值 + ETF 市值；占比由后端计算（一位小数，合计 100.0；总额为 0 时全为 0）。条目固定顺序 STOCK、ETF、CASH，金额为 0 的类别照常返回。
+        当日首次请求时若尚无快照，顺带记录当日兜底快照（见 history）。新增接口，向后兼容。
+      responses:
+        "200":
+          description: 资产分布
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - type: object
+                    properties:
+                      data: { $ref: "#/components/schemas/Allocation" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "502": { $ref: "#/components/responses/DWError" }
+
+  /account/history:
+    get:
+      tags: [account]
+      operationId: getAccountHistory
+      summary: 资产趋势（P-07；每日资产快照；F17）
+      description: |
+        每日资产快照，每个用户 × 账户类型 × 美东日期一条：收盘后（美东 16:10 起）记录 CLOSE 快照；当日首次请求分布或趋势时若尚无记录，兜底写入一条，
+        之后的收盘快照覆盖它。有几天返回几天，不补造历史；快照少于 2 个时 App 显示"记录积累中"。快照为内部记录，金额以 DW / 模拟账户返回为基础。
+      parameters:
+        - name: range
+          in: query
+          required: false
+          schema: { type: string, enum: [7D, 30D, 90D, ALL], default: 7D }
+          description: 7D / 30D / 90D 为含今日的最近 N 个美东自然日；ALL 为全部
+      responses:
+        "200":
+          description: 资产趋势
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - type: object
+                    properties:
+                      data: { $ref: "#/components/schemas/AssetHistory" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "502": { $ref: "#/components/responses/DWError" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
   # ───────────── 4. 银行账户 ─────────────
   /funding/bank-accounts:
     get:
@@ -1054,6 +1108,56 @@ paths:
                       data: { $ref: "#/components/schemas/PaperAccount" }
         "401": { $ref: "#/components/responses/Unauthorized" }
 
+  /paper/account/allocation:
+    get:
+      tags: [paper]
+      operationId: getPaperAccountAllocation
+      summary: 资产分布（P-07，模拟盘；F17）
+      description: |
+        数据来源：模拟账户现金与持仓（按虚拟行情估值），不调用 DW；持仓按我方标的列表的 STOCK / ETF 分类归堆（列表外代码按股票计）。
+        总资产 = 现金 + 股票市值 + ETF 市值；占比由后端计算（一位小数，合计 100.0；总额为 0 时全为 0）。条目固定顺序 STOCK、ETF、CASH，金额为 0 的类别照常返回。
+        当日首次请求时若尚无快照，顺带记录当日兜底快照（见 history）。新增接口，向后兼容。
+      responses:
+        "200":
+          description: 资产分布
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - type: object
+                    properties:
+                      data: { $ref: "#/components/schemas/Allocation" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+  /paper/account/history:
+    get:
+      tags: [paper]
+      operationId: getPaperAccountHistory
+      summary: 资产趋势（P-07，模拟盘；每日资产快照；F17）
+      description: |
+        每日资产快照，每个用户 × 账户类型 × 美东日期一条：收盘后（美东 16:10 起）记录 CLOSE 快照；当日首次请求分布或趋势时若尚无记录，兜底写入一条，
+        之后的收盘快照覆盖它。有几天返回几天，不补造历史；快照少于 2 个时 App 显示"记录积累中"。快照为内部记录，金额以 DW / 模拟账户返回为基础。
+      parameters:
+        - name: range
+          in: query
+          required: false
+          schema: { type: string, enum: [7D, 30D, 90D, ALL], default: 7D }
+          description: 7D / 30D / 90D 为含今日的最近 N 个美东自然日；ALL 为全部
+      responses:
+        "200":
+          description: 资产趋势
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - type: object
+                    properties:
+                      data: { $ref: "#/components/schemas/AssetHistory" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
   /paper/orders:
     post:
       tags: [paper]
@@ -1559,6 +1663,43 @@ components:
         unrealizedPL: { type: number, description: DW unrealizedPL }
         unrealizedDayPL: { type: number, description: DW unrealizedDayPL }
 
+    Allocation:
+      type: object
+      description: 资产分布（F17）
+      required: [simulated, total, items, updatedAt]
+      properties:
+        simulated: { type: boolean, description: 模拟盘为 true }
+        total: { $ref: "#/components/schemas/Money" }
+        items:
+          type: array
+          description: 固定 3 条，顺序 STOCK、ETF、CASH
+          items:
+            type: object
+            required: [type, amount, pct]
+            properties:
+              type: { type: string, enum: [STOCK, ETF, CASH] }
+              amount: { $ref: "#/components/schemas/Money" }
+              pct: { type: number, description: 占比（百分数，一位小数，如 45.0） }
+        updatedAt: { type: string, format: date-time }
+    AssetHistory:
+      type: object
+      description: 资产趋势（F17，每日资产快照）
+      required: [simulated, range, points]
+      properties:
+        simulated: { type: boolean }
+        range: { type: string, enum: [7D, 30D, 90D, ALL] }
+        points:
+          type: array
+          description: 按日期升序
+          items:
+            type: object
+            required: [date, total, cash, stock, etf]
+            properties:
+              date: { type: string, format: date, description: 美东日期 }
+              total: { $ref: "#/components/schemas/Money" }
+              cash: { $ref: "#/components/schemas/Money" }
+              stock: { $ref: "#/components/schemas/Money" }
+              etf: { $ref: "#/components/schemas/Money" }
     PaperAccount:
       type: object
       required: [simulated, initialCash, cash, reservedCash, buyingPower, positionsValue, totalValue, totalPL]

@@ -38,6 +38,17 @@ var DefaultInstruments = []Instrument{
 	{"VXX", "iPath S&P 500 VIX ST Futures ETN", "CBOE", "ETF", 49.60, 48.00},
 }
 
+// InstrumentType 返回标的池中代码的类型（STOCK / ETF）；不在标的池中时 ok=false（F17 资产分布归类用）。
+func InstrumentType(symbol string) (string, bool) {
+	s := strings.ToUpper(strings.TrimSpace(symbol))
+	for _, in := range DefaultInstruments {
+		if in.Symbol == s {
+			return in.Type, true
+		}
+	}
+	return "", false
+}
+
 // maxSymbolsPerRequest：单次批量报价的代码上限。
 const maxSymbolsPerRequest = 50
 

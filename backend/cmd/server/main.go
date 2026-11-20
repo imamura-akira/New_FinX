@@ -30,6 +30,7 @@ import (
 	"github.com/imamura-akira/New_FinX/backend/internal/funding"
 	"github.com/imamura-akira/New_FinX/backend/internal/marketsim"
 	"github.com/imamura-akira/New_FinX/backend/internal/papertrade"
+	"github.com/imamura-akira/New_FinX/backend/internal/portfolio"
 	"github.com/imamura-akira/New_FinX/backend/internal/store"
 	"github.com/imamura-akira/New_FinX/backend/internal/trading"
 )
@@ -197,6 +198,29 @@ func run(migrateCmd string, logger *slog.Logger) error {
 				MinOrder: cfg.Limits.MinOrder, PreventQueuing: cfg.TradePreventQueuing, Logger: logger,
 			})
 		}
+		// F17 资产分布与每日快照：实盘依赖 DW，模拟盘依赖模拟账户；按我方标的列表归类（列表外按股票计）
+		classify := func(sym string) string {
+			if t, ok := marketsim.InstrumentType(sym); ok && t == "ETF" {
+				return portfolio.TypeETF
+			}
+			return portfolio.TypeStock
+		}
+		pfDeps := portfolio.Deps{Repo: portfolio.PGRepo{DB: st.DB}, Logger: logger}
+		if dw != nil {
+			pfDeps.Real = portfolio.DWSource(dw, acctRepo.ForUser, classify, logger)
+		}
+		if paperSvc != nil {
+			pfDeps.Paper = portfolio.PaperSource(func(ctx context.Context, uid string) (int64, []portfolio.Holding, error) {
+				cash, vals, err := paperSvc.Holdings(ctx, uid)
+				hs := make([]portfolio.Holding, 0, len(vals))
+				for sym, v := range vals {
+					hs = append(hs, portfolio.Holding{Symbol: sym, Value: v})
+				}
+				return cash, hs, err
+			}, classify)
+		}
+		pfSvc := portfolio.New(pfDeps)
+		go pfSvc.Run(ctx, 5*time.Minute)
 		if dw != nil {
 			rec := events.NewReconciler(events.PGRepo{DB: st.DB}, dw, acctSvc, cfg.KYCPollInterval, logger)
 			orch := application.NewOrchestrator(appRepo, dw, cipher, cfg.UserSubmitMode, logger)
@@ -223,6 +247,7 @@ func run(migrateCmd string, logger *slog.Logger) error {
 			if paperSvc != nil {
 				paperSvc.Routes(mux, apiPrefix, authSvc.RequireAuth)
 			}
+			pfSvc.Routes(mux, apiPrefix, authSvc.RequireAuth)
 		})
 	} else {
 		logger.Warn("API routes disabled: DATABASE_URL, PII_ENCRYPTION_KEY and JWT_SECRET are all required")
