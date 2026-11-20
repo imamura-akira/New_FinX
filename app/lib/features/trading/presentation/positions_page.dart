@@ -51,6 +51,7 @@ class _PositionsPageState extends State<PositionsPage> {
     final d = _data;
     return Scaffold(
       appBar: AppBar(
+        leading: const AppBackButton(),
         title: const Text('持仓'),
         actions: [IconButton(tooltip: '订单', icon: const Icon(Icons.receipt_long_outlined), onPressed: () => context.push('/orders'))],
       ),

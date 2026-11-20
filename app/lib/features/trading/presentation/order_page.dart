@@ -217,7 +217,7 @@ class _OrderPageState extends State<OrderPage> {
     if (_step == 'done' && _result != null) return _resultView();
     if (_notOpened) {
       return Scaffold(
-        appBar: AppBar(title: Text(title)),
+        appBar: AppBar(title: Text(title), leading: const AppBackButton()),
         body: StateView(
           icon: Icons.lock_outline_rounded,
           title: '开户后即可交易',
@@ -456,7 +456,7 @@ class _OrderPageState extends State<OrderPage> {
       ],
       footer: [
         Expanded(
-          child: AppButton('查看订单', key: const Key('p19.orders'), kind: ButtonKind.ghost, onPressed: () => context.go('/orders')),
+          child: AppButton('查看订单', key: const Key('p19.orders'), kind: ButtonKind.ghost, onPressed: () => context.pushReplacement('/orders')),
         ),
         Expanded(
           child: AppButton(

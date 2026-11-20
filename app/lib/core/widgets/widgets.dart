@@ -1,6 +1,9 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../../app/theme.dart';
+import 'back_button.dart';
+
+export 'back_button.dart';
 
 /// 与原型 .btn 系列一致的按钮。
 enum ButtonKind { primary, secondary, ghost, danger }
@@ -353,7 +356,7 @@ class PageScaffold extends StatelessWidget {
   Widget build(BuildContext context) {
     final keyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
     return Scaffold(
-      appBar: AppBar(title: Text(title)),
+      appBar: AppBar(title: Text(title), leading: const AppBackButton()),
       resizeToAvoidBottomInset: true,
       body: GestureDetector(
         behavior: HitTestBehavior.translucent,

@@ -72,6 +72,7 @@ class _InstrumentPageState extends State<InstrumentPage> {
       listenable: wl,
       builder: (context, _) => Scaffold(
         appBar: AppBar(
+          leading: const AppBackButton(fallback: '/market'),
           title: Text(widget.symbol),
           actions: [
             IconButton(

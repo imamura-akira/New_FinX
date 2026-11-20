@@ -93,7 +93,7 @@ class _ResultView extends StatelessWidget {
     ],
     footer: [
       Expanded(
-        child: AppButton('查看资金记录', kind: ButtonKind.ghost, onPressed: () => context.go('/funding/history')),
+        child: AppButton('查看资金记录', kind: ButtonKind.ghost, onPressed: () => context.pushReplacement('/funding/history')),
       ),
       Expanded(
         child: AppButton('完成', key: const Key('funding.done'), onPressed: () => context.go('/home')),

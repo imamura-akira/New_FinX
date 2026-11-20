@@ -94,13 +94,13 @@ class OnboardingScaffold extends StatelessWidget {
     final c = OnboardingScope.of(context);
     if (c.loading) {
       return Scaffold(
-        appBar: AppBar(title: Text(title)),
+        appBar: AppBar(title: Text(title), leading: const AppBackButton()),
         body: const Center(child: CircularProgressIndicator()),
       );
     }
     if (c.loadError != null) {
       return Scaffold(
-        appBar: AppBar(title: Text(title)),
+        appBar: AppBar(title: Text(title), leading: const AppBackButton()),
         body: StateView(
           icon: Icons.wifi_off_rounded,
           title: "Couldn't load your application",
@@ -253,7 +253,7 @@ class SubmittedGuard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Account opening')),
+    appBar: AppBar(title: const Text('Account opening'), leading: const AppBackButton()),
     body: Padding(
       padding: const EdgeInsets.all(24),
       child: Column(

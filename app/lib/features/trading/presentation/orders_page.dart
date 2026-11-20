@@ -94,7 +94,7 @@ class _OrdersPageState extends State<OrdersPage> {
   Widget build(BuildContext context) {
     final list = _orders;
     return Scaffold(
-      appBar: AppBar(title: const Text('订单')),
+      appBar: AppBar(title: const Text('订单'), leading: const AppBackButton()),
       body: _notOpened
           ? StateView(
               icon: Icons.receipt_long_outlined,
