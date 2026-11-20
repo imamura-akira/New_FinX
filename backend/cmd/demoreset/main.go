@@ -149,6 +149,7 @@ func list(ctx context.Context, db *sql.DB) error {
 
 // resetSteps：按外键依赖从叶到根删除（$1 = user id）。
 var resetSteps = []struct{ table, sql string }{
+	{"orders", `DELETE FROM orders WHERE account_id IN (SELECT ac.id FROM accounts ac JOIN dw_users d ON d.dw_user_id = ac.dw_user_id JOIN applications a ON a.id = d.application_id WHERE a.user_id = $1) OR created_by = $1`},
 	{"transfers", `DELETE FROM transfers WHERE account_id IN (SELECT ac.id FROM accounts ac JOIN dw_users d ON d.dw_user_id = ac.dw_user_id JOIN applications a ON a.id = d.application_id WHERE a.user_id = $1) OR created_by = $1`},
 	{"bank_accounts", `DELETE FROM bank_accounts WHERE account_id IN (SELECT ac.id FROM accounts ac JOIN dw_users d ON d.dw_user_id = ac.dw_user_id JOIN applications a ON a.id = d.application_id WHERE a.user_id = $1)`},
 	{"accounts", `DELETE FROM accounts WHERE dw_user_id IN (SELECT d.dw_user_id FROM dw_users d JOIN applications a ON a.id = d.application_id WHERE a.user_id = $1)`},

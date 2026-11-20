@@ -66,8 +66,9 @@ type Limits struct {
 	MaxWithdrawal float64
 	MinWire       float64
 	MaxBanks      int
-	ACHCutoffET   string // 示例 "16:00"，美东时间，待 DW 确认
-	WireCutoffET  string // 示例 "15:00"，美东时间，待 DW 确认
+	ACHCutoffET   string  // 示例 "16:00"，美东时间，待 DW 确认
+	WireCutoffET  string  // 示例 "15:00"，美东时间，待 DW 确认
+	MinOrder      float64 // F14 单笔最低下单金额（示例 $1，以券商为准；sandbox-log T-4）
 }
 
 // DW：DriveWealth 客户端配置。凭据字段只从环境变量读取。
@@ -120,6 +121,8 @@ type Config struct {
 	SeasoningDays  int // 展示用；可提现以 DW 返回为准
 	SeasoningStart SeasoningStart
 	Limits         Limits
+	// F14：DW preventQueuing——休市时市价单拒绝而非排队到开盘（待沙盒实测，sandbox-log T-3）
+	TradePreventQueuing bool
 }
 
 // 默认值（backend-design.md 第 7 节）。
@@ -174,7 +177,9 @@ func LoadFrom(get Getenv) (*Config, error) {
 			MaxBanks:      p.int("LIMIT_MAX_BANKS", 2),
 			ACHCutoffET:   p.str("LIMIT_ACH_CUTOFF_ET", "16:00"),
 			WireCutoffET:  p.str("LIMIT_WIRE_CUTOFF_ET", "15:00"),
+			MinOrder:      p.float("LIMIT_MIN_ORDER", 1),
 		},
+		TradePreventQueuing: p.bool("TRADE_PREVENT_QUEUING", false),
 	}
 	if raw := get("PII_ENCRYPTION_KEY"); raw != "" {
 		key, err := base64.StdEncoding.DecodeString(raw)
@@ -293,6 +298,9 @@ func (c *Config) Validate() error {
 	}
 	if l.MinWithdrawal <= 0 || l.MaxWithdrawal < l.MinWithdrawal || l.MinWire <= 0 {
 		errs = append(errs, "出金限额不合理")
+	}
+	if l.MinOrder <= 0 {
+		errs = append(errs, "LIMIT_MIN_ORDER 须大于 0")
 	}
 	if l.MaxBanks < 1 {
 		errs = append(errs, "LIMIT_MAX_BANKS 至少为 1")

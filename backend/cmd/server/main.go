@@ -30,6 +30,7 @@ import (
 	"github.com/imamura-akira/New_FinX/backend/internal/funding"
 	"github.com/imamura-akira/New_FinX/backend/internal/marketsim"
 	"github.com/imamura-akira/New_FinX/backend/internal/store"
+	"github.com/imamura-akira/New_FinX/backend/internal/trading"
 )
 
 // version 可在构建时用 -ldflags "-X main.version=..." 注入。
@@ -104,8 +105,9 @@ func run(migrateCmd string, logger *slog.Logger) error {
 	var routes []func(*http.ServeMux)
 
 	// F11 虚拟行情：不依赖数据库与 DW，始终可用（MARKET_DATA_MODE=REAL 时未挂载，接口返回 50003）
+	var market *marketsim.Engine
 	if cfg.MarketDataMode == config.MarketSim {
-		market := marketsim.New(marketsim.DefaultInstruments, marketsim.Params{Tick: cfg.MarketTick}, nil)
+		market = marketsim.New(marketsim.DefaultInstruments, marketsim.Params{Tick: cfg.MarketTick}, nil)
 		go market.Start(ctx)
 		routes = append(routes, func(mux *http.ServeMux) { market.Routes(mux, apiPrefix) })
 		logger.Info("market simulator started", slog.Int("instruments", len(marketsim.DefaultInstruments)), slog.Duration("tick", cfg.MarketTick))
@@ -150,11 +152,32 @@ func run(migrateCmd string, logger *slog.Logger) error {
 				Limits: cfg.Limits, BankLink: cfg.BankLinkMethod, Logger: logger,
 			})
 		}
+		var tradeSvc *trading.Service
+		if dw != nil { // F14 交易：按股数买入时用演示行情估算金额（REAL 模式未接入前无报价，只能按金额买入）
+			var price func(string) (float64, bool)
+			if market != nil {
+				price = func(sym string) (float64, bool) {
+					q := market.Quotes([]string{sym})
+					if len(q) == 0 {
+						return 0, false
+					}
+					if q[0].Ask > 0 {
+						return q[0].Ask, true
+					}
+					return q[0].Last, q[0].Last > 0
+				}
+			}
+			tradeSvc = trading.New(trading.Deps{
+				Repo: trading.PGRepo{DB: st.DB}, DW: dw, Account: acctRepo.ForUser, Price: price,
+				MinOrder: cfg.Limits.MinOrder, PreventQueuing: cfg.TradePreventQueuing, Logger: logger,
+			})
+		}
 		if dw != nil {
 			rec := events.NewReconciler(events.PGRepo{DB: st.DB}, dw, acctSvc, cfg.KYCPollInterval, logger)
 			orch := application.NewOrchestrator(appRepo, dw, cipher, cfg.UserSubmitMode, logger)
 			orch.OnUserCreated = rec.RefreshApp // DW User 创建后立即查一次 KYC
 			rec.AddJob(func(ctx context.Context) { fundSvc.Sync(ctx, cfg.KYCPollInterval) })
+			rec.AddJob(func(ctx context.Context) { tradeSvc.Sync(ctx, cfg.KYCPollInterval) })
 			appSvc.WithOrchestrator(orch, appRepo, cfg.KYCMode)
 			go orch.Start(ctx, time.Minute) // 后台续传未完成的提交
 			go rec.Start(ctx)               // KYC / 开户 / 账户状态对账
@@ -168,6 +191,9 @@ func run(migrateCmd string, logger *slog.Logger) error {
 			acctSvc.Routes(mux, apiPrefix, authSvc.RequireAuth)
 			if fundSvc != nil {
 				fundSvc.Routes(mux, apiPrefix, authSvc.RequireAuth)
+			}
+			if tradeSvc != nil {
+				tradeSvc.Routes(mux, apiPrefix, authSvc.RequireAuth)
 			}
 		})
 	} else {

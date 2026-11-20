@@ -55,7 +55,7 @@ func TestResetStepsOrder(t *testing.T) {
 		idx[s.table] = i
 	}
 	for _, pair := range [][2]string{
-		{"transfers", "bank_accounts"}, {"bank_accounts", "accounts"}, {"accounts", "dw_users"},
+		{"orders", "accounts"}, {"orders", "users_app"}, {"transfers", "bank_accounts"}, {"bank_accounts", "accounts"}, {"accounts", "dw_users"},
 		{"kyc_issues", "dw_users"}, {"dw_users", "applications"}, {"applications", "users_app"}, {"sessions", "users_app"},
 	} {
 		if idx[pair[0]] >= idx[pair[1]] {
