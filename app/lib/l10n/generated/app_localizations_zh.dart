@@ -217,4 +217,368 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get loginSignUpSignIn => '注册并登录';
+
+  @override
+  String get assetStock => '股票';
+
+  @override
+  String get assetEtf => 'ETF';
+
+  @override
+  String get assetCash => '现金';
+
+  @override
+  String get rangeAll => '全部';
+
+  @override
+  String rangeDays(Object days) {
+    return '$days 天';
+  }
+
+  @override
+  String cueReferenceNo(Object ref) {
+    return '参考号 $ref';
+  }
+
+  @override
+  String get homePaperAccountHasBeen => '模拟账户已重置';
+
+  @override
+  String get homeCouldnTRefreshPlease => '刷新失败，请稍后重试';
+
+  @override
+  String get homeAccount => '账户';
+
+  @override
+  String homeCouldnTRefreshYour(Object error) {
+    return '资产数据暂时无法刷新：$error';
+  }
+
+  @override
+  String homeAccountDataFromDrivewealth(Object v0) {
+    return '资金数据来自 DriveWealth · 更新于 $v0';
+  }
+
+  @override
+  String get homeDepositsInTransitNot => '在途入金（尚未计入购买力）';
+
+  @override
+  String get homeNotYetWithdrawableHolding => '观察期内暂不可提现';
+
+  @override
+  String get homePendingSettlement => '待交收';
+
+  @override
+  String get homeFundYourAccountTo => '入金开始投资';
+
+  @override
+  String get homeLinkYourOwnUs => '绑定本人美国银行账户（ACH）后转入资金';
+
+  @override
+  String get homeDeposit => '入金';
+
+  @override
+  String get homeBrowseMarketsFirst => '先看看行情';
+
+  @override
+  String get homeTrading => '交易';
+
+  @override
+  String get homePositions => '持仓';
+
+  @override
+  String get homeQuantityMarketValueCost => '数量、市值、成本与盈亏（券商返回）';
+
+  @override
+  String get homeOrders => '订单';
+
+  @override
+  String get homeCheckOrderStatusAnd => '查看订单状态，撤销未成交订单';
+
+  @override
+  String get homeWatchlist => '自选股';
+
+  @override
+  String get homeGoToMarkets => '去市场';
+
+  @override
+  String get homeYourWatchlistIsEmpty => '还没有自选股。在个股页点击右上角星标即可加入。';
+
+  @override
+  String homeCouldnTRefreshYour2(Object _paperError) {
+    return '模拟账户暂时无法刷新：$_paperError';
+  }
+
+  @override
+  String get homePaperTrading => '模拟交易';
+
+  @override
+  String get homePaperPositions => '模拟持仓';
+
+  @override
+  String get homePaperPositionsAndP => '按演示行情估值的模拟持仓与盈亏';
+
+  @override
+  String get homePaperOrders => '模拟订单';
+
+  @override
+  String get homeMarketOrdersFillInstantly => '市价单即时成交，限价单到价成交，可撤单';
+
+  @override
+  String get homePickAStockOn => '在市场页选择股票，点\"买入 / 卖出\"即可模拟下单。';
+
+  @override
+  String get homeLiveTotalAssetsUsd => '实盘 · 总资产 (USD)';
+
+  @override
+  String get homeBuyingPower => '购买力';
+
+  @override
+  String get homeAvailableToWithdraw => '可提现';
+
+  @override
+  String get homePendingSandboxVerification => '待沙盒验证';
+
+  @override
+  String get drawerSwitchAccount => '切换账户';
+
+  @override
+  String get drawerLive => '实盘';
+
+  @override
+  String get drawerPaper => '模拟';
+
+  @override
+  String get drawerPaperAccountIsnT => '模拟账户暂未开放';
+
+  @override
+  String get drawerFunds => '资金';
+
+  @override
+  String get drawerWithdraw => '出金';
+
+  @override
+  String get drawerBankAccounts => '银行账户';
+
+  @override
+  String get drawerTransferFromAnotherBroker => '转入其他券商账户';
+
+  @override
+  String get drawerActivity => '动态';
+
+  @override
+  String get drawerNotifications => '通知';
+
+  @override
+  String get drawerHistory => '历史记录';
+
+  @override
+  String get drawerDocuments => '文件';
+
+  @override
+  String get drawerManage => '管理';
+
+  @override
+  String get drawerSettings => '设置';
+
+  @override
+  String get drawerHelpCenter => '帮助中心';
+
+  @override
+  String get drawerSignOut => '退出登录';
+
+  @override
+  String get drawerBrokerageAccountUnavailable => '交易账户暂不可用';
+
+  @override
+  String get drawerAccountNumber => '账户号码';
+
+  @override
+  String get drawerMarketValue => '市值';
+
+  @override
+  String get drawerSellOnly => '仅可卖出';
+
+  @override
+  String get drawerFrozen => '已冻结';
+
+  @override
+  String get drawerClosed => '已关闭';
+
+  @override
+  String get drawerOpening => '开立中';
+
+  @override
+  String get drawerLiveAccount => '实盘账户';
+
+  @override
+  String get drawerCashSelfDirected => '现金 · 自主';
+
+  @override
+  String get drawerAccountNumberCopied => '账户号码已复制';
+
+  @override
+  String drawerAccountType(
+    Object accountType,
+    Object tradingType,
+    Object managementType,
+  ) {
+    return '账户类型 $accountType · $tradingType · $managementType';
+  }
+
+  @override
+  String get drawerPositionsValue => '持仓市值';
+
+  @override
+  String get drawerTransferIn => '转入';
+
+  @override
+  String get drawerThisFeatureIsnT => '该功能不在本次演示范围';
+
+  @override
+  String get drawerSignOut2 => '退出登录？';
+
+  @override
+  String get drawerYouLlNeedTo => '退出后需重新验证邮箱登录。';
+
+  @override
+  String get drawerCancel => '取消';
+
+  @override
+  String get drawerSignOut3 => '退出';
+
+  @override
+  String get drawerKycStatus => 'KYC 状态';
+
+  @override
+  String get drawerLastSynced => '最近同步';
+
+  @override
+  String get drawerDwSandboxIds => 'DW 沙盒凭证';
+
+  @override
+  String get drawerDemoOnly => '仅演示';
+
+  @override
+  String get drawerNoDwIdsYet => '暂无 DW 编号：账户尚未开立，或后端未开启演示环境（OTP_DEV_LOG）。';
+
+  @override
+  String drawerCopied(Object k) {
+    return '已复制 $k';
+  }
+
+  @override
+  String get drawerTheseAreTheValues =>
+      '以上为 DW 沙盒返回值，可与 demoreset verify 的输出逐项对照。';
+
+  @override
+  String get cueYourAccountIsFrozen => '账户已冻结：暂不能交易、入金或出金。资产仍安全托管，请联系客服了解原因。';
+
+  @override
+  String get cueYourAccountIsLimited => '账户仅可卖出：暂不能买入新证券，可卖出现有持仓、入金和出金。';
+
+  @override
+  String get cueYourAccountIsClosed => '账户已关闭。如有疑问请联系客服。';
+
+  @override
+  String get cueOpenABrokerageAccount => '开通证券账户';
+
+  @override
+  String get cueVerifyYourIdentityTo => '验证身份即可入金交易，约需 5 分钟';
+
+  @override
+  String get cueOpenAnAccount => '去开户';
+
+  @override
+  String get cueContinueOpeningYourAccount => '继续开通您的账户';
+
+  @override
+  String get cueYourProgressIsSaved => '进度已保存，可从上次中断处继续';
+
+  @override
+  String get cueContinueApplication => '继续开户';
+
+  @override
+  String get cueApplicationSubmitted => '开户申请已提交';
+
+  @override
+  String get cueCheckYourApplicationStatus => '查看开户进度';
+
+  @override
+  String get cueViewStatus => '查看进度';
+
+  @override
+  String get cueYourApplicationNeedsManual => '开户申请需要人工处理';
+
+  @override
+  String get cueWeLlBeIn => '我们会尽快联系您';
+
+  @override
+  String get cueOpeningYourBrokerageAccount => '交易账户开立中';
+
+  @override
+  String get cueIdentityVerifiedTimingTo => '身份核验已通过（预计时长待 DW 确认）';
+
+  @override
+  String get cueYourApplicationNeedsChanges => '开户资料需要修改';
+
+  @override
+  String get cuePleaseUpdateTheRequested => '请按提示修改后重新提交';
+
+  @override
+  String get cueUpdateApplication => '去修改资料';
+
+  @override
+  String get cueIdDocumentRequired => '需要上传身份证件';
+
+  @override
+  String get cueWeLlReVerify => '上传后将重新核验';
+
+  @override
+  String get cueUploadId => '去上传证件';
+
+  @override
+  String get cueApplicationUnderManualReview => '开户申请人工复核中';
+
+  @override
+  String get cueTimingToBeConfirmed => '预计时长待 DW 确认';
+
+  @override
+  String get cueViewApplicationStatus => '查看申请进度';
+
+  @override
+  String get cueApplicationNotApproved => '开户未通过';
+
+  @override
+  String get cueSeeTheResultAnd => '查看结果与后续可选操作';
+
+  @override
+  String get cueViewResult => '查看结果';
+
+  @override
+  String get cueVerifyingYourIdentity => '身份核验中';
+
+  @override
+  String get allocAssetAllocation => '资产分布';
+
+  @override
+  String get allocValuedAtDemoPrices => '虚拟行情估值';
+
+  @override
+  String get allocByLatestMarketValue => '按最新市值 · DW 实时';
+
+  @override
+  String get allocTotalAssets => '总资产';
+
+  @override
+  String get allocAssetTrend => '资产趋势';
+
+  @override
+  String get allocDailySnapshots => '每日快照';
+
+  @override
+  String get allocDailySnapshotsSinceAccount => '每日快照 · 自开户起记录';
+
+  @override
+  String get allocBuildingYourHistoryThe => '记录积累中，次日起可见趋势';
 }

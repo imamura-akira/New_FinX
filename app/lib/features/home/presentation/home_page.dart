@@ -19,6 +19,7 @@ import '../../market/presentation/market_widgets.dart';
 import '../../trading/data/trading_api.dart';
 import '../../trading/domain/trading_mode.dart';
 import '../../trading/presentation/paper_widgets.dart';
+import '../../../l10n/l10n.dart';
 
 /// P-07 资产首页（Demo-1：资产卡取 DW 真实资金汇总 F12；未开户 / 开户中显示开户提示卡）。
 /// 自选股报价来自虚拟行情（F11），每 3 秒刷新；已开户时显示持仓 P-12 / 订单 P-11 入口（F14）；智能组合不在本期范围。
@@ -88,7 +89,7 @@ class _HomePageState extends State<HomePage> {
       final a = await TradingApi(AppScope.of(context).api, paper: true).resetPaper();
       if (!mounted) return;
       setState(() => _paper = a);
-      showToast(context, '模拟账户已重置');
+      showToast(context, t.homePaperAccountHasBeen);
     } on ApiException catch (e) {
       if (mounted) showToast(context, e.message);
     }
@@ -111,7 +112,7 @@ class _HomePageState extends State<HomePage> {
     try {
       await session.refreshMe();
     } catch (_) {
-      if (mounted) showToast(context, '刷新失败，请稍后重试');
+      if (mounted) showToast(context, t.homeCouldnTRefreshPlease);
       return;
     }
     await _overview!.load(session.me?.accountStatus);
@@ -140,12 +141,12 @@ class _HomePageState extends State<HomePage> {
         final opened = ov.opened && money != null;
         return Scaffold(
           appBar: AppBar(
-            title: const Text('资产'),
+            title: Text(t.tabAssets),
             actions: [
               Builder(
                 builder: (context) => IconButton(
                   key: const Key('home.avatar'),
-                  tooltip: '账户',
+                  tooltip: t.homeAccount,
                   icon: NameAvatar(email: me?.email ?? ''),
                   onPressed: () => Scaffold.of(context).openEndDrawer(),
                 ),
@@ -164,13 +165,13 @@ class _HomePageState extends State<HomePage> {
                   ..._paperSection(context)
                 else ...[
                   if (ov.restriction != null) Notice(ov.restriction!, kind: NoticeKind.danger),
-                  if (ov.error != null) Notice('资产数据暂时无法刷新：${ov.error}', kind: NoticeKind.warn),
+                  if (ov.error != null) Notice(t.homeCouldnTRefreshYour(ov.error!), kind: NoticeKind.warn),
                   _hero(opened ? money : null),
                   if (opened && money.updatedAt != null)
                     Padding(
                       padding: const EdgeInsets.fromLTRB(4, 0, 4, 12),
                       child: Text(
-                        '资金数据来自 DriveWealth · 更新于 ${fmtTime(money.updatedAt)}',
+                        t.homeAccountDataFromDrivewealth(fmtTime(money.updatedAt)),
                         key: const Key('home.updatedAt'),
                         style: const TextStyle(fontSize: 12, color: AppColors.faint),
                       ),
@@ -179,9 +180,9 @@ class _HomePageState extends State<HomePage> {
                     AppCard(
                       child: Column(
                         children: [
-                          if (money.pendingDeposits > 0) KvRow('在途入金（尚未计入购买力）', fmtUsd(money.pendingDeposits)),
-                          if (money.withheldForSeasoning > 0) KvRow('观察期内暂不可提现', fmtUsd(money.withheldForSeasoning)),
-                          if (money.unsettled > 0) KvRow('待交收', fmtUsd(money.unsettled)),
+                          if (money.pendingDeposits > 0) KvRow(t.homeDepositsInTransitNot, fmtUsd(money.pendingDeposits)),
+                          if (money.withheldForSeasoning > 0) KvRow(t.homeNotYetWithdrawableHolding, fmtUsd(money.withheldForSeasoning)),
+                          if (money.unsettled > 0) KvRow(t.homePendingSettlement, fmtUsd(money.unsettled)),
                         ],
                       ),
                     ),
@@ -192,39 +193,39 @@ class _HomePageState extends State<HomePage> {
                         children: [
                           _iconTile(Icons.south_rounded),
                           const SizedBox(width: 12),
-                          const Expanded(
+                          Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text('入金开始投资', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
-                                Text('绑定本人美国银行账户（ACH）后转入资金', style: TextStyle(fontSize: 12, color: AppColors.muted)),
+                                Text(t.homeFundYourAccountTo, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+                                Text(t.homeLinkYourOwnUs, style: TextStyle(fontSize: 12, color: AppColors.muted)),
                               ],
                             ),
                           ),
-                          AppButton('入金', key: const Key('home.deposit'), small: true, onPressed: () => openDeposit(context)),
+                          AppButton(t.homeDeposit, key: const Key('home.deposit'), small: true, onPressed: () => openDeposit(context)),
                         ],
                       ),
                     ),
                   if (cue != null) _cueCard(context, cue),
                   if (!opened && !(ov.loading && ov.progress == null)) // 首次加载完成前不显示，避免闪现
-                    AppButton('先看看行情', key: const Key('home.market'), kind: ButtonKind.ghost, onPressed: () => context.go('/market')),
+                    AppButton(t.homeBrowseMarketsFirst, key: const Key('home.market'), kind: ButtonKind.ghost, onPressed: () => context.go('/market')),
                   if (opened) ...[
-                    const SectionTitle('交易'),
+                    SectionTitle(t.homeTrading),
                     ListGroup(
                       children: [
                         ListRow(
                           key: const Key('home.positions'),
                           icon: Icons.pie_chart_outline_rounded,
-                          title: '持仓',
-                          subtitle: '数量、市值、成本与盈亏（券商返回）',
+                          title: t.homePositions,
+                          subtitle: t.homeQuantityMarketValueCost,
                           trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.faint),
                           onTap: () => context.push('/positions'),
                         ),
                         ListRow(
                           key: const Key('home.orders'),
                           icon: Icons.receipt_long_outlined,
-                          title: '订单',
-                          subtitle: '查看订单状态，撤销未成交订单',
+                          title: t.homeOrders,
+                          subtitle: t.homeCheckOrderStatusAnd,
                           trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.faint),
                           onTap: () => context.push('/orders'),
                         ),
@@ -232,10 +233,10 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ],
                 ],
-                SectionTitle('自选股', trailing: LinkButton('去市场', fontSize: 13, onPressed: () => context.go('/market'))),
+                SectionTitle(t.homeWatchlist, trailing: LinkButton(t.homeGoToMarkets, fontSize: 13, onPressed: () => context.go('/market'))),
                 if (_watch.symbols.isEmpty)
-                  const AppCard(
-                    child: Text('还没有自选股。在个股页点击右上角星标即可加入。', style: TextStyle(fontSize: 13, color: AppColors.muted)),
+                  AppCard(
+                    child: Text(t.homeYourWatchlistIsEmpty, style: TextStyle(fontSize: 13, color: AppColors.muted)),
                   )
                 else
                   ListGroup(
@@ -253,7 +254,7 @@ class _HomePageState extends State<HomePage> {
   /// 模拟盘模式：只显示模拟账户与模拟交易入口（不显示任何 DW 资金数字）。
   List<Widget> _paperSection(BuildContext context) => [
     const PaperBanner(),
-    if (_paperError != null) Notice('模拟账户暂时无法刷新：$_paperError', kind: NoticeKind.warn),
+    if (_paperError != null) Notice(t.homeCouldnTRefreshYour2(_paperError!), kind: NoticeKind.warn),
     if (_paper != null)
       PaperAccountCard(account: _paper!, hide: _hide, onReset: _resetPaper)
     else if (_paperError == null)
@@ -262,14 +263,14 @@ class _HomePageState extends State<HomePage> {
         child: Center(child: CircularProgressIndicator()),
       ),
     if (_paper != null) AssetAnalysis(key: const Key('home.paper.analysis'), paper: true, generation: _analysisGen),
-    const SectionTitle('模拟交易'),
+    SectionTitle(t.homePaperTrading),
     ListGroup(
       children: [
         ListRow(
           key: const Key('home.paper.positions'),
           icon: Icons.pie_chart_outline_rounded,
-          title: '模拟持仓',
-          subtitle: '按演示行情估值的模拟持仓与盈亏',
+          title: t.homePaperPositions,
+          subtitle: t.homePaperPositionsAndP,
           trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.faint),
           onTap: () async {
             await context.push('/positions?paper=1');
@@ -279,8 +280,8 @@ class _HomePageState extends State<HomePage> {
         ListRow(
           key: const Key('home.paper.orders'),
           icon: Icons.receipt_long_outlined,
-          title: '模拟订单',
-          subtitle: '市价单即时成交，限价单到价成交，可撤单',
+          title: t.homePaperOrders,
+          subtitle: t.homeMarketOrdersFillInstantly,
           trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.faint),
           onTap: () async {
             await context.push('/orders?paper=1');
@@ -289,7 +290,7 @@ class _HomePageState extends State<HomePage> {
         ),
       ],
     ),
-    const Text('在市场页选择股票，点"买入 / 卖出"即可模拟下单。', style: TextStyle(fontSize: 12, color: AppColors.faint)),
+    Text(t.homePickAStockOn, style: TextStyle(fontSize: 12, color: AppColors.faint)),
   ];
 
   Widget _hero(AccountMoney? m) {
@@ -306,7 +307,7 @@ class _HomePageState extends State<HomePage> {
           children: [
             Row(
               children: [
-                const Text('实盘 · 总资产 (USD)', style: TextStyle(fontSize: 13, color: Color(0xD9FFFFFF))),
+                Text(t.homeLiveTotalAssetsUsd, style: TextStyle(fontSize: 13, color: Color(0xD9FFFFFF))),
                 const SizedBox(width: 4),
                 InkWell(
                   key: const Key('home.hide'),
@@ -324,8 +325,8 @@ class _HomePageState extends State<HomePage> {
             const SizedBox(height: 14),
             Row(
               children: [
-                Expanded(child: _split('购买力', m == null ? '—' : v(m.buyingPower), const Key('home.buyingPower'))),
-                Expanded(child: _split('可提现', m == null ? '—' : v(m.cashAvailableForWithdrawal), const Key('home.withdrawable'))),
+                Expanded(child: _split(t.homeBuyingPower, m == null ? '—' : v(m.buyingPower), const Key('home.buyingPower'))),
+                Expanded(child: _split(t.homeAvailableToWithdraw, m == null ? '—' : v(m.cashAvailableForWithdrawal), const Key('home.withdrawable'))),
               ],
             ),
           ],
@@ -369,7 +370,7 @@ class _HomePageState extends State<HomePage> {
                     style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
                   ),
                   Text(cue.sub, style: const TextStyle(fontSize: 12, color: AppColors.muted)),
-                  if (cue.sandboxPending) ...[const SizedBox(height: 6), const StatusBadge('待沙盒验证', kind: BadgeKind.warn)],
+                  if (cue.sandboxPending) ...[const SizedBox(height: 6), StatusBadge(t.homePendingSandboxVerification, kind: BadgeKind.warn)],
                 ],
               ),
             ),

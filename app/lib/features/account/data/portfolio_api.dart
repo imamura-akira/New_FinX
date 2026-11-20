@@ -1,16 +1,22 @@
 import '../../../core/api/api_client.dart';
+import '../../../l10n/l10n.dart';
 
 double _d(Object? v) => v is num ? v.toDouble() : double.tryParse('${v ?? ''}') ?? 0;
 
 /// 资产类别（F17；顺序与后端 items 一致：股票、ETF、现金）。
 enum AssetClass {
-  stock('STOCK', '股票'),
-  etf('ETF', 'ETF'),
-  cash('CASH', '现金');
+  stock('STOCK'),
+  etf('ETF'),
+  cash('CASH');
 
-  const AssetClass(this.code, this.label);
+  const AssetClass(this.code);
   final String code;
-  final String label;
+
+  String get label => switch (this) {
+    AssetClass.stock => t.assetStock,
+    AssetClass.etf => t.assetEtf,
+    AssetClass.cash => t.assetCash,
+  };
 }
 
 class AllocationItem {
@@ -42,14 +48,16 @@ class Allocation {
 
 /// 资产趋势区间。
 enum HistoryRange {
-  d7('7D', '7 天'),
-  d30('30D', '30 天'),
-  d90('90D', '90 天'),
-  all('ALL', '全部');
+  d7('7D', 7),
+  d30('30D', 30),
+  d90('90D', 90),
+  all('ALL', 0);
 
-  const HistoryRange(this.code, this.label);
+  const HistoryRange(this.code, this.days);
   final String code;
-  final String label;
+  final int days; // 0 = 全部
+
+  String get label => days == 0 ? t.rangeAll : t.rangeDays(days);
 }
 
 class AssetPoint {

@@ -81,5 +81,175 @@
   "loginSignInWithGoogle": "Google / Apple 登录将在后续版本开通。提供 Google 登录时同时提供 Apple 登录。",
   "loginIHaveReadAnd": "我已阅读并同意平台《用户服务协议》与《隐私政策》\n",
   "loginTheseAreThePlatform": "此为平台自有条款，券商（DriveWealth）披露将在开户时单独展示。",
-  "loginSignUpSignIn": "注册并登录"
+  "loginSignUpSignIn": "注册并登录",
+  "assetStock": "股票",
+  "assetEtf": "ETF",
+  "assetCash": "现金",
+  "rangeAll": "全部",
+  "rangeDays": "{days} 天",
+  "@rangeDays": {
+    "placeholders": {
+      "days": {
+        "type": "Object"
+      }
+    }
+  },
+  "cueReferenceNo": "参考号 {ref}",
+  "@cueReferenceNo": {
+    "placeholders": {
+      "ref": {
+        "type": "Object"
+      }
+    }
+  },
+  "homePaperAccountHasBeen": "模拟账户已重置",
+  "homeCouldnTRefreshPlease": "刷新失败，请稍后重试",
+  "homeAccount": "账户",
+  "homeCouldnTRefreshYour": "资产数据暂时无法刷新：{error}",
+  "@homeCouldnTRefreshYour": {
+    "placeholders": {
+      "error": {
+        "type": "Object"
+      }
+    }
+  },
+  "homeAccountDataFromDrivewealth": "资金数据来自 DriveWealth · 更新于 {v0}",
+  "@homeAccountDataFromDrivewealth": {
+    "placeholders": {
+      "v0": {
+        "type": "Object"
+      }
+    }
+  },
+  "homeDepositsInTransitNot": "在途入金（尚未计入购买力）",
+  "homeNotYetWithdrawableHolding": "观察期内暂不可提现",
+  "homePendingSettlement": "待交收",
+  "homeFundYourAccountTo": "入金开始投资",
+  "homeLinkYourOwnUs": "绑定本人美国银行账户（ACH）后转入资金",
+  "homeDeposit": "入金",
+  "homeBrowseMarketsFirst": "先看看行情",
+  "homeTrading": "交易",
+  "homePositions": "持仓",
+  "homeQuantityMarketValueCost": "数量、市值、成本与盈亏（券商返回）",
+  "homeOrders": "订单",
+  "homeCheckOrderStatusAnd": "查看订单状态，撤销未成交订单",
+  "homeWatchlist": "自选股",
+  "homeGoToMarkets": "去市场",
+  "homeYourWatchlistIsEmpty": "还没有自选股。在个股页点击右上角星标即可加入。",
+  "homeCouldnTRefreshYour2": "模拟账户暂时无法刷新：{_paperError}",
+  "@homeCouldnTRefreshYour2": {
+    "placeholders": {
+      "_paperError": {
+        "type": "Object"
+      }
+    }
+  },
+  "homePaperTrading": "模拟交易",
+  "homePaperPositions": "模拟持仓",
+  "homePaperPositionsAndP": "按演示行情估值的模拟持仓与盈亏",
+  "homePaperOrders": "模拟订单",
+  "homeMarketOrdersFillInstantly": "市价单即时成交，限价单到价成交，可撤单",
+  "homePickAStockOn": "在市场页选择股票，点\"买入 / 卖出\"即可模拟下单。",
+  "homeLiveTotalAssetsUsd": "实盘 · 总资产 (USD)",
+  "homeBuyingPower": "购买力",
+  "homeAvailableToWithdraw": "可提现",
+  "homePendingSandboxVerification": "待沙盒验证",
+  "drawerSwitchAccount": "切换账户",
+  "drawerLive": "实盘",
+  "drawerPaper": "模拟",
+  "drawerPaperAccountIsnT": "模拟账户暂未开放",
+  "drawerFunds": "资金",
+  "drawerWithdraw": "出金",
+  "drawerBankAccounts": "银行账户",
+  "drawerTransferFromAnotherBroker": "转入其他券商账户",
+  "drawerActivity": "动态",
+  "drawerNotifications": "通知",
+  "drawerHistory": "历史记录",
+  "drawerDocuments": "文件",
+  "drawerManage": "管理",
+  "drawerSettings": "设置",
+  "drawerHelpCenter": "帮助中心",
+  "drawerSignOut": "退出登录",
+  "drawerBrokerageAccountUnavailable": "交易账户暂不可用",
+  "drawerAccountNumber": "账户号码",
+  "drawerMarketValue": "市值",
+  "drawerSellOnly": "仅可卖出",
+  "drawerFrozen": "已冻结",
+  "drawerClosed": "已关闭",
+  "drawerOpening": "开立中",
+  "drawerLiveAccount": "实盘账户",
+  "drawerCashSelfDirected": "现金 · 自主",
+  "drawerAccountNumberCopied": "账户号码已复制",
+  "drawerAccountType": "账户类型 {accountType} · {tradingType} · {managementType}",
+  "@drawerAccountType": {
+    "placeholders": {
+      "accountType": {
+        "type": "Object"
+      },
+      "tradingType": {
+        "type": "Object"
+      },
+      "managementType": {
+        "type": "Object"
+      }
+    }
+  },
+  "drawerPositionsValue": "持仓市值",
+  "drawerTransferIn": "转入",
+  "drawerThisFeatureIsnT": "该功能不在本次演示范围",
+  "drawerSignOut2": "退出登录？",
+  "drawerYouLlNeedTo": "退出后需重新验证邮箱登录。",
+  "drawerCancel": "取消",
+  "drawerSignOut3": "退出",
+  "drawerKycStatus": "KYC 状态",
+  "drawerLastSynced": "最近同步",
+  "drawerDwSandboxIds": "DW 沙盒凭证",
+  "drawerDemoOnly": "仅演示",
+  "drawerNoDwIdsYet": "暂无 DW 编号：账户尚未开立，或后端未开启演示环境（OTP_DEV_LOG）。",
+  "drawerCopied": "已复制 {k}",
+  "@drawerCopied": {
+    "placeholders": {
+      "k": {
+        "type": "Object"
+      }
+    }
+  },
+  "drawerTheseAreTheValues": "以上为 DW 沙盒返回值，可与 demoreset verify 的输出逐项对照。",
+  "cueYourAccountIsFrozen": "账户已冻结：暂不能交易、入金或出金。资产仍安全托管，请联系客服了解原因。",
+  "cueYourAccountIsLimited": "账户仅可卖出：暂不能买入新证券，可卖出现有持仓、入金和出金。",
+  "cueYourAccountIsClosed": "账户已关闭。如有疑问请联系客服。",
+  "cueOpenABrokerageAccount": "开通证券账户",
+  "cueVerifyYourIdentityTo": "验证身份即可入金交易，约需 5 分钟",
+  "cueOpenAnAccount": "去开户",
+  "cueContinueOpeningYourAccount": "继续开通您的账户",
+  "cueYourProgressIsSaved": "进度已保存，可从上次中断处继续",
+  "cueContinueApplication": "继续开户",
+  "cueApplicationSubmitted": "开户申请已提交",
+  "cueCheckYourApplicationStatus": "查看开户进度",
+  "cueViewStatus": "查看进度",
+  "cueYourApplicationNeedsManual": "开户申请需要人工处理",
+  "cueWeLlBeIn": "我们会尽快联系您",
+  "cueOpeningYourBrokerageAccount": "交易账户开立中",
+  "cueIdentityVerifiedTimingTo": "身份核验已通过（预计时长待 DW 确认）",
+  "cueYourApplicationNeedsChanges": "开户资料需要修改",
+  "cuePleaseUpdateTheRequested": "请按提示修改后重新提交",
+  "cueUpdateApplication": "去修改资料",
+  "cueIdDocumentRequired": "需要上传身份证件",
+  "cueWeLlReVerify": "上传后将重新核验",
+  "cueUploadId": "去上传证件",
+  "cueApplicationUnderManualReview": "开户申请人工复核中",
+  "cueTimingToBeConfirmed": "预计时长待 DW 确认",
+  "cueViewApplicationStatus": "查看申请进度",
+  "cueApplicationNotApproved": "开户未通过",
+  "cueSeeTheResultAnd": "查看结果与后续可选操作",
+  "cueViewResult": "查看结果",
+  "cueVerifyingYourIdentity": "身份核验中",
+  "allocAssetAllocation": "资产分布",
+  "allocValuedAtDemoPrices": "虚拟行情估值",
+  "allocByLatestMarketValue": "按最新市值 · DW 实时",
+  "allocTotalAssets": "总资产",
+  "allocAssetTrend": "资产趋势",
+  "allocDailySnapshots": "每日快照",
+  "allocDailySnapshotsSinceAccount": "每日快照 · 自开户起记录",
+  "allocBuildingYourHistoryThe": "记录积累中，次日起可见趋势"
 }

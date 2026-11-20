@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../core/api/api_client.dart';
 import '../data/account_api.dart';
+import '../../../l10n/l10n.dart';
 
 /// 首页资产卡（P-07）与账户抽屉（P-08）共用的数据：开户进度、账户、资金汇总。
 /// 资金一律取 DW money summary（F12）；加载失败时保留上次数据并给出错误。
@@ -62,9 +63,9 @@ class AccountOverview extends ChangeNotifier {
   String? get restriction {
     final s = account?.status ?? progress?.accountStatus;
     return switch (s) {
-      'FROZEN' => '账户已冻结：暂不能交易、入金或出金。资产仍安全托管，请联系客服了解原因。',
-      'OPEN_NO_NEW_TRADES' => '账户仅可卖出：暂不能买入新证券，可卖出现有持仓、入金和出金。',
-      'CLOSED' => '账户已关闭。如有疑问请联系客服。',
+      'FROZEN' => t.cueYourAccountIsFrozen,
+      'OPEN_NO_NEW_TRADES' => t.cueYourAccountIsLimited,
+      'CLOSED' => t.cueYourAccountIsClosed,
       _ => null,
     };
   }
@@ -96,83 +97,83 @@ class OnboardingCue {
       case null:
         return null;
       case 'NONE':
-        return const OnboardingCue(
-          title: '开通证券账户',
-          sub: '验证身份即可入金交易，约需 5 分钟',
+        return OnboardingCue(
+          title: t.cueOpenABrokerageAccount,
+          sub: t.cueVerifyYourIdentityTo,
           icon: Icons.shield_outlined,
           route: '/onboarding/a',
-          cta: '去开户',
+          cta: t.cueOpenAnAccount,
         );
       case 'DRAFT':
-        return const OnboardingCue(
-          title: '继续开通您的账户',
-          sub: '进度已保存，可从上次中断处继续',
+        return OnboardingCue(
+          title: t.cueContinueOpeningYourAccount,
+          sub: t.cueYourProgressIsSaved,
           icon: Icons.shield_outlined,
           route: '/onboarding/a',
-          cta: '继续开户',
+          cta: t.cueContinueApplication,
         );
     }
     if (p == null) {
-      return const OnboardingCue(title: '开户申请已提交', sub: '查看开户进度', icon: Icons.schedule_rounded, route: '/application/status', cta: '查看进度');
+      return OnboardingCue(title: t.cueApplicationSubmitted, sub: t.cueCheckYourApplicationStatus, icon: Icons.schedule_rounded, route: '/application/status', cta: t.cueViewStatus);
     }
     if (p.accountOpened) return null;
     if (p.submitState == 'NEEDS_ATTENTION') {
-      return const OnboardingCue(
-        title: '开户申请需要人工处理',
-        sub: '我们会尽快联系您',
+      return OnboardingCue(
+        title: t.cueYourApplicationNeedsManual,
+        sub: t.cueWeLlBeIn,
         icon: Icons.support_agent_rounded,
         route: '/application/status',
-        cta: '查看进度',
+        cta: t.cueViewStatus,
         warn: true,
       );
     }
     return switch (p.kycStatus) {
-      'KYC_APPROVED' => const OnboardingCue(
-        title: '交易账户开立中',
-        sub: '身份核验已通过（预计时长待 DW 确认）',
+      'KYC_APPROVED' => OnboardingCue(
+        title: t.cueOpeningYourBrokerageAccount,
+        sub: t.cueIdentityVerifiedTimingTo,
         icon: Icons.schedule_rounded,
         route: '/application/status',
-        cta: '查看进度',
+        cta: t.cueViewStatus,
       ),
-      'KYC_INFO_REQUIRED' => const OnboardingCue(
-        title: '开户资料需要修改',
-        sub: '请按提示修改后重新提交',
+      'KYC_INFO_REQUIRED' => OnboardingCue(
+        title: t.cueYourApplicationNeedsChanges,
+        sub: t.cuePleaseUpdateTheRequested,
         icon: Icons.edit_outlined,
         route: '/application/info',
-        cta: '去修改资料',
+        cta: t.cueUpdateApplication,
         warn: true,
         sandboxPending: true,
       ),
-      'KYC_DOC_REQUIRED' => const OnboardingCue(
-        title: '需要上传身份证件',
-        sub: '上传后将重新核验',
+      'KYC_DOC_REQUIRED' => OnboardingCue(
+        title: t.cueIdDocumentRequired,
+        sub: t.cueWeLlReVerify,
         icon: Icons.badge_outlined,
         route: '/application/document',
-        cta: '去上传证件',
+        cta: t.cueUploadId,
         warn: true,
         sandboxPending: true,
       ),
-      'KYC_MANUAL_REVIEW' => const OnboardingCue(
-        title: '开户申请人工复核中',
-        sub: '预计时长待 DW 确认',
+      'KYC_MANUAL_REVIEW' => OnboardingCue(
+        title: t.cueApplicationUnderManualReview,
+        sub: t.cueTimingToBeConfirmed,
         icon: Icons.schedule_rounded,
         route: '/application/status',
-        cta: '查看申请进度',
+        cta: t.cueViewApplicationStatus,
       ),
-      'KYC_DENIED' => const OnboardingCue(
-        title: '开户未通过',
-        sub: '查看结果与后续可选操作',
+      'KYC_DENIED' => OnboardingCue(
+        title: t.cueApplicationNotApproved,
+        sub: t.cueSeeTheResultAnd,
         icon: Icons.info_outline_rounded,
         route: '/application/result',
-        cta: '查看结果',
+        cta: t.cueViewResult,
         sandboxPending: true,
       ),
       _ => OnboardingCue(
-        title: '身份核验中',
-        sub: '参考号 ${p.applicationRef ?? '—'}',
+        title: t.cueVerifyingYourIdentity,
+        sub: t.cueReferenceNo(p.applicationRef ?? '—'),
         icon: Icons.schedule_rounded,
         route: '/application/status',
-        cta: '查看申请进度',
+        cta: t.cueViewApplicationStatus,
       ),
     };
   }

@@ -505,6 +505,700 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'注册并登录'**
   String get loginSignUpSignIn;
+
+  /// No description provided for @assetStock.
+  ///
+  /// In zh, this message translates to:
+  /// **'股票'**
+  String get assetStock;
+
+  /// No description provided for @assetEtf.
+  ///
+  /// In zh, this message translates to:
+  /// **'ETF'**
+  String get assetEtf;
+
+  /// No description provided for @assetCash.
+  ///
+  /// In zh, this message translates to:
+  /// **'现金'**
+  String get assetCash;
+
+  /// No description provided for @rangeAll.
+  ///
+  /// In zh, this message translates to:
+  /// **'全部'**
+  String get rangeAll;
+
+  /// No description provided for @rangeDays.
+  ///
+  /// In zh, this message translates to:
+  /// **'{days} 天'**
+  String rangeDays(Object days);
+
+  /// No description provided for @cueReferenceNo.
+  ///
+  /// In zh, this message translates to:
+  /// **'参考号 {ref}'**
+  String cueReferenceNo(Object ref);
+
+  /// No description provided for @homePaperAccountHasBeen.
+  ///
+  /// In zh, this message translates to:
+  /// **'模拟账户已重置'**
+  String get homePaperAccountHasBeen;
+
+  /// No description provided for @homeCouldnTRefreshPlease.
+  ///
+  /// In zh, this message translates to:
+  /// **'刷新失败，请稍后重试'**
+  String get homeCouldnTRefreshPlease;
+
+  /// No description provided for @homeAccount.
+  ///
+  /// In zh, this message translates to:
+  /// **'账户'**
+  String get homeAccount;
+
+  /// No description provided for @homeCouldnTRefreshYour.
+  ///
+  /// In zh, this message translates to:
+  /// **'资产数据暂时无法刷新：{error}'**
+  String homeCouldnTRefreshYour(Object error);
+
+  /// No description provided for @homeAccountDataFromDrivewealth.
+  ///
+  /// In zh, this message translates to:
+  /// **'资金数据来自 DriveWealth · 更新于 {v0}'**
+  String homeAccountDataFromDrivewealth(Object v0);
+
+  /// No description provided for @homeDepositsInTransitNot.
+  ///
+  /// In zh, this message translates to:
+  /// **'在途入金（尚未计入购买力）'**
+  String get homeDepositsInTransitNot;
+
+  /// No description provided for @homeNotYetWithdrawableHolding.
+  ///
+  /// In zh, this message translates to:
+  /// **'观察期内暂不可提现'**
+  String get homeNotYetWithdrawableHolding;
+
+  /// No description provided for @homePendingSettlement.
+  ///
+  /// In zh, this message translates to:
+  /// **'待交收'**
+  String get homePendingSettlement;
+
+  /// No description provided for @homeFundYourAccountTo.
+  ///
+  /// In zh, this message translates to:
+  /// **'入金开始投资'**
+  String get homeFundYourAccountTo;
+
+  /// No description provided for @homeLinkYourOwnUs.
+  ///
+  /// In zh, this message translates to:
+  /// **'绑定本人美国银行账户（ACH）后转入资金'**
+  String get homeLinkYourOwnUs;
+
+  /// No description provided for @homeDeposit.
+  ///
+  /// In zh, this message translates to:
+  /// **'入金'**
+  String get homeDeposit;
+
+  /// No description provided for @homeBrowseMarketsFirst.
+  ///
+  /// In zh, this message translates to:
+  /// **'先看看行情'**
+  String get homeBrowseMarketsFirst;
+
+  /// No description provided for @homeTrading.
+  ///
+  /// In zh, this message translates to:
+  /// **'交易'**
+  String get homeTrading;
+
+  /// No description provided for @homePositions.
+  ///
+  /// In zh, this message translates to:
+  /// **'持仓'**
+  String get homePositions;
+
+  /// No description provided for @homeQuantityMarketValueCost.
+  ///
+  /// In zh, this message translates to:
+  /// **'数量、市值、成本与盈亏（券商返回）'**
+  String get homeQuantityMarketValueCost;
+
+  /// No description provided for @homeOrders.
+  ///
+  /// In zh, this message translates to:
+  /// **'订单'**
+  String get homeOrders;
+
+  /// No description provided for @homeCheckOrderStatusAnd.
+  ///
+  /// In zh, this message translates to:
+  /// **'查看订单状态，撤销未成交订单'**
+  String get homeCheckOrderStatusAnd;
+
+  /// No description provided for @homeWatchlist.
+  ///
+  /// In zh, this message translates to:
+  /// **'自选股'**
+  String get homeWatchlist;
+
+  /// No description provided for @homeGoToMarkets.
+  ///
+  /// In zh, this message translates to:
+  /// **'去市场'**
+  String get homeGoToMarkets;
+
+  /// No description provided for @homeYourWatchlistIsEmpty.
+  ///
+  /// In zh, this message translates to:
+  /// **'还没有自选股。在个股页点击右上角星标即可加入。'**
+  String get homeYourWatchlistIsEmpty;
+
+  /// No description provided for @homeCouldnTRefreshYour2.
+  ///
+  /// In zh, this message translates to:
+  /// **'模拟账户暂时无法刷新：{_paperError}'**
+  String homeCouldnTRefreshYour2(Object _paperError);
+
+  /// No description provided for @homePaperTrading.
+  ///
+  /// In zh, this message translates to:
+  /// **'模拟交易'**
+  String get homePaperTrading;
+
+  /// No description provided for @homePaperPositions.
+  ///
+  /// In zh, this message translates to:
+  /// **'模拟持仓'**
+  String get homePaperPositions;
+
+  /// No description provided for @homePaperPositionsAndP.
+  ///
+  /// In zh, this message translates to:
+  /// **'按演示行情估值的模拟持仓与盈亏'**
+  String get homePaperPositionsAndP;
+
+  /// No description provided for @homePaperOrders.
+  ///
+  /// In zh, this message translates to:
+  /// **'模拟订单'**
+  String get homePaperOrders;
+
+  /// No description provided for @homeMarketOrdersFillInstantly.
+  ///
+  /// In zh, this message translates to:
+  /// **'市价单即时成交，限价单到价成交，可撤单'**
+  String get homeMarketOrdersFillInstantly;
+
+  /// No description provided for @homePickAStockOn.
+  ///
+  /// In zh, this message translates to:
+  /// **'在市场页选择股票，点\"买入 / 卖出\"即可模拟下单。'**
+  String get homePickAStockOn;
+
+  /// No description provided for @homeLiveTotalAssetsUsd.
+  ///
+  /// In zh, this message translates to:
+  /// **'实盘 · 总资产 (USD)'**
+  String get homeLiveTotalAssetsUsd;
+
+  /// No description provided for @homeBuyingPower.
+  ///
+  /// In zh, this message translates to:
+  /// **'购买力'**
+  String get homeBuyingPower;
+
+  /// No description provided for @homeAvailableToWithdraw.
+  ///
+  /// In zh, this message translates to:
+  /// **'可提现'**
+  String get homeAvailableToWithdraw;
+
+  /// No description provided for @homePendingSandboxVerification.
+  ///
+  /// In zh, this message translates to:
+  /// **'待沙盒验证'**
+  String get homePendingSandboxVerification;
+
+  /// No description provided for @drawerSwitchAccount.
+  ///
+  /// In zh, this message translates to:
+  /// **'切换账户'**
+  String get drawerSwitchAccount;
+
+  /// No description provided for @drawerLive.
+  ///
+  /// In zh, this message translates to:
+  /// **'实盘'**
+  String get drawerLive;
+
+  /// No description provided for @drawerPaper.
+  ///
+  /// In zh, this message translates to:
+  /// **'模拟'**
+  String get drawerPaper;
+
+  /// No description provided for @drawerPaperAccountIsnT.
+  ///
+  /// In zh, this message translates to:
+  /// **'模拟账户暂未开放'**
+  String get drawerPaperAccountIsnT;
+
+  /// No description provided for @drawerFunds.
+  ///
+  /// In zh, this message translates to:
+  /// **'资金'**
+  String get drawerFunds;
+
+  /// No description provided for @drawerWithdraw.
+  ///
+  /// In zh, this message translates to:
+  /// **'出金'**
+  String get drawerWithdraw;
+
+  /// No description provided for @drawerBankAccounts.
+  ///
+  /// In zh, this message translates to:
+  /// **'银行账户'**
+  String get drawerBankAccounts;
+
+  /// No description provided for @drawerTransferFromAnotherBroker.
+  ///
+  /// In zh, this message translates to:
+  /// **'转入其他券商账户'**
+  String get drawerTransferFromAnotherBroker;
+
+  /// No description provided for @drawerActivity.
+  ///
+  /// In zh, this message translates to:
+  /// **'动态'**
+  String get drawerActivity;
+
+  /// No description provided for @drawerNotifications.
+  ///
+  /// In zh, this message translates to:
+  /// **'通知'**
+  String get drawerNotifications;
+
+  /// No description provided for @drawerHistory.
+  ///
+  /// In zh, this message translates to:
+  /// **'历史记录'**
+  String get drawerHistory;
+
+  /// No description provided for @drawerDocuments.
+  ///
+  /// In zh, this message translates to:
+  /// **'文件'**
+  String get drawerDocuments;
+
+  /// No description provided for @drawerManage.
+  ///
+  /// In zh, this message translates to:
+  /// **'管理'**
+  String get drawerManage;
+
+  /// No description provided for @drawerSettings.
+  ///
+  /// In zh, this message translates to:
+  /// **'设置'**
+  String get drawerSettings;
+
+  /// No description provided for @drawerHelpCenter.
+  ///
+  /// In zh, this message translates to:
+  /// **'帮助中心'**
+  String get drawerHelpCenter;
+
+  /// No description provided for @drawerSignOut.
+  ///
+  /// In zh, this message translates to:
+  /// **'退出登录'**
+  String get drawerSignOut;
+
+  /// No description provided for @drawerBrokerageAccountUnavailable.
+  ///
+  /// In zh, this message translates to:
+  /// **'交易账户暂不可用'**
+  String get drawerBrokerageAccountUnavailable;
+
+  /// No description provided for @drawerAccountNumber.
+  ///
+  /// In zh, this message translates to:
+  /// **'账户号码'**
+  String get drawerAccountNumber;
+
+  /// No description provided for @drawerMarketValue.
+  ///
+  /// In zh, this message translates to:
+  /// **'市值'**
+  String get drawerMarketValue;
+
+  /// No description provided for @drawerSellOnly.
+  ///
+  /// In zh, this message translates to:
+  /// **'仅可卖出'**
+  String get drawerSellOnly;
+
+  /// No description provided for @drawerFrozen.
+  ///
+  /// In zh, this message translates to:
+  /// **'已冻结'**
+  String get drawerFrozen;
+
+  /// No description provided for @drawerClosed.
+  ///
+  /// In zh, this message translates to:
+  /// **'已关闭'**
+  String get drawerClosed;
+
+  /// No description provided for @drawerOpening.
+  ///
+  /// In zh, this message translates to:
+  /// **'开立中'**
+  String get drawerOpening;
+
+  /// No description provided for @drawerLiveAccount.
+  ///
+  /// In zh, this message translates to:
+  /// **'实盘账户'**
+  String get drawerLiveAccount;
+
+  /// No description provided for @drawerCashSelfDirected.
+  ///
+  /// In zh, this message translates to:
+  /// **'现金 · 自主'**
+  String get drawerCashSelfDirected;
+
+  /// No description provided for @drawerAccountNumberCopied.
+  ///
+  /// In zh, this message translates to:
+  /// **'账户号码已复制'**
+  String get drawerAccountNumberCopied;
+
+  /// No description provided for @drawerAccountType.
+  ///
+  /// In zh, this message translates to:
+  /// **'账户类型 {accountType} · {tradingType} · {managementType}'**
+  String drawerAccountType(
+    Object accountType,
+    Object tradingType,
+    Object managementType,
+  );
+
+  /// No description provided for @drawerPositionsValue.
+  ///
+  /// In zh, this message translates to:
+  /// **'持仓市值'**
+  String get drawerPositionsValue;
+
+  /// No description provided for @drawerTransferIn.
+  ///
+  /// In zh, this message translates to:
+  /// **'转入'**
+  String get drawerTransferIn;
+
+  /// No description provided for @drawerThisFeatureIsnT.
+  ///
+  /// In zh, this message translates to:
+  /// **'该功能不在本次演示范围'**
+  String get drawerThisFeatureIsnT;
+
+  /// No description provided for @drawerSignOut2.
+  ///
+  /// In zh, this message translates to:
+  /// **'退出登录？'**
+  String get drawerSignOut2;
+
+  /// No description provided for @drawerYouLlNeedTo.
+  ///
+  /// In zh, this message translates to:
+  /// **'退出后需重新验证邮箱登录。'**
+  String get drawerYouLlNeedTo;
+
+  /// No description provided for @drawerCancel.
+  ///
+  /// In zh, this message translates to:
+  /// **'取消'**
+  String get drawerCancel;
+
+  /// No description provided for @drawerSignOut3.
+  ///
+  /// In zh, this message translates to:
+  /// **'退出'**
+  String get drawerSignOut3;
+
+  /// No description provided for @drawerKycStatus.
+  ///
+  /// In zh, this message translates to:
+  /// **'KYC 状态'**
+  String get drawerKycStatus;
+
+  /// No description provided for @drawerLastSynced.
+  ///
+  /// In zh, this message translates to:
+  /// **'最近同步'**
+  String get drawerLastSynced;
+
+  /// No description provided for @drawerDwSandboxIds.
+  ///
+  /// In zh, this message translates to:
+  /// **'DW 沙盒凭证'**
+  String get drawerDwSandboxIds;
+
+  /// No description provided for @drawerDemoOnly.
+  ///
+  /// In zh, this message translates to:
+  /// **'仅演示'**
+  String get drawerDemoOnly;
+
+  /// No description provided for @drawerNoDwIdsYet.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无 DW 编号：账户尚未开立，或后端未开启演示环境（OTP_DEV_LOG）。'**
+  String get drawerNoDwIdsYet;
+
+  /// No description provided for @drawerCopied.
+  ///
+  /// In zh, this message translates to:
+  /// **'已复制 {k}'**
+  String drawerCopied(Object k);
+
+  /// No description provided for @drawerTheseAreTheValues.
+  ///
+  /// In zh, this message translates to:
+  /// **'以上为 DW 沙盒返回值，可与 demoreset verify 的输出逐项对照。'**
+  String get drawerTheseAreTheValues;
+
+  /// No description provided for @cueYourAccountIsFrozen.
+  ///
+  /// In zh, this message translates to:
+  /// **'账户已冻结：暂不能交易、入金或出金。资产仍安全托管，请联系客服了解原因。'**
+  String get cueYourAccountIsFrozen;
+
+  /// No description provided for @cueYourAccountIsLimited.
+  ///
+  /// In zh, this message translates to:
+  /// **'账户仅可卖出：暂不能买入新证券，可卖出现有持仓、入金和出金。'**
+  String get cueYourAccountIsLimited;
+
+  /// No description provided for @cueYourAccountIsClosed.
+  ///
+  /// In zh, this message translates to:
+  /// **'账户已关闭。如有疑问请联系客服。'**
+  String get cueYourAccountIsClosed;
+
+  /// No description provided for @cueOpenABrokerageAccount.
+  ///
+  /// In zh, this message translates to:
+  /// **'开通证券账户'**
+  String get cueOpenABrokerageAccount;
+
+  /// No description provided for @cueVerifyYourIdentityTo.
+  ///
+  /// In zh, this message translates to:
+  /// **'验证身份即可入金交易，约需 5 分钟'**
+  String get cueVerifyYourIdentityTo;
+
+  /// No description provided for @cueOpenAnAccount.
+  ///
+  /// In zh, this message translates to:
+  /// **'去开户'**
+  String get cueOpenAnAccount;
+
+  /// No description provided for @cueContinueOpeningYourAccount.
+  ///
+  /// In zh, this message translates to:
+  /// **'继续开通您的账户'**
+  String get cueContinueOpeningYourAccount;
+
+  /// No description provided for @cueYourProgressIsSaved.
+  ///
+  /// In zh, this message translates to:
+  /// **'进度已保存，可从上次中断处继续'**
+  String get cueYourProgressIsSaved;
+
+  /// No description provided for @cueContinueApplication.
+  ///
+  /// In zh, this message translates to:
+  /// **'继续开户'**
+  String get cueContinueApplication;
+
+  /// No description provided for @cueApplicationSubmitted.
+  ///
+  /// In zh, this message translates to:
+  /// **'开户申请已提交'**
+  String get cueApplicationSubmitted;
+
+  /// No description provided for @cueCheckYourApplicationStatus.
+  ///
+  /// In zh, this message translates to:
+  /// **'查看开户进度'**
+  String get cueCheckYourApplicationStatus;
+
+  /// No description provided for @cueViewStatus.
+  ///
+  /// In zh, this message translates to:
+  /// **'查看进度'**
+  String get cueViewStatus;
+
+  /// No description provided for @cueYourApplicationNeedsManual.
+  ///
+  /// In zh, this message translates to:
+  /// **'开户申请需要人工处理'**
+  String get cueYourApplicationNeedsManual;
+
+  /// No description provided for @cueWeLlBeIn.
+  ///
+  /// In zh, this message translates to:
+  /// **'我们会尽快联系您'**
+  String get cueWeLlBeIn;
+
+  /// No description provided for @cueOpeningYourBrokerageAccount.
+  ///
+  /// In zh, this message translates to:
+  /// **'交易账户开立中'**
+  String get cueOpeningYourBrokerageAccount;
+
+  /// No description provided for @cueIdentityVerifiedTimingTo.
+  ///
+  /// In zh, this message translates to:
+  /// **'身份核验已通过（预计时长待 DW 确认）'**
+  String get cueIdentityVerifiedTimingTo;
+
+  /// No description provided for @cueYourApplicationNeedsChanges.
+  ///
+  /// In zh, this message translates to:
+  /// **'开户资料需要修改'**
+  String get cueYourApplicationNeedsChanges;
+
+  /// No description provided for @cuePleaseUpdateTheRequested.
+  ///
+  /// In zh, this message translates to:
+  /// **'请按提示修改后重新提交'**
+  String get cuePleaseUpdateTheRequested;
+
+  /// No description provided for @cueUpdateApplication.
+  ///
+  /// In zh, this message translates to:
+  /// **'去修改资料'**
+  String get cueUpdateApplication;
+
+  /// No description provided for @cueIdDocumentRequired.
+  ///
+  /// In zh, this message translates to:
+  /// **'需要上传身份证件'**
+  String get cueIdDocumentRequired;
+
+  /// No description provided for @cueWeLlReVerify.
+  ///
+  /// In zh, this message translates to:
+  /// **'上传后将重新核验'**
+  String get cueWeLlReVerify;
+
+  /// No description provided for @cueUploadId.
+  ///
+  /// In zh, this message translates to:
+  /// **'去上传证件'**
+  String get cueUploadId;
+
+  /// No description provided for @cueApplicationUnderManualReview.
+  ///
+  /// In zh, this message translates to:
+  /// **'开户申请人工复核中'**
+  String get cueApplicationUnderManualReview;
+
+  /// No description provided for @cueTimingToBeConfirmed.
+  ///
+  /// In zh, this message translates to:
+  /// **'预计时长待 DW 确认'**
+  String get cueTimingToBeConfirmed;
+
+  /// No description provided for @cueViewApplicationStatus.
+  ///
+  /// In zh, this message translates to:
+  /// **'查看申请进度'**
+  String get cueViewApplicationStatus;
+
+  /// No description provided for @cueApplicationNotApproved.
+  ///
+  /// In zh, this message translates to:
+  /// **'开户未通过'**
+  String get cueApplicationNotApproved;
+
+  /// No description provided for @cueSeeTheResultAnd.
+  ///
+  /// In zh, this message translates to:
+  /// **'查看结果与后续可选操作'**
+  String get cueSeeTheResultAnd;
+
+  /// No description provided for @cueViewResult.
+  ///
+  /// In zh, this message translates to:
+  /// **'查看结果'**
+  String get cueViewResult;
+
+  /// No description provided for @cueVerifyingYourIdentity.
+  ///
+  /// In zh, this message translates to:
+  /// **'身份核验中'**
+  String get cueVerifyingYourIdentity;
+
+  /// No description provided for @allocAssetAllocation.
+  ///
+  /// In zh, this message translates to:
+  /// **'资产分布'**
+  String get allocAssetAllocation;
+
+  /// No description provided for @allocValuedAtDemoPrices.
+  ///
+  /// In zh, this message translates to:
+  /// **'虚拟行情估值'**
+  String get allocValuedAtDemoPrices;
+
+  /// No description provided for @allocByLatestMarketValue.
+  ///
+  /// In zh, this message translates to:
+  /// **'按最新市值 · DW 实时'**
+  String get allocByLatestMarketValue;
+
+  /// No description provided for @allocTotalAssets.
+  ///
+  /// In zh, this message translates to:
+  /// **'总资产'**
+  String get allocTotalAssets;
+
+  /// No description provided for @allocAssetTrend.
+  ///
+  /// In zh, this message translates to:
+  /// **'资产趋势'**
+  String get allocAssetTrend;
+
+  /// No description provided for @allocDailySnapshots.
+  ///
+  /// In zh, this message translates to:
+  /// **'每日快照'**
+  String get allocDailySnapshots;
+
+  /// No description provided for @allocDailySnapshotsSinceAccount.
+  ///
+  /// In zh, this message translates to:
+  /// **'每日快照 · 自开户起记录'**
+  String get allocDailySnapshotsSinceAccount;
+
+  /// No description provided for @allocBuildingYourHistoryThe.
+  ///
+  /// In zh, this message translates to:
+  /// **'记录积累中，次日起可见趋势'**
+  String get allocBuildingYourHistoryThe;
 }
 
 class _AppLocalizationsDelegate

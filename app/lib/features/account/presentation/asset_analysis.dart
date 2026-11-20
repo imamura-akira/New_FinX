@@ -8,6 +8,7 @@ import '../../../core/api/api_client.dart';
 import '../../../core/format.dart';
 import '../../trading/presentation/paper_widgets.dart';
 import '../data/portfolio_api.dart';
+import '../../../l10n/l10n.dart';
 
 // F17：P-07 资产分布与资产趋势（design/reward-design/assets_mock.png 定稿；版式参考 assets_reference.html）。
 // 数据全部来自后端：分布与占比后端计算（DW 持仓 + 现金 / 模拟账户），趋势为后端每日资产快照，有几天画几天。
@@ -190,8 +191,8 @@ class AllocationCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) => _CardShell(
     key: const Key('p07.alloc'),
-    title: '资产分布',
-    note: paper ? '虚拟行情估值' : '按最新市值 · DW 实时',
+    title: t.allocAssetAllocation,
+    note: paper ? t.allocValuedAtDemoPrices : t.allocByLatestMarketValue,
     paper: paper,
     child: Row(
       children: [
@@ -209,8 +210,8 @@ class AllocationCard extends StatelessWidget {
               Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text(
-                    '总资产',
+                  Text(
+                    t.allocTotalAssets,
                     style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w600, color: _sub),
                   ),
                   SizedBox(
@@ -344,8 +345,8 @@ class TrendCard extends StatelessWidget {
     final labels = axisLabelIndices(points.length);
     return _CardShell(
       key: const Key('p07.trend'),
-      title: '资产趋势',
-      note: paper ? '每日快照' : '每日快照 · 自开户起记录',
+      title: t.allocAssetTrend,
+      note: paper ? t.allocDailySnapshots : t.allocDailySnapshotsSinceAccount,
       paper: paper,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -375,8 +376,8 @@ class TrendCard extends StatelessWidget {
               height: 110,
               alignment: Alignment.center,
               decoration: BoxDecoration(color: const Color(0xFFFAF9FE), borderRadius: BorderRadius.circular(12)),
-              child: const Text(
-                '记录积累中，次日起可见趋势',
+              child: Text(
+                t.allocBuildingYourHistoryThe,
                 style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: _faint),
               ),
             )

@@ -245,4 +245,393 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get loginSignUpSignIn => 'Sign Up & Sign In';
+
+  @override
+  String get assetStock => 'Stocks';
+
+  @override
+  String get assetEtf => 'ETFs';
+
+  @override
+  String get assetCash => 'Cash';
+
+  @override
+  String get rangeAll => 'All';
+
+  @override
+  String rangeDays(Object days) {
+    return '${days}D';
+  }
+
+  @override
+  String cueReferenceNo(Object ref) {
+    return 'Reference No. $ref';
+  }
+
+  @override
+  String get homePaperAccountHasBeen => 'Paper account has been reset';
+
+  @override
+  String get homeCouldnTRefreshPlease =>
+      'Couldn\'t refresh. Please try again later.';
+
+  @override
+  String get homeAccount => 'Account';
+
+  @override
+  String homeCouldnTRefreshYour(Object error) {
+    return 'Couldn\'t refresh your account data: $error';
+  }
+
+  @override
+  String homeAccountDataFromDrivewealth(Object v0) {
+    return 'Account data from DriveWealth · Updated $v0';
+  }
+
+  @override
+  String get homeDepositsInTransitNot =>
+      'Deposits in transit (not yet in buying power)';
+
+  @override
+  String get homeNotYetWithdrawableHolding =>
+      'Not yet withdrawable (holding period)';
+
+  @override
+  String get homePendingSettlement => 'Pending settlement';
+
+  @override
+  String get homeFundYourAccountTo => 'Fund your account to start investing';
+
+  @override
+  String get homeLinkYourOwnUs =>
+      'Link your own US bank account (ACH) and transfer funds';
+
+  @override
+  String get homeDeposit => 'Deposit';
+
+  @override
+  String get homeBrowseMarketsFirst => 'Browse Markets First';
+
+  @override
+  String get homeTrading => 'Trading';
+
+  @override
+  String get homePositions => 'Positions';
+
+  @override
+  String get homeQuantityMarketValueCost =>
+      'Quantity, market value, cost, and P&L (from the broker)';
+
+  @override
+  String get homeOrders => 'Orders';
+
+  @override
+  String get homeCheckOrderStatusAnd =>
+      'Check order status and cancel open orders';
+
+  @override
+  String get homeWatchlist => 'Watchlist';
+
+  @override
+  String get homeGoToMarkets => 'Go to Markets';
+
+  @override
+  String get homeYourWatchlistIsEmpty =>
+      'Your watchlist is empty. Tap the star on any stock page to add it.';
+
+  @override
+  String homeCouldnTRefreshYour2(Object _paperError) {
+    return 'Couldn\'t refresh your paper account: $_paperError';
+  }
+
+  @override
+  String get homePaperTrading => 'Paper Trading';
+
+  @override
+  String get homePaperPositions => 'Paper Positions';
+
+  @override
+  String get homePaperPositionsAndP =>
+      'Paper positions and P&L valued at demo prices';
+
+  @override
+  String get homePaperOrders => 'Paper Orders';
+
+  @override
+  String get homeMarketOrdersFillInstantly =>
+      'Market orders fill instantly, limit orders fill at your price, and open orders can be canceled';
+
+  @override
+  String get homePickAStockOn =>
+      'Pick a stock on the Markets tab and tap \"Buy / Sell\" to place a paper trade.';
+
+  @override
+  String get homeLiveTotalAssetsUsd => 'Live · Total Assets (USD)';
+
+  @override
+  String get homeBuyingPower => 'Buying Power';
+
+  @override
+  String get homeAvailableToWithdraw => 'Available to Withdraw';
+
+  @override
+  String get homePendingSandboxVerification => 'Pending sandbox verification';
+
+  @override
+  String get drawerSwitchAccount => 'Switch Account';
+
+  @override
+  String get drawerLive => 'Live';
+
+  @override
+  String get drawerPaper => 'Paper';
+
+  @override
+  String get drawerPaperAccountIsnT => 'Paper account isn\'t available yet';
+
+  @override
+  String get drawerFunds => 'Funds';
+
+  @override
+  String get drawerWithdraw => 'Withdraw';
+
+  @override
+  String get drawerBankAccounts => 'Bank Accounts';
+
+  @override
+  String get drawerTransferFromAnotherBroker => 'Transfer from Another Broker';
+
+  @override
+  String get drawerActivity => 'Activity';
+
+  @override
+  String get drawerNotifications => 'Notifications';
+
+  @override
+  String get drawerHistory => 'History';
+
+  @override
+  String get drawerDocuments => 'Documents';
+
+  @override
+  String get drawerManage => 'Manage';
+
+  @override
+  String get drawerSettings => 'Settings';
+
+  @override
+  String get drawerHelpCenter => 'Help Center';
+
+  @override
+  String get drawerSignOut => 'Sign Out';
+
+  @override
+  String get drawerBrokerageAccountUnavailable =>
+      'Brokerage account unavailable';
+
+  @override
+  String get drawerAccountNumber => 'Account Number';
+
+  @override
+  String get drawerMarketValue => 'Market Value';
+
+  @override
+  String get drawerSellOnly => 'Sell Only';
+
+  @override
+  String get drawerFrozen => 'Frozen';
+
+  @override
+  String get drawerClosed => 'Closed';
+
+  @override
+  String get drawerOpening => 'Opening';
+
+  @override
+  String get drawerLiveAccount => 'Live Account';
+
+  @override
+  String get drawerCashSelfDirected => 'Cash · Self-Directed';
+
+  @override
+  String get drawerAccountNumberCopied => 'Account number copied';
+
+  @override
+  String drawerAccountType(
+    Object accountType,
+    Object tradingType,
+    Object managementType,
+  ) {
+    return 'Account type $accountType · $tradingType · $managementType';
+  }
+
+  @override
+  String get drawerPositionsValue => 'Positions Value';
+
+  @override
+  String get drawerTransferIn => 'Transfer In';
+
+  @override
+  String get drawerThisFeatureIsnT => 'This feature isn\'t part of this demo';
+
+  @override
+  String get drawerSignOut2 => 'Sign out?';
+
+  @override
+  String get drawerYouLlNeedTo =>
+      'You\'ll need to verify your email to sign in again.';
+
+  @override
+  String get drawerCancel => 'Cancel';
+
+  @override
+  String get drawerSignOut3 => 'Sign Out';
+
+  @override
+  String get drawerKycStatus => 'KYC Status';
+
+  @override
+  String get drawerLastSynced => 'Last Synced';
+
+  @override
+  String get drawerDwSandboxIds => 'DW Sandbox IDs';
+
+  @override
+  String get drawerDemoOnly => 'Demo Only';
+
+  @override
+  String get drawerNoDwIdsYet =>
+      'No DW IDs yet: the account hasn\'t been opened, or demo mode (OTP_DEV_LOG) isn\'t enabled on the backend.';
+
+  @override
+  String drawerCopied(Object k) {
+    return 'Copied $k';
+  }
+
+  @override
+  String get drawerTheseAreTheValues =>
+      'These are the values returned by the DW sandbox. Compare them one by one with the output of demoreset verify.';
+
+  @override
+  String get cueYourAccountIsFrozen =>
+      'Your account is frozen: trading, deposits, and withdrawals are unavailable. Your assets remain safely held. Please contact support for details.';
+
+  @override
+  String get cueYourAccountIsLimited =>
+      'Your account is limited to selling: you can\'t buy new securities, but you can sell existing positions, deposit, and withdraw.';
+
+  @override
+  String get cueYourAccountIsClosed =>
+      'Your account is closed. Please contact support if you have any questions.';
+
+  @override
+  String get cueOpenABrokerageAccount => 'Open a Brokerage Account';
+
+  @override
+  String get cueVerifyYourIdentityTo =>
+      'Verify your identity to deposit and trade. It takes about 5 minutes.';
+
+  @override
+  String get cueOpenAnAccount => 'Open an Account';
+
+  @override
+  String get cueContinueOpeningYourAccount => 'Continue Opening Your Account';
+
+  @override
+  String get cueYourProgressIsSaved =>
+      'Your progress is saved. Pick up where you left off.';
+
+  @override
+  String get cueContinueApplication => 'Continue Application';
+
+  @override
+  String get cueApplicationSubmitted => 'Application submitted';
+
+  @override
+  String get cueCheckYourApplicationStatus => 'Check your application status';
+
+  @override
+  String get cueViewStatus => 'View Status';
+
+  @override
+  String get cueYourApplicationNeedsManual =>
+      'Your application needs manual review';
+
+  @override
+  String get cueWeLlBeIn => 'We\'ll be in touch soon.';
+
+  @override
+  String get cueOpeningYourBrokerageAccount => 'Opening your brokerage account';
+
+  @override
+  String get cueIdentityVerifiedTimingTo =>
+      'Identity verified (timing to be confirmed by DW)';
+
+  @override
+  String get cueYourApplicationNeedsChanges => 'Your application needs changes';
+
+  @override
+  String get cuePleaseUpdateTheRequested =>
+      'Please update the requested items and resubmit.';
+
+  @override
+  String get cueUpdateApplication => 'Update Application';
+
+  @override
+  String get cueIdDocumentRequired => 'ID document required';
+
+  @override
+  String get cueWeLlReVerify => 'We\'ll re-verify after you upload it.';
+
+  @override
+  String get cueUploadId => 'Upload ID';
+
+  @override
+  String get cueApplicationUnderManualReview =>
+      'Application under manual review';
+
+  @override
+  String get cueTimingToBeConfirmed => 'Timing to be confirmed by DW';
+
+  @override
+  String get cueViewApplicationStatus => 'View Application Status';
+
+  @override
+  String get cueApplicationNotApproved => 'Application not approved';
+
+  @override
+  String get cueSeeTheResultAnd => 'See the result and your options';
+
+  @override
+  String get cueViewResult => 'View Result';
+
+  @override
+  String get cueVerifyingYourIdentity => 'Verifying your identity';
+
+  @override
+  String get allocAssetAllocation => 'Asset Allocation';
+
+  @override
+  String get allocValuedAtDemoPrices => 'Valued at demo prices';
+
+  @override
+  String get allocByLatestMarketValue =>
+      'By latest market value · DW real-time';
+
+  @override
+  String get allocTotalAssets => 'Total Assets';
+
+  @override
+  String get allocAssetTrend => 'Asset Trend';
+
+  @override
+  String get allocDailySnapshots => 'Daily snapshots';
+
+  @override
+  String get allocDailySnapshotsSinceAccount =>
+      'Daily snapshots · since account opening';
+
+  @override
+  String get allocBuildingYourHistoryThe =>
+      'Building your history — the trend appears starting tomorrow';
 }

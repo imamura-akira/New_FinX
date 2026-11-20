@@ -77,51 +77,51 @@ class AccountDrawer extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 6),
-              const Center(
-                child: Text('切换账户', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
+              Center(
+                child: Text(t.drawerSwitchAccount, style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
               ),
               const SizedBox(height: 12),
               Seg2<String>(
-                items: const [('LIVE', '实盘'), ('PAPER', '模拟')],
+                items: [('LIVE', t.drawerLive), ('PAPER', t.drawerPaper)],
                 value: 'LIVE',
                 onChanged: (v) {
-                  if (v == 'PAPER') showToast(context, '模拟账户暂未开放');
+                  if (v == 'PAPER') showToast(context, t.drawerPaperAccountIsnT);
                 },
               ),
               const SizedBox(height: 12),
               _accountCard(context),
-              _group('资金', [
+              _group(t.drawerFunds, [
                 ListRow(
                   key: const Key('drawer.deposit'),
                   icon: Icons.south_rounded,
-                  title: '入金',
+                  title: t.homeDeposit,
                   onTap: () => _fromDrawer(context, '/funding/deposit'),
                 ),
                 ListRow(
                   key: const Key('drawer.withdraw'),
                   icon: Icons.north_rounded,
-                  title: '出金',
+                  title: t.drawerWithdraw,
                   onTap: () => _fromDrawer(context, '/funding/withdraw'),
                 ),
                 ListRow(
                   key: const Key('drawer.banks'),
                   icon: Icons.account_balance_outlined,
-                  title: '银行账户',
+                  title: t.drawerBankAccounts,
                   onTap: () => _fromDrawer(context, '/funding/banks'),
                 ),
-                ListRow(icon: Icons.swap_horiz_rounded, title: '转入其他券商账户', onTap: () => _notInDemo(context)),
+                ListRow(icon: Icons.swap_horiz_rounded, title: t.drawerTransferFromAnotherBroker, onTap: () => _notInDemo(context)),
               ]),
-              _group('动态', [
-                ListRow(icon: Icons.notifications_none_rounded, title: '通知', onTap: () => _notInDemo(context)),
+              _group(t.drawerActivity, [
+                ListRow(icon: Icons.notifications_none_rounded, title: t.drawerNotifications, onTap: () => _notInDemo(context)),
                 ListRow(
                   key: const Key('drawer.history'),
                   icon: Icons.history_rounded,
-                  title: '历史记录',
+                  title: t.drawerHistory,
                   onTap: () => _fromDrawer(context, '/funding/history'),
                 ),
-                ListRow(icon: Icons.description_outlined, title: '文件', onTap: () => _notInDemo(context)),
+                ListRow(icon: Icons.description_outlined, title: t.drawerDocuments, onTap: () => _notInDemo(context)),
               ]),
-              _group('管理', [
+              _group(t.drawerManage, [
                 ListRow(
                   key: const Key('drawer.language'),
                   icon: Icons.translate_rounded,
@@ -130,9 +130,9 @@ class AccountDrawer extends StatelessWidget {
                   trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.faint),
                   onTap: () => _pickLanguage(context),
                 ),
-                ListRow(icon: Icons.settings_outlined, title: '设置', onTap: () => _notInDemo(context)),
-                ListRow(icon: Icons.help_outline_rounded, title: '帮助中心', onTap: () => _notInDemo(context)),
-                ListRow(key: const Key('drawer.logout'), icon: Icons.logout_rounded, title: '退出登录', onTap: () => _logout(context)),
+                ListRow(icon: Icons.settings_outlined, title: t.drawerSettings, onTap: () => _notInDemo(context)),
+                ListRow(icon: Icons.help_outline_rounded, title: t.drawerHelpCenter, onTap: () => _notInDemo(context)),
+                ListRow(key: const Key('drawer.logout'), icon: Icons.logout_rounded, title: t.drawerSignOut, onTap: () => _logout(context)),
               ]),
               // 演示验真：仅 DEMO_MODE=true 构建渲染；正式构建完全不出现
               if (AppScope.of(context).config.demoMode) DwSandboxPanel(overview: overview),
@@ -156,15 +156,15 @@ class AccountDrawer extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              '交易账户暂不可用',
+            Text(
+              t.drawerBrokerageAccountUnavailable,
               style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.warn),
             ),
             const SizedBox(height: 8),
-            const KvRow('账户号码', '--'),
-            const KvRow('市值', '—'),
-            const KvRow('购买力', '—'),
-            const KvRow('现金', '—'),
+            KvRow(t.drawerAccountNumber, '--'),
+            KvRow(t.drawerMarketValue, '—'),
+            KvRow(t.homeBuyingPower, '—'),
+            KvRow(t.assetCash, '—'),
             if (c != null) ...[
               const SizedBox(height: 4),
               Row(
@@ -172,7 +172,7 @@ class AccountDrawer extends StatelessWidget {
                   Flexible(
                     child: Text(c.title, style: const TextStyle(fontSize: 13, color: AppColors.muted)),
                   ),
-                  if (c.sandboxPending) ...[const SizedBox(width: 6), const StatusBadge('待沙盒验证', kind: BadgeKind.warn)],
+                  if (c.sandboxPending) ...[const SizedBox(width: 6), StatusBadge(t.homePendingSandboxVerification, kind: BadgeKind.warn)],
                 ],
               ),
               const SizedBox(height: 10),
@@ -191,7 +191,7 @@ class AccountDrawer extends StatelessWidget {
       );
     }
     final restricted = acct.status != 'OPEN';
-    const statusLabel = {'OPEN_NO_NEW_TRADES': '仅可卖出', 'FROZEN': '已冻结', 'CLOSED': '已关闭', 'PENDING': '开立中'};
+    final statusLabel = {'OPEN_NO_NEW_TRADES': t.drawerSellOnly, 'FROZEN': t.drawerFrozen, 'CLOSED': t.drawerClosed, 'PENDING': t.drawerOpening};
     return AppCard(
       borderColor: AppColors.primaryWeak,
       child: Column(
@@ -199,21 +199,21 @@ class AccountDrawer extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Expanded(
+              Expanded(
                 child: Text(
-                  '实盘账户',
+                  t.drawerLiveAccount,
                   style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.primary2),
                 ),
               ),
               restricted
                   ? StatusBadge(statusLabel[acct.status] ?? acct.status, kind: BadgeKind.danger)
-                  : const StatusBadge('现金 · 自主', kind: BadgeKind.ok),
+                  : StatusBadge(t.drawerCashSelfDirected, kind: BadgeKind.ok),
             ],
           ),
           const SizedBox(height: 8),
           Row(
             children: [
-              const Text('账户号码', style: TextStyle(fontSize: 14, color: AppColors.muted)),
+              Text(t.drawerAccountNumber, style: TextStyle(fontSize: 14, color: AppColors.muted)),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
@@ -228,26 +228,26 @@ class AccountDrawer extends StatelessWidget {
                 icon: const Icon(Icons.copy_rounded, size: 16, color: AppColors.muted),
                 onPressed: () {
                   Clipboard.setData(ClipboardData(text: acct.accountNo));
-                  showToast(context, '账户号码已复制');
+                  showToast(context, t.drawerAccountNumberCopied);
                 },
               ),
             ],
           ),
           Text(
-            '账户类型 ${acct.accountType} · ${acct.tradingType} · ${acct.managementType}',
+            t.drawerAccountType(acct.accountType, acct.tradingType, acct.managementType),
             style: const TextStyle(fontSize: 12, color: AppColors.faint),
           ),
           const Divider(height: 20, color: AppColors.line),
-          KvRow('持仓市值', overview.equityValue == null ? '—' : fmtUsd(overview.equityValue!), valueKey: const Key('drawer.equity')),
-          KvRow('购买力', fmtUsd(money.buyingPower), valueKey: const Key('drawer.buyingPower')),
-          KvRow('现金', fmtUsd(money.cash), valueKey: const Key('drawer.cash')),
+          KvRow(t.drawerPositionsValue, overview.equityValue == null ? '—' : fmtUsd(overview.equityValue!), valueKey: const Key('drawer.equity')),
+          KvRow(t.homeBuyingPower, fmtUsd(money.buyingPower), valueKey: const Key('drawer.buyingPower')),
+          KvRow(t.assetCash, fmtUsd(money.cash), valueKey: const Key('drawer.cash')),
           const SizedBox(height: 10),
           Row(
             children: [
-              Expanded(child: AppButton('入金', small: true, onPressed: () => _fromDrawer(context, '/funding/deposit'))),
+              Expanded(child: AppButton(t.homeDeposit, small: true, onPressed: () => _fromDrawer(context, '/funding/deposit'))),
               const SizedBox(width: 8),
               Expanded(
-                child: AppButton('转入', small: true, kind: ButtonKind.ghost, onPressed: () => _notInDemo(context)),
+                child: AppButton(t.drawerTransferIn, small: true, kind: ButtonKind.ghost, onPressed: () => _notInDemo(context)),
               ),
             ],
           ),
@@ -270,7 +270,7 @@ class AccountDrawer extends StatelessWidget {
     ],
   );
 
-  void _notInDemo(BuildContext context) => showToast(context, '该功能不在本次演示范围');
+  void _notInDemo(BuildContext context) => showToast(context, t.drawerThisFeatureIsnT);
 
   static String _languageLabel(String? code) => switch (code) {
     'zh' => t.langZh,
@@ -313,11 +313,11 @@ class AccountDrawer extends StatelessWidget {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('退出登录？'),
-        content: const Text('退出后需重新验证邮箱登录。'),
+        title: Text(t.drawerSignOut2),
+        content: Text(t.drawerYouLlNeedTo),
         actions: [
-          TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('取消')),
-          TextButton(key: const Key('drawer.logout.confirm'), onPressed: () => Navigator.of(ctx).pop(true), child: const Text('退出')),
+          TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: Text(t.drawerCancel)),
+          TextButton(key: const Key('drawer.logout.confirm'), onPressed: () => Navigator.of(ctx).pop(true), child: Text(t.drawerSignOut3)),
         ],
       ),
     );
@@ -347,8 +347,8 @@ class _DwSandboxPanelState extends State<DwSandboxPanel> {
             ('userID', dw.userId),
             ('accountID', dw.accountId),
             ('accountNo', dw.accountNo),
-            ('KYC 状态', dw.kycStatus),
-            ('最近同步', dw.syncedAt == null ? '—' : fmtDateTime(dw.syncedAt)),
+            (t.drawerKycStatus, dw.kycStatus),
+            (t.drawerLastSynced, dw.syncedAt == null ? '—' : fmtDateTime(dw.syncedAt)),
           ];
     return Container(
       key: const Key('drawer.dwPanel'),
@@ -369,10 +369,10 @@ class _DwSandboxPanelState extends State<DwSandboxPanel> {
                 children: [
                   const Icon(Icons.verified_outlined, size: 18, color: AppColors.primary),
                   const SizedBox(width: 8),
-                  const Expanded(
-                    child: Text('DW 沙盒凭证', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                  Expanded(
+                    child: Text(t.drawerDwSandboxIds, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
                   ),
-                  const StatusBadge('仅演示', kind: BadgeKind.warn),
+                  StatusBadge(t.drawerDemoOnly, kind: BadgeKind.warn),
                   Icon(_open ? Icons.expand_less_rounded : Icons.expand_more_rounded, color: AppColors.faint),
                 ],
               ),
@@ -382,9 +382,9 @@ class _DwSandboxPanelState extends State<DwSandboxPanel> {
             Padding(
               padding: const EdgeInsets.fromLTRB(14, 0, 6, 10),
               child: dw == null
-                  ? const Padding(
+                  ? Padding(
                       padding: EdgeInsets.only(bottom: 4, right: 8),
-                      child: Text('暂无 DW 编号：账户尚未开立，或后端未开启演示环境（OTP_DEV_LOG）。', style: TextStyle(fontSize: 12, color: AppColors.muted)),
+                      child: Text(t.drawerNoDwIdsYet, style: TextStyle(fontSize: 12, color: AppColors.muted)),
                     )
                   : Column(
                       children: [
@@ -393,7 +393,7 @@ class _DwSandboxPanelState extends State<DwSandboxPanel> {
                             key: Key('drawer.dw.$k'),
                             onTap: () {
                               Clipboard.setData(ClipboardData(text: v));
-                              showToast(context, '已复制 $k');
+                              showToast(context, t.drawerCopied(k));
                             },
                             child: Padding(
                               padding: const EdgeInsets.symmetric(vertical: 6),
@@ -418,9 +418,9 @@ class _DwSandboxPanelState extends State<DwSandboxPanel> {
                               ),
                             ),
                           ),
-                        const Padding(
+                        Padding(
                           padding: EdgeInsets.only(top: 4, right: 8),
-                          child: Text('以上为 DW 沙盒返回值，可与 demoreset verify 的输出逐项对照。', style: TextStyle(fontSize: 11, color: AppColors.faint)),
+                          child: Text(t.drawerTheseAreTheValues, style: TextStyle(fontSize: 11, color: AppColors.faint)),
                         ),
                       ],
                     ),
