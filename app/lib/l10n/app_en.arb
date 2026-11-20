@@ -598,5 +598,7 @@
   "serverReasonRejected": "The broker rejected this order. Please contact support for details.",
   "serverReasonCanceled": "This order was canceled.",
   "serverReasonTransfer": "The broker reported a reason for this failure. Please contact support for details.",
-  "tradeMinOrder": "Minimum order $1.00 (sample value; the broker's minimum applies)"
+  "tradeMinOrder": "Minimum order $1.00 (sample value; the broker's minimum applies)",
+  "homeTodayChange": "Today {amount}{pct}",
+  "homeTodayHidden": "Today ****"
 }

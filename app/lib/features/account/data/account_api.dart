@@ -155,9 +155,15 @@ class AccountApi {
 
   Future<AccountMoney> money() async => AccountMoney.fromJson(await _api.get('/account/money') as Map<String, dynamic>);
 
-  /// 持仓市值（GET /positions 的 equityValue，DW 返回值；F14）。
-  Future<double?> equityValue() async {
-    final v = (await _api.get('/positions') as Map<String, dynamic>)['equityValue'];
-    return v is num ? v.toDouble() : null;
+  /// 持仓市值与今日持仓盈亏（GET /positions：equityValue 与各持仓 unrealizedDayPL 之和，均为 DW 返回值；F14 / 今日变动）。
+  Future<({double? equityValue, double dayPL})> positionsSummary() async {
+    final d = await _api.get('/positions') as Map<String, dynamic>;
+    final v = d['equityValue'];
+    var day = 0.0;
+    for (final p in (d['positions'] as List? ?? const [])) {
+      final x = (p as Map)['unrealizedDayPL'];
+      day += x is num ? x.toDouble() : double.tryParse('${x ?? ''}') ?? 0;
+    }
+    return (equityValue: v is num ? v.toDouble() : null, dayPL: day);
   }
 }

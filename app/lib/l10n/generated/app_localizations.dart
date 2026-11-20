@@ -3698,6 +3698,18 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'单笔最低 \$1.00（示例值，以券商为准）'**
   String get tradeMinOrder;
+
+  /// 总资产卡今日变动：DW 持仓今日盈亏之和与百分比，如"今日 +$42.18 (+0.65%)"
+  ///
+  /// In zh, this message translates to:
+  /// **'今日 {amount}{pct}'**
+  String homeTodayChange(Object amount, Object pct);
+
+  /// No description provided for @homeTodayHidden.
+  ///
+  /// In zh, this message translates to:
+  /// **'今日 ****'**
+  String get homeTodayHidden;
 }
 
 class _AppLocalizationsDelegate

@@ -2086,4 +2086,12 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get tradeMinOrder =>
       'Minimum order \$1.00 (sample value; the broker\'s minimum applies)';
+
+  @override
+  String homeTodayChange(Object amount, Object pct) {
+    return 'Today $amount$pct';
+  }
+
+  @override
+  String get homeTodayHidden => 'Today ****';
 }

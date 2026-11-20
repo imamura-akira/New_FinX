@@ -1126,5 +1126,18 @@
   "serverReasonRejected": "券商已拒绝该订单",
   "serverReasonCanceled": "订单已撤销",
   "serverReasonTransfer": "券商返回了失败原因，请联系客服了解详情",
-  "tradeMinOrder": "单笔最低 $1.00（示例值，以券商为准）"
+  "tradeMinOrder": "单笔最低 $1.00（示例值，以券商为准）",
+  "homeTodayChange": "今日 {amount}{pct}",
+  "@homeTodayChange": {
+    "description": "总资产卡今日变动：DW 持仓今日盈亏之和与百分比，如\"今日 +$42.18 (+0.65%)\"",
+    "placeholders": {
+      "amount": {
+        "type": "Object"
+      },
+      "pct": {
+        "type": "Object"
+      }
+    }
+  },
+  "homeTodayHidden": "今日 ****"
 }

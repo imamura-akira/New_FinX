@@ -1967,4 +1967,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get tradeMinOrder => '单笔最低 \$1.00（示例值，以券商为准）';
+
+  @override
+  String homeTodayChange(Object amount, Object pct) {
+    return '今日 $amount$pct';
+  }
+
+  @override
+  String get homeTodayHidden => '今日 ****';
 }

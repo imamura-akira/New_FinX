@@ -16,6 +16,9 @@ class AccountOverview extends ChangeNotifier {
 
   /// 持仓市值（DW summary/positions 的 equityValue，F14）；取不到时为 null（不影响资金展示）。
   double? equityValue;
+
+  /// 今日持仓盈亏（DW 各持仓 unrealizedDayPL 之和）；持仓接口失败时为 null（不显示今日变动）。
+  double? dayPL;
   String? error;
   bool loading = false;
 
@@ -26,6 +29,7 @@ class AccountOverview extends ChangeNotifier {
       account = null;
       money = null;
       equityValue = null;
+      dayPL = null;
       error = null;
       notifyListeners();
       return;
@@ -39,14 +43,18 @@ class AccountOverview extends ChangeNotifier {
         account = await _api.account();
         money = await _api.money();
         try {
-          equityValue = await _api.equityValue();
+          final s = await _api.positionsSummary();
+          equityValue = s.equityValue;
+          dayPL = s.dayPL;
         } on ApiException {
           equityValue = null; // 持仓接口失败不影响资金展示
+          dayPL = null;
         }
       } else {
         account = null;
         money = null;
         equityValue = null;
+        dayPL = null;
       }
     } on ApiException catch (e) {
       error = e.isSessionInvalid ? null : e.message; // 会话失效由 ApiClient.onSessionInvalid 统一处理
@@ -54,6 +62,14 @@ class AccountOverview extends ChangeNotifier {
       loading = false;
       notifyListeners();
     }
+  }
+
+  /// 今日变动百分比：今日持仓盈亏 ÷ 昨日资产（现金 + 持仓市值 − 今日盈亏）；无法计算时为 null。
+  double? get dayPLPct {
+    final d = dayPL, m = money;
+    if (d == null || m == null) return null;
+    final base = m.cash + (equityValue ?? 0) - d;
+    return base > 0 ? d / base * 100 : null;
   }
 
   /// 账户可用（已开立）。

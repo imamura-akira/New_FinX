@@ -322,6 +322,14 @@ class _HomePageState extends State<HomePage> {
               key: const Key('home.total'),
               style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w800, fontFeatures: [FontFeature.tabularFigures()]),
             ),
+            if (m != null && _overview!.dayPL != null) ...[
+              const SizedBox(height: 2),
+              Text(
+                _hide ? t.homeTodayHidden : t.homeTodayChange(_signedUsd(_overview!.dayPL!), _signedPct(_overview!.dayPLPct)),
+                key: const Key('home.dayChange'),
+                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, fontFeatures: [FontFeature.tabularFigures()]),
+              ),
+            ],
             const SizedBox(height: 14),
             Row(
               children: [
@@ -334,6 +342,12 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
+
+  /// +$42.18 / -$3.10 / $0.00。
+  static String _signedUsd(double v) => v > 0 ? '+${fmtUsd(v)}' : fmtUsd(v);
+
+  /// (+0.65%)；无法计算时为空串。
+  static String _signedPct(double? p) => p == null ? '' : ' (${p > 0 ? '+' : ''}${p.toStringAsFixed(2)}%)';
 
   Widget _split(String k, String v, Key key) => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
