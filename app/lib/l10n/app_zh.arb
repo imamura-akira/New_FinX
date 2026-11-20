@@ -660,5 +660,350 @@
   "orderFilledQuantity": "成交数量",
   "orderViewPaperOrders": "查看模拟订单",
   "orderViewOrders": "查看订单",
-  "orderDone": "完成"
+  "orderDone": "完成",
+  "fundAchFee": "$0.25（DW 文档，待 DW 确认）",
+  "bankSubtitle": "{type} · 户名 {owner} · 绑定于 {date}",
+  "@bankSubtitle": {
+    "placeholders": {
+      "type": {
+        "type": "Object"
+      },
+      "owner": {
+        "type": "Object"
+      },
+      "date": {
+        "type": "Object"
+      }
+    }
+  },
+  "transferTitleDeposit": "{method} 入金",
+  "@transferTitleDeposit": {
+    "placeholders": {
+      "method": {
+        "type": "Object"
+      }
+    }
+  },
+  "transferTitleWithdrawal": "{method} 出金",
+  "@transferTitleWithdrawal": {
+    "placeholders": {
+      "method": {
+        "type": "Object"
+      }
+    }
+  },
+  "transferDetailDeposit": "{method} 入金详情",
+  "@transferDetailDeposit": {
+    "placeholders": {
+      "method": {
+        "type": "Object"
+      }
+    }
+  },
+  "transferDetailWithdrawal": "{method} 出金详情",
+  "@transferDetailWithdrawal": {
+    "placeholders": {
+      "method": {
+        "type": "Object"
+      }
+    }
+  },
+  "bankTypeOwner": "{type} · 户名 {owner}",
+  "@bankTypeOwner": {
+    "placeholders": {
+      "type": {
+        "type": "Object"
+      },
+      "owner": {
+        "type": "Object"
+      }
+    }
+  },
+  "fundPleaseEnterADeposit": "请输入入金金额",
+  "fundMinimumDepositIs": "单笔最低入金 {v0}",
+  "@fundMinimumDepositIs": {
+    "placeholders": {
+      "v0": {
+        "type": "Object"
+      }
+    }
+  },
+  "fundMaximumDepositIs": "单笔最高入金 {v0}",
+  "@fundMaximumDepositIs": {
+    "placeholders": {
+      "v0": {
+        "type": "Object"
+      }
+    }
+  },
+  "fundPleaseEnterAWithdrawal": "请输入出金金额",
+  "fundMinimumWithdrawalIs": "单笔最低出金 {v0}",
+  "@fundMinimumWithdrawalIs": {
+    "placeholders": {
+      "v0": {
+        "type": "Object"
+      }
+    }
+  },
+  "fundExceedsYourAvailableTo": "超过可提现金额 {v0}",
+  "@fundExceedsYourAvailableTo": {
+    "placeholders": {
+      "v0": {
+        "type": "Object"
+      }
+    }
+  },
+  "fundMaximumWithdrawalIs": "单笔最高出金 {v0}",
+  "@fundMaximumWithdrawalIs": {
+    "placeholders": {
+      "v0": {
+        "type": "Object"
+      }
+    }
+  },
+  "fundInitiated": "已发起",
+  "fundPending": "处理中",
+  "fundProcessing": "处理中",
+  "fundApproved": "已批准",
+  "fundCompleted": "已完成",
+  "fundFailed": "失败",
+  "fundReturned": "已退回",
+  "fundOnHold": "暂缓处理",
+  "fundBuyingPowerIsGranted": "结算后授予购买力，通常 4–5 个工作日（待 DW 确认）",
+  "fundAchDepositsCanT": "ACH 入金到账后默认 30 天观察期内不可提现，可由 DW 配置调整（待 DW 确认）",
+  "fundUsually45Business": "通常 4–5 个工作日（待 DW 确认）",
+  "fundBankAccount": "银行账户",
+  "fundSavings": "储蓄账户",
+  "fundChecking": "支票账户",
+  "bankYourAccountIsCurrently": "账户当前受限，暂不能进行资金操作。如有疑问请联系客服。",
+  "bankUnlinkBankAccount": "解绑银行账户？",
+  "bankOnceUnlinkedCanNo": "{displayName} 解绑后不能再用于入金和出金。",
+  "@bankOnceUnlinkedCanNo": {
+    "placeholders": {
+      "displayName": {
+        "type": "Object"
+      }
+    }
+  },
+  "bankUnlink": "解绑",
+  "bankUnlinked": "已解绑",
+  "bankLinked": "已绑定（{length}/{maxBanks}）",
+  "@bankLinked": {
+    "placeholders": {
+      "length": {
+        "type": "Object"
+      },
+      "maxBanks": {
+        "type": "Object"
+      }
+    }
+  },
+  "bankNoBankAccountsLinked": "还没有绑定银行账户。绑定本人名下的美国银行账户后，即可通过 ACH 入金和出金。",
+  "bankYouCanLinkUp": "每个账户最多绑定 {maxBanks} 个银行账户。如需更换，请先解绑。",
+  "@bankYouCanLinkUp": {
+    "placeholders": {
+      "maxBanks": {
+        "type": "Object"
+      }
+    }
+  },
+  "bankYouCanOnlyLink": "只能绑定本人名下的美国银行账户。没有美国银行账户？可以改用电汇入金。",
+  "bankViewWireInstructions": "查看电汇入金信息",
+  "bankLinkANewBank": "绑定新银行账户",
+  "bankEnterAValid9": "请输入有效的 9 位 ABA 路由号码",
+  "bankEnterA417": "请输入 4–17 位银行账号",
+  "bankNicknameCanBeUp": "备注名最多 30 个字",
+  "bankNicknameCanTBe": "备注名不能与账号相同",
+  "bankBankAccountLinked": "银行账户绑定成功",
+  "bankLinkBankAccount": "绑定银行账户",
+  "bankAccountsInYourOwn": "只能绑定本人名下的账户",
+  "bankTheAccountHolderIs": "户名按开户姓名登记，第三方账户的转账会被退回",
+  "bankUsBankAccountsOnly": "仅支持美国银行账户",
+  "bankNoUsBankAccount": "没有美国银行账户？请改用电汇",
+  "bankAccountNumberEncryptedIn": "账号加密传输",
+  "bankWeOnlyShowThe": "我们只显示账号尾号",
+  "bankRoutingNumberAba": "路由号码（ABA Routing Number）",
+  "bank9Digits": "9 位数字",
+  "bankAccountNumber": "银行账号",
+  "bank417Digits": "4–17 位数字",
+  "bankAccountType": "账户类型",
+  "bankNicknameOptional": "备注名（选填）",
+  "bankEGPaycheckAccount": "如：工资卡",
+  "bankLink": "绑定",
+  "bankBeneficiary": "收款人",
+  "bankBeneficiaryBank": "收款银行",
+  "bankBankAddress": "银行地址",
+  "bankAccountNumber2": "收款账号",
+  "bankAbaRoutingNumber": "ABA 路由号码",
+  "bankReferenceRequired": "附言（必填）",
+  "bankWireDeposit": "电汇入金",
+  "bankSendTheWireFrom": "请从本人名下的银行账户汇款，并在附言中填写下方内容（含您的账户号码），否则可能无法入账。",
+  "bankCopied": "{value}已复制",
+  "@bankCopied": {
+    "placeholders": {
+      "value": {
+        "type": "Object"
+      }
+    }
+  },
+  "bankIntermediaryBankFeesAre": "中转行费用由汇款方承担；到账时间以银行实际到账为准（待 DW 确认）。电汇入金不受 ACH 观察期限制。",
+  "xferTransactionId": "流水号",
+  "xferMethod": "方式",
+  "xferAmount": "金额",
+  "xferViewTransferHistory": "查看资金记录",
+  "xferDepositRecorded": "入金已记录",
+  "xferDepositSubmitted": "入金已提交",
+  "xferTheBrokerHasnT": "券商受理结果暂未确认，我们会自动核对，请稍后在资金记录中查看状态。请勿重复提交。",
+  "xferTheArrivalDateIs": "{buyingPowerFallback}。到账日期以资金记录中券商返回的日期为准。",
+  "@xferTheArrivalDateIs": {
+    "placeholders": {
+      "buyingPowerFallback": {
+        "type": "Object"
+      }
+    }
+  },
+  "xferChooseADepositMethod": "选择入金方式",
+  "xferBankTransferAch": "银行转账（ACH）",
+  "xferLinkAUsBank": "需先绑定本人名下的美国银行账户",
+  "xferUsBankAccountS": "已绑定 {length} 个本人美国银行账户 · 免手续费",
+  "@xferUsBankAccountS": {
+    "placeholders": {
+      "length": {
+        "type": "Object"
+      }
+    }
+  },
+  "xferWireTransfer": "电汇",
+  "xferSendFromABank": "从本人名下银行账户汇款，适用于境外银行或大额入金",
+  "xferWireTimingDependsOn": "{buyingPowerFallback}。{seasoningFallback}。电汇以银行实际到账时间为准，不受观察期限制。每笔入金的实际日期以券商返回为准（见资金记录）。",
+  "@xferWireTimingDependsOn": {
+    "placeholders": {
+      "buyingPowerFallback": {
+        "type": "Object"
+      },
+      "seasoningFallback": {
+        "type": "Object"
+      }
+    }
+  },
+  "xferWeOnlyAcceptFunds": "只接受来自本人名下账户的资金，第三方转账将被退回。",
+  "xferConfirmDeposit": "确认入金",
+  "xferDepositAmount": "入金金额",
+  "xferFrom": "从",
+  "xferTo": "到",
+  "xferYourBrokerageAccountHeld": "本人证券账户（DriveWealth 托管）",
+  "xferFee": "手续费",
+  "xferBuyingPowerAvailable": "购买力到账",
+  "xferByConfirmingYouAuthorize": "确认即授权从上述银行账户扣款。资金由 DriveWealth 托管。",
+  "xferEdit": "返回修改",
+  "xferAchDeposit": "ACH 入金",
+  "xferFromBankAccount": "转出银行账户",
+  "xferManageBankAccounts": "管理银行账户（{length}/{maxBanks}）",
+  "@xferManageBankAccounts": {
+    "placeholders": {
+      "length": {
+        "type": "Object"
+      },
+      "maxBanks": {
+        "type": "Object"
+      }
+    }
+  },
+  "xferDepositAmountUsd": "入金金额 (USD)",
+  "xferPerTransferUpTo": "单笔 {v0} – {v1}，每日上限 {v2}（示例值，以券商为准）",
+  "@xferPerTransferUpTo": {
+    "placeholders": {
+      "v0": {
+        "type": "Object"
+      },
+      "v1": {
+        "type": "Object"
+      },
+      "v2": {
+        "type": "Object"
+      }
+    }
+  },
+  "xferSubmissionCutoff": "提交截止时间",
+  "xferBusinessDaysEtSample": "工作日 {achCutoffEt} ET（示例，待 DW 确认）",
+  "@xferBusinessDaysEtSample": {
+    "placeholders": {
+      "achCutoffEt": {
+        "type": "Object"
+      }
+    }
+  },
+  "xferWithdrawable": "可提现时间",
+  "xferAfterThe30Day": "到账后 30 天观察期结束（默认，待 DW 确认）",
+  "xferReturnNoticeIfYour": "退回提示：如银行退回此笔转账（如余额不足），使用该笔资金买入的证券可能被限制卖出，并可能产生退回费用；账户入金功能也可能被暂停。",
+  "xferWithdrawalRecorded": "出金已记录",
+  "xferWithdrawalSubmitted": "出金已提交",
+  "xferAchWithdrawals": "ACH 出金{achWithdrawalArrival}。",
+  "@xferAchWithdrawals": {
+    "placeholders": {
+      "achWithdrawalArrival": {
+        "type": "Object"
+      }
+    }
+  },
+  "xferConfirmWithdrawal": "确认出金",
+  "xferWithdrawalAmount": "出金金额",
+  "xferYourBrokerageAccount": "本人证券账户",
+  "xferEstimatedArrival": "预计到账",
+  "xferAvailableToWithdraw": "可提现金额",
+  "xferAccountCash": "账户现金",
+  "xferUnsettledFunds": "未结算资金",
+  "xferInAchHoldingPeriod": "ACH 入金观察期内金额",
+  "xferYourAvailableToWithdraw": "可提现金额以券商（DriveWealth）返回为准。{seasoningFallback}；电汇入金不受此限制。",
+  "@xferYourAvailableToWithdraw": {
+    "placeholders": {
+      "seasoningFallback": {
+        "type": "Object"
+      }
+    }
+  },
+  "xferWireWithdrawalsArenT": "电汇出金暂不在本次演示范围（后端已支持，待沙盒实测后开放）。电汇只能汇入本人名下的银行账户，收款人固定为账户持有人。",
+  "xferToBankAccount": "收款银行账户",
+  "xferNoBankAccountLinked": "尚未绑定银行账户。",
+  "xferWithdrawalAmountUsd": "出金金额 (USD)",
+  "xferPerTransferAndNo": "单笔 {v0} – {v1}，且不超过可提现金额",
+  "@xferPerTransferAndNo": {
+    "placeholders": {
+      "v0": {
+        "type": "Object"
+      },
+      "v1": {
+        "type": "Object"
+      }
+    }
+  },
+  "xferTransferHistory": "资金记录",
+  "xferDeposits": "入金",
+  "xferWithdrawals": "出金",
+  "xferNoTransfersYet": "暂无资金记录",
+  "xferShowingYour50Most": "显示最近 50 条资金记录。交易、分红与公司行动记录不在本次演示范围。",
+  "xferFromAccount": "转出账户",
+  "xferToAccount": "收款账户",
+  "xferBuyingPowerAvailable2": "购买力可用日",
+  "xferPendingBrokerUpdate": "待券商返回",
+  "xferWithdrawableOn": "可提现日",
+  "xferText": "{buyingPowerFallback}；{seasoningFallback}。",
+  "@xferText": {
+    "placeholders": {
+      "buyingPowerFallback": {
+        "type": "Object"
+      },
+      "seasoningFallback": {
+        "type": "Object"
+      }
+    }
+  },
+  "xferReason": "原因：{failureReason}",
+  "@xferReason": {
+    "placeholders": {
+      "failureReason": {
+        "type": "Object"
+      }
+    }
+  }
 }

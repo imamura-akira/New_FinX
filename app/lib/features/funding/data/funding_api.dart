@@ -1,4 +1,5 @@
 import '../../../core/api/api_client.dart';
+import '../../../l10n/l10n.dart';
 
 double _d(Object? v) => v is num ? v.toDouble() : double.tryParse('${v ?? ''}') ?? 0;
 DateTime? _t(Object? v) => v is String ? DateTime.tryParse(v)?.toLocal() : null;
@@ -38,11 +39,11 @@ class BankAccount {
 
   /// 显示名：DW 不返回银行名称时用备注名（沙盒实测）。
   String get displayName {
-    final n = bankName.isNotEmpty ? bankName : (nickname.isNotEmpty ? nickname : '银行账户');
+    final n = bankName.isNotEmpty ? bankName : (nickname.isNotEmpty ? nickname : t.fundBankAccount);
     return '$n ••$mask';
   }
 
-  String get typeLabel => type == 'SAVINGS' ? '储蓄账户' : '支票账户';
+  String get typeLabel => type == 'SAVINGS' ? t.fundSavings : t.fundChecking;
 }
 
 /// 资金流水（GET /funding/transfers）。

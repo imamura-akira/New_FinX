@@ -2357,6 +2357,807 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'完成'**
   String get orderDone;
+
+  /// No description provided for @fundAchFee.
+  ///
+  /// In zh, this message translates to:
+  /// **'\$0.25（DW 文档，待 DW 确认）'**
+  String get fundAchFee;
+
+  /// No description provided for @bankSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'{type} · 户名 {owner} · 绑定于 {date}'**
+  String bankSubtitle(Object type, Object owner, Object date);
+
+  /// No description provided for @transferTitleDeposit.
+  ///
+  /// In zh, this message translates to:
+  /// **'{method} 入金'**
+  String transferTitleDeposit(Object method);
+
+  /// No description provided for @transferTitleWithdrawal.
+  ///
+  /// In zh, this message translates to:
+  /// **'{method} 出金'**
+  String transferTitleWithdrawal(Object method);
+
+  /// No description provided for @transferDetailDeposit.
+  ///
+  /// In zh, this message translates to:
+  /// **'{method} 入金详情'**
+  String transferDetailDeposit(Object method);
+
+  /// No description provided for @transferDetailWithdrawal.
+  ///
+  /// In zh, this message translates to:
+  /// **'{method} 出金详情'**
+  String transferDetailWithdrawal(Object method);
+
+  /// No description provided for @bankTypeOwner.
+  ///
+  /// In zh, this message translates to:
+  /// **'{type} · 户名 {owner}'**
+  String bankTypeOwner(Object type, Object owner);
+
+  /// No description provided for @fundPleaseEnterADeposit.
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入入金金额'**
+  String get fundPleaseEnterADeposit;
+
+  /// No description provided for @fundMinimumDepositIs.
+  ///
+  /// In zh, this message translates to:
+  /// **'单笔最低入金 {v0}'**
+  String fundMinimumDepositIs(Object v0);
+
+  /// No description provided for @fundMaximumDepositIs.
+  ///
+  /// In zh, this message translates to:
+  /// **'单笔最高入金 {v0}'**
+  String fundMaximumDepositIs(Object v0);
+
+  /// No description provided for @fundPleaseEnterAWithdrawal.
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入出金金额'**
+  String get fundPleaseEnterAWithdrawal;
+
+  /// No description provided for @fundMinimumWithdrawalIs.
+  ///
+  /// In zh, this message translates to:
+  /// **'单笔最低出金 {v0}'**
+  String fundMinimumWithdrawalIs(Object v0);
+
+  /// No description provided for @fundExceedsYourAvailableTo.
+  ///
+  /// In zh, this message translates to:
+  /// **'超过可提现金额 {v0}'**
+  String fundExceedsYourAvailableTo(Object v0);
+
+  /// No description provided for @fundMaximumWithdrawalIs.
+  ///
+  /// In zh, this message translates to:
+  /// **'单笔最高出金 {v0}'**
+  String fundMaximumWithdrawalIs(Object v0);
+
+  /// No description provided for @fundInitiated.
+  ///
+  /// In zh, this message translates to:
+  /// **'已发起'**
+  String get fundInitiated;
+
+  /// No description provided for @fundPending.
+  ///
+  /// In zh, this message translates to:
+  /// **'处理中'**
+  String get fundPending;
+
+  /// No description provided for @fundProcessing.
+  ///
+  /// In zh, this message translates to:
+  /// **'处理中'**
+  String get fundProcessing;
+
+  /// No description provided for @fundApproved.
+  ///
+  /// In zh, this message translates to:
+  /// **'已批准'**
+  String get fundApproved;
+
+  /// No description provided for @fundCompleted.
+  ///
+  /// In zh, this message translates to:
+  /// **'已完成'**
+  String get fundCompleted;
+
+  /// No description provided for @fundFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'失败'**
+  String get fundFailed;
+
+  /// No description provided for @fundReturned.
+  ///
+  /// In zh, this message translates to:
+  /// **'已退回'**
+  String get fundReturned;
+
+  /// No description provided for @fundOnHold.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂缓处理'**
+  String get fundOnHold;
+
+  /// No description provided for @fundBuyingPowerIsGranted.
+  ///
+  /// In zh, this message translates to:
+  /// **'结算后授予购买力，通常 4–5 个工作日（待 DW 确认）'**
+  String get fundBuyingPowerIsGranted;
+
+  /// No description provided for @fundAchDepositsCanT.
+  ///
+  /// In zh, this message translates to:
+  /// **'ACH 入金到账后默认 30 天观察期内不可提现，可由 DW 配置调整（待 DW 确认）'**
+  String get fundAchDepositsCanT;
+
+  /// No description provided for @fundUsually45Business.
+  ///
+  /// In zh, this message translates to:
+  /// **'通常 4–5 个工作日（待 DW 确认）'**
+  String get fundUsually45Business;
+
+  /// No description provided for @fundBankAccount.
+  ///
+  /// In zh, this message translates to:
+  /// **'银行账户'**
+  String get fundBankAccount;
+
+  /// No description provided for @fundSavings.
+  ///
+  /// In zh, this message translates to:
+  /// **'储蓄账户'**
+  String get fundSavings;
+
+  /// No description provided for @fundChecking.
+  ///
+  /// In zh, this message translates to:
+  /// **'支票账户'**
+  String get fundChecking;
+
+  /// No description provided for @bankYourAccountIsCurrently.
+  ///
+  /// In zh, this message translates to:
+  /// **'账户当前受限，暂不能进行资金操作。如有疑问请联系客服。'**
+  String get bankYourAccountIsCurrently;
+
+  /// No description provided for @bankUnlinkBankAccount.
+  ///
+  /// In zh, this message translates to:
+  /// **'解绑银行账户？'**
+  String get bankUnlinkBankAccount;
+
+  /// No description provided for @bankOnceUnlinkedCanNo.
+  ///
+  /// In zh, this message translates to:
+  /// **'{displayName} 解绑后不能再用于入金和出金。'**
+  String bankOnceUnlinkedCanNo(Object displayName);
+
+  /// No description provided for @bankUnlink.
+  ///
+  /// In zh, this message translates to:
+  /// **'解绑'**
+  String get bankUnlink;
+
+  /// No description provided for @bankUnlinked.
+  ///
+  /// In zh, this message translates to:
+  /// **'已解绑'**
+  String get bankUnlinked;
+
+  /// No description provided for @bankLinked.
+  ///
+  /// In zh, this message translates to:
+  /// **'已绑定（{length}/{maxBanks}）'**
+  String bankLinked(Object length, Object maxBanks);
+
+  /// No description provided for @bankNoBankAccountsLinked.
+  ///
+  /// In zh, this message translates to:
+  /// **'还没有绑定银行账户。绑定本人名下的美国银行账户后，即可通过 ACH 入金和出金。'**
+  String get bankNoBankAccountsLinked;
+
+  /// No description provided for @bankYouCanLinkUp.
+  ///
+  /// In zh, this message translates to:
+  /// **'每个账户最多绑定 {maxBanks} 个银行账户。如需更换，请先解绑。'**
+  String bankYouCanLinkUp(Object maxBanks);
+
+  /// No description provided for @bankYouCanOnlyLink.
+  ///
+  /// In zh, this message translates to:
+  /// **'只能绑定本人名下的美国银行账户。没有美国银行账户？可以改用电汇入金。'**
+  String get bankYouCanOnlyLink;
+
+  /// No description provided for @bankViewWireInstructions.
+  ///
+  /// In zh, this message translates to:
+  /// **'查看电汇入金信息'**
+  String get bankViewWireInstructions;
+
+  /// No description provided for @bankLinkANewBank.
+  ///
+  /// In zh, this message translates to:
+  /// **'绑定新银行账户'**
+  String get bankLinkANewBank;
+
+  /// No description provided for @bankEnterAValid9.
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入有效的 9 位 ABA 路由号码'**
+  String get bankEnterAValid9;
+
+  /// No description provided for @bankEnterA417.
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入 4–17 位银行账号'**
+  String get bankEnterA417;
+
+  /// No description provided for @bankNicknameCanBeUp.
+  ///
+  /// In zh, this message translates to:
+  /// **'备注名最多 30 个字'**
+  String get bankNicknameCanBeUp;
+
+  /// No description provided for @bankNicknameCanTBe.
+  ///
+  /// In zh, this message translates to:
+  /// **'备注名不能与账号相同'**
+  String get bankNicknameCanTBe;
+
+  /// No description provided for @bankBankAccountLinked.
+  ///
+  /// In zh, this message translates to:
+  /// **'银行账户绑定成功'**
+  String get bankBankAccountLinked;
+
+  /// No description provided for @bankLinkBankAccount.
+  ///
+  /// In zh, this message translates to:
+  /// **'绑定银行账户'**
+  String get bankLinkBankAccount;
+
+  /// No description provided for @bankAccountsInYourOwn.
+  ///
+  /// In zh, this message translates to:
+  /// **'只能绑定本人名下的账户'**
+  String get bankAccountsInYourOwn;
+
+  /// No description provided for @bankTheAccountHolderIs.
+  ///
+  /// In zh, this message translates to:
+  /// **'户名按开户姓名登记，第三方账户的转账会被退回'**
+  String get bankTheAccountHolderIs;
+
+  /// No description provided for @bankUsBankAccountsOnly.
+  ///
+  /// In zh, this message translates to:
+  /// **'仅支持美国银行账户'**
+  String get bankUsBankAccountsOnly;
+
+  /// No description provided for @bankNoUsBankAccount.
+  ///
+  /// In zh, this message translates to:
+  /// **'没有美国银行账户？请改用电汇'**
+  String get bankNoUsBankAccount;
+
+  /// No description provided for @bankAccountNumberEncryptedIn.
+  ///
+  /// In zh, this message translates to:
+  /// **'账号加密传输'**
+  String get bankAccountNumberEncryptedIn;
+
+  /// No description provided for @bankWeOnlyShowThe.
+  ///
+  /// In zh, this message translates to:
+  /// **'我们只显示账号尾号'**
+  String get bankWeOnlyShowThe;
+
+  /// No description provided for @bankRoutingNumberAba.
+  ///
+  /// In zh, this message translates to:
+  /// **'路由号码（ABA Routing Number）'**
+  String get bankRoutingNumberAba;
+
+  /// No description provided for @bank9Digits.
+  ///
+  /// In zh, this message translates to:
+  /// **'9 位数字'**
+  String get bank9Digits;
+
+  /// No description provided for @bankAccountNumber.
+  ///
+  /// In zh, this message translates to:
+  /// **'银行账号'**
+  String get bankAccountNumber;
+
+  /// No description provided for @bank417Digits.
+  ///
+  /// In zh, this message translates to:
+  /// **'4–17 位数字'**
+  String get bank417Digits;
+
+  /// No description provided for @bankAccountType.
+  ///
+  /// In zh, this message translates to:
+  /// **'账户类型'**
+  String get bankAccountType;
+
+  /// No description provided for @bankNicknameOptional.
+  ///
+  /// In zh, this message translates to:
+  /// **'备注名（选填）'**
+  String get bankNicknameOptional;
+
+  /// No description provided for @bankEGPaycheckAccount.
+  ///
+  /// In zh, this message translates to:
+  /// **'如：工资卡'**
+  String get bankEGPaycheckAccount;
+
+  /// No description provided for @bankLink.
+  ///
+  /// In zh, this message translates to:
+  /// **'绑定'**
+  String get bankLink;
+
+  /// No description provided for @bankBeneficiary.
+  ///
+  /// In zh, this message translates to:
+  /// **'收款人'**
+  String get bankBeneficiary;
+
+  /// No description provided for @bankBeneficiaryBank.
+  ///
+  /// In zh, this message translates to:
+  /// **'收款银行'**
+  String get bankBeneficiaryBank;
+
+  /// No description provided for @bankBankAddress.
+  ///
+  /// In zh, this message translates to:
+  /// **'银行地址'**
+  String get bankBankAddress;
+
+  /// No description provided for @bankAccountNumber2.
+  ///
+  /// In zh, this message translates to:
+  /// **'收款账号'**
+  String get bankAccountNumber2;
+
+  /// No description provided for @bankAbaRoutingNumber.
+  ///
+  /// In zh, this message translates to:
+  /// **'ABA 路由号码'**
+  String get bankAbaRoutingNumber;
+
+  /// No description provided for @bankReferenceRequired.
+  ///
+  /// In zh, this message translates to:
+  /// **'附言（必填）'**
+  String get bankReferenceRequired;
+
+  /// No description provided for @bankWireDeposit.
+  ///
+  /// In zh, this message translates to:
+  /// **'电汇入金'**
+  String get bankWireDeposit;
+
+  /// No description provided for @bankSendTheWireFrom.
+  ///
+  /// In zh, this message translates to:
+  /// **'请从本人名下的银行账户汇款，并在附言中填写下方内容（含您的账户号码），否则可能无法入账。'**
+  String get bankSendTheWireFrom;
+
+  /// No description provided for @bankCopied.
+  ///
+  /// In zh, this message translates to:
+  /// **'{value}已复制'**
+  String bankCopied(Object value);
+
+  /// No description provided for @bankIntermediaryBankFeesAre.
+  ///
+  /// In zh, this message translates to:
+  /// **'中转行费用由汇款方承担；到账时间以银行实际到账为准（待 DW 确认）。电汇入金不受 ACH 观察期限制。'**
+  String get bankIntermediaryBankFeesAre;
+
+  /// No description provided for @xferTransactionId.
+  ///
+  /// In zh, this message translates to:
+  /// **'流水号'**
+  String get xferTransactionId;
+
+  /// No description provided for @xferMethod.
+  ///
+  /// In zh, this message translates to:
+  /// **'方式'**
+  String get xferMethod;
+
+  /// No description provided for @xferAmount.
+  ///
+  /// In zh, this message translates to:
+  /// **'金额'**
+  String get xferAmount;
+
+  /// No description provided for @xferViewTransferHistory.
+  ///
+  /// In zh, this message translates to:
+  /// **'查看资金记录'**
+  String get xferViewTransferHistory;
+
+  /// No description provided for @xferDepositRecorded.
+  ///
+  /// In zh, this message translates to:
+  /// **'入金已记录'**
+  String get xferDepositRecorded;
+
+  /// No description provided for @xferDepositSubmitted.
+  ///
+  /// In zh, this message translates to:
+  /// **'入金已提交'**
+  String get xferDepositSubmitted;
+
+  /// No description provided for @xferTheBrokerHasnT.
+  ///
+  /// In zh, this message translates to:
+  /// **'券商受理结果暂未确认，我们会自动核对，请稍后在资金记录中查看状态。请勿重复提交。'**
+  String get xferTheBrokerHasnT;
+
+  /// No description provided for @xferTheArrivalDateIs.
+  ///
+  /// In zh, this message translates to:
+  /// **'{buyingPowerFallback}。到账日期以资金记录中券商返回的日期为准。'**
+  String xferTheArrivalDateIs(Object buyingPowerFallback);
+
+  /// No description provided for @xferChooseADepositMethod.
+  ///
+  /// In zh, this message translates to:
+  /// **'选择入金方式'**
+  String get xferChooseADepositMethod;
+
+  /// No description provided for @xferBankTransferAch.
+  ///
+  /// In zh, this message translates to:
+  /// **'银行转账（ACH）'**
+  String get xferBankTransferAch;
+
+  /// No description provided for @xferLinkAUsBank.
+  ///
+  /// In zh, this message translates to:
+  /// **'需先绑定本人名下的美国银行账户'**
+  String get xferLinkAUsBank;
+
+  /// No description provided for @xferUsBankAccountS.
+  ///
+  /// In zh, this message translates to:
+  /// **'已绑定 {length} 个本人美国银行账户 · 免手续费'**
+  String xferUsBankAccountS(Object length);
+
+  /// No description provided for @xferWireTransfer.
+  ///
+  /// In zh, this message translates to:
+  /// **'电汇'**
+  String get xferWireTransfer;
+
+  /// No description provided for @xferSendFromABank.
+  ///
+  /// In zh, this message translates to:
+  /// **'从本人名下银行账户汇款，适用于境外银行或大额入金'**
+  String get xferSendFromABank;
+
+  /// No description provided for @xferWireTimingDependsOn.
+  ///
+  /// In zh, this message translates to:
+  /// **'{buyingPowerFallback}。{seasoningFallback}。电汇以银行实际到账时间为准，不受观察期限制。每笔入金的实际日期以券商返回为准（见资金记录）。'**
+  String xferWireTimingDependsOn(
+    Object buyingPowerFallback,
+    Object seasoningFallback,
+  );
+
+  /// No description provided for @xferWeOnlyAcceptFunds.
+  ///
+  /// In zh, this message translates to:
+  /// **'只接受来自本人名下账户的资金，第三方转账将被退回。'**
+  String get xferWeOnlyAcceptFunds;
+
+  /// No description provided for @xferConfirmDeposit.
+  ///
+  /// In zh, this message translates to:
+  /// **'确认入金'**
+  String get xferConfirmDeposit;
+
+  /// No description provided for @xferDepositAmount.
+  ///
+  /// In zh, this message translates to:
+  /// **'入金金额'**
+  String get xferDepositAmount;
+
+  /// No description provided for @xferFrom.
+  ///
+  /// In zh, this message translates to:
+  /// **'从'**
+  String get xferFrom;
+
+  /// No description provided for @xferTo.
+  ///
+  /// In zh, this message translates to:
+  /// **'到'**
+  String get xferTo;
+
+  /// No description provided for @xferYourBrokerageAccountHeld.
+  ///
+  /// In zh, this message translates to:
+  /// **'本人证券账户（DriveWealth 托管）'**
+  String get xferYourBrokerageAccountHeld;
+
+  /// No description provided for @xferFee.
+  ///
+  /// In zh, this message translates to:
+  /// **'手续费'**
+  String get xferFee;
+
+  /// No description provided for @xferBuyingPowerAvailable.
+  ///
+  /// In zh, this message translates to:
+  /// **'购买力到账'**
+  String get xferBuyingPowerAvailable;
+
+  /// No description provided for @xferByConfirmingYouAuthorize.
+  ///
+  /// In zh, this message translates to:
+  /// **'确认即授权从上述银行账户扣款。资金由 DriveWealth 托管。'**
+  String get xferByConfirmingYouAuthorize;
+
+  /// No description provided for @xferEdit.
+  ///
+  /// In zh, this message translates to:
+  /// **'返回修改'**
+  String get xferEdit;
+
+  /// No description provided for @xferAchDeposit.
+  ///
+  /// In zh, this message translates to:
+  /// **'ACH 入金'**
+  String get xferAchDeposit;
+
+  /// No description provided for @xferFromBankAccount.
+  ///
+  /// In zh, this message translates to:
+  /// **'转出银行账户'**
+  String get xferFromBankAccount;
+
+  /// No description provided for @xferManageBankAccounts.
+  ///
+  /// In zh, this message translates to:
+  /// **'管理银行账户（{length}/{maxBanks}）'**
+  String xferManageBankAccounts(Object length, Object maxBanks);
+
+  /// No description provided for @xferDepositAmountUsd.
+  ///
+  /// In zh, this message translates to:
+  /// **'入金金额 (USD)'**
+  String get xferDepositAmountUsd;
+
+  /// No description provided for @xferPerTransferUpTo.
+  ///
+  /// In zh, this message translates to:
+  /// **'单笔 {v0} – {v1}，每日上限 {v2}（示例值，以券商为准）'**
+  String xferPerTransferUpTo(Object v0, Object v1, Object v2);
+
+  /// No description provided for @xferSubmissionCutoff.
+  ///
+  /// In zh, this message translates to:
+  /// **'提交截止时间'**
+  String get xferSubmissionCutoff;
+
+  /// No description provided for @xferBusinessDaysEtSample.
+  ///
+  /// In zh, this message translates to:
+  /// **'工作日 {achCutoffEt} ET（示例，待 DW 确认）'**
+  String xferBusinessDaysEtSample(Object achCutoffEt);
+
+  /// No description provided for @xferWithdrawable.
+  ///
+  /// In zh, this message translates to:
+  /// **'可提现时间'**
+  String get xferWithdrawable;
+
+  /// No description provided for @xferAfterThe30Day.
+  ///
+  /// In zh, this message translates to:
+  /// **'到账后 30 天观察期结束（默认，待 DW 确认）'**
+  String get xferAfterThe30Day;
+
+  /// No description provided for @xferReturnNoticeIfYour.
+  ///
+  /// In zh, this message translates to:
+  /// **'退回提示：如银行退回此笔转账（如余额不足），使用该笔资金买入的证券可能被限制卖出，并可能产生退回费用；账户入金功能也可能被暂停。'**
+  String get xferReturnNoticeIfYour;
+
+  /// No description provided for @xferWithdrawalRecorded.
+  ///
+  /// In zh, this message translates to:
+  /// **'出金已记录'**
+  String get xferWithdrawalRecorded;
+
+  /// No description provided for @xferWithdrawalSubmitted.
+  ///
+  /// In zh, this message translates to:
+  /// **'出金已提交'**
+  String get xferWithdrawalSubmitted;
+
+  /// No description provided for @xferAchWithdrawals.
+  ///
+  /// In zh, this message translates to:
+  /// **'ACH 出金{achWithdrawalArrival}。'**
+  String xferAchWithdrawals(Object achWithdrawalArrival);
+
+  /// No description provided for @xferConfirmWithdrawal.
+  ///
+  /// In zh, this message translates to:
+  /// **'确认出金'**
+  String get xferConfirmWithdrawal;
+
+  /// No description provided for @xferWithdrawalAmount.
+  ///
+  /// In zh, this message translates to:
+  /// **'出金金额'**
+  String get xferWithdrawalAmount;
+
+  /// No description provided for @xferYourBrokerageAccount.
+  ///
+  /// In zh, this message translates to:
+  /// **'本人证券账户'**
+  String get xferYourBrokerageAccount;
+
+  /// No description provided for @xferEstimatedArrival.
+  ///
+  /// In zh, this message translates to:
+  /// **'预计到账'**
+  String get xferEstimatedArrival;
+
+  /// No description provided for @xferAvailableToWithdraw.
+  ///
+  /// In zh, this message translates to:
+  /// **'可提现金额'**
+  String get xferAvailableToWithdraw;
+
+  /// No description provided for @xferAccountCash.
+  ///
+  /// In zh, this message translates to:
+  /// **'账户现金'**
+  String get xferAccountCash;
+
+  /// No description provided for @xferUnsettledFunds.
+  ///
+  /// In zh, this message translates to:
+  /// **'未结算资金'**
+  String get xferUnsettledFunds;
+
+  /// No description provided for @xferInAchHoldingPeriod.
+  ///
+  /// In zh, this message translates to:
+  /// **'ACH 入金观察期内金额'**
+  String get xferInAchHoldingPeriod;
+
+  /// No description provided for @xferYourAvailableToWithdraw.
+  ///
+  /// In zh, this message translates to:
+  /// **'可提现金额以券商（DriveWealth）返回为准。{seasoningFallback}；电汇入金不受此限制。'**
+  String xferYourAvailableToWithdraw(Object seasoningFallback);
+
+  /// No description provided for @xferWireWithdrawalsArenT.
+  ///
+  /// In zh, this message translates to:
+  /// **'电汇出金暂不在本次演示范围（后端已支持，待沙盒实测后开放）。电汇只能汇入本人名下的银行账户，收款人固定为账户持有人。'**
+  String get xferWireWithdrawalsArenT;
+
+  /// No description provided for @xferToBankAccount.
+  ///
+  /// In zh, this message translates to:
+  /// **'收款银行账户'**
+  String get xferToBankAccount;
+
+  /// No description provided for @xferNoBankAccountLinked.
+  ///
+  /// In zh, this message translates to:
+  /// **'尚未绑定银行账户。'**
+  String get xferNoBankAccountLinked;
+
+  /// No description provided for @xferWithdrawalAmountUsd.
+  ///
+  /// In zh, this message translates to:
+  /// **'出金金额 (USD)'**
+  String get xferWithdrawalAmountUsd;
+
+  /// No description provided for @xferPerTransferAndNo.
+  ///
+  /// In zh, this message translates to:
+  /// **'单笔 {v0} – {v1}，且不超过可提现金额'**
+  String xferPerTransferAndNo(Object v0, Object v1);
+
+  /// No description provided for @xferTransferHistory.
+  ///
+  /// In zh, this message translates to:
+  /// **'资金记录'**
+  String get xferTransferHistory;
+
+  /// No description provided for @xferDeposits.
+  ///
+  /// In zh, this message translates to:
+  /// **'入金'**
+  String get xferDeposits;
+
+  /// No description provided for @xferWithdrawals.
+  ///
+  /// In zh, this message translates to:
+  /// **'出金'**
+  String get xferWithdrawals;
+
+  /// No description provided for @xferNoTransfersYet.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无资金记录'**
+  String get xferNoTransfersYet;
+
+  /// No description provided for @xferShowingYour50Most.
+  ///
+  /// In zh, this message translates to:
+  /// **'显示最近 50 条资金记录。交易、分红与公司行动记录不在本次演示范围。'**
+  String get xferShowingYour50Most;
+
+  /// No description provided for @xferFromAccount.
+  ///
+  /// In zh, this message translates to:
+  /// **'转出账户'**
+  String get xferFromAccount;
+
+  /// No description provided for @xferToAccount.
+  ///
+  /// In zh, this message translates to:
+  /// **'收款账户'**
+  String get xferToAccount;
+
+  /// No description provided for @xferBuyingPowerAvailable2.
+  ///
+  /// In zh, this message translates to:
+  /// **'购买力可用日'**
+  String get xferBuyingPowerAvailable2;
+
+  /// No description provided for @xferPendingBrokerUpdate.
+  ///
+  /// In zh, this message translates to:
+  /// **'待券商返回'**
+  String get xferPendingBrokerUpdate;
+
+  /// No description provided for @xferWithdrawableOn.
+  ///
+  /// In zh, this message translates to:
+  /// **'可提现日'**
+  String get xferWithdrawableOn;
+
+  /// No description provided for @xferText.
+  ///
+  /// In zh, this message translates to:
+  /// **'{buyingPowerFallback}；{seasoningFallback}。'**
+  String xferText(Object buyingPowerFallback, Object seasoningFallback);
+
+  /// No description provided for @xferReason.
+  ///
+  /// In zh, this message translates to:
+  /// **'原因：{failureReason}'**
+  String xferReason(Object failureReason);
 }
 
 class _AppLocalizationsDelegate

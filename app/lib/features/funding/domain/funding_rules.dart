@@ -1,4 +1,5 @@
 import '../../../core/format.dart';
+import '../../../l10n/l10n.dart';
 
 /// 客户端预校验用的限额（与后端 config `limits.*` 默认值一致，均为示例值）。
 /// 后端强制校验（CLAUDE.md 硬性规则 5），超限返回 42201 并带实际限额，以后端为准。
@@ -23,22 +24,22 @@ double? parseAmount(String raw) {
 
 /// 入金金额校验（P-13）。返回错误文案，合法返回 null。
 String? validateDeposit(String raw) {
-  if (raw.trim().isEmpty) return '请输入入金金额';
+  if (raw.trim().isEmpty) return t.fundPleaseEnterADeposit;
   final v = parseAmount(raw);
-  if (v == null) return '请输入有效金额，最多两位小数';
-  if (v < FundingLimits.minDeposit) return '单笔最低入金 ${fmtUsd(FundingLimits.minDeposit)}';
-  if (v > FundingLimits.maxDeposit) return '单笔最高入金 ${fmtUsd(FundingLimits.maxDeposit)}';
+  if (v == null) return t.tradeEnterAValidAmount;
+  if (v < FundingLimits.minDeposit) return t.fundMinimumDepositIs(fmtUsd(FundingLimits.minDeposit));
+  if (v > FundingLimits.maxDeposit) return t.fundMaximumDepositIs(fmtUsd(FundingLimits.maxDeposit));
   return null;
 }
 
 /// 出金金额校验（P-14）。[withdrawable] 为 DW 返回的可提现金额。
 String? validateWithdrawal(String raw, double withdrawable) {
-  if (raw.trim().isEmpty) return '请输入出金金额';
+  if (raw.trim().isEmpty) return t.fundPleaseEnterAWithdrawal;
   final v = parseAmount(raw);
-  if (v == null) return '请输入有效金额，最多两位小数';
-  if (v < FundingLimits.minWithdrawal) return '单笔最低出金 ${fmtUsd(FundingLimits.minWithdrawal)}';
-  if (v > withdrawable) return '超过可提现金额 ${fmtUsd(withdrawable)}';
-  if (v > FundingLimits.maxWithdrawal) return '单笔最高出金 ${fmtUsd(FundingLimits.maxWithdrawal)}';
+  if (v == null) return t.tradeEnterAValidAmount;
+  if (v < FundingLimits.minWithdrawal) return t.fundMinimumWithdrawalIs(fmtUsd(FundingLimits.minWithdrawal));
+  if (v > withdrawable) return t.fundExceedsYourAvailableTo(fmtUsd(withdrawable));
+  if (v > FundingLimits.maxWithdrawal) return t.fundMaximumWithdrawalIs(fmtUsd(FundingLimits.maxWithdrawal));
   return null;
 }
 
@@ -54,25 +55,25 @@ bool validAba(String raw) {
   return sum % 10 == 0;
 }
 
-/// 出入金状态中文名与色调（DW Deposit Status + 我方 SUBMITTING）。
-const transferStatusLabels = {
-  'SUBMITTING': '提交中',
-  'STARTED': '已发起',
-  'PENDING': '处理中',
-  'PROCESSING': '处理中',
-  'APPROVED': '已批准',
-  'SUCCESSFUL': '已完成',
-  'FAILED': '失败',
-  'RETURNED': '已退回',
-  'REJECTED': '已拒绝',
-  'ON_HOLD': '暂缓处理',
+/// 出入金状态文案（DW Deposit Status + 我方 SUBMITTING）。
+Map<String, String> get transferStatusLabels => {
+  'SUBMITTING': t.tradeSubmitting,
+  'STARTED': t.fundInitiated,
+  'PENDING': t.fundPending,
+  'PROCESSING': t.fundProcessing,
+  'APPROVED': t.fundApproved,
+  'SUCCESSFUL': t.fundCompleted,
+  'FAILED': t.fundFailed,
+  'RETURNED': t.fundReturned,
+  'REJECTED': t.tradeRejected,
+  'ON_HOLD': t.fundOnHold,
 };
 
 bool isTransferFailed(String s) => s == 'FAILED' || s == 'RETURNED' || s == 'REJECTED';
 bool isTransferDone(String s) => s == 'SUCCESSFUL';
 
 /// 时效说明（pages.md 3.1.5；DW 返回日期优先，以下为无返回值时的兜底文案）。
-const buyingPowerFallback = '结算后授予购买力，通常 4–5 个工作日（待 DW 确认）';
-const seasoningFallback = 'ACH 入金到账后默认 30 天观察期内不可提现，可由 DW 配置调整（待 DW 确认）';
-const achWithdrawalArrival = '通常 4–5 个工作日（待 DW 确认）';
-const achWithdrawalFee = r'$0.25（DW 文档，待 DW 确认）';
+String get buyingPowerFallback => t.fundBuyingPowerIsGranted;
+String get seasoningFallback => t.fundAchDepositsCanT;
+String get achWithdrawalArrival => t.fundUsually45Business;
+String get achWithdrawalFee => t.fundAchFee;

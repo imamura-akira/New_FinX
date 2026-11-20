@@ -1227,4 +1227,465 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get orderDone => '完成';
+
+  @override
+  String get fundAchFee => '\$0.25（DW 文档，待 DW 确认）';
+
+  @override
+  String bankSubtitle(Object type, Object owner, Object date) {
+    return '$type · 户名 $owner · 绑定于 $date';
+  }
+
+  @override
+  String transferTitleDeposit(Object method) {
+    return '$method 入金';
+  }
+
+  @override
+  String transferTitleWithdrawal(Object method) {
+    return '$method 出金';
+  }
+
+  @override
+  String transferDetailDeposit(Object method) {
+    return '$method 入金详情';
+  }
+
+  @override
+  String transferDetailWithdrawal(Object method) {
+    return '$method 出金详情';
+  }
+
+  @override
+  String bankTypeOwner(Object type, Object owner) {
+    return '$type · 户名 $owner';
+  }
+
+  @override
+  String get fundPleaseEnterADeposit => '请输入入金金额';
+
+  @override
+  String fundMinimumDepositIs(Object v0) {
+    return '单笔最低入金 $v0';
+  }
+
+  @override
+  String fundMaximumDepositIs(Object v0) {
+    return '单笔最高入金 $v0';
+  }
+
+  @override
+  String get fundPleaseEnterAWithdrawal => '请输入出金金额';
+
+  @override
+  String fundMinimumWithdrawalIs(Object v0) {
+    return '单笔最低出金 $v0';
+  }
+
+  @override
+  String fundExceedsYourAvailableTo(Object v0) {
+    return '超过可提现金额 $v0';
+  }
+
+  @override
+  String fundMaximumWithdrawalIs(Object v0) {
+    return '单笔最高出金 $v0';
+  }
+
+  @override
+  String get fundInitiated => '已发起';
+
+  @override
+  String get fundPending => '处理中';
+
+  @override
+  String get fundProcessing => '处理中';
+
+  @override
+  String get fundApproved => '已批准';
+
+  @override
+  String get fundCompleted => '已完成';
+
+  @override
+  String get fundFailed => '失败';
+
+  @override
+  String get fundReturned => '已退回';
+
+  @override
+  String get fundOnHold => '暂缓处理';
+
+  @override
+  String get fundBuyingPowerIsGranted => '结算后授予购买力，通常 4–5 个工作日（待 DW 确认）';
+
+  @override
+  String get fundAchDepositsCanT =>
+      'ACH 入金到账后默认 30 天观察期内不可提现，可由 DW 配置调整（待 DW 确认）';
+
+  @override
+  String get fundUsually45Business => '通常 4–5 个工作日（待 DW 确认）';
+
+  @override
+  String get fundBankAccount => '银行账户';
+
+  @override
+  String get fundSavings => '储蓄账户';
+
+  @override
+  String get fundChecking => '支票账户';
+
+  @override
+  String get bankYourAccountIsCurrently => '账户当前受限，暂不能进行资金操作。如有疑问请联系客服。';
+
+  @override
+  String get bankUnlinkBankAccount => '解绑银行账户？';
+
+  @override
+  String bankOnceUnlinkedCanNo(Object displayName) {
+    return '$displayName 解绑后不能再用于入金和出金。';
+  }
+
+  @override
+  String get bankUnlink => '解绑';
+
+  @override
+  String get bankUnlinked => '已解绑';
+
+  @override
+  String bankLinked(Object length, Object maxBanks) {
+    return '已绑定（$length/$maxBanks）';
+  }
+
+  @override
+  String get bankNoBankAccountsLinked =>
+      '还没有绑定银行账户。绑定本人名下的美国银行账户后，即可通过 ACH 入金和出金。';
+
+  @override
+  String bankYouCanLinkUp(Object maxBanks) {
+    return '每个账户最多绑定 $maxBanks 个银行账户。如需更换，请先解绑。';
+  }
+
+  @override
+  String get bankYouCanOnlyLink => '只能绑定本人名下的美国银行账户。没有美国银行账户？可以改用电汇入金。';
+
+  @override
+  String get bankViewWireInstructions => '查看电汇入金信息';
+
+  @override
+  String get bankLinkANewBank => '绑定新银行账户';
+
+  @override
+  String get bankEnterAValid9 => '请输入有效的 9 位 ABA 路由号码';
+
+  @override
+  String get bankEnterA417 => '请输入 4–17 位银行账号';
+
+  @override
+  String get bankNicknameCanBeUp => '备注名最多 30 个字';
+
+  @override
+  String get bankNicknameCanTBe => '备注名不能与账号相同';
+
+  @override
+  String get bankBankAccountLinked => '银行账户绑定成功';
+
+  @override
+  String get bankLinkBankAccount => '绑定银行账户';
+
+  @override
+  String get bankAccountsInYourOwn => '只能绑定本人名下的账户';
+
+  @override
+  String get bankTheAccountHolderIs => '户名按开户姓名登记，第三方账户的转账会被退回';
+
+  @override
+  String get bankUsBankAccountsOnly => '仅支持美国银行账户';
+
+  @override
+  String get bankNoUsBankAccount => '没有美国银行账户？请改用电汇';
+
+  @override
+  String get bankAccountNumberEncryptedIn => '账号加密传输';
+
+  @override
+  String get bankWeOnlyShowThe => '我们只显示账号尾号';
+
+  @override
+  String get bankRoutingNumberAba => '路由号码（ABA Routing Number）';
+
+  @override
+  String get bank9Digits => '9 位数字';
+
+  @override
+  String get bankAccountNumber => '银行账号';
+
+  @override
+  String get bank417Digits => '4–17 位数字';
+
+  @override
+  String get bankAccountType => '账户类型';
+
+  @override
+  String get bankNicknameOptional => '备注名（选填）';
+
+  @override
+  String get bankEGPaycheckAccount => '如：工资卡';
+
+  @override
+  String get bankLink => '绑定';
+
+  @override
+  String get bankBeneficiary => '收款人';
+
+  @override
+  String get bankBeneficiaryBank => '收款银行';
+
+  @override
+  String get bankBankAddress => '银行地址';
+
+  @override
+  String get bankAccountNumber2 => '收款账号';
+
+  @override
+  String get bankAbaRoutingNumber => 'ABA 路由号码';
+
+  @override
+  String get bankReferenceRequired => '附言（必填）';
+
+  @override
+  String get bankWireDeposit => '电汇入金';
+
+  @override
+  String get bankSendTheWireFrom =>
+      '请从本人名下的银行账户汇款，并在附言中填写下方内容（含您的账户号码），否则可能无法入账。';
+
+  @override
+  String bankCopied(Object value) {
+    return '$value已复制';
+  }
+
+  @override
+  String get bankIntermediaryBankFeesAre =>
+      '中转行费用由汇款方承担；到账时间以银行实际到账为准（待 DW 确认）。电汇入金不受 ACH 观察期限制。';
+
+  @override
+  String get xferTransactionId => '流水号';
+
+  @override
+  String get xferMethod => '方式';
+
+  @override
+  String get xferAmount => '金额';
+
+  @override
+  String get xferViewTransferHistory => '查看资金记录';
+
+  @override
+  String get xferDepositRecorded => '入金已记录';
+
+  @override
+  String get xferDepositSubmitted => '入金已提交';
+
+  @override
+  String get xferTheBrokerHasnT => '券商受理结果暂未确认，我们会自动核对，请稍后在资金记录中查看状态。请勿重复提交。';
+
+  @override
+  String xferTheArrivalDateIs(Object buyingPowerFallback) {
+    return '$buyingPowerFallback。到账日期以资金记录中券商返回的日期为准。';
+  }
+
+  @override
+  String get xferChooseADepositMethod => '选择入金方式';
+
+  @override
+  String get xferBankTransferAch => '银行转账（ACH）';
+
+  @override
+  String get xferLinkAUsBank => '需先绑定本人名下的美国银行账户';
+
+  @override
+  String xferUsBankAccountS(Object length) {
+    return '已绑定 $length 个本人美国银行账户 · 免手续费';
+  }
+
+  @override
+  String get xferWireTransfer => '电汇';
+
+  @override
+  String get xferSendFromABank => '从本人名下银行账户汇款，适用于境外银行或大额入金';
+
+  @override
+  String xferWireTimingDependsOn(
+    Object buyingPowerFallback,
+    Object seasoningFallback,
+  ) {
+    return '$buyingPowerFallback。$seasoningFallback。电汇以银行实际到账时间为准，不受观察期限制。每笔入金的实际日期以券商返回为准（见资金记录）。';
+  }
+
+  @override
+  String get xferWeOnlyAcceptFunds => '只接受来自本人名下账户的资金，第三方转账将被退回。';
+
+  @override
+  String get xferConfirmDeposit => '确认入金';
+
+  @override
+  String get xferDepositAmount => '入金金额';
+
+  @override
+  String get xferFrom => '从';
+
+  @override
+  String get xferTo => '到';
+
+  @override
+  String get xferYourBrokerageAccountHeld => '本人证券账户（DriveWealth 托管）';
+
+  @override
+  String get xferFee => '手续费';
+
+  @override
+  String get xferBuyingPowerAvailable => '购买力到账';
+
+  @override
+  String get xferByConfirmingYouAuthorize =>
+      '确认即授权从上述银行账户扣款。资金由 DriveWealth 托管。';
+
+  @override
+  String get xferEdit => '返回修改';
+
+  @override
+  String get xferAchDeposit => 'ACH 入金';
+
+  @override
+  String get xferFromBankAccount => '转出银行账户';
+
+  @override
+  String xferManageBankAccounts(Object length, Object maxBanks) {
+    return '管理银行账户（$length/$maxBanks）';
+  }
+
+  @override
+  String get xferDepositAmountUsd => '入金金额 (USD)';
+
+  @override
+  String xferPerTransferUpTo(Object v0, Object v1, Object v2) {
+    return '单笔 $v0 – $v1，每日上限 $v2（示例值，以券商为准）';
+  }
+
+  @override
+  String get xferSubmissionCutoff => '提交截止时间';
+
+  @override
+  String xferBusinessDaysEtSample(Object achCutoffEt) {
+    return '工作日 $achCutoffEt ET（示例，待 DW 确认）';
+  }
+
+  @override
+  String get xferWithdrawable => '可提现时间';
+
+  @override
+  String get xferAfterThe30Day => '到账后 30 天观察期结束（默认，待 DW 确认）';
+
+  @override
+  String get xferReturnNoticeIfYour =>
+      '退回提示：如银行退回此笔转账（如余额不足），使用该笔资金买入的证券可能被限制卖出，并可能产生退回费用；账户入金功能也可能被暂停。';
+
+  @override
+  String get xferWithdrawalRecorded => '出金已记录';
+
+  @override
+  String get xferWithdrawalSubmitted => '出金已提交';
+
+  @override
+  String xferAchWithdrawals(Object achWithdrawalArrival) {
+    return 'ACH 出金$achWithdrawalArrival。';
+  }
+
+  @override
+  String get xferConfirmWithdrawal => '确认出金';
+
+  @override
+  String get xferWithdrawalAmount => '出金金额';
+
+  @override
+  String get xferYourBrokerageAccount => '本人证券账户';
+
+  @override
+  String get xferEstimatedArrival => '预计到账';
+
+  @override
+  String get xferAvailableToWithdraw => '可提现金额';
+
+  @override
+  String get xferAccountCash => '账户现金';
+
+  @override
+  String get xferUnsettledFunds => '未结算资金';
+
+  @override
+  String get xferInAchHoldingPeriod => 'ACH 入金观察期内金额';
+
+  @override
+  String xferYourAvailableToWithdraw(Object seasoningFallback) {
+    return '可提现金额以券商（DriveWealth）返回为准。$seasoningFallback；电汇入金不受此限制。';
+  }
+
+  @override
+  String get xferWireWithdrawalsArenT =>
+      '电汇出金暂不在本次演示范围（后端已支持，待沙盒实测后开放）。电汇只能汇入本人名下的银行账户，收款人固定为账户持有人。';
+
+  @override
+  String get xferToBankAccount => '收款银行账户';
+
+  @override
+  String get xferNoBankAccountLinked => '尚未绑定银行账户。';
+
+  @override
+  String get xferWithdrawalAmountUsd => '出金金额 (USD)';
+
+  @override
+  String xferPerTransferAndNo(Object v0, Object v1) {
+    return '单笔 $v0 – $v1，且不超过可提现金额';
+  }
+
+  @override
+  String get xferTransferHistory => '资金记录';
+
+  @override
+  String get xferDeposits => '入金';
+
+  @override
+  String get xferWithdrawals => '出金';
+
+  @override
+  String get xferNoTransfersYet => '暂无资金记录';
+
+  @override
+  String get xferShowingYour50Most => '显示最近 50 条资金记录。交易、分红与公司行动记录不在本次演示范围。';
+
+  @override
+  String get xferFromAccount => '转出账户';
+
+  @override
+  String get xferToAccount => '收款账户';
+
+  @override
+  String get xferBuyingPowerAvailable2 => '购买力可用日';
+
+  @override
+  String get xferPendingBrokerUpdate => '待券商返回';
+
+  @override
+  String get xferWithdrawableOn => '可提现日';
+
+  @override
+  String xferText(Object buyingPowerFallback, Object seasoningFallback) {
+    return '$buyingPowerFallback；$seasoningFallback。';
+  }
+
+  @override
+  String xferReason(Object failureReason) {
+    return '原因：$failureReason';
+  }
 }

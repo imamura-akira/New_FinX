@@ -10,10 +10,11 @@ import '../../../core/widgets/form_widgets.dart';
 import '../../../core/widgets/widgets.dart';
 import '../data/funding_api.dart';
 import '../domain/funding_rules.dart';
+import '../../../l10n/l10n.dart';
 
 /// 资金接口错误的统一展示：账户受限（40301）/ 未开户（40901）给出明确说明。
 String fundingErrorText(ApiException e) => switch (e.code) {
-  ApiCodes.restricted => '账户当前受限，暂不能进行资金操作。如有疑问请联系客服。',
+  ApiCodes.restricted => t.bankYourAccountIsCurrently,
   _ => e.message,
 };
 
@@ -52,11 +53,11 @@ class _BankAccountsPageState extends State<BankAccountsPage> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('解绑银行账户？'),
-        content: Text('${b.displayName} 解绑后不能再用于入金和出金。'),
+        title: Text(t.bankUnlinkBankAccount),
+        content: Text(t.bankOnceUnlinkedCanNo(b.displayName)),
         actions: [
-          TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('取消')),
-          TextButton(key: const Key('p31.unlink.confirm'), onPressed: () => Navigator.of(ctx).pop(true), child: const Text('解绑')),
+          TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: Text(t.drawerCancel)),
+          TextButton(key: const Key('p31.unlink.confirm'), onPressed: () => Navigator.of(ctx).pop(true), child: Text(t.bankUnlink)),
         ],
       ),
     );
@@ -64,7 +65,7 @@ class _BankAccountsPageState extends State<BankAccountsPage> {
     try {
       await FundingApi(AppScope.of(context).api).unlinkBank(b.id);
       if (!mounted) return;
-      showToast(context, '已解绑');
+      showToast(context, t.bankUnlinked);
       _load();
     } on ApiException catch (e) {
       if (mounted) showToast(context, fundingErrorText(e));
@@ -76,7 +77,7 @@ class _BankAccountsPageState extends State<BankAccountsPage> {
     final banks = _banks;
     final full = banks != null && banks.length >= FundingLimits.maxBanks;
     return PageScaffold(
-      title: '银行账户',
+      title: t.drawerBankAccounts,
       content: [
         if (_error != null) Notice(_error!, kind: NoticeKind.warn),
         if (banks == null && _error == null)
@@ -85,10 +86,10 @@ class _BankAccountsPageState extends State<BankAccountsPage> {
             child: Center(child: CircularProgressIndicator()),
           ),
         if (banks != null) ...[
-          SectionTitle('已绑定（${banks.length}/${FundingLimits.maxBanks}）'),
+          SectionTitle(t.bankLinked(banks.length, FundingLimits.maxBanks)),
           if (banks.isEmpty)
-            const AppCard(
-              child: Text('还没有绑定银行账户。绑定本人名下的美国银行账户后，即可通过 ACH 入金和出金。', style: TextStyle(fontSize: 13, color: AppColors.muted)),
+            AppCard(
+              child: Text(t.bankNoBankAccountsLinked, style: TextStyle(fontSize: 13, color: AppColors.muted)),
             )
           else
             ListGroup(
@@ -98,20 +99,20 @@ class _BankAccountsPageState extends State<BankAccountsPage> {
                     key: Key('p31.bank.${b.id}'),
                     icon: Icons.account_balance_outlined,
                     title: b.displayName,
-                    subtitle: '${b.typeLabel} · 户名 ${b.ownerName} · 绑定于 ${fmtDateTime(b.createdAt).split(' ').first}',
-                    trailing: LinkButton('解绑', fontSize: 13, color: AppColors.danger, onPressed: () => _unlink(b)),
+                    subtitle: t.bankSubtitle(b.typeLabel, b.ownerName, fmtDate(b.createdAt)),
+                    trailing: LinkButton(t.bankUnlink, fontSize: 13, color: AppColors.danger, onPressed: () => _unlink(b)),
                   ),
               ],
             ),
-          if (full) Notice('每个账户最多绑定 ${FundingLimits.maxBanks} 个银行账户。如需更换，请先解绑。', kind: NoticeKind.warn),
-          const Notice('只能绑定本人名下的美国银行账户。没有美国银行账户？可以改用电汇入金。'),
-          LinkButton('查看电汇入金信息', onPressed: () => context.push('/funding/wire')),
+          if (full) Notice(t.bankYouCanLinkUp(FundingLimits.maxBanks), kind: NoticeKind.warn),
+          Notice(t.bankYouCanOnlyLink),
+          LinkButton(t.bankViewWireInstructions, onPressed: () => context.push('/funding/wire')),
         ],
       ],
       footer: [
         Expanded(
           child: AppButton(
-            '绑定新银行账户',
+            t.bankLinkANewBank,
             key: const Key('p31.link'),
             onPressed: banks == null || full
                 ? null
@@ -154,11 +155,11 @@ class _LinkBankPageState extends State<LinkBankPage> {
   Map<String, String> _validate() {
     final e = <String, String>{};
     final acct = _account.text.replaceAll(RegExp(r'\D'), '');
-    if (!validAba(_routing.text)) e['routingNumber'] = '请输入有效的 9 位 ABA 路由号码';
-    if (acct.length < 4 || acct.length > 17) e['accountNumber'] = '请输入 4–17 位银行账号';
+    if (!validAba(_routing.text)) e['routingNumber'] = t.bankEnterAValid9;
+    if (acct.length < 4 || acct.length > 17) e['accountNumber'] = t.bankEnterA417;
     final nick = _nickname.text.trim();
-    if (nick.length > 30) e['nickname'] = '备注名最多 30 个字';
-    if (nick.isNotEmpty && nick.replaceAll(RegExp(r'\D'), '') == acct) e['nickname'] = '备注名不能与账号相同';
+    if (nick.length > 30) e['nickname'] = t.bankNicknameCanBeUp;
+    if (nick.isNotEmpty && nick.replaceAll(RegExp(r'\D'), '') == acct) e['nickname'] = t.bankNicknameCanTBe;
     return e;
   }
 
@@ -176,7 +177,7 @@ class _LinkBankPageState extends State<LinkBankPage> {
         nickname: _nickname.text.trim(),
       );
       if (!mounted) return;
-      showToast(context, '银行账户绑定成功');
+      showToast(context, t.bankBankAccountLinked);
       context.pop(true);
     } on ApiException catch (err) {
       if (!mounted) return;
@@ -191,48 +192,48 @@ class _LinkBankPageState extends State<LinkBankPage> {
 
   @override
   Widget build(BuildContext context) => PageScaffold(
-    title: '绑定银行账户',
+    title: t.bankLinkBankAccount,
     content: [
       if (_errors['_'] != null) Notice(_errors['_']!, kind: NoticeKind.danger),
-      const ListGroup(
+      ListGroup(
         children: [
-          ListRow(icon: Icons.person_outline_rounded, title: '只能绑定本人名下的账户', subtitle: '户名按开户姓名登记，第三方账户的转账会被退回'),
-          ListRow(icon: Icons.flag_outlined, title: '仅支持美国银行账户', subtitle: '没有美国银行账户？请改用电汇'),
-          ListRow(icon: Icons.lock_outline_rounded, title: '账号加密传输', subtitle: '我们只显示账号尾号'),
+          ListRow(icon: Icons.person_outline_rounded, title: t.bankAccountsInYourOwn, subtitle: t.bankTheAccountHolderIs),
+          ListRow(icon: Icons.flag_outlined, title: t.bankUsBankAccountsOnly, subtitle: t.bankNoUsBankAccount),
+          ListRow(icon: Icons.lock_outline_rounded, title: t.bankAccountNumberEncryptedIn, subtitle: t.bankWeOnlyShowThe),
         ],
       ),
       AppField(
-        label: '路由号码（ABA Routing Number）',
+        label: t.bankRoutingNumberAba,
         controller: _routing,
         fieldKey: const Key('p32.routing'),
-        hint: '9 位数字',
+        hint: t.bank9Digits,
         keyboardType: TextInputType.number,
         maxLength: 9,
         error: _errors['routingNumber'],
       ),
       AppField(
-        label: '银行账号',
+        label: t.bankAccountNumber,
         controller: _account,
         fieldKey: const Key('p32.account'),
-        hint: '4–17 位数字',
+        hint: t.bank417Digits,
         keyboardType: TextInputType.number,
         maxLength: 17,
         error: _errors['accountNumber'],
       ),
       FieldShell(
-        label: '账户类型',
+        label: t.bankAccountType,
         error: _errors['type'],
         child: Seg2<String>(
-          items: const [('CHECKING', '支票账户'), ('SAVINGS', '储蓄账户')],
+          items: [('CHECKING', t.fundChecking), ('SAVINGS', t.fundSavings)],
           value: _type,
           onChanged: (v) => setState(() => _type = v),
         ),
       ),
-      AppField(label: '备注名（选填）', controller: _nickname, fieldKey: const Key('p32.nickname'), hint: '如：工资卡', error: _errors['nickname']),
+      AppField(label: t.bankNicknameOptional, controller: _nickname, fieldKey: const Key('p32.nickname'), hint: t.bankEGPaycheckAccount, error: _errors['nickname']),
     ],
     footer: [
       Expanded(
-        child: AppButton('绑定', key: const Key('p32.submit'), loading: _busy, onPressed: _busy ? null : _submit),
+        child: AppButton(t.bankLink, key: const Key('p32.submit'), loading: _busy, onPressed: _busy ? null : _submit),
       ),
     ],
   );
@@ -250,14 +251,14 @@ class _WireInstructionsPageState extends State<WireInstructionsPage> {
   DepositInstructions? _d;
   String? _error;
 
-  static const _labels = {
-    'beneficiaryName': '收款人',
-    'bankName': '收款银行',
-    'bankAddress': '银行地址',
-    'accountNumber': '收款账号',
-    'routingNumber': 'ABA 路由号码',
+  static Map<String, String> get _labels => {
+    'beneficiaryName': t.bankBeneficiary,
+    'bankName': t.bankBeneficiaryBank,
+    'bankAddress': t.bankBankAddress,
+    'accountNumber': t.bankAccountNumber2,
+    'routingNumber': t.bankAbaRoutingNumber,
     'swift': 'SWIFT',
-    'reference': '附言（必填）',
+    'reference': t.bankReferenceRequired,
   };
 
   @override
@@ -275,7 +276,7 @@ class _WireInstructionsPageState extends State<WireInstructionsPage> {
 
   @override
   Widget build(BuildContext context) => PageScaffold(
-    title: '电汇入金',
+    title: t.bankWireDeposit,
     content: [
       if (_error != null) Notice(_error!, kind: NoticeKind.warn),
       if (_d == null && _error == null)
@@ -284,7 +285,7 @@ class _WireInstructionsPageState extends State<WireInstructionsPage> {
           child: Center(child: CircularProgressIndicator()),
         ),
       if (_d != null) ...[
-        const Notice('请从本人名下的银行账户汇款，并在附言中填写下方内容（含您的账户号码），否则可能无法入账。', kind: NoticeKind.warn),
+        Notice(t.bankSendTheWireFrom, kind: NoticeKind.warn),
         AppCard(
           child: Column(
             children: [
@@ -298,7 +299,7 @@ class _WireInstructionsPageState extends State<WireInstructionsPage> {
                         icon: const Icon(Icons.copy_rounded, size: 16, color: AppColors.muted),
                         onPressed: () {
                           Clipboard.setData(ClipboardData(text: _d!.fields[e.key]!));
-                          showToast(context, '${e.value}已复制');
+                          showToast(context, t.bankCopied(e.value));
                         },
                       ),
                     ],
@@ -306,7 +307,7 @@ class _WireInstructionsPageState extends State<WireInstructionsPage> {
             ],
           ),
         ),
-        const Notice('中转行费用由汇款方承担；到账时间以银行实际到账为准（待 DW 确认）。电汇入金不受 ACH 观察期限制。'),
+        Notice(t.bankIntermediaryBankFeesAre),
       ],
     ],
   );

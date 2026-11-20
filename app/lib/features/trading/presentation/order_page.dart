@@ -99,8 +99,8 @@ class _OrderPageState extends State<OrderPage> {
     final paper = _paper;
     try {
       if (paper) {
-        final t = TradingApi(api, paper: true);
-        final (acct, pos) = await (t.paperAccount(), t.positions()).wait;
+        final papi = TradingApi(api, paper: true);
+        final (acct, pos) = await (papi.paperAccount(), papi.positions()).wait;
         if (!mounted || paper != _paper) return;
         setState(() {
           _paperAccount = acct;

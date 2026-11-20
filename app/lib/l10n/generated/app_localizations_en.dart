@@ -1311,4 +1311,480 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get orderDone => 'Done';
+
+  @override
+  String get fundAchFee =>
+      '\$0.25 (per DW documentation; to be confirmed by DW)';
+
+  @override
+  String bankSubtitle(Object type, Object owner, Object date) {
+    return '$type · Account holder $owner · Linked $date';
+  }
+
+  @override
+  String transferTitleDeposit(Object method) {
+    return '$method Deposit';
+  }
+
+  @override
+  String transferTitleWithdrawal(Object method) {
+    return '$method Withdrawal';
+  }
+
+  @override
+  String transferDetailDeposit(Object method) {
+    return '$method Deposit Details';
+  }
+
+  @override
+  String transferDetailWithdrawal(Object method) {
+    return '$method Withdrawal Details';
+  }
+
+  @override
+  String bankTypeOwner(Object type, Object owner) {
+    return '$type · Account holder $owner';
+  }
+
+  @override
+  String get fundPleaseEnterADeposit => 'Please enter a deposit amount.';
+
+  @override
+  String fundMinimumDepositIs(Object v0) {
+    return 'Minimum deposit is $v0';
+  }
+
+  @override
+  String fundMaximumDepositIs(Object v0) {
+    return 'Maximum deposit is $v0';
+  }
+
+  @override
+  String get fundPleaseEnterAWithdrawal => 'Please enter a withdrawal amount.';
+
+  @override
+  String fundMinimumWithdrawalIs(Object v0) {
+    return 'Minimum withdrawal is $v0';
+  }
+
+  @override
+  String fundExceedsYourAvailableTo(Object v0) {
+    return 'Exceeds your available-to-withdraw amount of $v0';
+  }
+
+  @override
+  String fundMaximumWithdrawalIs(Object v0) {
+    return 'Maximum withdrawal is $v0';
+  }
+
+  @override
+  String get fundInitiated => 'Initiated';
+
+  @override
+  String get fundPending => 'Pending';
+
+  @override
+  String get fundProcessing => 'Processing';
+
+  @override
+  String get fundApproved => 'Approved';
+
+  @override
+  String get fundCompleted => 'Completed';
+
+  @override
+  String get fundFailed => 'Failed';
+
+  @override
+  String get fundReturned => 'Returned';
+
+  @override
+  String get fundOnHold => 'On Hold';
+
+  @override
+  String get fundBuyingPowerIsGranted =>
+      'Buying power is granted after settlement, usually 4–5 business days (to be confirmed by DW)';
+
+  @override
+  String get fundAchDepositsCanT =>
+      'ACH deposits can\'t be withdrawn during a 30-day holding period after they arrive by default; DW may adjust this (to be confirmed by DW)';
+
+  @override
+  String get fundUsually45Business =>
+      'Usually 4–5 business days (to be confirmed by DW)';
+
+  @override
+  String get fundBankAccount => 'Bank Account';
+
+  @override
+  String get fundSavings => 'Savings';
+
+  @override
+  String get fundChecking => 'Checking';
+
+  @override
+  String get bankYourAccountIsCurrently =>
+      'Your account is currently restricted, so transfers aren\'t available. Please contact support if you have questions.';
+
+  @override
+  String get bankUnlinkBankAccount => 'Unlink bank account?';
+
+  @override
+  String bankOnceUnlinkedCanNo(Object displayName) {
+    return 'Once unlinked, $displayName can no longer be used for deposits or withdrawals.';
+  }
+
+  @override
+  String get bankUnlink => 'Unlink';
+
+  @override
+  String get bankUnlinked => 'Unlinked';
+
+  @override
+  String bankLinked(Object length, Object maxBanks) {
+    return 'Linked ($length/$maxBanks)';
+  }
+
+  @override
+  String get bankNoBankAccountsLinked =>
+      'No bank accounts linked yet. Link a US bank account in your own name to deposit and withdraw via ACH.';
+
+  @override
+  String bankYouCanLinkUp(Object maxBanks) {
+    return 'You can link up to $maxBanks bank accounts. To use a different one, unlink an existing account first.';
+  }
+
+  @override
+  String get bankYouCanOnlyLink =>
+      'You can only link US bank accounts in your own name. Don\'t have one? You can deposit by wire transfer instead.';
+
+  @override
+  String get bankViewWireInstructions => 'View Wire Instructions';
+
+  @override
+  String get bankLinkANewBank => 'Link a New Bank Account';
+
+  @override
+  String get bankEnterAValid9 => 'Enter a valid 9-digit ABA routing number.';
+
+  @override
+  String get bankEnterA417 => 'Enter a 4–17 digit account number.';
+
+  @override
+  String get bankNicknameCanBeUp => 'Nickname can be up to 30 characters.';
+
+  @override
+  String get bankNicknameCanTBe =>
+      'Nickname can\'t be the same as the account number.';
+
+  @override
+  String get bankBankAccountLinked => 'Bank account linked';
+
+  @override
+  String get bankLinkBankAccount => 'Link Bank Account';
+
+  @override
+  String get bankAccountsInYourOwn => 'Accounts in your own name only';
+
+  @override
+  String get bankTheAccountHolderIs =>
+      'The account holder is registered under the name on your brokerage account; transfers from third-party accounts will be returned';
+
+  @override
+  String get bankUsBankAccountsOnly => 'US bank accounts only';
+
+  @override
+  String get bankNoUsBankAccount =>
+      'No US bank account? Please use a wire transfer';
+
+  @override
+  String get bankAccountNumberEncryptedIn =>
+      'Account number encrypted in transit';
+
+  @override
+  String get bankWeOnlyShowThe => 'We only show the last digits';
+
+  @override
+  String get bankRoutingNumberAba => 'Routing Number (ABA)';
+
+  @override
+  String get bank9Digits => '9 digits';
+
+  @override
+  String get bankAccountNumber => 'Account Number';
+
+  @override
+  String get bank417Digits => '4–17 digits';
+
+  @override
+  String get bankAccountType => 'Account Type';
+
+  @override
+  String get bankNicknameOptional => 'Nickname (optional)';
+
+  @override
+  String get bankEGPaycheckAccount => 'e.g., Paycheck account';
+
+  @override
+  String get bankLink => 'Link';
+
+  @override
+  String get bankBeneficiary => 'Beneficiary';
+
+  @override
+  String get bankBeneficiaryBank => 'Beneficiary Bank';
+
+  @override
+  String get bankBankAddress => 'Bank Address';
+
+  @override
+  String get bankAccountNumber2 => 'Account Number';
+
+  @override
+  String get bankAbaRoutingNumber => 'ABA Routing Number';
+
+  @override
+  String get bankReferenceRequired => 'Reference (required)';
+
+  @override
+  String get bankWireDeposit => 'Wire Deposit';
+
+  @override
+  String get bankSendTheWireFrom =>
+      'Send the wire from a bank account in your own name and include the reference below (with your account number). Otherwise, the funds may not be credited.';
+
+  @override
+  String bankCopied(Object value) {
+    return '$value copied';
+  }
+
+  @override
+  String get bankIntermediaryBankFeesAre =>
+      'Intermediary bank fees are paid by the sender. Arrival time depends on when the bank actually receives the funds (to be confirmed by DW). Wire deposits aren\'t subject to the ACH holding period.';
+
+  @override
+  String get xferTransactionId => 'Transaction ID';
+
+  @override
+  String get xferMethod => 'Method';
+
+  @override
+  String get xferAmount => 'Amount';
+
+  @override
+  String get xferViewTransferHistory => 'View Transfer History';
+
+  @override
+  String get xferDepositRecorded => 'Deposit recorded';
+
+  @override
+  String get xferDepositSubmitted => 'Deposit submitted';
+
+  @override
+  String get xferTheBrokerHasnT =>
+      'The broker hasn\'t confirmed this transfer yet. We\'ll check it automatically — please check its status in your transfer history shortly. Don\'t submit it again.';
+
+  @override
+  String xferTheArrivalDateIs(Object buyingPowerFallback) {
+    return '$buyingPowerFallback. The arrival date is the one reported by the broker in your transfer history.';
+  }
+
+  @override
+  String get xferChooseADepositMethod => 'Choose a deposit method';
+
+  @override
+  String get xferBankTransferAch => 'Bank Transfer (ACH)';
+
+  @override
+  String get xferLinkAUsBank => 'Link a US bank account in your own name first';
+
+  @override
+  String xferUsBankAccountS(Object length) {
+    return '$length US bank account(s) in your name linked · No fees';
+  }
+
+  @override
+  String get xferWireTransfer => 'Wire Transfer';
+
+  @override
+  String get xferSendFromABank =>
+      'Send from a bank account in your own name; suitable for overseas banks or large deposits';
+
+  @override
+  String xferWireTimingDependsOn(
+    Object buyingPowerFallback,
+    Object seasoningFallback,
+  ) {
+    return '$buyingPowerFallback. $seasoningFallback. Wire timing depends on when the bank actually receives the funds and isn\'t subject to the holding period. Actual dates for each deposit are as reported by the broker (see transfer history).';
+  }
+
+  @override
+  String get xferWeOnlyAcceptFunds =>
+      'We only accept funds from accounts in your own name; third-party transfers will be returned.';
+
+  @override
+  String get xferConfirmDeposit => 'Confirm Deposit';
+
+  @override
+  String get xferDepositAmount => 'Deposit Amount';
+
+  @override
+  String get xferFrom => 'From';
+
+  @override
+  String get xferTo => 'To';
+
+  @override
+  String get xferYourBrokerageAccountHeld =>
+      'Your brokerage account (held at DriveWealth)';
+
+  @override
+  String get xferFee => 'Fee';
+
+  @override
+  String get xferBuyingPowerAvailable => 'Buying power available';
+
+  @override
+  String get xferByConfirmingYouAuthorize =>
+      'By confirming, you authorize a debit from the bank account above. Funds are held at DriveWealth.';
+
+  @override
+  String get xferEdit => 'Edit';
+
+  @override
+  String get xferAchDeposit => 'ACH Deposit';
+
+  @override
+  String get xferFromBankAccount => 'From Bank Account';
+
+  @override
+  String xferManageBankAccounts(Object length, Object maxBanks) {
+    return 'Manage Bank Accounts ($length/$maxBanks)';
+  }
+
+  @override
+  String get xferDepositAmountUsd => 'Deposit Amount (USD)';
+
+  @override
+  String xferPerTransferUpTo(Object v0, Object v1, Object v2) {
+    return '$v0 – $v1 per transfer, up to $v2 per day (sample limits; the broker\'s limits apply)';
+  }
+
+  @override
+  String get xferSubmissionCutoff => 'Submission cutoff';
+
+  @override
+  String xferBusinessDaysEtSample(Object achCutoffEt) {
+    return 'Business days $achCutoffEt ET (sample; to be confirmed by DW)';
+  }
+
+  @override
+  String get xferWithdrawable => 'Withdrawable';
+
+  @override
+  String get xferAfterThe30Day =>
+      'After the 30-day holding period ends (default; to be confirmed by DW)';
+
+  @override
+  String get xferReturnNoticeIfYour =>
+      'Return notice: if your bank returns this transfer (for example, due to insufficient funds), securities bought with these funds may be restricted from sale and return fees may apply; deposits to your account may also be suspended.';
+
+  @override
+  String get xferWithdrawalRecorded => 'Withdrawal recorded';
+
+  @override
+  String get xferWithdrawalSubmitted => 'Withdrawal submitted';
+
+  @override
+  String xferAchWithdrawals(Object achWithdrawalArrival) {
+    return 'ACH withdrawals: $achWithdrawalArrival.';
+  }
+
+  @override
+  String get xferConfirmWithdrawal => 'Confirm Withdrawal';
+
+  @override
+  String get xferWithdrawalAmount => 'Withdrawal Amount';
+
+  @override
+  String get xferYourBrokerageAccount => 'Your brokerage account';
+
+  @override
+  String get xferEstimatedArrival => 'Estimated arrival';
+
+  @override
+  String get xferAvailableToWithdraw => 'Available to Withdraw';
+
+  @override
+  String get xferAccountCash => 'Account Cash';
+
+  @override
+  String get xferUnsettledFunds => 'Unsettled Funds';
+
+  @override
+  String get xferInAchHoldingPeriod => 'In ACH holding period';
+
+  @override
+  String xferYourAvailableToWithdraw(Object seasoningFallback) {
+    return 'Your available-to-withdraw amount is as reported by the broker (DriveWealth). $seasoningFallback; wire deposits aren\'t subject to this limit.';
+  }
+
+  @override
+  String get xferWireWithdrawalsArenT =>
+      'Wire withdrawals aren\'t part of this demo yet (supported on the backend; will be enabled after sandbox testing). Wires can only go to a bank account in your own name, and the beneficiary is always the account holder.';
+
+  @override
+  String get xferToBankAccount => 'To Bank Account';
+
+  @override
+  String get xferNoBankAccountLinked => 'No bank account linked yet.';
+
+  @override
+  String get xferWithdrawalAmountUsd => 'Withdrawal Amount (USD)';
+
+  @override
+  String xferPerTransferAndNo(Object v0, Object v1) {
+    return '$v0 – $v1 per transfer, and no more than your available-to-withdraw amount';
+  }
+
+  @override
+  String get xferTransferHistory => 'Transfer History';
+
+  @override
+  String get xferDeposits => 'Deposits';
+
+  @override
+  String get xferWithdrawals => 'Withdrawals';
+
+  @override
+  String get xferNoTransfersYet => 'No transfers yet';
+
+  @override
+  String get xferShowingYour50Most =>
+      'Showing your 50 most recent transfers. Trades, dividends, and corporate actions aren\'t part of this demo.';
+
+  @override
+  String get xferFromAccount => 'From Account';
+
+  @override
+  String get xferToAccount => 'To Account';
+
+  @override
+  String get xferBuyingPowerAvailable2 => 'Buying Power Available';
+
+  @override
+  String get xferPendingBrokerUpdate => 'Pending broker update';
+
+  @override
+  String get xferWithdrawableOn => 'Withdrawable On';
+
+  @override
+  String xferText(Object buyingPowerFallback, Object seasoningFallback) {
+    return '$buyingPowerFallback; $seasoningFallback.';
+  }
+
+  @override
+  String xferReason(Object failureReason) {
+    return 'Reason: $failureReason';
+  }
 }

@@ -14,8 +14,9 @@ import '../../account/data/account_api.dart';
 import '../data/funding_api.dart';
 import '../domain/funding_rules.dart';
 import 'bank_pages.dart';
+import '../../../l10n/l10n.dart';
 
-String _date(DateTime? t) => t == null ? '—' : fmtDateTime(t).split(' ').first;
+String _date(DateTime? d) => fmtDate(d);
 
 /// 银行账户单选列表（P-13 / P-14 共用）。
 class _BankPicker extends StatelessWidget {
@@ -32,7 +33,7 @@ class _BankPicker extends StatelessWidget {
           key: Key('bank.pick.${b.id}'),
           icon: Icons.account_balance_outlined,
           title: b.displayName,
-          subtitle: '${b.typeLabel} · 户名 ${b.ownerName}',
+          subtitle: t.bankTypeOwner(b.typeLabel, b.ownerName),
           trailing: Icon(
             b.id == selected ? Icons.radio_button_checked_rounded : Icons.radio_button_off_rounded,
             color: b.id == selected ? AppColors.primary : AppColors.faint,
@@ -83,20 +84,20 @@ class _ResultView extends StatelessWidget {
       AppCard(
         child: Column(
           children: [
-            KvRow('流水号', result.transferId),
-            KvRow('方式', method),
-            KvRow('金额', fmtUsd(amount)),
-            KvRow('状态', transferStatusLabels[result.status] ?? result.status),
+            KvRow(t.xferTransactionId, result.transferId),
+            KvRow(t.xferMethod, method),
+            KvRow(t.xferAmount, fmtUsd(amount)),
+            KvRow(t.orderStatus, transferStatusLabels[result.status] ?? result.status),
           ],
         ),
       ),
     ],
     footer: [
       Expanded(
-        child: AppButton('查看资金记录', kind: ButtonKind.ghost, onPressed: () => context.pushReplacement('/funding/history')),
+        child: AppButton(t.xferViewTransferHistory, kind: ButtonKind.ghost, onPressed: () => context.pushReplacement('/funding/history')),
       ),
       Expanded(
-        child: AppButton('完成', key: const Key('funding.done'), onPressed: () => context.go('/home')),
+        child: AppButton(t.orderDone, key: const Key('funding.done'), onPressed: () => context.go('/home')),
       ),
     ],
   );
@@ -199,8 +200,8 @@ class _DepositPageState extends State<DepositPage> {
     final banks = _banks;
     if (_step == 'done' && _result != null) {
       return _ResultView(
-        title: _result!.pending ? '入金已记录' : '入金已提交',
-        message: _result!.pending ? '券商受理结果暂未确认，我们会自动核对，请稍后在资金记录中查看状态。请勿重复提交。' : '$buyingPowerFallback。到账日期以资金记录中券商返回的日期为准。',
+        title: _result!.pending ? t.xferDepositRecorded : t.xferDepositSubmitted,
+        message: _result!.pending ? t.xferTheBrokerHasnT : t.xferTheArrivalDateIs(buyingPowerFallback),
         result: _result!,
         amount: parseAmount(_amount.text)!,
         method: 'ACH',
@@ -208,7 +209,7 @@ class _DepositPageState extends State<DepositPage> {
     }
     if (banks == null) {
       return PageScaffold(
-        title: '入金',
+        title: t.homeDeposit,
         content: [
           if (_loadError != null)
             Notice(_loadError!, kind: NoticeKind.warn)
@@ -222,43 +223,43 @@ class _DepositPageState extends State<DepositPage> {
     }
     if (_step == 'method') {
       return PageScaffold(
-        title: '入金',
+        title: t.homeDeposit,
         content: [
-          const SectionTitle('选择入金方式'),
+          SectionTitle(t.xferChooseADepositMethod),
           ListGroup(
             children: [
               ListRow(
                 key: const Key('p13.ach'),
                 icon: Icons.account_balance_outlined,
-                title: '银行转账（ACH）',
-                subtitle: banks.isEmpty ? '需先绑定本人名下的美国银行账户' : '已绑定 ${banks.length} 个本人美国银行账户 · 免手续费',
+                title: t.xferBankTransferAch,
+                subtitle: banks.isEmpty ? t.xferLinkAUsBank : t.xferUsBankAccountS(banks.length),
                 trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.faint),
                 onTap: _pickAch,
               ),
               ListRow(
                 icon: Icons.public_rounded,
-                title: '电汇',
-                subtitle: '从本人名下银行账户汇款，适用于境外银行或大额入金',
+                title: t.xferWireTransfer,
+                subtitle: t.xferSendFromABank,
                 trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.faint),
                 onTap: () => context.push('/funding/wire'),
               ),
             ],
           ),
-          const Notice('$buyingPowerFallback。$seasoningFallback。电汇以银行实际到账时间为准，不受观察期限制。每笔入金的实际日期以券商返回为准（见资金记录）。'),
-          const Notice('只接受来自本人名下账户的资金，第三方转账将被退回。'),
+          Notice(t.xferWireTimingDependsOn(buyingPowerFallback, seasoningFallback)),
+          Notice(t.xferWeOnlyAcceptFunds),
         ],
       );
     }
     if (_step == 'confirm') {
       final amt = parseAmount(_amount.text)!;
       return PageScaffold(
-        title: '确认入金',
+        title: t.xferConfirmDeposit,
         content: [
           if (_submitError != null) Notice(_submitError!, kind: NoticeKind.danger),
           AppCard(
             child: Column(
               children: [
-                const Text('入金金额', style: TextStyle(fontSize: 12, color: AppColors.muted)),
+                Text(t.xferDepositAmount, style: TextStyle(fontSize: 12, color: AppColors.muted)),
                 Text(
                   fmtUsd(amt),
                   key: const Key('p13.confirm.amount'),
@@ -270,33 +271,33 @@ class _DepositPageState extends State<DepositPage> {
           AppCard(
             child: Column(
               children: [
-                KvRow('从', _selected?.displayName ?? '—'),
-                const KvRow('到', '本人证券账户（DriveWealth 托管）'),
-                const KvRow('方式', 'ACH'),
-                const KvRow('手续费', r'$0.00'),
-                const KvRow('购买力到账', buyingPowerFallback),
+                KvRow(t.xferFrom, _selected?.displayName ?? '—'),
+                KvRow(t.xferTo, t.xferYourBrokerageAccountHeld),
+                KvRow(t.xferMethod, 'ACH'),
+                KvRow(t.xferFee, r'$0.00'),
+                KvRow(t.xferBuyingPowerAvailable, buyingPowerFallback),
               ],
             ),
           ),
-          const Text('确认即授权从上述银行账户扣款。资金由 DriveWealth 托管。', style: TextStyle(fontSize: 12, color: AppColors.muted)),
+          Text(t.xferByConfirmingYouAuthorize, style: TextStyle(fontSize: 12, color: AppColors.muted)),
         ],
         footer: [
-          AppButton('返回修改', kind: ButtonKind.ghost, fitContent: true, onPressed: _busy ? null : () => setState(() => _step = 'form')),
+          AppButton(t.xferEdit, kind: ButtonKind.ghost, fitContent: true, onPressed: _busy ? null : () => setState(() => _step = 'form')),
           Expanded(
-            child: AppButton('确认入金', key: const Key('p13.submit'), loading: _busy, onPressed: _busy ? null : _submit),
+            child: AppButton(t.xferConfirmDeposit, key: const Key('p13.submit'), loading: _busy, onPressed: _busy ? null : _submit),
           ),
         ],
       );
     }
     // form
     return PageScaffold(
-      title: 'ACH 入金',
+      title: t.xferAchDeposit,
       content: [
         if (_submitError != null) Notice(_submitError!, kind: NoticeKind.danger),
-        const SectionTitle('转出银行账户'),
+        SectionTitle(t.xferFromBankAccount),
         _BankPicker(banks: banks, selected: _bank, onSelect: (id) => setState(() => _bank = id)),
         LinkButton(
-          '管理银行账户（${banks.length}/${FundingLimits.maxBanks}）',
+          t.xferManageBankAccounts(banks.length, FundingLimits.maxBanks),
           fontSize: 13,
           onPressed: () async {
             await context.push('/funding/banks');
@@ -305,33 +306,33 @@ class _DepositPageState extends State<DepositPage> {
         ),
         const SizedBox(height: 8),
         AppField(
-          label: '入金金额 (USD)',
+          label: t.xferDepositAmountUsd,
           controller: _amount,
           fieldKey: const Key('p13.amount'),
           hint: '0.00',
           helper:
-              '单笔 ${fmtUsd(FundingLimits.minDeposit)} – ${fmtUsd(FundingLimits.maxDeposit)}，每日上限 ${fmtUsd(FundingLimits.dailyDeposit)}（示例值，以券商为准）',
+              t.xferPerTransferUpTo(fmtUsd(FundingLimits.minDeposit), fmtUsd(FundingLimits.maxDeposit), fmtUsd(FundingLimits.dailyDeposit)),
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
           error: _amountError,
           onChanged: (_) {
             if (_amountError != null) setState(() => _amountError = null);
           },
         ),
-        const AppCard(
+        AppCard(
           child: Column(
             children: [
-              KvRow('提交截止时间', '工作日 ${FundingLimits.achCutoffEt} ET（示例，待 DW 确认）'),
-              KvRow('购买力到账', buyingPowerFallback),
-              KvRow('可提现时间', '到账后 30 天观察期结束（默认，待 DW 确认）'),
-              KvRow('手续费', r'$0.00'),
+              KvRow(t.xferSubmissionCutoff, t.xferBusinessDaysEtSample(FundingLimits.achCutoffEt)),
+              KvRow(t.xferBuyingPowerAvailable, buyingPowerFallback),
+              KvRow(t.xferWithdrawable, t.xferAfterThe30Day),
+              KvRow(t.xferFee, r'$0.00'),
             ],
           ),
         ),
-        const Notice('退回提示：如银行退回此笔转账（如余额不足），使用该笔资金买入的证券可能被限制卖出，并可能产生退回费用；账户入金功能也可能被暂停。', kind: NoticeKind.warn),
+        Notice(t.xferReturnNoticeIfYour, kind: NoticeKind.warn),
       ],
       footer: [
         Expanded(
-          child: AppButton('下一步', key: const Key('p13.next'), onPressed: _bank == null ? null : _toConfirm),
+          child: AppButton(t.orderNext, key: const Key('p13.next'), onPressed: _bank == null ? null : _toConfirm),
         ),
       ],
     );
@@ -419,8 +420,8 @@ class _WithdrawPageState extends State<WithdrawPage> {
   Widget build(BuildContext context) {
     if (_result != null) {
       return _ResultView(
-        title: _result!.pending ? '出金已记录' : '出金已提交',
-        message: _result!.pending ? '券商受理结果暂未确认，我们会自动核对，请稍后在资金记录中查看状态。请勿重复提交。' : 'ACH 出金$achWithdrawalArrival。',
+        title: _result!.pending ? t.xferWithdrawalRecorded : t.xferWithdrawalSubmitted,
+        message: _result!.pending ? t.xferTheBrokerHasnT : t.xferAchWithdrawals(achWithdrawalArrival),
         result: _result!,
         amount: parseAmount(_amount.text)!,
         method: 'ACH',
@@ -430,7 +431,7 @@ class _WithdrawPageState extends State<WithdrawPage> {
     final m = _money;
     if (banks == null || m == null) {
       return PageScaffold(
-        title: '出金',
+        title: t.drawerWithdraw,
         content: [
           if (_loadError != null)
             Notice(_loadError!, kind: NoticeKind.warn)
@@ -446,12 +447,12 @@ class _WithdrawPageState extends State<WithdrawPage> {
       final amt = parseAmount(_amount.text)!;
       final b = banks.where((x) => x.id == _bank).firstOrNull;
       return PageScaffold(
-        title: '确认出金',
+        title: t.xferConfirmWithdrawal,
         content: [
           AppCard(
             child: Column(
               children: [
-                const Text('出金金额', style: TextStyle(fontSize: 12, color: AppColors.muted)),
+                Text(t.xferWithdrawalAmount, style: TextStyle(fontSize: 12, color: AppColors.muted)),
                 Text(fmtUsd(amt), style: const TextStyle(fontSize: 30, fontWeight: FontWeight.w800)),
               ],
             ),
@@ -459,56 +460,56 @@ class _WithdrawPageState extends State<WithdrawPage> {
           AppCard(
             child: Column(
               children: [
-                const KvRow('从', '本人证券账户'),
-                KvRow('到', b?.displayName ?? '—'),
-                const KvRow('方式', 'ACH'),
-                const KvRow('手续费', achWithdrawalFee),
-                const KvRow('预计到账', achWithdrawalArrival),
+                KvRow(t.xferFrom, t.xferYourBrokerageAccount),
+                KvRow(t.xferTo, b?.displayName ?? '—'),
+                KvRow(t.xferMethod, 'ACH'),
+                KvRow(t.xferFee, achWithdrawalFee),
+                KvRow(t.xferEstimatedArrival, achWithdrawalArrival),
               ],
             ),
           ),
         ],
         footer: [
-          AppButton('返回修改', kind: ButtonKind.ghost, fitContent: true, onPressed: _busy ? null : () => setState(() => _confirm = false)),
+          AppButton(t.xferEdit, kind: ButtonKind.ghost, fitContent: true, onPressed: _busy ? null : () => setState(() => _confirm = false)),
           Expanded(
-            child: AppButton('确认出金', key: const Key('p14.submit'), loading: _busy, onPressed: _busy ? null : _submit),
+            child: AppButton(t.xferConfirmWithdrawal, key: const Key('p14.submit'), loading: _busy, onPressed: _busy ? null : _submit),
           ),
         ],
       );
     }
     return PageScaffold(
-      title: '出金',
+      title: t.drawerWithdraw,
       content: [
         if (_submitError != null) Notice(_submitError!, kind: NoticeKind.danger),
         AppCard(
           child: Column(
             children: [
-              KvRow('可提现金额', fmtUsd(m.cashAvailableForWithdrawal), valueKey: const Key('p14.withdrawable')),
-              KvRow('账户现金', fmtUsd(m.cash)),
-              KvRow('未结算资金', fmtUsd(m.unsettled)),
-              KvRow('ACH 入金观察期内金额', fmtUsd(m.withheldForSeasoning)),
-              const Padding(
+              KvRow(t.xferAvailableToWithdraw, fmtUsd(m.cashAvailableForWithdrawal), valueKey: const Key('p14.withdrawable')),
+              KvRow(t.xferAccountCash, fmtUsd(m.cash)),
+              KvRow(t.xferUnsettledFunds, fmtUsd(m.unsettled)),
+              KvRow(t.xferInAchHoldingPeriod, fmtUsd(m.withheldForSeasoning)),
+              Padding(
                 padding: EdgeInsets.only(top: 6),
                 child: Text(
-                  '可提现金额以券商（DriveWealth）返回为准。$seasoningFallback；电汇入金不受此限制。',
+                  t.xferYourAvailableToWithdraw(seasoningFallback),
                   style: TextStyle(fontSize: 12, color: AppColors.faint),
                 ),
               ),
             ],
           ),
         ),
-        Seg2<String>(items: const [('ACH', '银行转账（ACH）'), ('WIRE', '电汇')], value: _method, onChanged: (v) => setState(() => _method = v)),
+        Seg2<String>(items: [('ACH', t.xferBankTransferAch), ('WIRE', t.xferWireTransfer)], value: _method, onChanged: (v) => setState(() => _method = v)),
         const SizedBox(height: 12),
         if (_method == 'WIRE')
-          const Notice('电汇出金暂不在本次演示范围（后端已支持，待沙盒实测后开放）。电汇只能汇入本人名下的银行账户，收款人固定为账户持有人。')
+          Notice(t.xferWireWithdrawalsArenT)
         else ...[
-          const SectionTitle('收款银行账户'),
+          SectionTitle(t.xferToBankAccount),
           if (banks.isEmpty)
-            const Notice('尚未绑定银行账户。', kind: NoticeKind.warn)
+            Notice(t.xferNoBankAccountLinked, kind: NoticeKind.warn)
           else
             _BankPicker(banks: banks, selected: _bank, onSelect: (id) => setState(() => _bank = id)),
           LinkButton(
-            '绑定银行账户',
+            t.bankLinkBankAccount,
             fontSize: 13,
             onPressed: () async {
               final linked = await context.push<bool>('/funding/banks/link');
@@ -517,23 +518,23 @@ class _WithdrawPageState extends State<WithdrawPage> {
           ),
           const SizedBox(height: 8),
           AppField(
-            label: '出金金额 (USD)',
+            label: t.xferWithdrawalAmountUsd,
             controller: _amount,
             fieldKey: const Key('p14.amount'),
             hint: '0.00',
-            helper: '单笔 ${fmtUsd(FundingLimits.minWithdrawal)} – ${fmtUsd(FundingLimits.maxWithdrawal)}，且不超过可提现金额',
+            helper: t.xferPerTransferAndNo(fmtUsd(FundingLimits.minWithdrawal), fmtUsd(FundingLimits.maxWithdrawal)),
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             error: _amountError,
             onChanged: (_) {
               if (_amountError != null) setState(() => _amountError = null);
             },
           ),
-          const AppCard(child: Column(children: [KvRow('手续费', achWithdrawalFee), KvRow('预计到账', achWithdrawalArrival)])),
+          AppCard(child: Column(children: [KvRow(t.xferFee, achWithdrawalFee), KvRow(t.xferEstimatedArrival, achWithdrawalArrival)])),
         ],
       ],
       footer: [
         Expanded(
-          child: AppButton('下一步', key: const Key('p14.next'), onPressed: _method != 'ACH' || _bank == null ? null : _next),
+          child: AppButton(t.orderNext, key: const Key('p14.next'), onPressed: _method != 'ACH' || _bank == null ? null : _next),
         ),
       ],
     );
@@ -583,10 +584,10 @@ class _TransfersPageState extends State<TransfersPage> {
 
   @override
   Widget build(BuildContext context) => PageScaffold(
-    title: '资金记录',
+    title: t.xferTransferHistory,
     content: [
       Seg2<String>(
-        items: const [('ALL', '全部'), ('DEPOSIT', '入金'), ('WITHDRAWAL', '出金')],
+        items: [('ALL', t.marketAll), ('DEPOSIT', t.xferDeposits), ('WITHDRAWAL', t.xferWithdrawals)],
         value: _filter,
         onChanged: (v) {
           setState(() {
@@ -604,16 +605,16 @@ class _TransfersPageState extends State<TransfersPage> {
           child: Center(child: CircularProgressIndicator()),
         ),
       if (_list != null && _list!.isEmpty)
-        const AppCard(
-          child: Text('暂无资金记录', style: TextStyle(color: AppColors.muted)),
+        AppCard(
+          child: Text(t.xferNoTransfersYet, style: TextStyle(color: AppColors.muted)),
         ),
       if (_list != null && _list!.isNotEmpty)
         ListGroup(
           children: [
-            for (final t in _list!)
+            for (final tr in _list!)
               InkWell(
-                key: Key('p18.row.${t.id}'),
-                onTap: () => _detail(t),
+                key: Key('p18.row.${tr.id}'),
+                onTap: () => _detail(tr),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   child: Row(
@@ -623,10 +624,10 @@ class _TransfersPageState extends State<TransfersPage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              '${t.method} ${t.isDeposit ? '入金' : '出金'}',
+                              tr.isDeposit ? t.transferTitleDeposit(tr.method) : t.transferTitleWithdrawal(tr.method),
                               style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
                             ),
-                            Text(fmtDateTime(t.submittedAt), style: const TextStyle(fontSize: 12, color: AppColors.muted)),
+                            Text(fmtDateTime(tr.submittedAt), style: const TextStyle(fontSize: 12, color: AppColors.muted)),
                           ],
                         ),
                       ),
@@ -634,11 +635,11 @@ class _TransfersPageState extends State<TransfersPage> {
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
                           Text(
-                            '${t.isDeposit ? '+' : '-'}${fmtUsd(t.amount)}',
+                            '${tr.isDeposit ? '+' : '-'}${fmtUsd(tr.amount)}',
                             style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, fontFeatures: [FontFeature.tabularFigures()]),
                           ),
                           const SizedBox(height: 2),
-                          _badge(t.status),
+                          _badge(tr.status),
                         ],
                       ),
                     ],
@@ -647,9 +648,9 @@ class _TransfersPageState extends State<TransfersPage> {
               ),
           ],
         ),
-      const Padding(
+      Padding(
         padding: EdgeInsets.only(top: 4),
-        child: Text('显示最近 50 条资金记录。交易、分红与公司行动记录不在本次演示范围。', style: TextStyle(fontSize: 12, color: AppColors.faint)),
+        child: Text(t.xferShowingYour50Most, style: TextStyle(fontSize: 12, color: AppColors.faint)),
       ),
     ],
   );
@@ -663,8 +664,8 @@ class _TransfersPageState extends State<TransfersPage> {
         : BadgeKind.warn,
   );
 
-  void _detail(Transfer t) {
-    final bank = _banks.where((b) => b.id == t.bankAccountId).firstOrNull;
+  void _detail(Transfer tr) {
+    final bank = _banks.where((b) => b.id == tr.bankAccountId).firstOrNull;
     showModalBottomSheet<void>(
       context: context,
       backgroundColor: AppColors.surface,
@@ -675,25 +676,25 @@ class _TransfersPageState extends State<TransfersPage> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('${t.method} ${t.isDeposit ? '入金' : '出金'}详情', style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
+              Text(tr.isDeposit ? t.transferDetailDeposit(tr.method) : t.transferDetailWithdrawal(tr.method), style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
               const SizedBox(height: 10),
-              KvRow('流水号', t.id),
-              KvRow('金额', fmtUsd(t.amount)),
-              KvRow('状态', transferStatusLabels[t.status] ?? t.status),
-              if (bank != null) KvRow(t.isDeposit ? '转出账户' : '收款账户', bank.displayName),
-              KvRow('提交时间', fmtDateTime(t.submittedAt)),
-              if (t.doneAt != null) KvRow('完成时间', fmtDateTime(t.doneAt)),
-              if (t.isDeposit) ...[
+              KvRow(t.xferTransactionId, tr.id),
+              KvRow(t.xferAmount, fmtUsd(tr.amount)),
+              KvRow(t.orderStatus, transferStatusLabels[tr.status] ?? tr.status),
+              if (bank != null) KvRow(tr.isDeposit ? t.xferFromAccount : t.xferToAccount, bank.displayName),
+              KvRow(t.ordersSubmitted, fmtDateTime(tr.submittedAt)),
+              if (tr.doneAt != null) KvRow(t.ordersCompleted, fmtDateTime(tr.doneAt)),
+              if (tr.isDeposit) ...[
                 KvRow(
-                  '购买力可用日',
-                  t.buyingPowerAvailableAt == null ? '待券商返回' : _date(t.buyingPowerAvailableAt),
+                  t.xferBuyingPowerAvailable2,
+                  tr.buyingPowerAvailableAt == null ? t.xferPendingBrokerUpdate : _date(tr.buyingPowerAvailableAt),
                   valueKey: const Key('p18.bpDate'),
                 ),
-                KvRow('可提现日', t.withdrawableAt == null ? '待券商返回' : _date(t.withdrawableAt), valueKey: const Key('p18.wdDate')),
-                if (t.buyingPowerAvailableAt == null || t.withdrawableAt == null)
-                  const Text('$buyingPowerFallback；$seasoningFallback。', style: TextStyle(fontSize: 12, color: AppColors.faint)),
+                KvRow(t.xferWithdrawableOn, tr.withdrawableAt == null ? t.xferPendingBrokerUpdate : _date(tr.withdrawableAt), valueKey: const Key('p18.wdDate')),
+                if (tr.buyingPowerAvailableAt == null || tr.withdrawableAt == null)
+                  Text(t.xferText(buyingPowerFallback, seasoningFallback), style: TextStyle(fontSize: 12, color: AppColors.faint)),
               ],
-              if (t.failureReason != null) Notice('原因：${t.failureReason}', kind: NoticeKind.danger),
+              if (tr.failureReason != null) Notice(t.xferReason(tr.failureReason!), kind: NoticeKind.danger),
             ],
           ),
         ),
