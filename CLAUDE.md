@@ -24,7 +24,7 @@ Flutter 客户端 + Go 后端的美股交易 App，券商基础设施为 DriveWe
 4. **接口契约**：改 api-spec.md 必须同步 `backend/api/openapi.yaml`，破坏性变更禁止（升 v2 需用户同意）。
 5. **出金安全**：金额、限额、收款人（WIRE 固定为开户姓名）后端强制校验，不信任客户端。
 6. **UI 已定稿**：页面结构以 pages.md 为准；发现规格缺口先问用户，不自行改结构。
-7. **文案**：用户可见文字用简体中文；时效等规则文案与 pages.md 3.1.5 一致，保留"待 DW 确认"字样。例外：开户与 KYC 模块（P-03–P-06、P-30、P-34–P-36）界面与用户输入为英文，见 ui-signoff 第 3 节。
+7. **文案**：用户可见文字提供中英双语（ARB：`app/lib/l10n/app_zh.arb` / `app_en.arb`，英文为北美用语），开户 / KYC 模块（P-03–P-06、P-30、P-34–P-36）恒为英文；新增文案一律加到两份 ARB，不在代码里硬编码（`test/l10n_test.dart` 会检查）；时效等规则文案与 pages.md 3.1.5 一致，保留"待 DW 确认"字样（英文 "to be confirmed by DW"）。见 ui-signoff 第 3 节。
 
 ## Git 同步（每个开发节点必做）
 - 远程仓库：`https://github.com/imamura-akira/New_FinX`（main 分支）
