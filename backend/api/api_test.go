@@ -17,6 +17,7 @@ var wantOps = []string{
 	"get /funding/deposit-instructions", "post /funding/deposits", "post /funding/withdrawals", "get /funding/transfers",
 	"get /documents", "get /notifications", "post /notifications/read",
 	"get /market/quotes", "get /market/instruments/{symbol}",
+	"post /orders", "get /orders", "get /orders/{id}", "post /orders/{id}/cancel", "get /positions",
 }
 
 // 无需登录的接口（api-spec.md：除 /auth/* 外均需 Bearer；logout 需要会话）。

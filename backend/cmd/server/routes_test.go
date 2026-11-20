@@ -40,8 +40,8 @@ func TestPendingRoutes(t *testing.T) {
 			}
 		})
 	}
-	if n := len(contractOps()); n != 25 {
-		t.Fatalf("契约接口数 %d，期望 25", n)
+	if n := len(contractOps()); n != 30 { // v1.2：F14 新增 5 个交易接口
+		t.Fatalf("契约接口数 %d，期望 30", n)
 	}
 }
 

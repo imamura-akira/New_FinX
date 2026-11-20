@@ -158,3 +158,20 @@
 - **结论：属于 c) DW 侧确实为 0，不是 App 或后端 bug。** 沙盒入金在"资金划转窗口"开放时才从 Approved 进到 Successful 并入账。11-19 白天（美东 11:24）提交的 funded1/2 入金约 2 秒即 Successful；本次 3 笔都在美东收盘后（17:53、18:35、21:21 ET）提交，需等下一个窗口（美东工作日白天，具体时刻待实测）。
 - 窗口开放后余额会自动更新（后端对账每分钟一次，App 下拉刷新即可）。购买力与可提现仍按 DW 返回的可用日（约 2 个工作日后）。
 - 演示提示：入金演示请在美东工作时间进行，否则结果页显示"已提交"，但余额要等到下一个窗口。窗口具体开放时间待 11-20 美东白天观察后回写。
+
+## 2026-11-20 · F14 交易模块：未实测项与假设（11-23 实测后回写）
+
+> 依据 DW 参考文档（Create Order / Retrieve Order / Update Order / List Account Positions / Errors / Idempotent requests，2026-11-20 查阅）。已入金测试用户的购买力 2026-11-23 生效，真实下单实测排在当天；今天只用 fake DW 单测。
+
+| # | 未实测项 | 当前假设 / 实现 | 11-23 要验证 |
+|---|---|---|---|
+| T-1 | 下单请求 | `POST /orders`：`accountNo`、`orderType: MARKET`、`symbol`、`side: BUY/SELL`，`amountCash`（按金额）或 `quantity`（按股数）二选一（文档错误码 O015），附 `Idempotency-Key`（文档："All POST requests accept Idempotency keys"，保存 4 天） | 字段是否被接受；响应是 `orderId` 还是 `id`（后端两者都读） |
+| T-2 | 成交速度 | 下单后立即 `GET /orders/{id}` 取一次状态；之后由对账任务（与资金对账同频）和查询接口刷新 | 沙盒市价单是即时 FILLED 还是先 NEW |
+| T-3 | 交易时段 | 不区分盘前盘后，随时可提交；不传 `preventQueuing`（默认 false，休市订单排队到开盘）。开关 `TRADE_PREVENT_QUEUING` 预留 | 沙盒休市时市价单是排队（NEW）、即时成交还是拒绝 |
+| T-4 | 碎股规则 | 按金额允许碎股；按股数最多 6 位小数；最低金额 $1（示例值，`LIMIT_MIN_ORDER`） | DW 实际最小金额 / 最小股数步长（错误码 I013 INSTRUMENT_INVALID_ORDER_SIZE）；不支持碎股的证券 |
+| T-5 | 购买力不足 | 后端先查 `summary/money` 的 `cashAvailableForTrade`，超出直接 42201，不调用 DW；若 DW 仍拒绝（创建时 4xx 或订单 REJECTED），App 显示"券商未受理 / 已拒绝" | DW 购买力不足时是创建失败（错误码？）还是订单 REJECTED（statusMessage？） |
+| T-6 | 可卖数量 | 卖出以 `summary/positions` 的 `availableForTradingQty` 为上限；按金额卖出上限 = 可卖数量 × `mktPrice` | 当日买入（未结算）的股票是否计入可卖数量；CASH 账户卖出未结算股票的限制（Good Faith Violation） |
+| T-7 | 撤单 | `PATCH /orders/{id}` `{"method":"CANCEL"}`；仅 NEW / PARTIAL_FILL 可撤；之后以 DW 返回状态为准 | 撤单后状态是直接 CANCELED 还是先 PENDING_CANCEL |
+| T-8 | 拒单原因 | 订单 REJECTED 时显示通用中文原因；DW `statusMessage` 只写日志与数据库（不透出原文） | 常见拒单原因与对应中文文案 |
+| T-9 | 预估价格 | 按股数买入时用虚拟行情（F11）卖一价估算金额，用于购买力与最低金额校验 | 与 DW 实际成交价的差异是否导致边界情况被 DW 拒绝 |
+

@@ -24,6 +24,8 @@ tags:
     description: 银行账户（F7，P-31/P-32）
   - name: funding
     description: 出入金（F8/F9，P-13/P-14/P-33/P-18）
+  - name: trading
+    description: 交易（F14，P-19 / P-11 / P-12；v1 新增，向后兼容）
   - name: documents
     description: 文件（F10，P-15）
   - name: notifications
@@ -807,6 +809,157 @@ paths:
                                 c: { type: number }
         "422": { $ref: "#/components/responses/ValidationError" }
 
+  # ───────────── 5.6 交易（F14） ─────────────
+  /orders:
+    post:
+      tags: [trading]
+      operationId: createOrder
+      summary: 下单（P-19，市价单）
+      description: |
+        后端转 DW `POST /orders`（附 Idempotency-Key）。本期只支持 MARKET。`amount`（按金额，允许碎股）与 `quantity`（按股数，最多 6 位小数）二选一。
+        后端强制：买入预估金额 ≤ DW 购买力且 ≥ 单笔最低（LIMIT_MIN_ORDER，示例值 $1）；卖出 ≤ DW 可卖数量。超限 42201（data.limits）；
+        OPEN_NO_NEW_TRADES 账户买入 40301；10 秒内重复提交 40901；DW 结果不明 50001（data.orderId）。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [symbol, side, orderType]
+              properties:
+                symbol: { type: string, example: AAPL }
+                side: { type: string, enum: [BUY, SELL] }
+                orderType: { type: string, enum: [MARKET] }
+                amount: { $ref: "#/components/schemas/Money" }
+                quantity: { type: number, minimum: 0, exclusiveMinimum: true, description: 股数，最多 6 位小数 }
+      responses:
+        "200":
+          description: 已提交
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        required: [orderId, status]
+                        properties:
+                          orderId: { type: string }
+                          status: { $ref: "#/components/schemas/OrderStatus" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Restricted" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+        "502": { $ref: "#/components/responses/DWError" }
+    get:
+      tags: [trading]
+      operationId: listOrders
+      summary: 订单列表（P-11）
+      description: 每页 50 条，按提交时间倒序；下一页游标在响应头 X-Next-Cursor。未开户返回空数组。
+      parameters:
+        - name: status
+          in: query
+          schema: { type: string, enum: [OPEN, CLOSED] }
+          description: OPEN = SUBMITTING / NEW / PARTIAL_FILL / PENDING_CANCEL；CLOSED = 其余
+        - $ref: "#/components/parameters/Cursor"
+      responses:
+        "200":
+          description: 订单
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items: { $ref: "#/components/schemas/Order" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /orders/{id}:
+    get:
+      tags: [trading]
+      operationId: getOrder
+      summary: 订单详情（P-11）
+      description: 未完结订单查询时向 DW 刷新一次。不存在或不属于当前用户返回 40901。
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: 订单
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - type: object
+                    properties:
+                      data: { $ref: "#/components/schemas/Order" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "409": { $ref: "#/components/responses/Conflict" }
+
+  /orders/{id}/cancel:
+    post:
+      tags: [trading]
+      operationId: cancelOrder
+      summary: 撤单（P-11）
+      description: 仅 NEW / PARTIAL_FILL 可撤，否则 40901。后端转 DW `PATCH /orders/{orderID}`（method=CANCEL），返回撤单后 DW 状态（可能为 PENDING_CANCEL）。
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: 已提交撤单
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        required: [orderId, status]
+                        properties:
+                          orderId: { type: string }
+                          status: { $ref: "#/components/schemas/OrderStatus" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Restricted" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "502": { $ref: "#/components/responses/DWError" }
+
+  /positions:
+    get:
+      tags: [trading]
+      operationId: listPositions
+      summary: 持仓（P-12）
+      description: DW `GET /accounts/{accountID}/summary/positions` 的返回值（数量、成本、市值、盈亏均取 DW）。未开户返回 40901。
+      responses:
+        "200":
+          description: 持仓
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        required: [positions]
+                        properties:
+                          updatedAt: { type: string, format: date-time, nullable: true }
+                          equityValue: { type: number, description: DW equityValue }
+                          positions:
+                            type: array
+                            items: { $ref: "#/components/schemas/Position" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "502": { $ref: "#/components/responses/DWError" }
+
   # ───────────── 6. 文件与通知 ─────────────
   /documents:
     get:
@@ -1133,6 +1286,46 @@ components:
         bankAccountId: { type: string, nullable: true, description: 关联的银行账户（WIRE 出金为空；新增字段） }
         buyingPowerAvailableAt: { type: string, format: date-time, nullable: true, description: 入金的购买力可用日（DW seasoningDetails.depositBuyingPowerHoldExpires；新增字段） }
         withdrawableAt: { type: string, format: date-time, nullable: true, description: 入金的可提现日（DW seasoningDetails.seasoningPeriodExpires；新增字段） }
+
+    OrderStatus:
+      type: string
+      description: DW Order Status；SUBMITTING 为我方取值（已记录、提交结果待确认）
+      enum: [SUBMITTING, NEW, PARTIAL_FILL, FILLED, REJECTED, CANCELED, PENDING_CANCEL]
+
+    Order:
+      type: object
+      required: [orderId, symbol, side, orderType, status, submittedAt, updatedAt]
+      properties:
+        orderId: { type: string }
+        orderNo: { type: string, nullable: true, description: DW 订单号 }
+        symbol: { type: string }
+        side: { type: string, enum: [BUY, SELL] }
+        orderType: { type: string, enum: [MARKET] }
+        quantity: { type: number, nullable: true, description: 委托股数（按股数下单时） }
+        amount: { type: number, nullable: true, description: 委托金额（按金额下单时） }
+        status: { $ref: "#/components/schemas/OrderStatus" }
+        filledQty: { type: number, nullable: true, description: DW cumulativeQuantity }
+        avgPrice: { type: number, nullable: true, description: DW averagePrice }
+        totalAmount: { type: number, nullable: true, description: DW totalOrderAmount }
+        fees: { type: number, nullable: true, description: DW fees }
+        rejectReason: { type: string, nullable: true, description: 可展示的中文原因（不透出 DW 原文） }
+        submittedAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+        doneAt: { type: string, format: date-time, nullable: true }
+
+    Position:
+      type: object
+      required: [symbol, quantity, sellableQty]
+      properties:
+        symbol: { type: string }
+        quantity: { type: number, description: DW openQty }
+        sellableQty: { type: number, description: DW availableForTradingQty }
+        avgPrice: { type: number, description: DW avgPrice }
+        costBasis: { type: number, description: DW costBasis }
+        marketPrice: { type: number, description: DW mktPrice }
+        marketValue: { type: number, description: DW marketValue }
+        unrealizedPL: { type: number, description: DW unrealizedPL }
+        unrealizedDayPL: { type: number, description: DW unrealizedDayPL }
 
   responses:
     OkEmpty:

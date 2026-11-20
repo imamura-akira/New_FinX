@@ -109,7 +109,9 @@ bank_link_method: DIRECT    # DIRECT | PLAID   Q-DW-2
 user_submit_mode: POST_PATCH # POST_PATCH | SINGLE_POST  Q-DW-3
 seasoning_days: 30          # Q-DW-8e（展示用；可提现以 DW 返回为准）
 limits: { min_deposit: 10, max_deposit: 50000, daily_deposit: 50000,
-          min_withdrawal: 1, max_withdrawal: 50000, min_wire: 100, max_banks: 2 }  # 示例值
+          min_withdrawal: 1, max_withdrawal: 50000, min_wire: 100, max_banks: 2,
+          min_order: 1 }  # 示例值；min_order 为 F14 单笔最低下单金额（LIMIT_MIN_ORDER，以券商为准）
+trade_prevent_queuing: false # F14：DW preventQueuing，休市时是否拒单而非排队（待沙盒实测，TRADE_PREVENT_QUEUING）
 ```
 
 ## 8. 安全清单
