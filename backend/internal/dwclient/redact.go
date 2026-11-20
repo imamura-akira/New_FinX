@@ -36,6 +36,8 @@ var (
 		"emailaddress": true, "email": true, "signedby": true,
 		// 沙盒实测：DW User 对象中的姓名派生字段与签名人
 		"displayname": true, "acksignedby": true, "employercompany": true,
+		// 沙盒实测（2026-11-20）：GET /funding/deposits/{id} 的 details.accountHolderName 为开户姓名
+		"accountholdername": true,
 	}
 )
 

@@ -362,6 +362,7 @@ func TestRedactJSON(t *testing.T) {
 		{`{"amount":250.5,"currency":"USD"}`, `{"amount":250.5,"currency":"USD"}`},
 		{`{"addressLine1":"200 Market Street","displayName":"DTester","idNo":"****1173"}`, `{"addressLine1":"[REDACTED]","displayName":"D***","idNo":"****1173"}`},
 		{`{"account_number":"TEST000001","username":"fxabc"}`, `{"account_number":"******0001","username":"[REDACTED]"}`},
+		{`{"details":{"accountHolderName":"Demo Tester","bankAccountNumber":"000123456789"}}`, `{"details":{"accountHolderName":"D***","bankAccountNumber":"********6789"}}`},
 		{`not json`, `[non-json body, 8 bytes]`},
 		{``, ``},
 	}
