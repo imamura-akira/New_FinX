@@ -2094,4 +2094,232 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get homeTodayHidden => 'Today ****';
+
+  @override
+  String get tabPredict => 'Predict';
+
+  @override
+  String get predictTitle => 'Predict';
+
+  @override
+  String predictPoints(Object points) {
+    return '$points pts';
+  }
+
+  @override
+  String get predictDemoBadge =>
+      'Points-based predictions · Demo mode, no real money';
+
+  @override
+  String get predictCatAll => 'All';
+
+  @override
+  String get predictCatCrypto => 'Crypto';
+
+  @override
+  String get predictCatStocks => 'US Stocks';
+
+  @override
+  String get predictCatMacro => 'Macro';
+
+  @override
+  String get predictCatSports => 'Sports';
+
+  @override
+  String get predictCatTrending => 'Trending';
+
+  @override
+  String predictUpOrDownSymbol(Object symbol) {
+    return 'Up or Down · $symbol';
+  }
+
+  @override
+  String get predictUpOrDown => 'Up or Down';
+
+  @override
+  String predictTarget(Object price) {
+    return 'Target $price · Settles when the window closes';
+  }
+
+  @override
+  String predictUpPct(Object pct) {
+    return 'Up · $pct%';
+  }
+
+  @override
+  String predictDownPct(Object pct) {
+    return 'Down · $pct%';
+  }
+
+  @override
+  String get predictUp => 'Up';
+
+  @override
+  String get predictDown => 'Down';
+
+  @override
+  String get predict15m => '15 Minute Markets';
+
+  @override
+  String get predictSeeAll => 'See All';
+
+  @override
+  String get predictTrending => 'Trending Markets';
+
+  @override
+  String get predictLive => 'Live';
+
+  @override
+  String predictLiveSettle(Object date) {
+    return 'Live · Settles $date';
+  }
+
+  @override
+  String predictCloses(Object date) {
+    return 'Closes $date';
+  }
+
+  @override
+  String get predictDisclaimer =>
+      'Predictions aggregate user opinions. For reference only. Not investment advice.';
+
+  @override
+  String get predictMine => 'My Predictions';
+
+  @override
+  String get predictNoMarkets => 'No open markets in this category.';
+
+  @override
+  String predictLoadFailed(Object error) {
+    return 'Couldn\'t load prediction markets: $error';
+  }
+
+  @override
+  String predictYourPick(Object label) {
+    return 'Your pick: $label';
+  }
+
+  @override
+  String get predictStake => 'Points to Stake';
+
+  @override
+  String get predictStakeHint => 'Whole number, 10–5,000';
+
+  @override
+  String predictAvailable(Object points) {
+    return 'Available: $points pts';
+  }
+
+  @override
+  String predictPotential(Object points) {
+    return 'Win $points pts if correct';
+  }
+
+  @override
+  String predictProbNow(Object pct) {
+    return 'Current probability: $pct%';
+  }
+
+  @override
+  String get predictPricingNote =>
+      'Odds lock in at the current ratio when you place your prediction. The ratio updates as predictions come in (simplified demo model).';
+
+  @override
+  String get predictConfirm => 'Confirm Prediction';
+
+  @override
+  String predictPlaced(Object points) {
+    return 'Prediction placed. Win $points pts if correct.';
+  }
+
+  @override
+  String get predictStakeInvalid => 'Enter a whole number from 10 to 5,000.';
+
+  @override
+  String get predictStakeInsufficient => 'Not enough points.';
+
+  @override
+  String get predictClosedNow => 'This market has closed.';
+
+  @override
+  String get predictHitRate => 'Hit Rate';
+
+  @override
+  String get predictNetPoints => 'Net Points';
+
+  @override
+  String get predictSettledCount => 'Settled';
+
+  @override
+  String predictClaimable(Object points) {
+    return '$points pts ready to claim';
+  }
+
+  @override
+  String get predictClaim => 'Claim';
+
+  @override
+  String predictClaimedToast(Object points) {
+    return 'Claimed $points pts';
+  }
+
+  @override
+  String get predictTabOpen => 'Open';
+
+  @override
+  String get predictTabSettled => 'Settled';
+
+  @override
+  String get predictNoBets =>
+      'No predictions yet. Pick a market on the Predict tab.';
+
+  @override
+  String get predictStatusOpen => 'Open';
+
+  @override
+  String get predictStatusWon => 'Won';
+
+  @override
+  String get predictStatusLost => 'Lost';
+
+  @override
+  String get predictStatusVoid => 'Voided · Refunded';
+
+  @override
+  String predictStakeLine(Object stake, Object payout) {
+    return 'Staked $stake pts · Win $payout pts if correct';
+  }
+
+  @override
+  String predictPaidLine(Object stake, Object payout) {
+    return 'Staked $stake pts · Paid $payout pts';
+  }
+
+  @override
+  String get predictClaimedTag => 'Claimed';
+
+  @override
+  String predictSettlesAt(Object price) {
+    return 'Settled at $price';
+  }
+
+  @override
+  String get srvPredictStake => 'Points must be between 10 and 5,000.';
+
+  @override
+  String get srvPredictOutcome => 'Please choose a side.';
+
+  @override
+  String get srvPredictInsufficient => 'Not enough prediction points.';
+
+  @override
+  String get srvPredictClosed => 'This prediction market has closed.';
+
+  @override
+  String get srvPredictNotFound => 'Prediction market not found.';
+
+  @override
+  String predictMonthDay(Object month, Object day) {
+    return '$month $day';
+  }
 }

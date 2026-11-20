@@ -3710,6 +3710,378 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'今日 ****'**
   String get homeTodayHidden;
+
+  /// No description provided for @tabPredict.
+  ///
+  /// In zh, this message translates to:
+  /// **'预测'**
+  String get tabPredict;
+
+  /// No description provided for @predictTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'预测'**
+  String get predictTitle;
+
+  /// No description provided for @predictPoints.
+  ///
+  /// In zh, this message translates to:
+  /// **'{points} 分'**
+  String predictPoints(Object points);
+
+  /// No description provided for @predictDemoBadge.
+  ///
+  /// In zh, this message translates to:
+  /// **'积分预测 · 演示模式，非真实资金'**
+  String get predictDemoBadge;
+
+  /// No description provided for @predictCatAll.
+  ///
+  /// In zh, this message translates to:
+  /// **'全部'**
+  String get predictCatAll;
+
+  /// No description provided for @predictCatCrypto.
+  ///
+  /// In zh, this message translates to:
+  /// **'加密'**
+  String get predictCatCrypto;
+
+  /// No description provided for @predictCatStocks.
+  ///
+  /// In zh, this message translates to:
+  /// **'美股'**
+  String get predictCatStocks;
+
+  /// No description provided for @predictCatMacro.
+  ///
+  /// In zh, this message translates to:
+  /// **'宏观'**
+  String get predictCatMacro;
+
+  /// No description provided for @predictCatSports.
+  ///
+  /// In zh, this message translates to:
+  /// **'体育'**
+  String get predictCatSports;
+
+  /// No description provided for @predictCatTrending.
+  ///
+  /// In zh, this message translates to:
+  /// **'热点'**
+  String get predictCatTrending;
+
+  /// No description provided for @predictUpOrDownSymbol.
+  ///
+  /// In zh, this message translates to:
+  /// **'涨 或 跌 · {symbol}'**
+  String predictUpOrDownSymbol(Object symbol);
+
+  /// No description provided for @predictUpOrDown.
+  ///
+  /// In zh, this message translates to:
+  /// **'涨 或 跌'**
+  String get predictUpOrDown;
+
+  /// No description provided for @predictTarget.
+  ///
+  /// In zh, this message translates to:
+  /// **'目标 {price} · 窗口结束时结算'**
+  String predictTarget(Object price);
+
+  /// No description provided for @predictUpPct.
+  ///
+  /// In zh, this message translates to:
+  /// **'上涨 · {pct}%'**
+  String predictUpPct(Object pct);
+
+  /// No description provided for @predictDownPct.
+  ///
+  /// In zh, this message translates to:
+  /// **'下跌 · {pct}%'**
+  String predictDownPct(Object pct);
+
+  /// No description provided for @predictUp.
+  ///
+  /// In zh, this message translates to:
+  /// **'上涨'**
+  String get predictUp;
+
+  /// No description provided for @predictDown.
+  ///
+  /// In zh, this message translates to:
+  /// **'下跌'**
+  String get predictDown;
+
+  /// No description provided for @predict15m.
+  ///
+  /// In zh, this message translates to:
+  /// **'15 分钟市场'**
+  String get predict15m;
+
+  /// No description provided for @predictSeeAll.
+  ///
+  /// In zh, this message translates to:
+  /// **'全部'**
+  String get predictSeeAll;
+
+  /// No description provided for @predictTrending.
+  ///
+  /// In zh, this message translates to:
+  /// **'热门市场'**
+  String get predictTrending;
+
+  /// No description provided for @predictLive.
+  ///
+  /// In zh, this message translates to:
+  /// **'Live'**
+  String get predictLive;
+
+  /// No description provided for @predictLiveSettle.
+  ///
+  /// In zh, this message translates to:
+  /// **'Live · {date}结算'**
+  String predictLiveSettle(Object date);
+
+  /// No description provided for @predictCloses.
+  ///
+  /// In zh, this message translates to:
+  /// **'{date} 截止'**
+  String predictCloses(Object date);
+
+  /// No description provided for @predictDisclaimer.
+  ///
+  /// In zh, this message translates to:
+  /// **'预测为用户观点聚合，仅供参考，不构成投资建议'**
+  String get predictDisclaimer;
+
+  /// No description provided for @predictMine.
+  ///
+  /// In zh, this message translates to:
+  /// **'我的预测'**
+  String get predictMine;
+
+  /// No description provided for @predictNoMarkets.
+  ///
+  /// In zh, this message translates to:
+  /// **'该分类暂无进行中的市场'**
+  String get predictNoMarkets;
+
+  /// No description provided for @predictLoadFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'预测市场暂时无法加载：{error}'**
+  String predictLoadFailed(Object error);
+
+  /// No description provided for @predictYourPick.
+  ///
+  /// In zh, this message translates to:
+  /// **'你的预测：{label}'**
+  String predictYourPick(Object label);
+
+  /// No description provided for @predictStake.
+  ///
+  /// In zh, this message translates to:
+  /// **'下注积分'**
+  String get predictStake;
+
+  /// No description provided for @predictStakeHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'10–5,000 的整数'**
+  String get predictStakeHint;
+
+  /// No description provided for @predictAvailable.
+  ///
+  /// In zh, this message translates to:
+  /// **'可用 {points} 分'**
+  String predictAvailable(Object points);
+
+  /// No description provided for @predictPotential.
+  ///
+  /// In zh, this message translates to:
+  /// **'若正确可得 {points} 分'**
+  String predictPotential(Object points);
+
+  /// No description provided for @predictProbNow.
+  ///
+  /// In zh, this message translates to:
+  /// **'当前概率 {pct}%'**
+  String predictProbNow(Object pct);
+
+  /// No description provided for @predictPricingNote.
+  ///
+  /// In zh, this message translates to:
+  /// **'赔率按下注时的比例确定，比例随双边下注实时变化（演示用简化模型）。'**
+  String get predictPricingNote;
+
+  /// No description provided for @predictConfirm.
+  ///
+  /// In zh, this message translates to:
+  /// **'确认预测'**
+  String get predictConfirm;
+
+  /// No description provided for @predictPlaced.
+  ///
+  /// In zh, this message translates to:
+  /// **'预测已提交，若正确可得 {points} 分'**
+  String predictPlaced(Object points);
+
+  /// No description provided for @predictStakeInvalid.
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入 10–5,000 的整数积分'**
+  String get predictStakeInvalid;
+
+  /// No description provided for @predictStakeInsufficient.
+  ///
+  /// In zh, this message translates to:
+  /// **'积分不足'**
+  String get predictStakeInsufficient;
+
+  /// No description provided for @predictClosedNow.
+  ///
+  /// In zh, this message translates to:
+  /// **'该市场已截止'**
+  String get predictClosedNow;
+
+  /// No description provided for @predictHitRate.
+  ///
+  /// In zh, this message translates to:
+  /// **'命中率'**
+  String get predictHitRate;
+
+  /// No description provided for @predictNetPoints.
+  ///
+  /// In zh, this message translates to:
+  /// **'累计盈亏'**
+  String get predictNetPoints;
+
+  /// No description provided for @predictSettledCount.
+  ///
+  /// In zh, this message translates to:
+  /// **'已结算'**
+  String get predictSettledCount;
+
+  /// No description provided for @predictClaimable.
+  ///
+  /// In zh, this message translates to:
+  /// **'待领取 {points} 分'**
+  String predictClaimable(Object points);
+
+  /// No description provided for @predictClaim.
+  ///
+  /// In zh, this message translates to:
+  /// **'领取'**
+  String get predictClaim;
+
+  /// No description provided for @predictClaimedToast.
+  ///
+  /// In zh, this message translates to:
+  /// **'已领取 {points} 分'**
+  String predictClaimedToast(Object points);
+
+  /// No description provided for @predictTabOpen.
+  ///
+  /// In zh, this message translates to:
+  /// **'进行中'**
+  String get predictTabOpen;
+
+  /// No description provided for @predictTabSettled.
+  ///
+  /// In zh, this message translates to:
+  /// **'已结算'**
+  String get predictTabSettled;
+
+  /// No description provided for @predictNoBets.
+  ///
+  /// In zh, this message translates to:
+  /// **'还没有预测，去预测页选一个市场吧。'**
+  String get predictNoBets;
+
+  /// No description provided for @predictStatusOpen.
+  ///
+  /// In zh, this message translates to:
+  /// **'进行中'**
+  String get predictStatusOpen;
+
+  /// No description provided for @predictStatusWon.
+  ///
+  /// In zh, this message translates to:
+  /// **'命中'**
+  String get predictStatusWon;
+
+  /// No description provided for @predictStatusLost.
+  ///
+  /// In zh, this message translates to:
+  /// **'未命中'**
+  String get predictStatusLost;
+
+  /// No description provided for @predictStatusVoid.
+  ///
+  /// In zh, this message translates to:
+  /// **'作废退回'**
+  String get predictStatusVoid;
+
+  /// No description provided for @predictStakeLine.
+  ///
+  /// In zh, this message translates to:
+  /// **'下注 {stake} 分 · 若正确可得 {payout} 分'**
+  String predictStakeLine(Object stake, Object payout);
+
+  /// No description provided for @predictPaidLine.
+  ///
+  /// In zh, this message translates to:
+  /// **'下注 {stake} 分 · 派彩 {payout} 分'**
+  String predictPaidLine(Object stake, Object payout);
+
+  /// No description provided for @predictClaimedTag.
+  ///
+  /// In zh, this message translates to:
+  /// **'已领取'**
+  String get predictClaimedTag;
+
+  /// No description provided for @predictSettlesAt.
+  ///
+  /// In zh, this message translates to:
+  /// **'结算价 {price}'**
+  String predictSettlesAt(Object price);
+
+  /// No description provided for @srvPredictStake.
+  ///
+  /// In zh, this message translates to:
+  /// **'下注积分须在 10–5,000 分之间'**
+  String get srvPredictStake;
+
+  /// No description provided for @srvPredictOutcome.
+  ///
+  /// In zh, this message translates to:
+  /// **'请选择预测方向'**
+  String get srvPredictOutcome;
+
+  /// No description provided for @srvPredictInsufficient.
+  ///
+  /// In zh, this message translates to:
+  /// **'预测积分不足'**
+  String get srvPredictInsufficient;
+
+  /// No description provided for @srvPredictClosed.
+  ///
+  /// In zh, this message translates to:
+  /// **'该预测市场已截止'**
+  String get srvPredictClosed;
+
+  /// No description provided for @srvPredictNotFound.
+  ///
+  /// In zh, this message translates to:
+  /// **'预测市场不存在'**
+  String get srvPredictNotFound;
+
+  /// No description provided for @predictMonthDay.
+  ///
+  /// In zh, this message translates to:
+  /// **'{month}月{day}日'**
+  String predictMonthDay(Object month, Object day);
 }
 
 class _AppLocalizationsDelegate

@@ -15,6 +15,7 @@ class MainTabs extends StatelessWidget {
   static List<(String, String, String, IconData)> get _tabs => [
     ('/home', 'home', t.tabAssets, Icons.account_balance_wallet_outlined),
     ('/market', 'market', t.tabMarkets, Icons.show_chart_rounded),
+    ('/predict', 'predict', t.tabPredict, Icons.query_stats_rounded), // F19：市场与股票大师之间
     ('/masters', 'masters', t.tabMasters, Icons.apartment_rounded),
     ('/fifi', 'fifi', t.tabFifi, Icons.auto_awesome_outlined),
     ('/rewards', 'rewards', t.tabRewards, Icons.card_giftcard_rounded),
@@ -24,25 +25,43 @@ class MainTabs extends StatelessWidget {
   Widget build(BuildContext context) {
     final index = location.startsWith('/market')
         ? 1
-        : location.startsWith('/masters')
+        : location.startsWith('/predict')
         ? 2
-        : location.startsWith('/fifi')
+        : location.startsWith('/masters')
         ? 3
-        : location.startsWith('/rewards')
+        : location.startsWith('/fifi')
         ? 4
+        : location.startsWith('/rewards')
+        ? 5
         : 0;
     return Scaffold(
       body: child,
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: index,
-        backgroundColor: AppColors.surface,
-        indicatorColor: AppColors.primaryWeak,
-        height: 64,
-        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-        onDestinationSelected: (i) {
-          if (i != index) context.go(_tabs[i].$1);
-        },
-        destinations: [for (final d in _tabs) NavigationDestination(key: Key('tab.${d.$2}'), icon: Icon(d.$4), label: d.$3)],
+      // F19：6 个 Tab，字号与图标缩小以保持一行
+      bottomNavigationBar: NavigationBarTheme(
+        data: NavigationBarThemeData(
+          labelTextStyle: WidgetStateProperty.resolveWith(
+            (s) => TextStyle(
+              fontSize: 10.5,
+              fontWeight: s.contains(WidgetState.selected) ? FontWeight.w700 : FontWeight.w500,
+              color: s.contains(WidgetState.selected) ? AppColors.primary : AppColors.muted,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          iconTheme: WidgetStateProperty.resolveWith(
+            (s) => IconThemeData(size: 22, color: s.contains(WidgetState.selected) ? AppColors.primary : AppColors.muted),
+          ),
+        ),
+        child: NavigationBar(
+          selectedIndex: index,
+          backgroundColor: AppColors.surface,
+          indicatorColor: AppColors.primaryWeak,
+          height: 64,
+          labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+          onDestinationSelected: (i) {
+            if (i != index) context.go(_tabs[i].$1);
+          },
+          destinations: [for (final d in _tabs) NavigationDestination(key: Key('tab.${d.$2}'), icon: Icon(d.$4), label: d.$3)],
+        ),
       ),
     );
   }

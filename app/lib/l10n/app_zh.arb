@@ -1139,5 +1139,209 @@
       }
     }
   },
-  "homeTodayHidden": "今日 ****"
+  "homeTodayHidden": "今日 ****",
+  "tabPredict": "预测",
+  "predictTitle": "预测",
+  "predictPoints": "{points} 分",
+  "@predictPoints": {
+    "placeholders": {
+      "points": {
+        "type": "Object"
+      }
+    }
+  },
+  "predictDemoBadge": "积分预测 · 演示模式，非真实资金",
+  "predictCatAll": "全部",
+  "predictCatCrypto": "加密",
+  "predictCatStocks": "美股",
+  "predictCatMacro": "宏观",
+  "predictCatSports": "体育",
+  "predictCatTrending": "热点",
+  "predictUpOrDownSymbol": "涨 或 跌 · {symbol}",
+  "@predictUpOrDownSymbol": {
+    "placeholders": {
+      "symbol": {
+        "type": "Object"
+      }
+    }
+  },
+  "predictUpOrDown": "涨 或 跌",
+  "predictTarget": "目标 {price} · 窗口结束时结算",
+  "@predictTarget": {
+    "placeholders": {
+      "price": {
+        "type": "Object"
+      }
+    }
+  },
+  "predictUpPct": "上涨 · {pct}%",
+  "@predictUpPct": {
+    "placeholders": {
+      "pct": {
+        "type": "Object"
+      }
+    }
+  },
+  "predictDownPct": "下跌 · {pct}%",
+  "@predictDownPct": {
+    "placeholders": {
+      "pct": {
+        "type": "Object"
+      }
+    }
+  },
+  "predictUp": "上涨",
+  "predictDown": "下跌",
+  "predict15m": "15 分钟市场",
+  "predictSeeAll": "全部",
+  "predictTrending": "热门市场",
+  "predictLive": "Live",
+  "predictLiveSettle": "Live · {date}结算",
+  "@predictLiveSettle": {
+    "placeholders": {
+      "date": {
+        "type": "Object"
+      }
+    }
+  },
+  "predictCloses": "{date} 截止",
+  "@predictCloses": {
+    "placeholders": {
+      "date": {
+        "type": "Object"
+      }
+    }
+  },
+  "predictDisclaimer": "预测为用户观点聚合，仅供参考，不构成投资建议",
+  "predictMine": "我的预测",
+  "predictNoMarkets": "该分类暂无进行中的市场",
+  "predictLoadFailed": "预测市场暂时无法加载：{error}",
+  "@predictLoadFailed": {
+    "placeholders": {
+      "error": {
+        "type": "Object"
+      }
+    }
+  },
+  "predictYourPick": "你的预测：{label}",
+  "@predictYourPick": {
+    "placeholders": {
+      "label": {
+        "type": "Object"
+      }
+    }
+  },
+  "predictStake": "下注积分",
+  "predictStakeHint": "10–5,000 的整数",
+  "predictAvailable": "可用 {points} 分",
+  "@predictAvailable": {
+    "placeholders": {
+      "points": {
+        "type": "Object"
+      }
+    }
+  },
+  "predictPotential": "若正确可得 {points} 分",
+  "@predictPotential": {
+    "placeholders": {
+      "points": {
+        "type": "Object"
+      }
+    }
+  },
+  "predictProbNow": "当前概率 {pct}%",
+  "@predictProbNow": {
+    "placeholders": {
+      "pct": {
+        "type": "Object"
+      }
+    }
+  },
+  "predictPricingNote": "赔率按下注时的比例确定，比例随双边下注实时变化（演示用简化模型）。",
+  "predictConfirm": "确认预测",
+  "predictPlaced": "预测已提交，若正确可得 {points} 分",
+  "@predictPlaced": {
+    "placeholders": {
+      "points": {
+        "type": "Object"
+      }
+    }
+  },
+  "predictStakeInvalid": "请输入 10–5,000 的整数积分",
+  "predictStakeInsufficient": "积分不足",
+  "predictClosedNow": "该市场已截止",
+  "predictHitRate": "命中率",
+  "predictNetPoints": "累计盈亏",
+  "predictSettledCount": "已结算",
+  "predictClaimable": "待领取 {points} 分",
+  "@predictClaimable": {
+    "placeholders": {
+      "points": {
+        "type": "Object"
+      }
+    }
+  },
+  "predictClaim": "领取",
+  "predictClaimedToast": "已领取 {points} 分",
+  "@predictClaimedToast": {
+    "placeholders": {
+      "points": {
+        "type": "Object"
+      }
+    }
+  },
+  "predictTabOpen": "进行中",
+  "predictTabSettled": "已结算",
+  "predictNoBets": "还没有预测，去预测页选一个市场吧。",
+  "predictStatusOpen": "进行中",
+  "predictStatusWon": "命中",
+  "predictStatusLost": "未命中",
+  "predictStatusVoid": "作废退回",
+  "predictStakeLine": "下注 {stake} 分 · 若正确可得 {payout} 分",
+  "@predictStakeLine": {
+    "placeholders": {
+      "stake": {
+        "type": "Object"
+      },
+      "payout": {
+        "type": "Object"
+      }
+    }
+  },
+  "predictPaidLine": "下注 {stake} 分 · 派彩 {payout} 分",
+  "@predictPaidLine": {
+    "placeholders": {
+      "stake": {
+        "type": "Object"
+      },
+      "payout": {
+        "type": "Object"
+      }
+    }
+  },
+  "predictClaimedTag": "已领取",
+  "predictSettlesAt": "结算价 {price}",
+  "@predictSettlesAt": {
+    "placeholders": {
+      "price": {
+        "type": "Object"
+      }
+    }
+  },
+  "srvPredictStake": "下注积分须在 10–5,000 分之间",
+  "srvPredictOutcome": "请选择预测方向",
+  "srvPredictInsufficient": "预测积分不足",
+  "srvPredictClosed": "该预测市场已截止",
+  "srvPredictNotFound": "预测市场不存在",
+  "predictMonthDay": "{month}月{day}日",
+  "@predictMonthDay": {
+    "placeholders": {
+      "month": {
+        "type": "Object"
+      },
+      "day": {
+        "type": "Object"
+      }
+    }
+  }
 }

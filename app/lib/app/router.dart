@@ -9,6 +9,8 @@ import '../features/auth/presentation/welcome_page.dart';
 import '../features/common/session_expired_page.dart';
 import '../features/discover/presentation/discover_pages.dart';
 import '../features/discover/presentation/rewards_page.dart';
+import '../features/predict/presentation/my_predictions_page.dart';
+import '../features/predict/presentation/predict_page.dart';
 import '../features/funding/presentation/bank_pages.dart';
 import '../features/funding/presentation/transfer_pages.dart';
 import '../features/home/presentation/home_page.dart';
@@ -80,6 +82,10 @@ GoRouter buildRouter(SessionController session) {
             pageBuilder: (_, _) => const NoTransitionPage(child: MarketPage()),
           ),
           GoRoute(
+            path: '/predict',
+            pageBuilder: (_, _) => const NoTransitionPage(child: PredictPage()),
+          ), // F19 预测（积分演示版）
+          GoRoute(
             path: '/masters',
             pageBuilder: (_, _) => const NoTransitionPage(child: MastersPage()),
           ), // P-23
@@ -94,6 +100,7 @@ GoRouter buildRouter(SessionController session) {
         ],
       ),
       // P-24 全部机构 / 机构详情（全屏，push 进入）
+      GoRoute(path: '/predict/mine', builder: (_, _) => const MyPredictionsPage()), // F19 我的预测
       GoRoute(path: '/masters/all', builder: (_, _) => const InstitutionListPage()),
       GoRoute(
         path: '/masters/:id',

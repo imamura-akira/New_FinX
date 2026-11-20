@@ -1975,4 +1975,228 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get homeTodayHidden => '今日 ****';
+
+  @override
+  String get tabPredict => '预测';
+
+  @override
+  String get predictTitle => '预测';
+
+  @override
+  String predictPoints(Object points) {
+    return '$points 分';
+  }
+
+  @override
+  String get predictDemoBadge => '积分预测 · 演示模式，非真实资金';
+
+  @override
+  String get predictCatAll => '全部';
+
+  @override
+  String get predictCatCrypto => '加密';
+
+  @override
+  String get predictCatStocks => '美股';
+
+  @override
+  String get predictCatMacro => '宏观';
+
+  @override
+  String get predictCatSports => '体育';
+
+  @override
+  String get predictCatTrending => '热点';
+
+  @override
+  String predictUpOrDownSymbol(Object symbol) {
+    return '涨 或 跌 · $symbol';
+  }
+
+  @override
+  String get predictUpOrDown => '涨 或 跌';
+
+  @override
+  String predictTarget(Object price) {
+    return '目标 $price · 窗口结束时结算';
+  }
+
+  @override
+  String predictUpPct(Object pct) {
+    return '上涨 · $pct%';
+  }
+
+  @override
+  String predictDownPct(Object pct) {
+    return '下跌 · $pct%';
+  }
+
+  @override
+  String get predictUp => '上涨';
+
+  @override
+  String get predictDown => '下跌';
+
+  @override
+  String get predict15m => '15 分钟市场';
+
+  @override
+  String get predictSeeAll => '全部';
+
+  @override
+  String get predictTrending => '热门市场';
+
+  @override
+  String get predictLive => 'Live';
+
+  @override
+  String predictLiveSettle(Object date) {
+    return 'Live · $date结算';
+  }
+
+  @override
+  String predictCloses(Object date) {
+    return '$date 截止';
+  }
+
+  @override
+  String get predictDisclaimer => '预测为用户观点聚合，仅供参考，不构成投资建议';
+
+  @override
+  String get predictMine => '我的预测';
+
+  @override
+  String get predictNoMarkets => '该分类暂无进行中的市场';
+
+  @override
+  String predictLoadFailed(Object error) {
+    return '预测市场暂时无法加载：$error';
+  }
+
+  @override
+  String predictYourPick(Object label) {
+    return '你的预测：$label';
+  }
+
+  @override
+  String get predictStake => '下注积分';
+
+  @override
+  String get predictStakeHint => '10–5,000 的整数';
+
+  @override
+  String predictAvailable(Object points) {
+    return '可用 $points 分';
+  }
+
+  @override
+  String predictPotential(Object points) {
+    return '若正确可得 $points 分';
+  }
+
+  @override
+  String predictProbNow(Object pct) {
+    return '当前概率 $pct%';
+  }
+
+  @override
+  String get predictPricingNote => '赔率按下注时的比例确定，比例随双边下注实时变化（演示用简化模型）。';
+
+  @override
+  String get predictConfirm => '确认预测';
+
+  @override
+  String predictPlaced(Object points) {
+    return '预测已提交，若正确可得 $points 分';
+  }
+
+  @override
+  String get predictStakeInvalid => '请输入 10–5,000 的整数积分';
+
+  @override
+  String get predictStakeInsufficient => '积分不足';
+
+  @override
+  String get predictClosedNow => '该市场已截止';
+
+  @override
+  String get predictHitRate => '命中率';
+
+  @override
+  String get predictNetPoints => '累计盈亏';
+
+  @override
+  String get predictSettledCount => '已结算';
+
+  @override
+  String predictClaimable(Object points) {
+    return '待领取 $points 分';
+  }
+
+  @override
+  String get predictClaim => '领取';
+
+  @override
+  String predictClaimedToast(Object points) {
+    return '已领取 $points 分';
+  }
+
+  @override
+  String get predictTabOpen => '进行中';
+
+  @override
+  String get predictTabSettled => '已结算';
+
+  @override
+  String get predictNoBets => '还没有预测，去预测页选一个市场吧。';
+
+  @override
+  String get predictStatusOpen => '进行中';
+
+  @override
+  String get predictStatusWon => '命中';
+
+  @override
+  String get predictStatusLost => '未命中';
+
+  @override
+  String get predictStatusVoid => '作废退回';
+
+  @override
+  String predictStakeLine(Object stake, Object payout) {
+    return '下注 $stake 分 · 若正确可得 $payout 分';
+  }
+
+  @override
+  String predictPaidLine(Object stake, Object payout) {
+    return '下注 $stake 分 · 派彩 $payout 分';
+  }
+
+  @override
+  String get predictClaimedTag => '已领取';
+
+  @override
+  String predictSettlesAt(Object price) {
+    return '结算价 $price';
+  }
+
+  @override
+  String get srvPredictStake => '下注积分须在 10–5,000 分之间';
+
+  @override
+  String get srvPredictOutcome => '请选择预测方向';
+
+  @override
+  String get srvPredictInsufficient => '预测积分不足';
+
+  @override
+  String get srvPredictClosed => '该预测市场已截止';
+
+  @override
+  String get srvPredictNotFound => '预测市场不存在';
+
+  @override
+  String predictMonthDay(Object month, Object day) {
+    return '$month月$day日';
+  }
 }
