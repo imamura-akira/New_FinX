@@ -159,6 +159,7 @@ var resetSteps = []struct{ table, sql string }{
 	{"application_documents", `DELETE FROM application_documents WHERE application_id IN (SELECT id FROM applications WHERE user_id = $1)`},
 	{"applications", `DELETE FROM applications WHERE user_id = $1`},
 	{"sessions", `DELETE FROM sessions WHERE user_id = $1`},
+	{"paper_accounts", `DELETE FROM paper_accounts WHERE user_id = $1`}, // F15 模拟盘（订单、持仓随之级联删除）
 	{"users_app", `DELETE FROM users_app WHERE id = $1`},
 }
 

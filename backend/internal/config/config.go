@@ -123,6 +123,8 @@ type Config struct {
 	Limits         Limits
 	// F14：DW preventQueuing——休市时市价单拒绝而非排队到开盘（待沙盒实测，sandbox-log T-3）
 	TradePreventQueuing bool
+	// F15 模拟盘初始虚拟资金（USD，PAPER_INITIAL_CASH，默认 100000；演示与练习用途）
+	PaperInitialCash float64
 }
 
 // 默认值（backend-design.md 第 7 节）。
@@ -180,6 +182,7 @@ func LoadFrom(get Getenv) (*Config, error) {
 			MinOrder:      p.float("LIMIT_MIN_ORDER", 1),
 		},
 		TradePreventQueuing: p.bool("TRADE_PREVENT_QUEUING", false),
+		PaperInitialCash:    p.float("PAPER_INITIAL_CASH", 100000),
 	}
 	if raw := get("PII_ENCRYPTION_KEY"); raw != "" {
 		key, err := base64.StdEncoding.DecodeString(raw)
@@ -298,6 +301,9 @@ func (c *Config) Validate() error {
 	}
 	if l.MinWithdrawal <= 0 || l.MaxWithdrawal < l.MinWithdrawal || l.MinWire <= 0 {
 		errs = append(errs, "出金限额不合理")
+	}
+	if c.PaperInitialCash <= 0 || c.PaperInitialCash > 10_000_000 {
+		errs = append(errs, "PAPER_INITIAL_CASH 须在 0 – 10,000,000 之间")
 	}
 	if l.MinOrder <= 0 {
 		errs = append(errs, "LIMIT_MIN_ORDER 须大于 0")

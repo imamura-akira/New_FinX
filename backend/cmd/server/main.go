@@ -29,6 +29,7 @@ import (
 	"github.com/imamura-akira/New_FinX/backend/internal/events"
 	"github.com/imamura-akira/New_FinX/backend/internal/funding"
 	"github.com/imamura-akira/New_FinX/backend/internal/marketsim"
+	"github.com/imamura-akira/New_FinX/backend/internal/papertrade"
 	"github.com/imamura-akira/New_FinX/backend/internal/store"
 	"github.com/imamura-akira/New_FinX/backend/internal/trading"
 )
@@ -152,6 +153,30 @@ func run(migrateCmd string, logger *slog.Logger) error {
 				Limits: cfg.Limits, BankLink: cfg.BankLinkMethod, Logger: logger,
 			})
 		}
+		// F15 模拟盘：只依赖数据库与虚拟行情，不调 DW（DW 未配置时也可用）
+		var paperSvc *papertrade.Service
+		if market != nil {
+			paperSvc = papertrade.New(papertrade.Deps{
+				Repo: papertrade.PGRepo{DB: st.DB},
+				Quote: func(sym string) (papertrade.Quote, bool) {
+					q := market.Quotes([]string{sym})
+					if len(q) == 0 {
+						return papertrade.Quote{}, false
+					}
+					return papertrade.Quote{Bid: q[0].Bid, Ask: q[0].Ask, Last: q[0].Last}, true
+				},
+				PrevClose: func(sym string) float64 {
+					q := market.Quotes([]string{sym})
+					if len(q) == 0 {
+						return 0
+					}
+					return q[0].PrevClos
+				},
+				InitialCash: cfg.PaperInitialCash, MinOrder: cfg.Limits.MinOrder, Logger: logger,
+			})
+			go paperSvc.RunMatcher(ctx, cfg.MarketTick)
+			logger.Info("paper trading enabled", slog.Float64("initial_cash", cfg.PaperInitialCash))
+		}
 		var tradeSvc *trading.Service
 		if dw != nil { // F14 交易：按股数买入时用演示行情估算金额（REAL 模式未接入前无报价，只能按金额买入）
 			var price func(string) (float64, bool)
@@ -194,6 +219,9 @@ func run(migrateCmd string, logger *slog.Logger) error {
 			}
 			if tradeSvc != nil {
 				tradeSvc.Routes(mux, apiPrefix, authSvc.RequireAuth)
+			}
+			if paperSvc != nil {
+				paperSvc.Routes(mux, apiPrefix, authSvc.RequireAuth)
 			}
 		})
 	} else {
