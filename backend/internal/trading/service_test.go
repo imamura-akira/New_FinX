@@ -78,7 +78,8 @@ func (m *memRepo) RecentDuplicate(_ context.Context, o Order, since time.Time) (
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	for _, x := range m.orders {
-		if x.AccountID == o.AccountID && x.Symbol == o.Symbol && x.Side == o.Side && eqNum(x.Quantity, o.Quantity) && eqNum(x.Amount, o.Amount) && !x.SubmittedAt.Before(since) {
+		if x.AccountID == o.AccountID && x.Symbol == o.Symbol && x.Side == o.Side && x.OrderType == o.OrderType && eqNum(x.Quantity, o.Quantity) &&
+			eqNum(x.Amount, o.Amount) && eqNum(x.LimitPrice, o.LimitPrice) && !x.SubmittedAt.Before(since) {
 			return true, nil
 		}
 	}
@@ -342,6 +343,17 @@ func TestCreateOrderValidation(t *testing.T) {
 		{"仅可卖出账户卖出", "OPEN_NO_NEW_TRADES", `{"symbol":"AAPL","side":"SELL","orderType":"MARKET","quantity":1}`, 200, 0, "", true},
 		{"冻结账户", "FROZEN", `{"symbol":"AAPL","side":"SELL","orderType":"MARKET","quantity":1}`, 403, 40301, "", false},
 		{"未开通账户", "PENDING", `{"symbol":"AAPL","side":"BUY","orderType":"MARKET","amount":100}`, 409, 40901, "", false},
+		// F14 扩展：限价单（当日有效）
+		{"限价买入：冻结按限价计算（低于演示价也可）", "OPEN", `{"symbol":"AAPL","side":"BUY","orderType":"LIMIT","quantity":5,"limitPrice":100,"timeInForce":"DAY"}`, 200, 0, "", true},
+		{"限价买入：冻结金额超过购买力", "OPEN", `{"symbol":"AAPL","side":"BUY","orderType":"LIMIT","quantity":5,"limitPrice":100.06}`, 422, 42201, "超过可用购买力 $500.25", false},
+		{"限价买入：低于单笔最低", "OPEN", `{"symbol":"AAPL","side":"BUY","orderType":"LIMIT","quantity":0.001,"limitPrice":100}`, 422, 42201, "单笔最低", false},
+		{"限价为 0", "OPEN", `{"symbol":"AAPL","side":"BUY","orderType":"LIMIT","quantity":1,"limitPrice":0}`, 422, 42200, "", false},
+		{"限价缺失", "OPEN", `{"symbol":"AAPL","side":"BUY","orderType":"LIMIT","quantity":1}`, 422, 42200, "", false},
+		{"限价单按金额", "OPEN", `{"symbol":"AAPL","side":"BUY","orderType":"LIMIT","amount":100,"limitPrice":100}`, 422, 42200, "", false},
+		{"有效期 GTC 暂不支持", "OPEN", `{"symbol":"AAPL","side":"BUY","orderType":"LIMIT","quantity":1,"limitPrice":100,"timeInForce":"GTC"}`, 422, 42200, "", false},
+		{"限价卖出超过可卖数量", "OPEN", `{"symbol":"AAPL","side":"SELL","orderType":"LIMIT","quantity":8.26,"limitPrice":130}`, 422, 42201, "超过可卖数量 8.25 股", false},
+		{"限价卖出", "OPEN", `{"symbol":"AAPL","side":"SELL","orderType":"LIMIT","quantity":8,"limitPrice":130}`, 200, 0, "", true},
+		{"无报价也可限价买入", "OPEN", `{"symbol":"XYZ","side":"BUY","orderType":"LIMIT","quantity":1,"limitPrice":10}`, 200, 0, "", true},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -402,6 +414,47 @@ func TestCreateOrderQuantityBody(t *testing.T) {
 	}
 	if _, ok := c.body["amountCash"]; ok {
 		t.Fatal("按股数下单不应带 amountCash")
+	}
+}
+
+func TestLimitOrderBodyAndView(t *testing.T) {
+	f := newFx(t)
+	f.dw.resp["GET /orders/DWO-1"] = []string{`{"id":"DWO-1","orderNo":"FEAB000001","status":"NEW","cumulativeQuantity":0}`}
+	r := f.call("POST", "/api/v1/orders", `{"symbol":"AAPL","side":"BUY","orderType":"LIMIT","quantity":2,"limitPrice":150.5}`)
+	if r.Code != 0 || r.field(t, "status") != StatusNew {
+		t.Fatalf("%+v %s", r, r.Data)
+	}
+	c := f.dw.last("POST /orders")
+	want := map[string]any{"orderType": "LIMIT", "symbol": "AAPL", "side": "BUY", "quantity": float64(2), "price": 150.5, "timeInForce": "DAY"}
+	for k, v := range want {
+		if c.body[k] != v {
+			t.Fatalf("DW 请求 %s = %v，期望 %v（%v）", k, c.body[k], v, c.body)
+		}
+	}
+	if _, ok := c.body["amountCash"]; ok {
+		t.Fatal("限价单不应带 amountCash")
+	}
+	if c.idem == "" {
+		t.Fatal("应附带 Idempotency-Key")
+	}
+	g := f.call("GET", "/api/v1/orders/ord-1", "")
+	var o map[string]any
+	_ = json.Unmarshal(g.Data, &o)
+	if o["orderType"] != "LIMIT" || o["limitPrice"] != 150.5 || o["timeInForce"] != "DAY" || o["quantity"] != float64(2) {
+		t.Fatalf("订单视图：%s", g.Data)
+	}
+	// 未成交的限价单可撤
+	f.dw.resp["GET /orders/DWO-1"] = []string{`{"id":"DWO-1","status":"CANCELED"}`}
+	if r := f.call("POST", "/api/v1/orders/ord-1/cancel", ""); r.Code != 0 || r.field(t, "status") != StatusCanceled {
+		t.Fatalf("%+v", r)
+	}
+	// 同价同量 10 秒内重复提交拦截；限价不同不算重复
+	f.dw.resp["GET /orders/DWO-1"] = []string{`{"id":"DWO-1","status":"NEW"}`}
+	if r := f.call("POST", "/api/v1/orders", `{"symbol":"AAPL","side":"BUY","orderType":"LIMIT","quantity":2,"limitPrice":150.5}`); r.Code != 40901 {
+		t.Fatalf("%+v", r)
+	}
+	if r := f.call("POST", "/api/v1/orders", `{"symbol":"AAPL","side":"BUY","orderType":"LIMIT","quantity":2,"limitPrice":150.4}`); r.Code != 0 {
+		t.Fatalf("%+v", r)
 	}
 }
 

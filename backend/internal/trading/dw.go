@@ -22,9 +22,16 @@ func pathPositions(dwAccountID string) string {
 
 func pathMoney(dwAccountID string) string { return "/accounts/" + dwAccountID + "/summary/money" }
 
-// orderBody：市价单。quantity 与 amountCash 二选一（DW 错误码 O015）。
-func orderBody(accountNo, symbol, side string, qty, notional *string, preventQueuing bool) map[string]any {
-	b := map[string]any{"accountNo": accountNo, "orderType": "MARKET", "symbol": symbol, "side": side}
+// orderBody：市价单 quantity 与 amountCash 二选一（DW 错误码 O015）；限价单 quantity + price + timeInForce
+// （DW Create Order：LIMIT 需 price；timeInForce 取 DAY，sandbox-log T-10）。
+func orderBody(accountNo, symbol, side, orderType string, qty, notional, price, tif *string, preventQueuing bool) map[string]any {
+	b := map[string]any{"accountNo": accountNo, "orderType": orderType, "symbol": symbol, "side": side}
+	if orderType == "LIMIT" && price != nil {
+		b["price"] = json.Number(*price)
+		if tif != nil {
+			b["timeInForce"] = *tif
+		}
+	}
 	if qty != nil {
 		b["quantity"] = json.Number(*qty)
 	} else if notional != nil {

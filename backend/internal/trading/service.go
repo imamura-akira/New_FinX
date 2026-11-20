@@ -28,6 +28,7 @@ import (
 	"github.com/imamura-akira/New_FinX/backend/internal/dwclient"
 	"github.com/imamura-akira/New_FinX/backend/internal/funding"
 	"github.com/imamura-akira/New_FinX/backend/internal/httpx"
+	"github.com/imamura-akira/New_FinX/backend/internal/orderrules"
 )
 
 // DW：所需的 DW 能力（*dwclient.Client 满足）。
@@ -168,11 +169,13 @@ func fmtQty(f float64) string { return strconv.FormatFloat(math.Floor(f*1e6+1e-6
 func (s *Service) handleCreate(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	var in struct {
-		Symbol    string          `json:"symbol"`
-		Side      string          `json:"side"`
-		OrderType string          `json:"orderType"`
-		Amount    json.RawMessage `json:"amount"`
-		Quantity  json.RawMessage `json:"quantity"`
+		Symbol      string          `json:"symbol"`
+		Side        string          `json:"side"`
+		OrderType   string          `json:"orderType"`
+		Amount      json.RawMessage `json:"amount"`
+		Quantity    json.RawMessage `json:"quantity"`
+		LimitPrice  json.RawMessage `json:"limitPrice"`
+		TimeInForce string          `json:"timeInForce"`
 	}
 	if err := httpx.Decode(w, r, 0, &in); err != nil {
 		httpx.Fail(w, r, err)
@@ -186,16 +189,30 @@ func (s *Service) handleCreate(w http.ResponseWriter, r *http.Request) {
 	if in.Side != "BUY" && in.Side != "SELL" {
 		fe = append(fe, httpx.FieldError{Field: "side", Reason: "请选择买入或卖出"})
 	}
-	if in.OrderType != "MARKET" {
-		fe = append(fe, httpx.FieldError{Field: "orderType", Reason: "本期只支持市价单"})
+	limitOrder := in.OrderType == "LIMIT"
+	if in.OrderType != "MARKET" && !limitOrder {
+		fe = append(fe, httpx.FieldError{Field: "orderType", Reason: "请选择市价单或限价单"})
+	}
+	if in.TimeInForce != "" && in.TimeInForce != "DAY" {
+		fe = append(fe, httpx.FieldError{Field: "timeInForce", Reason: "有效期目前只支持当日有效（DAY）"})
 	}
 	var (
 		amountCents int64
 		qtyStr      string
 		qty         float64
+		limitPrice  float64
 		byAmount    = present(in.Amount)
 	)
+	if limitOrder {
+		lp, err := orderrules.ParseLimitPrice(in.LimitPrice)
+		if err != nil {
+			fe = append(fe, httpx.FieldError{Field: "limitPrice", Reason: err.Error()})
+		}
+		limitPrice = lp
+	}
 	switch {
+	case limitOrder && byAmount:
+		fe = append(fe, httpx.FieldError{Field: "amount", Reason: "限价单请按股数下单"})
 	case byAmount && present(in.Quantity):
 		fe = append(fe, httpx.FieldError{Field: "amount", Reason: "金额与股数只能填写一项"})
 	case byAmount:
@@ -231,7 +248,14 @@ func (s *Service) handleCreate(w http.ResponseWriter, r *http.Request) {
 
 	if in.Side == "BUY" {
 		est := amountCents
-		if !byAmount {
+		if limitOrder { // 限价买单：冻结金额按限价计算
+			est = int64(math.Ceil(qty*limitPrice*100 - 1e-6))
+			limits["estimated"] = funding.Cents(est)
+			if est < minC {
+				httpx.Fail(w, r, limitErr(minMsg, limits))
+				return
+			}
+		} else if !byAmount {
 			price, ok := 0.0, false
 			if s.Price != nil {
 				price, ok = s.Price(sym)
@@ -284,8 +308,12 @@ func (s *Service) handleCreate(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	o := Order{AccountID: a.ID, Symbol: sym, Side: in.Side, OrderType: "MARKET", Status: StatusSubmitting,
+	o := Order{AccountID: a.ID, Symbol: sym, Side: in.Side, OrderType: in.OrderType, Status: StatusSubmitting,
 		IdempotencyKey: newUUID(), CreatedBy: httpx.UserID(ctx), DWAccountNo: a.AccountNo}
+	if limitOrder {
+		lp, tif := json.Number(orderrules.FormatPrice(limitPrice)), "DAY"
+		o.LimitPrice, o.TimeInForce = &lp, &tif
+	}
 	if byAmount {
 		n := json.Number(funding.Cents(amountCents))
 		o.Amount = &n
@@ -310,7 +338,8 @@ func (s *Service) handleCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	_ = s.Repo.Audit(ctx, "user:"+httpx.UserID(ctx), "order.submitted", "order:"+o.ID, map[string]any{
-		"symbol": sym, "side": in.Side, "quantity": numArg(o.Quantity), "amount": numArg(o.Amount), "status": status})
+		"symbol": sym, "side": in.Side, "type": o.OrderType, "quantity": numArg(o.Quantity), "amount": numArg(o.Amount),
+		"limitPrice": numArg(o.LimitPrice), "status": status})
 	httpx.OK(w, map[string]string{"orderId": o.ID, "status": status})
 }
 
@@ -327,7 +356,12 @@ func (s *Service) submit(ctx context.Context, o Order) (string, error) {
 		notional = &n
 	}
 	dctx := dwclient.WithIdempotencyKey(ctx, o.IdempotencyKey)
-	err := s.DW.Do(dctx, http.MethodPost, pathOrders, orderBody(o.DWAccountNo, o.Symbol, o.Side, qty, notional, s.PreventQueuing), &res)
+	var price *string
+	if o.LimitPrice != nil {
+		p := o.LimitPrice.String()
+		price = &p
+	}
+	err := s.DW.Do(dctx, http.MethodPost, pathOrders, orderBody(o.DWAccountNo, o.Symbol, o.Side, o.OrderType, qty, notional, price, o.TimeInForce, s.PreventQueuing), &res)
 	if err != nil {
 		var ae *dwclient.APIError
 		if errors.As(err, &ae) && ae.Status >= 400 && ae.Status < 500 && ae.Status != http.StatusTooManyRequests {

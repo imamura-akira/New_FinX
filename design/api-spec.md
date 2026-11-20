@@ -72,17 +72,17 @@ Base URL：`/api/v1`　认证：`Authorization: Bearer <sessionToken>`（除 /au
 ## 5.6 交易（F14，P-19 / P-11 / P-12）
 
 > 后端转 DW `POST /orders`、`GET /orders/{orderID}`、`PATCH /orders/{orderID}`（`method: CANCEL`）、`GET /accounts/{accountID}/summary/positions`（字段依据 DW 参考文档，2026-11-20 查阅；沙盒实测排在 2026-11-23）。
-> 本期只支持**市价单**；订单在我方落库（含 Idempotency-Key），状态以 DW 返回为准（对账任务与查询时刷新）。
+> 支持**市价单**与**限价单**（2026-11-20 扩展，限价单只做当日有效 DAY）；订单在我方落库（含 Idempotency-Key），状态以 DW 返回为准（对账任务与查询时刷新）。
 
 | 方法 路径 | 请求 | 响应 data | 说明 |
 |---|---|---|---|
-| POST /orders | `{symbol, side: "BUY"\|"SELL", orderType: "MARKET", amount?, quantity?}` | `{orderId, status}` | `amount`（美元，两位小数，允许碎股）与 `quantity`（股数，最多 6 位小数）二选一。后端强制：买入预估金额 ≤ DW 购买力（`cashAvailableForTrade`），且 ≥ 单笔最低 $1（示例值，配置 `LIMIT_MIN_ORDER`）；卖出股数 ≤ DW 可卖数量（`availableForTradingQty`）；按金额卖出 ≤ 可卖数量 × DW 市价。超限 42201（附 `limits`）；账户 OPEN_NO_NEW_TRADES 时买入返回 40301；同一订单 10 秒内重复提交 40901；结果不明 50001 附 `orderId` |
+| POST /orders | `{symbol, side: "BUY"\|"SELL", orderType: "MARKET"\|"LIMIT", amount?, quantity?, limitPrice?, timeInForce?: "DAY"}` | `{orderId, status}` | 市价单：`amount`（美元，两位小数，允许碎股）与 `quantity`（股数，最多 6 位小数）二选一。限价单：必须按 `quantity`，`limitPrice` > 0（$1 以上最多两位小数，$1 以下最多四位），有效期只支持 `DAY`（缺省即 DAY）；买入冻结金额 = quantity × limitPrice，须 ≥ 单笔最低且 ≤ DW 购买力；后端转 DW 字段 `orderType: "LIMIT"`、`price`、`timeInForce: "DAY"`。后端强制：买入预估金额 ≤ DW 购买力（`cashAvailableForTrade`），且 ≥ 单笔最低 $1（示例值，配置 `LIMIT_MIN_ORDER`）；卖出股数 ≤ DW 可卖数量（`availableForTradingQty`）；按金额卖出 ≤ 可卖数量 × DW 市价。超限 42201（附 `limits`）；账户 OPEN_NO_NEW_TRADES 时买入返回 40301；同一订单 10 秒内重复提交 40901；结果不明 50001 附 `orderId` |
 | GET /orders | `?status=OPEN\|CLOSED&cursor=` | `[Order]` | 每页 50 条，下一页游标在响应头 `X-Next-Cursor`（同 /funding/transfers）；未开户返回空数组 |
 | GET /orders/{id} | — | `Order` | 未完结订单查询时向 DW 刷新一次 |
 | POST /orders/{id}/cancel | — | `{orderId, status}` | 仅 NEW / PARTIAL_FILL 可撤；其他状态 40901。后端转 DW `PATCH /orders/{orderID}`，撤单结果以 DW 返回状态为准（可能先为 PENDING_CANCEL） |
 | GET /positions | — | `{updatedAt, equityValue, positions:[{symbol, quantity, sellableQty, avgPrice, costBasis, marketPrice, marketValue, unrealizedPL, unrealizedDayPL}]}` | 全部为 DW `summary/positions` 返回值（App 只计算盈亏百分比）；未开户返回 40901 |
 
-**Order**：`{orderId, orderNo, symbol, side, orderType, quantity, amount, status, filledQty, avgPrice, totalAmount, fees, rejectReason, submittedAt, updatedAt, doneAt}`；`quantity` / `amount` 为委托值（二者其一为 null），`filledQty`、`avgPrice`、`totalAmount`、`fees` 为 DW 返回（未成交为 null），`rejectReason` 为可展示的中文原因（不透出 DW 原文）。
+**Order**：`{orderId, orderNo, symbol, side, orderType, quantity, amount, limitPrice, timeInForce, status, filledQty, avgPrice, totalAmount, fees, rejectReason, submittedAt, updatedAt, doneAt}`（`limitPrice` / `timeInForce` 仅限价单有值）；`quantity` / `amount` 为委托值（二者其一为 null），`filledQty`、`avgPrice`、`totalAmount`、`fees` 为 DW 返回（未成交为 null），`rejectReason` 为可展示的中文原因（不透出 DW 原文）。
 **订单状态枚举**（DW Order Status）：`NEW / PARTIAL_FILL / FILLED / REJECTED / CANCELED / PENDING_CANCEL`；我方新增 `SUBMITTING`（已记录、提交结果待确认）。App 文案：NEW = 排队中 / 已报，PARTIAL_FILL = 部分成交，FILLED = 已成交，REJECTED = 已拒绝，CANCELED = 已撤单，PENDING_CANCEL = 撤单中，SUBMITTING = 提交中。
 
 ## 5.7 模拟交易 / 模拟盘（F15，演示与练习用途）
@@ -158,3 +158,4 @@ Base URL：`/api/v1`　认证：`Authorization: Bearer <sessionToken>`（除 /au
 | 2026-11-20 | 开户校验加固（`PUT /application/draft` 分步校验与 `POST /application/submit`）：美国地址 `residentialAddress.state` 须为 USPS 州代码或全称（沙盒 E032）；SSN 拦截 123-45-6789 与全同数字；美国 / NANP 电话区号与交换码不以 0、1 开头、全同数字拦截。均返回 42200 字段错误（英文文案），接口形状不变 | 校验收紧，向后兼容 |
 | 2026-11-20 | 新增 5.6 交易（F14）：`POST /orders`、`GET /orders`、`GET /orders/{id}`、`POST /orders/{id}/cancel`、`GET /positions`，以及 `Order`、`Position`、`OrderStatus` 结构；只支持市价单（按金额或按股数）。用户已同意按向后兼容新增处理，不升 v2 | 新增，向后兼容 |
 | 2026-11-20 | 新增 5.7 模拟交易 / 模拟盘（F15）：`/paper/account`、`/paper/account/reset`、`/paper/orders`、`/paper/orders/{id}`、`/paper/orders/{id}/cancel`、`/paper/positions`；结构与实盘 Order / Position 对齐并带 `simulated: true`；不调用 DW | 新增，向后兼容 |
+| 2026-11-20 | 5.6 交易扩展限价单：`POST /orders` 的 `orderType` 新增 `LIMIT`，新增请求字段 `limitPrice`、`timeInForce`（只支持 DAY）；`Order` 新增 `limitPrice`、`timeInForce`。市价单行为不变 | 新增，向后兼容 |

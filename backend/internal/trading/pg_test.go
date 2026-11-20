@@ -136,6 +136,29 @@ func TestPGTradingRepo(t *testing.T) {
 	if all, _ := r.ListOrders(ctx, accID, "", &c.SubmittedAt, 50); len(all) != 0 {
 		t.Fatal("游标之前没有更早的订单")
 	}
+	// 限价单字段（F14 扩展，迁移 000007）
+	lq, lp, tif := json.Number("3"), json.Number("150.25"), "DAY"
+	o3 := Order{AccountID: accID, Symbol: "AAPL", Side: "BUY", OrderType: "LIMIT", Quantity: &lq, LimitPrice: &lp, TimeInForce: &tif,
+		Status: StatusSubmitting, IdempotencyKey: key("4")}
+	id3, err := r.InsertOrder(ctx, o3)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if g, _ := r.GetOrder(ctx, accID, id3); g == nil || g.OrderType != "LIMIT" || g.LimitPrice.String() != "150.25" || *g.TimeInForce != "DAY" {
+		t.Fatalf("限价单读取：%+v", g)
+	}
+	if dup, _ := r.RecentDuplicate(ctx, o3, now.Add(-time.Minute)); !dup {
+		t.Fatal("同价限价单应识别为重复")
+	}
+	other3 := o3
+	lp2 := json.Number("150.26")
+	other3.LimitPrice = &lp2
+	if dup, _ := r.RecentDuplicate(ctx, other3, now.Add(-time.Minute)); dup {
+		t.Fatal("限价不同不算重复")
+	}
+	if _, err := r.InsertOrder(ctx, Order{AccountID: accID, Symbol: "AAPL", Side: "BUY", OrderType: "LIMIT", Quantity: &lq, Status: StatusSubmitting, IdempotencyKey: key("5")}); err == nil {
+		t.Fatal("限价单缺少限价应被约束拒绝")
+	}
 	if err := r.Audit(ctx, "system", "order.status", "order:"+id1, map[string]any{"to": "FILLED"}); err != nil {
 		t.Fatal(err)
 	}

@@ -18,6 +18,7 @@ import (
 
 	"github.com/imamura-akira/New_FinX/backend/internal/funding"
 	"github.com/imamura-akira/New_FinX/backend/internal/httpx"
+	"github.com/imamura-akira/New_FinX/backend/internal/orderrules"
 )
 
 // Deps：外部依赖（不含 DW）。
@@ -246,25 +247,6 @@ func parseQty(raw json.RawMessage) (float64, error) {
 	return f, nil
 }
 
-// ParseLimitPrice：限价 > 0；≥ $1 最多两位小数，< $1 最多四位小数（美股最小报价单位）。
-func ParseLimitPrice(raw json.RawMessage) (float64, error) {
-	t := strings.TrimSpace(string(raw))
-	if !present(raw) || strings.HasPrefix(t, `"`) {
-		return 0, errors.New("请输入限价")
-	}
-	if !regexp.MustCompile(`^\d{1,7}(\.\d{1,4})?$`).MatchString(t) {
-		return 0, errors.New("限价格式不正确")
-	}
-	f, _ := strconv.ParseFloat(t, 64)
-	if f <= 0 {
-		return 0, errors.New("限价必须大于 0")
-	}
-	if dot := strings.IndexByte(t, '.'); f >= 1 && dot >= 0 && len(t)-dot-1 > 2 {
-		return 0, errors.New("限价 $1 以上最多两位小数")
-	}
-	return f, nil
-}
-
 func newUUID() string {
 	b := make([]byte, 16)
 	_, _ = rand.Read(b)
@@ -328,7 +310,7 @@ func (s *Service) handleCreate(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			fe = append(fe, httpx.FieldError{Field: "quantity", Reason: err.Error()})
 		}
-		lp, err := ParseLimitPrice(in.LimitPrice)
+		lp, err := orderrules.ParseLimitPrice(in.LimitPrice)
 		if err != nil {
 			fe = append(fe, httpx.FieldError{Field: "limitPrice", Reason: err.Error()})
 		}

@@ -174,4 +174,8 @@
 | T-7 | 撤单 | `PATCH /orders/{id}` `{"method":"CANCEL"}`；仅 NEW / PARTIAL_FILL 可撤；之后以 DW 返回状态为准 | 撤单后状态是直接 CANCELED 还是先 PENDING_CANCEL |
 | T-8 | 拒单原因 | 订单 REJECTED 时显示通用中文原因；DW `statusMessage` 只写日志与数据库（不透出原文） | 常见拒单原因与对应中文文案 |
 | T-9 | 预估价格 | 按股数买入时用虚拟行情（F11）卖一价估算金额，用于购买力与最低金额校验 | 与 DW 实际成交价的差异是否导致边界情况被 DW 拒绝 |
+| T-10 | 限价单请求（窗口期实测） | `orderType: LIMIT`、`quantity`、`price`（限价）、`timeInForce: "DAY"`（文档枚举含 DAY；缺省也为当日有效）；不支持按金额（amountCash）下限价单 | DW 是否接受显式 `DAY`；碎股限价单是否允许；限价小数位规则（$1 以上两位、以下四位） |
+| T-11 | 限价单挂单（窗口期实测） | 未到价时状态 NEW，App 显示"挂单中"；对账任务与查询刷新 | 挂单期间 DW 是否冻结购买力（`cashAvailableForTrade` 是否下降）；休市时提交的限价单是否排队 |
+| T-12 | 限价单撤单（窗口期实测） | `PATCH /orders/{id}` `{"method":"CANCEL"}`，同市价单 | 撤单后是否直接 CANCELED、购买力是否立即释放 |
+| T-13 | 限价单成交与过期（窗口期实测） | 价格到达后 FILLED（可能 PARTIAL_FILL）；当日未成交由 DW 收盘撤销（状态以 DW 返回为准） | 沙盒是否真实撮合限价（还是即时成交 / 永不成交）；收盘后过期订单的状态与 statusMessage |
 

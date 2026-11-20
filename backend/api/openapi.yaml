@@ -816,9 +816,10 @@ paths:
     post:
       tags: [trading]
       operationId: createOrder
-      summary: 下单（P-19，市价单）
+      summary: 下单（P-19，市价单 / 限价单）
       description: |
-        后端转 DW `POST /orders`（附 Idempotency-Key）。本期只支持 MARKET。`amount`（按金额，允许碎股）与 `quantity`（按股数，最多 6 位小数）二选一。
+        后端转 DW `POST /orders`（附 Idempotency-Key）。MARKET：`amount`（按金额，允许碎股）与 `quantity`（按股数，最多 6 位小数）二选一。
+        LIMIT（当日有效）：必须按 `quantity`，`limitPrice` > 0，`timeInForce` 只支持 DAY；买入冻结金额 = quantity × limitPrice；转 DW 字段 price / timeInForce。
         后端强制：买入预估金额 ≤ DW 购买力且 ≥ 单笔最低（LIMIT_MIN_ORDER，示例值 $1）；卖出 ≤ DW 可卖数量。超限 42201（data.limits）；
         OPEN_NO_NEW_TRADES 账户买入 40301；10 秒内重复提交 40901；DW 结果不明 50001（data.orderId）。
       requestBody:
@@ -831,9 +832,11 @@ paths:
               properties:
                 symbol: { type: string, example: AAPL }
                 side: { type: string, enum: [BUY, SELL] }
-                orderType: { type: string, enum: [MARKET] }
+                orderType: { type: string, enum: [MARKET, LIMIT] }
                 amount: { $ref: "#/components/schemas/Money" }
-                quantity: { type: number, minimum: 0, exclusiveMinimum: true, description: 股数，最多 6 位小数 }
+                quantity: { type: number, minimum: 0, exclusiveMinimum: true, description: 股数，最多 6 位小数；限价单必填 }
+                limitPrice: { type: number, minimum: 0, exclusiveMinimum: true, description: 限价单必填；$1 以上最多两位小数，$1 以下最多四位 }
+                timeInForce: { type: string, enum: [DAY], description: 限价单有效期，只支持当日有效（缺省即 DAY） }
       responses:
         "200":
           description: 已提交
@@ -1475,7 +1478,9 @@ components:
         orderNo: { type: string, nullable: true, description: DW 订单号 }
         symbol: { type: string }
         side: { type: string, enum: [BUY, SELL] }
-        orderType: { type: string, enum: [MARKET] }
+        orderType: { type: string, enum: [MARKET, LIMIT] }
+        limitPrice: { type: number, nullable: true, description: 限价（限价单） }
+        timeInForce: { type: string, nullable: true, enum: [DAY], description: 有效期（限价单） }
         quantity: { type: number, nullable: true, description: 委托股数（按股数下单时） }
         amount: { type: number, nullable: true, description: 委托金额（按金额下单时） }
         status: { $ref: "#/components/schemas/OrderStatus" }

@@ -25,6 +25,8 @@ type Order struct {
 	AvgPrice     *json.Number `json:"avgPrice"`
 	TotalAmount  *json.Number `json:"totalAmount"`
 	Fees         *json.Number `json:"fees"`
+	LimitPrice   *json.Number `json:"limitPrice"`  // 限价单（F14 扩展）
+	TimeInForce  *string      `json:"timeInForce"` // 限价单：DAY
 	RejectReason *string      `json:"rejectReason"`
 	SubmittedAt  time.Time    `json:"submittedAt"`
 	UpdatedAt    time.Time    `json:"updatedAt"`
@@ -89,7 +91,8 @@ type PGRepo struct{ DB *sql.DB }
 
 const orderCols = `o.id, o.dw_order_no, o.symbol, o.side, o.order_type, o.quantity::text, o.notional::text, o.status,
 	o.filled_qty::text, o.avg_price::text, o.total_amount::text, o.fees::text, o.reject_reason, o.submitted_at, o.updated_at, o.done_at,
-	o.account_id, coalesce(o.dw_order_id, ''), coalesce(a.account_no, ''), o.idempotency_key::text, coalesce(o.created_by::text, ''), o.dw_reason`
+	o.account_id, coalesce(o.dw_order_id, ''), coalesce(a.account_no, ''), o.idempotency_key::text, coalesce(o.created_by::text, ''), o.dw_reason,
+	o.limit_price::text, o.time_in_force`
 
 const orderFrom = ` FROM orders o JOIN accounts a ON a.id = o.account_id`
 
@@ -109,10 +112,10 @@ func trimNum(s sql.NullString) *json.Number {
 func scanOrder(row interface{ Scan(...any) error }) (Order, error) {
 	var o Order
 	var no, reason, dwReason sql.NullString
-	var qty, notional, filled, avg, total, fees sql.NullString
+	var qty, notional, filled, avg, total, fees, limit, tif sql.NullString
 	err := row.Scan(&o.ID, &no, &o.Symbol, &o.Side, &o.OrderType, &qty, &notional, &o.Status,
 		&filled, &avg, &total, &fees, &reason, &o.SubmittedAt, &o.UpdatedAt, &o.DoneAt,
-		&o.AccountID, &o.DWOrderID, &o.DWAccountNo, &o.IdempotencyKey, &o.CreatedBy, &dwReason)
+		&o.AccountID, &o.DWOrderID, &o.DWAccountNo, &o.IdempotencyKey, &o.CreatedBy, &dwReason, &limit, &tif)
 	if err != nil {
 		return o, err
 	}
@@ -124,6 +127,10 @@ func scanOrder(row interface{ Scan(...any) error }) (Order, error) {
 	}
 	if dwReason.Valid {
 		o.DWReason = &dwReason.String
+	}
+	o.LimitPrice = trimNum(limit)
+	if tif.Valid {
+		o.TimeInForce = &tif.String
 	}
 	o.Quantity, o.Amount, o.FilledQty, o.AvgPrice, o.TotalAmount, o.Fees = trimNum(qty), trimNum(notional), trimNum(filled), trimNum(avg), trimNum(total), trimNum(fees)
 	o.SubmittedAt, o.UpdatedAt = o.SubmittedAt.UTC(), o.UpdatedAt.UTC()
@@ -154,9 +161,11 @@ func (p PGRepo) InsertOrder(ctx context.Context, o Order) (string, error) {
 	if o.CreatedBy != "" {
 		createdBy = o.CreatedBy
 	}
-	err := p.DB.QueryRowContext(ctx, `INSERT INTO orders (account_id, symbol, side, order_type, quantity, notional, status, idempotency_key, created_by)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id`,
-		o.AccountID, o.Symbol, o.Side, o.OrderType, numArg(o.Quantity), numArg(o.Amount), o.Status, o.IdempotencyKey, createdBy).Scan(&id)
+	err := p.DB.QueryRowContext(ctx, `INSERT INTO orders (account_id, symbol, side, order_type, quantity, notional, status, idempotency_key, created_by,
+		limit_price, time_in_force)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING id`,
+		o.AccountID, o.Symbol, o.Side, o.OrderType, numArg(o.Quantity), numArg(o.Amount), o.Status, o.IdempotencyKey, createdBy,
+		numArg(o.LimitPrice), strArg(o.TimeInForce)).Scan(&id)
 	return id, err
 }
 
@@ -174,8 +183,9 @@ func (p PGRepo) DeleteOrder(ctx context.Context, id string) error {
 func (p PGRepo) RecentDuplicate(ctx context.Context, o Order, since time.Time) (bool, error) {
 	var n int
 	err := p.DB.QueryRowContext(ctx, `SELECT count(*) FROM orders WHERE account_id = $1 AND symbol = $2 AND side = $3
-		AND quantity IS NOT DISTINCT FROM $4::numeric AND notional IS NOT DISTINCT FROM $5::numeric AND submitted_at >= $6`,
-		o.AccountID, o.Symbol, o.Side, numArg(o.Quantity), numArg(o.Amount), since).Scan(&n)
+		AND quantity IS NOT DISTINCT FROM $4::numeric AND notional IS NOT DISTINCT FROM $5::numeric AND submitted_at >= $6
+		AND order_type = $7 AND limit_price IS NOT DISTINCT FROM $8::numeric`,
+		o.AccountID, o.Symbol, o.Side, numArg(o.Quantity), numArg(o.Amount), since, o.OrderType, numArg(o.LimitPrice)).Scan(&n)
 	return n > 0, err
 }
 
