@@ -83,9 +83,9 @@ String sideLabel(String side) => side == 'SELL' ? '卖出' : '买入';
 /// 演示行情与成交价差异提示（P-19 确认页 / 结果页，F14 需求原文）。
 const demoPriceNotice = '显示价格为演示行情，实际成交以券商（DriveWealth）返回为准';
 
-/// 限价单开关：实盘限价单（F14 扩展）上线前只在模拟盘开放。
+/// 限价单开关：实盘限价单（F14 扩展，当日有效）已开放；模拟盘始终支持。
 abstract final class TradingFeatures {
-  static const realLimitOrders = false;
+  static const realLimitOrders = true;
 }
 
 final _limitRe = RegExp(r'^\d{1,7}(\.\d{1,4})?$');

@@ -229,8 +229,8 @@ class _OrderPageState extends State<OrderPage> {
         _step = 'done';
       });
       final status = detail?.status ?? r.status;
-      // 交易提交成功：轻量版庆祝（同入金；结果待确认、被拒绝或仅挂单时不播放）；同一订单只播一次
-      final celebrate = !r.pending && status != 'REJECTED' && !(paper && status == 'NEW');
+      // 交易提交成功：轻量版庆祝（同入金；结果待确认、被拒绝或限价单仅挂单时不播放）；同一订单只播一次
+      final celebrate = !r.pending && status != 'REJECTED' && !(_isLimit && status == 'NEW');
       if (celebrate) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) Celebration.show(context, key: '${paper ? 'paper-' : ''}order:${r.orderId}', level: CelebrationLevel.light);

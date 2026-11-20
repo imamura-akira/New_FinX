@@ -223,6 +223,51 @@ void main() {
     expect(tester.widget<Text>(find.byKey(const Key('p19.result.status'))).data, '排队中');
   });
 
+  testWidgets('P-19 实盘限价单：冻结金额按限价校验购买力，提交 LIMIT + 限价 + 当日有效，挂单不庆祝', (tester) async {
+    await _phone(tester);
+    final be = _backend()
+      ..on('POST /orders', (_) => FakeBackend.ok({'orderId': 'ord-5', 'status': 'NEW'}))
+      ..on(
+        'GET /orders/ord-5',
+        (_) => FakeBackend.ok({
+          ..._order('ord-5', 'NEW', qty: 2),
+          'orderType': 'LIMIT',
+          'limitPrice': 200,
+          'timeInForce': 'DAY',
+        }),
+      );
+    await pumpApp(tester, backend: be, storedToken: 'tok');
+    await _go(tester, '/trade/AAPL');
+    await tester.tap(find.descendant(of: find.byKey(const Key('p19.type')), matching: find.text('限价')));
+    await tester.pumpAndSettle();
+    // 冻结金额 3 × 200 = 600 超过 DW 购买力 500
+    await tester.enterText(find.byKey(const Key('p19.limitPrice')), '200');
+    await tester.enterText(find.byKey(const Key('p19.input')), '3');
+    await _next(tester);
+    expect(find.textContaining(r'超过可用资金 $500.00'), findsOneWidget);
+    expect(be.requests.where((r) => r.method == 'POST'), isEmpty);
+
+    await tester.enterText(find.byKey(const Key('p19.input')), '2');
+    await tester.pump();
+    expect(tester.widget<Text>(find.byKey(const Key('p19.estimate'))).data, r'$400.00');
+    await _next(tester);
+    expect(find.text('限价单 · 当日有效'), findsOneWidget);
+    expect(find.text('显示价格为演示行情，实际成交以券商（DriveWealth）返回为准'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('p19.submit')));
+    await tester.pumpAndSettle();
+    expect(be.lastBody('POST /orders'), {
+      'symbol': 'AAPL',
+      'side': 'BUY',
+      'orderType': 'LIMIT',
+      'quantity': 2,
+      'limitPrice': 200,
+      'timeInForce': 'DAY',
+    });
+    expect(find.text('限价单已提交'), findsOneWidget);
+    expect(tester.widget<Text>(find.byKey(const Key('p19.result.status'))).data, '挂单中');
+    expect(find.byType(ConfettiBurst), findsNothing);
+  });
+
   testWidgets('P-19：服务端 42201（以 DW 购买力为准）退回填写页显示限额', (tester) async {
     await _phone(tester);
     final be = _backend()..on('POST /orders', (_) => FakeBackend.err(422, 42201, r'超过可用购买力 $50.00', {'limits': {'buyingPower': '50.00'}}));

@@ -274,7 +274,7 @@ void main() {
     expect(find.byType(ConfettiBurst), findsNothing);
   });
 
-  testWidgets('实盘：限价单未开放前不显示"市价 / 限价"切换', (tester) async {
+  testWidgets('实盘下单页：显示"市价 / 限价"切换，无模拟盘横幅', (tester) async {
     await _phone(tester);
     await pumpApp(tester, backend: _backend(), storedToken: 'tok');
     await _push(tester, '/trade/AAPL');
