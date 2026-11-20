@@ -13,11 +13,15 @@ import '../../market/domain/instruments.dart';
 import '../data/trading_api.dart';
 import '../domain/trading_rules.dart';
 import 'order_page.dart';
+import 'paper_widgets.dart';
 
 /// P-11 订单列表（F14）：状态、成交数量、成交均价、时间均取 DW 返回；未成交订单可撤单（二次确认）。
 /// 有未完结订单时每 5 秒刷新一次。
 class OrdersPage extends StatefulWidget {
-  const OrdersPage({super.key});
+  const OrdersPage({super.key, this.paper = false});
+
+  /// 模拟盘订单（F15，/paper/orders）。
+  final bool paper;
 
   @override
   State<OrdersPage> createState() => _OrdersPageState();
@@ -46,7 +50,7 @@ class _OrdersPageState extends State<OrdersPage> {
   Future<void> _load() async {
     _timer?.cancel();
     try {
-      final list = await TradingApi(AppScope.of(context).api).orders(filter: _filter);
+      final list = await TradingApi(AppScope.of(context).api, paper: widget.paper).orders(filter: _filter);
       if (!mounted) return;
       setState(() {
         _orders = list;
@@ -59,7 +63,7 @@ class _OrdersPageState extends State<OrdersPage> {
       }
     } on ApiException catch (e) {
       if (!mounted) return;
-      setState(() => e.code == ApiCodes.conflict ? _notOpened = true : _error = tradingErrorText(e));
+      setState(() => !widget.paper && e.code == ApiCodes.conflict ? _notOpened = true : _error = tradingErrorText(e));
     }
   }
 
@@ -68,7 +72,11 @@ class _OrdersPageState extends State<OrdersPage> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('撤销订单？'),
-        content: Text('${sideLabel(o.side)} ${o.symbol} ${_size(o)}。撤单结果以券商返回为准，已成交部分不会撤销。'),
+        content: Text(
+          widget.paper
+              ? '${sideLabel(o.side)} ${o.symbol} ${_size(o)}。撤单后释放冻结的模拟资金 / 股数。'
+              : '${sideLabel(o.side)} ${o.symbol} ${_size(o)}。撤单结果以券商返回为准，已成交部分不会撤销。',
+        ),
         actions: [
           TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('再想想')),
           TextButton(key: const Key('p11.cancel.confirm'), onPressed: () => Navigator.of(ctx).pop(true), child: const Text('撤单')),
@@ -78,7 +86,7 @@ class _OrdersPageState extends State<OrdersPage> {
     if (ok != true || !mounted) return;
     setState(() => _cancelling.add(o.id));
     try {
-      final st = await TradingApi(AppScope.of(context).api).cancel(o.id);
+      final st = await TradingApi(AppScope.of(context).api, paper: widget.paper).cancel(o.id);
       if (mounted) showToast(context, st == 'CANCELED' ? '订单已撤销' : '撤单已提交，等待券商确认');
     } on ApiException catch (e) {
       if (mounted) showToast(context, tradingErrorText(e));
@@ -94,7 +102,7 @@ class _OrdersPageState extends State<OrdersPage> {
   Widget build(BuildContext context) {
     final list = _orders;
     return Scaffold(
-      appBar: AppBar(title: const Text('订单'), leading: const AppBackButton()),
+      appBar: AppBar(title: paperTitle(widget.paper ? '模拟订单' : '订单', widget.paper), leading: const AppBackButton()),
       body: _notOpened
           ? StateView(
               icon: Icons.receipt_long_outlined,
@@ -107,6 +115,7 @@ class _OrdersPageState extends State<OrdersPage> {
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
                 children: [
+                  if (widget.paper) const PaperBanner(),
                   Seg2<String?>(
                     key: const Key('p11.filter'),
                     items: const [(null, '全部'), ('OPEN', '未完成'), ('CLOSED', '已结束')],
@@ -131,7 +140,10 @@ class _OrdersPageState extends State<OrdersPage> {
                     )
                   else if (list != null)
                     for (final o in list) _card(o),
-                  const Text('订单状态、成交数量与成交价均以券商（DriveWealth）返回为准。', style: TextStyle(fontSize: 12, color: AppColors.faint)),
+                  Text(
+                    widget.paper ? '模拟订单按演示行情撮合，不产生真实交易。' : '订单状态、成交数量与成交价均以券商（DriveWealth）返回为准。',
+                    style: const TextStyle(fontSize: 12, color: AppColors.faint),
+                  ),
                 ],
               ),
             ),
@@ -164,11 +176,15 @@ class _OrdersPageState extends State<OrdersPage> {
                   ),
                 ),
               ),
-              StatusBadge(orderStatusLabels[o.status] ?? o.status, key: Key('p11.status.${o.id}'), kind: orderStatusKind(o.status)),
+              StatusBadge(orderStatusLabel(o.status, limit: o.isLimit), key: Key('p11.status.${o.id}'), kind: orderStatusKind(o.status)),
             ],
           ),
           const SizedBox(height: 6),
-          KvRow('委托', '市价单 · ${_size(o)}'),
+          KvRow(
+            '委托',
+            o.isLimit ? '限价 ${fmtUsd(o.limitPrice ?? 0)} · ${_size(o)} · 当日有效' : '市价单 · ${_size(o)}',
+            valueKey: Key('p11.order.desc.${o.id}'),
+          ),
           KvRow('已成交', filled ? '${fmtQty(o.filledQty!)} 股' : '—'),
           KvRow('成交均价', o.avgPrice != null && o.avgPrice! > 0 ? fmtUsd(o.avgPrice!) : '—', valueKey: Key('p11.avgPrice.${o.id}')),
           if (o.totalAmount != null && o.totalAmount! > 0) KvRow('成交金额', fmtUsd(o.totalAmount!)),
@@ -176,7 +192,7 @@ class _OrdersPageState extends State<OrdersPage> {
           KvRow('提交时间', fmtDateTime(o.submittedAt)),
           if (o.doneAt != null) KvRow('完成时间', fmtDateTime(o.doneAt)),
           if (o.orderNo != null) KvRow('订单号', o.orderNo!),
-          if (o.rejectReason != null) Notice(o.rejectReason!, kind: NoticeKind.danger),
+          if (o.rejectReason != null) Notice(o.rejectReason!, kind: o.status == 'CANCELED' ? NoticeKind.info : NoticeKind.danger),
           if (o.status == 'SUBMITTING') const Notice('券商受理结果暂未确认，我们会自动核对，请勿重复下单。'),
           if (isOrderCancellable(o.status))
             Padding(

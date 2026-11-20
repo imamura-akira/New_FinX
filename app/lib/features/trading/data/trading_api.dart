@@ -23,6 +23,9 @@ class Order {
     this.submittedAt,
     this.updatedAt,
     this.doneAt,
+    this.limitPrice,
+    this.timeInForce,
+    this.simulated = false,
   });
 
   factory Order.fromJson(Map<String, dynamic> j) => Order(
@@ -42,6 +45,9 @@ class Order {
     submittedAt: _t(j['submittedAt']),
     updatedAt: _t(j['updatedAt']),
     doneAt: _t(j['doneAt']),
+    limitPrice: _dn(j['limitPrice']),
+    timeInForce: j['timeInForce'] as String?,
+    simulated: j['simulated'] == true,
   );
 
   final String id;
@@ -60,8 +66,14 @@ class Order {
   final DateTime? submittedAt;
   final DateTime? updatedAt;
   final DateTime? doneAt;
+  final double? limitPrice;
+  final String? timeInForce;
+
+  /// 模拟盘订单（F15）。
+  final bool simulated;
 
   bool get isBuy => side == 'BUY';
+  bool get isLimit => orderType == 'LIMIT';
 }
 
 /// 持仓（api-spec.md 5.6 Position；全部为 DW 返回值）。
@@ -126,19 +138,69 @@ class OrderResult {
   final bool pending;
 }
 
-class TradingApi {
-  TradingApi(this._api);
-  final ApiClient _api;
+/// 模拟账户（F15，GET /paper/account）。全部为模拟值，不得与 DW 资金数字混用。
+class PaperAccount {
+  const PaperAccount({
+    required this.initialCash,
+    required this.cash,
+    required this.reservedCash,
+    required this.buyingPower,
+    required this.positionsValue,
+    required this.totalValue,
+    required this.totalPL,
+    required this.totalPLPct,
+    this.resetAt,
+  });
 
-  /// 市价单：[amount]（美元）与 [quantity]（股数）二选一。
-  Future<OrderResult> place({required String symbol, required String side, double? amount, double? quantity}) async {
+  factory PaperAccount.fromJson(Map<String, dynamic> j) => PaperAccount(
+    initialCash: _d(j['initialCash']),
+    cash: _d(j['cash']),
+    reservedCash: _d(j['reservedCash']),
+    buyingPower: _d(j['buyingPower']),
+    positionsValue: _d(j['positionsValue']),
+    totalValue: _d(j['totalValue']),
+    totalPL: _d(j['totalPL']),
+    totalPLPct: _d(j['totalPLPct']),
+    resetAt: _t(j['resetAt']),
+  );
+
+  final double initialCash;
+  final double cash;
+  final double reservedCash;
+  final double buyingPower;
+  final double positionsValue;
+  final double totalValue;
+  final double totalPL;
+  final double totalPLPct;
+  final DateTime? resetAt;
+}
+
+/// 交易接口。[paper] 为 true 时走模拟盘 /paper/*（F15，不调 DW），否则走实盘（F14，DW）。
+class TradingApi {
+  TradingApi(this._api, {this.paper = false});
+  final ApiClient _api;
+  final bool paper;
+
+  String get _p => paper ? '/paper' : '';
+
+  /// 市价单：[amount]（美元）与 [quantity]（股数）二选一。限价单：[quantity] + [limitPrice]，当日有效。
+  Future<OrderResult> place({
+    required String symbol,
+    required String side,
+    double? amount,
+    double? quantity,
+    String orderType = 'MARKET',
+    double? limitPrice,
+  }) async {
     try {
-      final d = await _api.post('/orders', {
+      final d = await _api.post('$_p/orders', {
         'symbol': symbol,
         'side': side,
-        'orderType': 'MARKET',
+        'orderType': orderType,
         if (amount != null) 'amount': double.parse(amount.toStringAsFixed(2)),
         if (quantity != null) 'quantity': double.parse(quantity.toStringAsFixed(6)),
+        if (orderType == 'LIMIT' && limitPrice != null) 'limitPrice': double.parse(limitPrice.toStringAsFixed(4)),
+        if (orderType == 'LIMIT') 'timeInForce': 'DAY',
       }) as Map<String, dynamic>;
       return OrderResult(orderId: d['orderId'] as String, status: d['status'] as String? ?? 'NEW');
     } on ApiException catch (e) {
@@ -152,16 +214,22 @@ class TradingApi {
 
   /// [filter]：null 全部 / OPEN 未完成 / CLOSED 已结束。
   Future<List<Order>> orders({String? filter}) async => [
-    for (final o in (await _api.get('/orders', query: filter == null ? null : {'status': filter}) as List? ?? const []))
+    for (final o in (await _api.get('$_p/orders', query: filter == null ? null : {'status': filter}) as List? ?? const []))
       Order.fromJson((o as Map).cast<String, dynamic>()),
   ];
 
-  Future<Order> order(String id) async => Order.fromJson(await _api.get('/orders/${Uri.encodeComponent(id)}') as Map<String, dynamic>);
+  Future<Order> order(String id) async => Order.fromJson(await _api.get('$_p/orders/${Uri.encodeComponent(id)}') as Map<String, dynamic>);
 
   Future<String> cancel(String id) async {
-    final d = await _api.post('/orders/${Uri.encodeComponent(id)}/cancel') as Map<String, dynamic>;
+    final d = await _api.post('$_p/orders/${Uri.encodeComponent(id)}/cancel') as Map<String, dynamic>;
     return d['status'] as String? ?? 'PENDING_CANCEL';
   }
 
-  Future<Positions> positions() async => Positions.fromJson(await _api.get('/positions') as Map<String, dynamic>);
+  Future<Positions> positions() async => Positions.fromJson(await _api.get('$_p/positions') as Map<String, dynamic>);
+
+  /// 模拟账户（仅模拟盘）。
+  Future<PaperAccount> paperAccount() async => PaperAccount.fromJson(await _api.get('/paper/account') as Map<String, dynamic>);
+
+  /// 一键重置模拟账户（仅模拟盘）。
+  Future<PaperAccount> resetPaper() async => PaperAccount.fromJson(await _api.post('/paper/account/reset') as Map<String, dynamic>);
 }

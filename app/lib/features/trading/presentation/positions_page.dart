@@ -12,10 +12,15 @@ import '../../market/presentation/market_widgets.dart';
 import '../data/trading_api.dart';
 import '../domain/trading_rules.dart';
 import 'order_page.dart';
+import '../domain/trading_mode.dart';
+import 'paper_widgets.dart';
 
 /// P-12 持仓（F14）：数量、市值、成本、盈亏全部取 DW 返回值；App 只计算盈亏百分比（DW 盈亏 / DW 成本）。
 class PositionsPage extends StatefulWidget {
-  const PositionsPage({super.key});
+  const PositionsPage({super.key, this.paper = false});
+
+  /// 模拟持仓（F15，/paper/positions，按演示行情估值）。
+  final bool paper;
 
   @override
   State<PositionsPage> createState() => _PositionsPageState();
@@ -34,7 +39,7 @@ class _PositionsPageState extends State<PositionsPage> {
 
   Future<void> _load() async {
     try {
-      final d = await TradingApi(AppScope.of(context).api).positions();
+      final d = await TradingApi(AppScope.of(context).api, paper: widget.paper).positions();
       if (!mounted) return;
       setState(() {
         _data = d;
@@ -42,7 +47,7 @@ class _PositionsPageState extends State<PositionsPage> {
       });
     } on ApiException catch (e) {
       if (!mounted) return;
-      setState(() => e.code == ApiCodes.conflict ? _notOpened = true : _error = tradingErrorText(e));
+      setState(() => !widget.paper && e.code == ApiCodes.conflict ? _notOpened = true : _error = tradingErrorText(e));
     }
   }
 
@@ -52,8 +57,14 @@ class _PositionsPageState extends State<PositionsPage> {
     return Scaffold(
       appBar: AppBar(
         leading: const AppBackButton(),
-        title: const Text('持仓'),
-        actions: [IconButton(tooltip: '订单', icon: const Icon(Icons.receipt_long_outlined), onPressed: () => context.push('/orders'))],
+        title: paperTitle(widget.paper ? '模拟持仓' : '持仓', widget.paper),
+        actions: [
+          IconButton(
+            tooltip: '订单',
+            icon: const Icon(Icons.receipt_long_outlined),
+            onPressed: () => context.push('/orders${paperQuery(widget.paper)}'),
+          ),
+        ],
       ),
       body: _notOpened
           ? StateView(
@@ -67,6 +78,7 @@ class _PositionsPageState extends State<PositionsPage> {
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
                 children: [
+                  if (widget.paper) const PaperBanner(),
                   if (_error != null) Notice(_error!, kind: NoticeKind.warn),
                   if (d == null && _error == null)
                     const Padding(
@@ -92,7 +104,9 @@ class _PositionsPageState extends State<PositionsPage> {
                       for (final p in d.positions) _row(p),
                   ],
                   Text(
-                    '持仓数据来自 DriveWealth${d?.updatedAt == null ? '' : ' · 更新于 ${fmtDateTime(d!.updatedAt)}'}',
+                    widget.paper
+                        ? '模拟持仓按演示行情估值，不代表真实资产。'
+                        : '持仓数据来自 DriveWealth${d?.updatedAt == null ? '' : ' · 更新于 ${fmtDateTime(d!.updatedAt)}'}',
                     style: const TextStyle(fontSize: 12, color: AppColors.faint),
                   ),
                 ],
@@ -107,7 +121,7 @@ class _PositionsPageState extends State<PositionsPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('持仓市值', style: TextStyle(fontSize: 12, color: AppColors.muted)),
+          Text(widget.paper ? '模拟持仓市值' : '持仓市值', style: const TextStyle(fontSize: 12, color: AppColors.muted)),
           Text(
             d.equityValue == null ? '—' : fmtUsd(d.equityValue!),
             key: const Key('p12.equity'),

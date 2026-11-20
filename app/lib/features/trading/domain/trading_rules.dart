@@ -82,3 +82,57 @@ String sideLabel(String side) => side == 'SELL' ? '卖出' : '买入';
 
 /// 演示行情与成交价差异提示（P-19 确认页 / 结果页，F14 需求原文）。
 const demoPriceNotice = '显示价格为演示行情，实际成交以券商（DriveWealth）返回为准';
+
+/// 限价单开关：实盘限价单（F14 扩展）上线前只在模拟盘开放。
+abstract final class TradingFeatures {
+  static const realLimitOrders = false;
+}
+
+final _limitRe = RegExp(r'^\d{1,7}(\.\d{1,4})?$');
+
+/// 解析限价：> 0；$1 以上最多两位小数，$1 以下最多四位小数。格式不对返回 null。
+double? parseLimitPrice(String raw) {
+  final s = raw.trim().replaceAll(',', '');
+  if (!_limitRe.hasMatch(s)) return null;
+  final v = double.parse(s);
+  if (v <= 0) return null;
+  final dot = s.indexOf('.');
+  if (v >= 1 && dot >= 0 && s.length - dot - 1 > 2) return null;
+  return v;
+}
+
+/// 限价单校验（按股数）。买入冻结金额 = 股数 × 限价，不低于单笔最低、不超过可用资金；卖出不超过可卖数量。
+/// 返回 (股数错误, 限价错误)。
+(String?, String?) validateLimitOrder(String qtyRaw, String limitRaw, {required bool buy, double? buyingPower, double? sellableQty}) {
+  String? qErr, lErr;
+  final q = parseQty(qtyRaw);
+  if (qtyRaw.trim().isEmpty) {
+    qErr = '请输入股数';
+  } else if (q == null) {
+    qErr = '请输入有效股数，最多 6 位小数';
+  } else if (q <= 0) {
+    qErr = '股数须大于 0';
+  }
+  final l = parseLimitPrice(limitRaw);
+  if (limitRaw.trim().isEmpty) {
+    lErr = '请输入限价';
+  } else if (l == null) {
+    lErr = '限价须大于 0（\$1 以上最多两位小数）';
+  }
+  if (qErr != null || lErr != null) return (qErr, lErr);
+  if (buy) {
+    final reserve = q! * l!;
+    if (reserve < TradingLimits.minOrder) return (minOrderText, null);
+    if (buyingPower != null && reserve > buyingPower) return ('冻结金额 ${fmtUsd(reserve)} 超过可用资金 ${fmtUsd(buyingPower)}', null);
+  } else if (sellableQty != null && q! > sellableQty + 1e-9) {
+    return ('超过可卖数量 ${fmtQty(sellableQty)} 股', null);
+  }
+  return (null, null);
+}
+
+/// 订单状态文案：限价单未成交显示"挂单中"。
+String orderStatusLabel(String status, {bool limit = false}) =>
+    limit && status == 'NEW' ? '挂单中' : (orderStatusLabels[status] ?? status);
+
+/// 模拟盘撮合说明（P-19 确认页 / 结果页）。
+const paperPriceNotice = '模拟盘：按演示行情撮合（市价买入按卖一价、卖出按买一价），使用虚拟资金，不产生真实交易';

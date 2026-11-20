@@ -106,11 +106,15 @@ GoRouter buildRouter(SessionController session) {
       // F14 交易：P-19 下单（P-10 买入 / 卖出进入）、P-11 订单、P-12 持仓
       GoRoute(
         path: '/trade/:symbol',
-        builder: (_, state) =>
-            OrderPage(symbol: state.pathParameters['symbol']!.toUpperCase(), side: state.uri.queryParameters['side'] ?? 'BUY'),
+        builder: (_, state) => OrderPage(
+          symbol: state.pathParameters['symbol']!.toUpperCase(),
+          side: state.uri.queryParameters['side'] ?? 'BUY',
+          paper: state.uri.queryParameters['paper'] == '1',
+        ),
       ),
-      GoRoute(path: '/orders', builder: (_, _) => const OrdersPage()),
-      GoRoute(path: '/positions', builder: (_, _) => const PositionsPage()),
+      // F15 模拟盘：同一页面，带 paper=1 时数据来自 /paper/*
+      GoRoute(path: '/orders', builder: (_, state) => OrdersPage(paper: state.uri.queryParameters['paper'] == '1')),
+      GoRoute(path: '/positions', builder: (_, state) => PositionsPage(paper: state.uri.queryParameters['paper'] == '1')),
       GoRoute(path: Routes.expired, builder: (_, _) => const SessionExpiredPage()),
       // P-03a–g、P-04、P-05、P-30：同一个 OnboardingController（ShellRoute 内创建）
       ShellRoute(

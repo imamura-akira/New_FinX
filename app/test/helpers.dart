@@ -6,6 +6,7 @@ import 'package:finx_app/core/session/session.dart';
 import 'package:finx_app/core/widgets/celebration.dart';
 import 'package:finx_app/features/auth/presentation/welcome_page.dart';
 import 'package:finx_app/features/market/domain/instruments.dart';
+import 'package:finx_app/features/trading/domain/trading_mode.dart';
 import 'package:finx_app/main.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
@@ -57,6 +58,7 @@ Future<(FakeBackend, SessionController, MemoryTokenStore)> pumpApp(
   Watchlist.instance.reset();
   Celebration.resetForTest();
   LaunchIntro.resetForTest();
+  TradingMode.instance.reset();
   final api = ApiClient(baseUrl: 'http://test/api/v1', httpClient: be.client);
   final store = MemoryTokenStore()..value = storedToken;
   final session = SessionController(api: api, store: store);

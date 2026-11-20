@@ -11,6 +11,7 @@ import '../../../core/widgets/form_widgets.dart';
 import '../../../core/widgets/widgets.dart';
 import '../data/market_api.dart';
 import '../domain/instruments.dart';
+import '../../trading/domain/trading_mode.dart';
 import 'market_widgets.dart';
 
 /// P-10 个股详情。报价区展示买一 / 卖一（PDF-5 NBBO 的数量与交易所标识在接入真实行情后补齐）；
@@ -100,14 +101,14 @@ class _InstrumentPageState extends State<InstrumentPage> {
                     '卖出',
                     key: const Key('p10.sell'),
                     kind: ButtonKind.secondary,
-                    onPressed: _d == null ? null : () => context.push('/trade/${widget.symbol}?side=SELL'),
+                    onPressed: _d == null ? null : () => context.push('/trade/${widget.symbol}?side=SELL${paperQuery(TradingMode.instance.paper, '&')}'),
                   ),
                 ),
                 Expanded(
                   child: AppButton(
                     '买入',
                     key: const Key('p10.buy'),
-                    onPressed: _d == null ? null : () => context.push('/trade/${widget.symbol}?side=BUY'),
+                    onPressed: _d == null ? null : () => context.push('/trade/${widget.symbol}?side=BUY${paperQuery(TradingMode.instance.paper, '&')}'),
                   ),
                 ),
               ],
