@@ -372,5 +372,293 @@
         "type": "Object"
       }
     }
-  }
+  },
+  "paperPlValue": "模拟盈亏 {pl}（{pct}）",
+  "@paperPlValue": {
+    "placeholders": {
+      "pl": {
+        "type": "Object"
+      },
+      "pct": {
+        "type": "Object"
+      }
+    }
+  },
+  "positionsFromDw": "持仓数据来自 DriveWealth",
+  "positionsFromDwUpdated": "持仓数据来自 DriveWealth · 更新于 {time}",
+  "@positionsFromDwUpdated": {
+    "placeholders": {
+      "time": {
+        "type": "Object"
+      }
+    }
+  },
+  "positionsTotalPl": "持仓盈亏 {pl}",
+  "@positionsTotalPl": {
+    "placeholders": {
+      "pl": {
+        "type": "Object"
+      }
+    }
+  },
+  "tradePleaseEnterAnAmount": "请输入金额",
+  "tradeEnterAValidAmount": "请输入有效金额，最多两位小数",
+  "tradeExceedsYourAvailableBuying": "超过可用购买力 {v0}",
+  "@tradeExceedsYourAvailableBuying": {
+    "placeholders": {
+      "v0": {
+        "type": "Object"
+      }
+    }
+  },
+  "tradeExceedsTheSellableMarket": "超过可卖市值 {v0}",
+  "@tradeExceedsTheSellableMarket": {
+    "placeholders": {
+      "v0": {
+        "type": "Object"
+      }
+    }
+  },
+  "tradePleaseEnterTheNumber": "请输入股数",
+  "tradeEnterAValidNumber": "请输入有效股数，最多 6 位小数",
+  "tradeSharesMustBeGreater": "股数须大于 0",
+  "tradeNoQuoteAvailablePlease": "暂无报价，请按金额买入",
+  "tradeEstimatedAmountExceedsYour": "预估金额 {v0} 超过可用购买力 {v1}",
+  "@tradeEstimatedAmountExceedsYour": {
+    "placeholders": {
+      "v0": {
+        "type": "Object"
+      },
+      "v1": {
+        "type": "Object"
+      }
+    }
+  },
+  "tradeExceedsYourSellableQuantity": "超过可卖数量 {v0} 股",
+  "@tradeExceedsYourSellableQuantity": {
+    "placeholders": {
+      "v0": {
+        "type": "Object"
+      }
+    }
+  },
+  "tradeSubmitting": "提交中",
+  "tradeQueued": "排队中",
+  "tradePartiallyFilled": "部分成交",
+  "tradeFilled": "已成交",
+  "tradeRejected": "已拒绝",
+  "tradeCanceled": "已撤单",
+  "tradePendingCancel": "撤单中",
+  "tradePricesShownAreDemo": "显示价格为演示行情，实际成交以券商（DriveWealth）返回为准",
+  "tradePleaseEnterALimit": "请输入限价",
+  "tradeLimitPriceMustBe": "限价须大于 0（$1 以上最多两位小数）",
+  "tradeAmountOnHoldExceeds": "冻结金额 {v0} 超过可用资金 {v1}",
+  "@tradeAmountOnHoldExceeds": {
+    "placeholders": {
+      "v0": {
+        "type": "Object"
+      },
+      "v1": {
+        "type": "Object"
+      }
+    }
+  },
+  "tradeWorking": "挂单中",
+  "tradePaperTradingOrdersFill": "模拟盘：按演示行情撮合（市价买入按卖一价、卖出按买一价），使用虚拟资金，不产生真实交易",
+  "paperPaperTradingVirtualFunds": "模拟盘 · 虚拟资金，按演示行情撮合，不产生真实交易",
+  "paperPaper": "模拟盘",
+  "paperPaperAccountTotalValue": "模拟账户总资产",
+  "paperReset": "重置",
+  "paperPaperPL": "模拟盈亏 ••••",
+  "paperAvailableFunds": "可用资金",
+  "paperOnHoldForOrders": "挂单冻结",
+  "paperStartingBalance": "初始资金",
+  "paperResetPaperAccount": "重置模拟账户？",
+  "paperYourVirtualFundsWill": "模拟资金将恢复为初始金额，模拟持仓与订单全部清空。此操作只影响模拟盘，不影响实盘账户。",
+  "ordersCancelOrder": "撤销订单？",
+  "ordersCancelingReleasesTheVirtual": "{v0} {symbol} {v2}。撤单后释放冻结的模拟资金 / 股数。",
+  "@ordersCancelingReleasesTheVirtual": {
+    "placeholders": {
+      "v0": {
+        "type": "Object"
+      },
+      "symbol": {
+        "type": "Object"
+      },
+      "v2": {
+        "type": "Object"
+      }
+    }
+  },
+  "ordersTheCancellationResultIs": "{v0} {symbol} {v2}。撤单结果以券商返回为准，已成交部分不会撤销。",
+  "@ordersTheCancellationResultIs": {
+    "placeholders": {
+      "v0": {
+        "type": "Object"
+      },
+      "symbol": {
+        "type": "Object"
+      },
+      "v2": {
+        "type": "Object"
+      }
+    }
+  },
+  "ordersKeepOrder": "再想想",
+  "ordersCancelOrder2": "撤单",
+  "ordersOrderCanceled": "订单已撤销",
+  "ordersCancelRequestSubmittedWaiting": "撤单已提交，等待券商确认",
+  "ordersShares": "{v0} 股",
+  "@ordersShares": {
+    "placeholders": {
+      "v0": {
+        "type": "Object"
+      }
+    }
+  },
+  "ordersNoOrdersYet": "暂无订单",
+  "ordersYouCanPlaceOrders": "交易账户开立后即可下单。",
+  "ordersBackToAssets": "返回资产页",
+  "ordersOpen": "未完成",
+  "ordersClosed": "已结束",
+  "ordersNoOrdersYetTap": "暂无订单。在个股页点击\"买入\"或\"卖出\"即可下单。",
+  "ordersPaperOrdersAreFilled": "模拟订单按演示行情撮合，不产生真实交易。",
+  "ordersOrderStatusFilledQuantity": "订单状态、成交数量与成交价均以券商（DriveWealth）返回为准。",
+  "ordersOrder": "委托",
+  "ordersLimitDay": "限价 {v0} · {v1} · 当日有效",
+  "@ordersLimitDay": {
+    "placeholders": {
+      "v0": {
+        "type": "Object"
+      },
+      "v1": {
+        "type": "Object"
+      }
+    }
+  },
+  "ordersMarket": "市价单 · {v0}",
+  "@ordersMarket": {
+    "placeholders": {
+      "v0": {
+        "type": "Object"
+      }
+    }
+  },
+  "ordersAvgFillPrice": "成交均价",
+  "ordersFilledAmount": "成交金额",
+  "ordersFees": "费用",
+  "ordersSubmitted": "提交时间",
+  "ordersCompleted": "完成时间",
+  "ordersOrderNo": "订单号",
+  "ordersTheBrokerHasnT": "券商受理结果暂未确认，我们会自动核对，请勿重复下单。",
+  "positionsNoPositionsYet": "暂无持仓",
+  "positionsYouCanBuyStocks": "交易账户开立后即可买入股票。",
+  "positionsNoPositionsYet2": "还没有持仓。",
+  "positionsPickAStockOn": "在市场页选择股票，点击\"买入\"即可下单。",
+  "positionsPaperPositionsAreValued": "模拟持仓按演示行情估值，不代表真实资产。",
+  "positionsPaperPositionsValue": "模拟持仓市值",
+  "positionsSharesHeld": "持有数量",
+  "positionsSellable": "可卖数量",
+  "positionsCostBasis": "成本",
+  "positionsAvgCurrentPrice": "均价 / 现价",
+  "orderSideBuy": "买入",
+  "orderSideSell": "卖出",
+  "orderDemoQuote": "演示行情",
+  "orderLimitHelpBuy": "买入：价格不高于限价时成交；当日有效",
+  "orderLimitHelpSell": "卖出：价格不低于限价时成交；当日有效",
+  "orderBuyAmountUsd": "买入金额 (USD)",
+  "orderSellAmountUsd": "卖出金额 (USD)",
+  "orderBuyShares": "买入股数",
+  "orderSellShares": "卖出股数",
+  "orderYourAccountIsCurrently": "账户当前受限，暂不能交易。如有疑问请联系客服。",
+  "orderYourAccountIsFrozen": "账户已冻结，暂不能交易。资产仍安全托管，请联系客服了解原因。",
+  "orderYourAccountIsClosed": "账户已关闭，不能交易。",
+  "orderYourAccountIsCurrently2": "账户当前仅可卖出，暂不能买入。",
+  "orderOrderAmount": "委托金额",
+  "orderOrderQuantity": "委托股数",
+  "orderShares": "约 {v0} 股",
+  "@orderShares": {
+    "placeholders": {
+      "v0": {
+        "type": "Object"
+      }
+    }
+  },
+  "orderText": "约 {v0}",
+  "@orderText": {
+    "placeholders": {
+      "v0": {
+        "type": "Object"
+      }
+    }
+  },
+  "orderEstimatedAmountOnHold": "预估金额（冻结）",
+  "orderEstimatedAmount": "预估金额",
+  "orderEstimatedShares": "预估股数",
+  "orderLimitOrderDay": "限价单 · 当日有效",
+  "orderMarketOrder": "市价单",
+  "orderOpenAnAccountTo": "开户后即可交易",
+  "orderYouCanPlaceOrders": "交易账户开立后才能下单。请先完成开户，或切换到模拟盘练习。",
+  "orderSwitchToPaperTrading": "切换到模拟盘",
+  "orderMarket": "市价",
+  "orderLimit": "限价",
+  "orderByAmount": "按金额",
+  "orderByShares": "按股数",
+  "orderLimitPriceUsd": "限价 (USD)",
+  "orderFractionalSharesSupported": "支持碎股；{minOrderText}",
+  "@orderFractionalSharesSupported": {
+    "placeholders": {
+      "minOrderText": {
+        "type": "Object"
+      }
+    }
+  },
+  "orderFractionalSharesSupportedUp": "支持小数股，最多 6 位小数",
+  "orderSellAllShares": "全部卖出（{v0} 股）",
+  "@orderSellAllShares": {
+    "placeholders": {
+      "v0": {
+        "type": "Object"
+      }
+    }
+  },
+  "orderOrderType": "订单类型",
+  "orderReferencePriceDemoQuote": "参考价（演示行情）",
+  "orderPaperAvailableFunds": "模拟可用资金",
+  "orderBuyingPower": "可用购买力",
+  "orderPaperLimitOrderFills": "模拟限价单：演示行情到达限价时自动成交，未成交前冻结资金 / 股数，当日有效。",
+  "orderPaperMarketOrdersFill": "模拟市价单按演示行情即时成交（买入按卖一价、卖出按买一价）。",
+  "orderYourCurrentBuyingPower": "当前可用购买力为 $0.00。入金结算后才计入购买力，日期以资金记录中券商返回的为准。",
+  "orderLimitOrdersAreGood": "限价单当日有效，价格到达限价才可能成交，未成交部分收盘后自动撤销，状态以券商返回为准。",
+  "orderMarketOrdersFillAt": "市价单按券商实际成交价成交。本期不区分盘前盘后，休市时提交的订单可能排队至开盘，状态以券商返回为准。",
+  "orderNext": "下一步",
+  "orderReviewOrder": "确认订单",
+  "orderPaperVirtualFunds": "模拟盘（虚拟资金）",
+  "orderLiveDrivewealth": "实盘（DriveWealth）",
+  "orderSide": "方向",
+  "orderLimitPrice": "限价",
+  "orderCustodian": "托管券商",
+  "orderEditOrder": "返回修改",
+  "orderConfirmBuy": "确认买入",
+  "orderConfirmSell": "确认卖出",
+  "orderOrderRecorded": "订单已记录",
+  "orderPaperOrderFilled": "模拟订单已成交",
+  "orderOrderFilled": "订单已成交",
+  "orderOrderRejectedByThe": "券商已拒绝该订单",
+  "orderPaperLimitOrderPlaced": "模拟限价单已挂单",
+  "orderLimitOrderSubmitted": "限价单已提交",
+  "orderOrderSubmitted": "订单已提交",
+  "orderTheBrokerHasnT": "券商受理结果暂未确认，我们会自动核对，请稍后在订单列表中查看状态。请勿重复提交。",
+  "orderSimulatedFillAtDemo": "按演示行情模拟成交，使用虚拟资金，不产生真实交易。",
+  "orderFillPriceAndQuantity": "成交价与数量以券商返回为准。",
+  "orderTheBrokerRejectedThis": "券商已拒绝该订单，请稍后重试或联系客服。",
+  "orderFillsAutomaticallyWhenThe": "演示行情到达限价时自动成交；未成交前冻结资金 / 股数，可在模拟订单中撤单。当日有效。",
+  "orderMayFillOnlyWhen": "价格到达限价才可能成交，当日有效，可在订单列表中撤单。状态以券商返回为准。",
+  "orderYourOrderHasBeen": "订单已发送至券商，成交后状态会在订单列表中更新。休市期间提交的订单可能排队至开盘。",
+  "orderOrderResult": "下单结果",
+  "orderStatus": "状态",
+  "orderFilledQuantity": "成交数量",
+  "orderViewPaperOrders": "查看模拟订单",
+  "orderViewOrders": "查看订单",
+  "orderDone": "完成"
 }

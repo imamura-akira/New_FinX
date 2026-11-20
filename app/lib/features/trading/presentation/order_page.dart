@@ -19,10 +19,11 @@ import '../data/trading_api.dart';
 import '../domain/trading_mode.dart';
 import '../domain/trading_rules.dart';
 import 'paper_widgets.dart';
+import '../../../l10n/l10n.dart';
 
 /// 交易模块错误文案（中文）。
 String tradingErrorText(ApiException e) => switch (e.code) {
-  ApiCodes.restricted => e.message.isNotEmpty ? e.message : '账户当前受限，暂不能交易。如有疑问请联系客服。',
+  ApiCodes.restricted => e.message.isNotEmpty ? e.message : t.orderYourAccountIsCurrently,
   _ => e.message,
 };
 
@@ -171,9 +172,9 @@ class _OrderPageState extends State<OrderPage> {
   String? get _restriction => _paper
       ? null
       : switch (_account?.status) {
-          'FROZEN' => '账户已冻结，暂不能交易。资产仍安全托管，请联系客服了解原因。',
-          'CLOSED' => '账户已关闭，不能交易。',
-          'OPEN_NO_NEW_TRADES' when _buy => '账户当前仅可卖出，暂不能买入。',
+          'FROZEN' => t.orderYourAccountIsFrozen,
+          'CLOSED' => t.orderYourAccountIsClosed,
+          'OPEN_NO_NEW_TRADES' when _buy => t.orderYourAccountIsCurrently2,
           _ => null,
         };
 
@@ -259,10 +260,10 @@ class _OrderPageState extends State<OrderPage> {
       return v == null ? '—' : fmtUsd(v);
     }
     final q = parseQty(_input.text);
-    return q == null ? '—' : '${fmtQty(q)} 股';
+    return q == null ? '—' : t.ordersShares(fmtQty(q));
   }
 
-  String get _sizeLabel => !_isLimit && _mode == _Mode.amount ? '委托金额' : '委托股数';
+  String get _sizeLabel => !_isLimit && _mode == _Mode.amount ? t.orderOrderAmount : t.orderOrderQuantity;
 
   /// 预估：市价按金额 → 约多少股；市价按股数 → 约多少金额（演示参考价）；限价 → 股数 × 限价。
   String get _estimateText {
@@ -275,30 +276,30 @@ class _OrderPageState extends State<OrderPage> {
     if (p == null) return '—';
     if (_mode == _Mode.amount) {
       final v = parseAmount(_input.text);
-      return v == null ? '—' : '约 ${fmtQty(v / p)} 股';
+      return v == null ? '—' : t.orderShares(fmtQty(v / p));
     }
     final q = parseQty(_input.text);
-    return q == null ? '—' : '约 ${fmtUsd(q * p)}';
+    return q == null ? '—' : t.orderText(fmtUsd(q * p));
   }
 
-  String get _estimateLabel => _isLimit ? (_buy ? '预估金额（冻结）' : '预估金额') : (_mode == _Mode.amount ? '预估股数' : '预估金额');
+  String get _estimateLabel => _isLimit ? (_buy ? t.orderEstimatedAmountOnHold : t.orderEstimatedAmount) : (_mode == _Mode.amount ? t.orderEstimatedShares : t.orderEstimatedAmount);
 
-  String get _typeText => _isLimit ? '限价单 · 当日有效' : '市价单';
+  String get _typeText => _isLimit ? t.orderLimitOrderDay : t.orderMarketOrder;
 
   @override
   Widget build(BuildContext context) {
-    final title = '${_buy ? '买入' : '卖出'} ${widget.symbol}';
+    final title = '${_buy ? t.orderSideBuy : t.orderSideSell} ${widget.symbol}';
     if (_step == 'done' && _result != null) return _resultView();
     if (_notOpened && !_paper) {
       return Scaffold(
         appBar: AppBar(title: Text(title), leading: const AppBackButton()),
         body: StateView(
           icon: Icons.lock_outline_rounded,
-          title: '开户后即可交易',
-          message: '交易账户开立后才能下单。请先完成开户，或切换到模拟盘练习。',
+          title: t.orderOpenAnAccountTo,
+          message: t.orderYouCanPlaceOrders,
           actions: [
-            AppButton('切换到模拟盘', key: const Key('p19.toPaper'), onPressed: () => _switchAccount(TradingMode.instance.paper = true)),
-            AppButton('返回资产页', kind: ButtonKind.ghost, onPressed: () => context.go('/home')),
+            AppButton(t.orderSwitchToPaperTrading, key: const Key('p19.toPaper'), onPressed: () => _switchAccount(TradingMode.instance.paper = true)),
+            AppButton(t.ordersBackToAssets, kind: ButtonKind.ghost, onPressed: () => context.go('/home')),
           ],
         ),
       );
@@ -363,7 +364,7 @@ class _OrderPageState extends State<OrderPage> {
                 style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700, fontFeatures: [FontFeature.tabularFigures()]),
               ),
               Text(
-                q == null ? '演示行情' : '${fmtSigned(q.chgPct, suffix: '%')} · 演示行情',
+                q == null ? t.orderDemoQuote : '${fmtSigned(q.chgPct, suffix: '%')} · ${t.orderDemoQuote}',
                 style: TextStyle(fontSize: 12, color: q == null ? AppColors.muted : chgColor(q.chg)),
               ),
             ],
@@ -386,7 +387,7 @@ class _OrderPageState extends State<OrderPage> {
         _header(),
         Seg2<String>(
           key: const Key('p19.side'),
-          items: const [('BUY', '买入'), ('SELL', '卖出')],
+          items: [('BUY', t.orderSideBuy), ('SELL', t.orderSideSell)],
           value: _side,
           onChanged: (v) => setState(() {
             _side = v;
@@ -396,7 +397,7 @@ class _OrderPageState extends State<OrderPage> {
         if (_limitAllowed)
           Seg2<String>(
             key: const Key('p19.type'),
-            items: const [('MARKET', '市价'), ('LIMIT', '限价')],
+            items: [('MARKET', t.orderMarket), ('LIMIT', t.orderLimit)],
             value: _type,
             onChanged: (v) => setState(() {
               _type = v;
@@ -408,7 +409,7 @@ class _OrderPageState extends State<OrderPage> {
         if (!_isLimit)
           Seg2<_Mode>(
             key: const Key('p19.mode'),
-            items: const [(_Mode.amount, '按金额'), (_Mode.qty, '按股数')],
+            items: [(_Mode.amount, t.orderByAmount), (_Mode.qty, t.orderByShares)],
             value: _mode,
             onChanged: (v) => setState(() {
               _mode = v;
@@ -419,21 +420,21 @@ class _OrderPageState extends State<OrderPage> {
         if (restriction != null) Notice(restriction, kind: NoticeKind.warn),
         if (_isLimit)
           AppField(
-            label: '限价 (USD)',
+            label: t.orderLimitPriceUsd,
             controller: _limit,
             fieldKey: const Key('p19.limitPrice'),
             hint: _refPrice == null ? '0.00' : fmtPx(_refPrice!),
-            helper: '${_buy ? '买入：价格不高于限价时成交' : '卖出：价格不低于限价时成交'}；当日有效',
+            helper: _buy ? t.orderLimitHelpBuy : t.orderLimitHelpSell,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             error: _limitError,
             onChanged: (_) => setState(() => _limitError = null),
           ),
         AppField(
-          label: !_isLimit && _mode == _Mode.amount ? '${_buy ? '买入' : '卖出'}金额 (USD)' : '${_buy ? '买入' : '卖出'}股数',
+          label: !_isLimit && _mode == _Mode.amount ? (_buy ? t.orderBuyAmountUsd : t.orderSellAmountUsd) : (_buy ? t.orderBuyShares : t.orderSellShares),
           controller: _input,
           fieldKey: const Key('p19.input'),
           hint: !_isLimit && _mode == _Mode.amount ? '0.00' : '0',
-          helper: !_isLimit && _mode == _Mode.amount ? '支持碎股；$minOrderText' : '支持小数股，最多 6 位小数',
+          helper: !_isLimit && _mode == _Mode.amount ? t.orderFractionalSharesSupported(minOrderText) : t.orderFractionalSharesSupportedUp,
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
           error: _inputError,
           onChanged: (_) => setState(() => _inputError = null),
@@ -442,7 +443,7 @@ class _OrderPageState extends State<OrderPage> {
           Align(
             alignment: Alignment.centerRight,
             child: LinkButton(
-              '全部卖出（${fmtQty(pos.sellableQty)} 股）',
+              t.orderSellAllShares(fmtQty(pos.sellableQty)),
               key: const Key('p19.sellAll'),
               fontSize: 13,
               onPressed: () => setState(() {
@@ -454,43 +455,43 @@ class _OrderPageState extends State<OrderPage> {
         AppCard(
           child: Column(
             children: [
-              KvRow('订单类型', _typeText),
-              KvRow('参考价（演示行情）', _refPrice == null ? '—' : fmtUsd(_refPrice!)),
+              KvRow(t.orderOrderType, _typeText),
+              KvRow(t.orderReferencePriceDemoQuote, _refPrice == null ? '—' : fmtUsd(_refPrice!)),
               KvRow(_estimateLabel, _estimateText, valueKey: const Key('p19.estimate')),
               if (_buy)
-                KvRow(_paper ? '模拟可用资金' : '可用购买力', fmtUsd(bp), valueKey: const Key('p19.buyingPower'))
+                KvRow(_paper ? t.orderPaperAvailableFunds : t.orderBuyingPower, fmtUsd(bp), valueKey: const Key('p19.buyingPower'))
               else
-                KvRow('可卖数量', '${fmtQty(_sellable)} 股', valueKey: const Key('p19.sellable')),
+                KvRow(t.positionsSellable, t.ordersShares(fmtQty(_sellable)), valueKey: const Key('p19.sellable')),
             ],
           ),
         ),
         Notice(
           _paper
-              ? (_isLimit ? '模拟限价单：演示行情到达限价时自动成交，未成交前冻结资金 / 股数，当日有效。' : '模拟市价单按演示行情即时成交（买入按卖一价、卖出按买一价）。')
+              ? (_isLimit ? t.orderPaperLimitOrderFills : t.orderPaperMarketOrdersFill)
               : _buy && bp <= 0
-              ? '当前可用购买力为 \$0.00。入金结算后才计入购买力，日期以资金记录中券商返回的为准。'
+              ? t.orderYourCurrentBuyingPower
               : _isLimit
-              ? '限价单当日有效，价格到达限价才可能成交，未成交部分收盘后自动撤销，状态以券商返回为准。'
-              : '市价单按券商实际成交价成交。本期不区分盘前盘后，休市时提交的订单可能排队至开盘，状态以券商返回为准。',
+              ? t.orderLimitOrdersAreGood
+              : t.orderMarketOrdersFillAt,
         ),
       ],
       footer: [
         Expanded(
-          child: AppButton('下一步', key: const Key('p19.next'), onPressed: restriction != null ? null : _toConfirm),
+          child: AppButton(t.orderNext, key: const Key('p19.next'), onPressed: restriction != null ? null : _toConfirm),
         ),
       ],
     );
   }
 
   Widget _confirmView() => _scaffold(
-    '确认订单',
+    t.orderReviewOrder,
     [
       if (_paper) const PaperBanner(),
       if (_submitError != null) Notice(_submitError!, kind: NoticeKind.danger),
       AppCard(
         child: Column(
           children: [
-            Text('${_buy ? '买入' : '卖出'} ${widget.symbol}', style: const TextStyle(fontSize: 13, color: AppColors.muted)),
+            Text('${_buy ? t.orderSideBuy : t.orderSideSell} ${widget.symbol}', style: const TextStyle(fontSize: 13, color: AppColors.muted)),
             Text(
               _orderSizeText,
               key: const Key('p19.confirm.size'),
@@ -502,27 +503,27 @@ class _OrderPageState extends State<OrderPage> {
       AppCard(
         child: Column(
           children: [
-            KvRow('账户', _paper ? '模拟盘（虚拟资金）' : '实盘（DriveWealth）'),
-            KvRow('股票', '${widget.symbol} · $_name'),
-            KvRow('方向', _buy ? '买入' : '卖出'),
-            KvRow('订单类型', _typeText),
-            if (_isLimit) KvRow('限价', fmtUsd(parseLimitPrice(_limit.text) ?? 0), valueKey: const Key('p19.confirm.limit')),
+            KvRow(t.homeAccount, _paper ? t.orderPaperVirtualFunds : t.orderLiveDrivewealth),
+            KvRow(t.instrumentStock, '${widget.symbol} · $_name'),
+            KvRow(t.orderSide, _buy ? t.orderSideBuy : t.orderSideSell),
+            KvRow(t.orderOrderType, _typeText),
+            if (_isLimit) KvRow(t.orderLimitPrice, fmtUsd(parseLimitPrice(_limit.text) ?? 0), valueKey: const Key('p19.confirm.limit')),
             KvRow(_sizeLabel, _orderSizeText),
-            KvRow('参考价（演示行情）', _refPrice == null ? '—' : fmtUsd(_refPrice!)),
+            KvRow(t.orderReferencePriceDemoQuote, _refPrice == null ? '—' : fmtUsd(_refPrice!)),
             KvRow(_estimateLabel, _estimateText),
-            if (!_paper) const KvRow('托管券商', 'DriveWealth'),
+            if (!_paper) KvRow(t.orderCustodian, 'DriveWealth'),
           ],
         ),
       ),
       if (_paper)
-        const Notice(paperPriceNotice, key: Key('p19.paperNotice'), kind: NoticeKind.warn)
+        Notice(paperPriceNotice, key: Key('p19.paperNotice'), kind: NoticeKind.warn)
       else
-        const Notice(demoPriceNotice, key: Key('p19.demoNotice'), kind: NoticeKind.warn),
+        Notice(demoPriceNotice, key: Key('p19.demoNotice'), kind: NoticeKind.warn),
     ],
     footer: [
-      AppButton('返回修改', kind: ButtonKind.ghost, fitContent: true, onPressed: _busy ? null : () => setState(() => _step = 'form')),
+      AppButton(t.orderEditOrder, kind: ButtonKind.ghost, fitContent: true, onPressed: _busy ? null : () => setState(() => _step = 'form')),
       Expanded(
-        child: AppButton(_buy ? '确认买入' : '确认卖出', key: const Key('p19.submit'), loading: _busy, onPressed: _busy ? null : _submit),
+        child: AppButton(_buy ? t.orderConfirmBuy : t.orderConfirmSell, key: const Key('p19.submit'), loading: _busy, onPressed: _busy ? null : _submit),
       ),
     ],
   );
@@ -535,21 +536,21 @@ class _OrderPageState extends State<OrderPage> {
     final rejected = status == 'REJECTED';
     final resting = _isLimit && status == 'NEW';
     final (icon, head) = switch (status) {
-      _ when r.pending => (Icons.schedule_rounded, '订单已记录'),
-      'FILLED' => (Icons.check_rounded, paper ? '模拟订单已成交' : '订单已成交'),
-      'REJECTED' => (Icons.close_rounded, '券商已拒绝该订单'),
-      _ when resting => (Icons.schedule_rounded, paper ? '模拟限价单已挂单' : '限价单已提交'),
-      _ => (Icons.check_rounded, '订单已提交'),
+      _ when r.pending => (Icons.schedule_rounded, t.orderOrderRecorded),
+      'FILLED' => (Icons.check_rounded, paper ? t.orderPaperOrderFilled : t.orderOrderFilled),
+      'REJECTED' => (Icons.close_rounded, t.orderOrderRejectedByThe),
+      _ when resting => (Icons.schedule_rounded, paper ? t.orderPaperLimitOrderPlaced : t.orderLimitOrderSubmitted),
+      _ => (Icons.check_rounded, t.orderOrderSubmitted),
     };
     final message = switch (status) {
-      _ when r.pending => '券商受理结果暂未确认，我们会自动核对，请稍后在订单列表中查看状态。请勿重复提交。',
-      'FILLED' => paper ? '按演示行情模拟成交，使用虚拟资金，不产生真实交易。' : '成交价与数量以券商返回为准。',
-      'REJECTED' => o?.rejectReason ?? '券商已拒绝该订单，请稍后重试或联系客服。',
-      _ when resting && paper => '演示行情到达限价时自动成交；未成交前冻结资金 / 股数，可在模拟订单中撤单。当日有效。',
-      _ when resting => '价格到达限价才可能成交，当日有效，可在订单列表中撤单。状态以券商返回为准。',
-      _ => '订单已发送至券商，成交后状态会在订单列表中更新。休市期间提交的订单可能排队至开盘。',
+      _ when r.pending => t.orderTheBrokerHasnT,
+      'FILLED' => paper ? t.orderSimulatedFillAtDemo : t.orderFillPriceAndQuantity,
+      'REJECTED' => o?.rejectReason ?? t.orderTheBrokerRejectedThis,
+      _ when resting && paper => t.orderFillsAutomaticallyWhenThe,
+      _ when resting => t.orderMayFillOnlyWhen,
+      _ => t.orderYourOrderHasBeen,
     };
-    return _scaffold('下单结果', [
+    return _scaffold(t.orderOrderResult, [
       if (paper) const PaperBanner(),
       const SizedBox(height: 16),
       Center(
@@ -578,16 +579,16 @@ class _OrderPageState extends State<OrderPage> {
       AppCard(
         child: Column(
           children: [
-            KvRow('订单号', o?.orderNo ?? r.orderId),
-            KvRow('股票', widget.symbol),
-            KvRow('方向', _buy ? '买入' : '卖出'),
-            KvRow('订单类型', _typeText),
-            if (_isLimit) KvRow('限价', fmtUsd(parseLimitPrice(_limit.text) ?? 0)),
+            KvRow(t.ordersOrderNo, o?.orderNo ?? r.orderId),
+            KvRow(t.instrumentStock, widget.symbol),
+            KvRow(t.orderSide, _buy ? t.orderSideBuy : t.orderSideSell),
+            KvRow(t.orderOrderType, _typeText),
+            if (_isLimit) KvRow(t.orderLimitPrice, fmtUsd(parseLimitPrice(_limit.text) ?? 0)),
             KvRow(_sizeLabel, _orderSizeText),
-            KvRow('状态', orderStatusLabel(status, limit: _isLimit), valueKey: const Key('p19.result.status')),
-            if (o?.filledQty != null && o!.filledQty! > 0) KvRow('成交数量', '${fmtQty(o.filledQty!)} 股'),
-            if (o?.avgPrice != null && o!.avgPrice! > 0) KvRow('成交均价', fmtUsd(o.avgPrice!), valueKey: const Key('p19.result.avgPrice')),
-            if (o?.totalAmount != null && o!.totalAmount! > 0) KvRow('成交金额', fmtUsd(o.totalAmount!)),
+            KvRow(t.orderStatus, orderStatusLabel(status, limit: _isLimit), valueKey: const Key('p19.result.status')),
+            if (o?.filledQty != null && o!.filledQty! > 0) KvRow(t.orderFilledQuantity, t.ordersShares(fmtQty(o.filledQty!))),
+            if (o?.avgPrice != null && o!.avgPrice! > 0) KvRow(t.ordersAvgFillPrice, fmtUsd(o.avgPrice!), valueKey: const Key('p19.result.avgPrice')),
+            if (o?.totalAmount != null && o!.totalAmount! > 0) KvRow(t.ordersFilledAmount, fmtUsd(o.totalAmount!)),
           ],
         ),
       ),
@@ -595,14 +596,14 @@ class _OrderPageState extends State<OrderPage> {
     ], footer: [
       Expanded(
         child: AppButton(
-          paper ? '查看模拟订单' : '查看订单',
+          paper ? t.orderViewPaperOrders : t.orderViewOrders,
           key: const Key('p19.orders'),
           kind: ButtonKind.ghost,
           onPressed: () => context.pushReplacement('/orders${paperQuery(paper)}'),
         ),
       ),
       Expanded(
-        child: AppButton('完成', key: const Key('p19.done'), onPressed: () => context.canPop() ? context.pop() : context.go('/home')),
+        child: AppButton(t.orderDone, key: const Key('p19.done'), onPressed: () => context.canPop() ? context.pop() : context.go('/home')),
       ),
     ]);
   }

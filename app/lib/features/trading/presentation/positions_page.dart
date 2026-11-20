@@ -14,6 +14,7 @@ import '../domain/trading_rules.dart';
 import 'order_page.dart';
 import '../domain/trading_mode.dart';
 import 'paper_widgets.dart';
+import '../../../l10n/l10n.dart';
 
 /// P-12 持仓（F14）：数量、市值、成本、盈亏全部取 DW 返回值；App 只计算盈亏百分比（DW 盈亏 / DW 成本）。
 class PositionsPage extends StatefulWidget {
@@ -57,10 +58,10 @@ class _PositionsPageState extends State<PositionsPage> {
     return Scaffold(
       appBar: AppBar(
         leading: const AppBackButton(),
-        title: paperTitle(widget.paper ? '模拟持仓' : '持仓', widget.paper),
+        title: paperTitle(widget.paper ? t.homePaperPositions : t.homePositions, widget.paper),
         actions: [
           IconButton(
-            tooltip: '订单',
+            tooltip: t.homeOrders,
             icon: const Icon(Icons.receipt_long_outlined),
             onPressed: () => context.push('/orders${paperQuery(widget.paper)}'),
           ),
@@ -69,9 +70,9 @@ class _PositionsPageState extends State<PositionsPage> {
       body: _notOpened
           ? StateView(
               icon: Icons.pie_chart_outline_rounded,
-              title: '暂无持仓',
-              message: '交易账户开立后即可买入股票。',
-              actions: [AppButton('返回资产页', onPressed: () => context.go('/home'))],
+              title: t.positionsNoPositionsYet,
+              message: t.positionsYouCanBuyStocks,
+              actions: [AppButton(t.ordersBackToAssets, onPressed: () => context.go('/home'))],
             )
           : RefreshIndicator(
               onRefresh: _load,
@@ -92,11 +93,11 @@ class _PositionsPageState extends State<PositionsPage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('还没有持仓。', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                            Text(t.positionsNoPositionsYet2, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
                             const SizedBox(height: 4),
-                            const Text('在市场页选择股票，点击"买入"即可下单。', style: TextStyle(fontSize: 13, color: AppColors.muted)),
+                            Text(t.positionsPickAStockOn, style: TextStyle(fontSize: 13, color: AppColors.muted)),
                             const SizedBox(height: 10),
-                            AppButton('去市场', small: true, onPressed: () => context.go('/market')),
+                            AppButton(t.homeGoToMarkets, small: true, onPressed: () => context.go('/market')),
                           ],
                         ),
                       )
@@ -105,8 +106,8 @@ class _PositionsPageState extends State<PositionsPage> {
                   ],
                   Text(
                     widget.paper
-                        ? '模拟持仓按演示行情估值，不代表真实资产。'
-                        : '持仓数据来自 DriveWealth${d?.updatedAt == null ? '' : ' · 更新于 ${fmtDateTime(d!.updatedAt)}'}',
+                        ? t.positionsPaperPositionsAreValued
+                        : (d?.updatedAt == null ? t.positionsFromDw : t.positionsFromDwUpdated(fmtDateTime(d!.updatedAt))),
                     style: const TextStyle(fontSize: 12, color: AppColors.faint),
                   ),
                 ],
@@ -121,7 +122,7 @@ class _PositionsPageState extends State<PositionsPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(widget.paper ? '模拟持仓市值' : '持仓市值', style: const TextStyle(fontSize: 12, color: AppColors.muted)),
+          Text(widget.paper ? t.positionsPaperPositionsValue : t.drawerPositionsValue, style: const TextStyle(fontSize: 12, color: AppColors.muted)),
           Text(
             d.equityValue == null ? '—' : fmtUsd(d.equityValue!),
             key: const Key('p12.equity'),
@@ -129,7 +130,7 @@ class _PositionsPageState extends State<PositionsPage> {
           ),
           const SizedBox(height: 4),
           Text(
-            '持仓盈亏 ${pl >= 0 ? '+' : ''}${fmtUsd(pl)}',
+            t.positionsTotalPl('${pl >= 0 ? '+' : ''}${fmtUsd(pl)}'),
             key: const Key('p12.totalPL'),
             style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: chgColor(pl)),
           ),
@@ -173,10 +174,10 @@ class _PositionsPageState extends State<PositionsPage> {
               ],
             ),
             const Divider(height: 18, color: AppColors.line),
-            KvRow('持有数量', '${fmtQty(p.quantity)} 股', valueKey: Key('p12.qty.${p.symbol}')),
-            if ((p.quantity - p.sellableQty).abs() > 1e-9) KvRow('可卖数量', '${fmtQty(p.sellableQty)} 股'),
-            KvRow('成本', fmtUsd(p.costBasis), valueKey: Key('p12.cost.${p.symbol}')),
-            KvRow('均价 / 现价', '${fmtUsd(p.avgPrice)} / ${fmtUsd(p.marketPrice)}'),
+            KvRow(t.positionsSharesHeld, t.ordersShares(fmtQty(p.quantity)), valueKey: Key('p12.qty.${p.symbol}')),
+            if ((p.quantity - p.sellableQty).abs() > 1e-9) KvRow(t.positionsSellable, t.ordersShares(fmtQty(p.sellableQty))),
+            KvRow(t.positionsCostBasis, fmtUsd(p.costBasis), valueKey: Key('p12.cost.${p.symbol}')),
+            KvRow(t.positionsAvgCurrentPrice, '${fmtUsd(p.avgPrice)} / ${fmtUsd(p.marketPrice)}'),
           ],
         ),
       ),

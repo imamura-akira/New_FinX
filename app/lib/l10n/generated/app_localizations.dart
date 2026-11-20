@@ -1487,6 +1487,876 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'下跌 {down}'**
   String moodDown2(Object down);
+
+  /// No description provided for @paperPlValue.
+  ///
+  /// In zh, this message translates to:
+  /// **'模拟盈亏 {pl}（{pct}）'**
+  String paperPlValue(Object pl, Object pct);
+
+  /// No description provided for @positionsFromDw.
+  ///
+  /// In zh, this message translates to:
+  /// **'持仓数据来自 DriveWealth'**
+  String get positionsFromDw;
+
+  /// No description provided for @positionsFromDwUpdated.
+  ///
+  /// In zh, this message translates to:
+  /// **'持仓数据来自 DriveWealth · 更新于 {time}'**
+  String positionsFromDwUpdated(Object time);
+
+  /// No description provided for @positionsTotalPl.
+  ///
+  /// In zh, this message translates to:
+  /// **'持仓盈亏 {pl}'**
+  String positionsTotalPl(Object pl);
+
+  /// No description provided for @tradePleaseEnterAnAmount.
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入金额'**
+  String get tradePleaseEnterAnAmount;
+
+  /// No description provided for @tradeEnterAValidAmount.
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入有效金额，最多两位小数'**
+  String get tradeEnterAValidAmount;
+
+  /// No description provided for @tradeExceedsYourAvailableBuying.
+  ///
+  /// In zh, this message translates to:
+  /// **'超过可用购买力 {v0}'**
+  String tradeExceedsYourAvailableBuying(Object v0);
+
+  /// No description provided for @tradeExceedsTheSellableMarket.
+  ///
+  /// In zh, this message translates to:
+  /// **'超过可卖市值 {v0}'**
+  String tradeExceedsTheSellableMarket(Object v0);
+
+  /// No description provided for @tradePleaseEnterTheNumber.
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入股数'**
+  String get tradePleaseEnterTheNumber;
+
+  /// No description provided for @tradeEnterAValidNumber.
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入有效股数，最多 6 位小数'**
+  String get tradeEnterAValidNumber;
+
+  /// No description provided for @tradeSharesMustBeGreater.
+  ///
+  /// In zh, this message translates to:
+  /// **'股数须大于 0'**
+  String get tradeSharesMustBeGreater;
+
+  /// No description provided for @tradeNoQuoteAvailablePlease.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无报价，请按金额买入'**
+  String get tradeNoQuoteAvailablePlease;
+
+  /// No description provided for @tradeEstimatedAmountExceedsYour.
+  ///
+  /// In zh, this message translates to:
+  /// **'预估金额 {v0} 超过可用购买力 {v1}'**
+  String tradeEstimatedAmountExceedsYour(Object v0, Object v1);
+
+  /// No description provided for @tradeExceedsYourSellableQuantity.
+  ///
+  /// In zh, this message translates to:
+  /// **'超过可卖数量 {v0} 股'**
+  String tradeExceedsYourSellableQuantity(Object v0);
+
+  /// No description provided for @tradeSubmitting.
+  ///
+  /// In zh, this message translates to:
+  /// **'提交中'**
+  String get tradeSubmitting;
+
+  /// No description provided for @tradeQueued.
+  ///
+  /// In zh, this message translates to:
+  /// **'排队中'**
+  String get tradeQueued;
+
+  /// No description provided for @tradePartiallyFilled.
+  ///
+  /// In zh, this message translates to:
+  /// **'部分成交'**
+  String get tradePartiallyFilled;
+
+  /// No description provided for @tradeFilled.
+  ///
+  /// In zh, this message translates to:
+  /// **'已成交'**
+  String get tradeFilled;
+
+  /// No description provided for @tradeRejected.
+  ///
+  /// In zh, this message translates to:
+  /// **'已拒绝'**
+  String get tradeRejected;
+
+  /// No description provided for @tradeCanceled.
+  ///
+  /// In zh, this message translates to:
+  /// **'已撤单'**
+  String get tradeCanceled;
+
+  /// No description provided for @tradePendingCancel.
+  ///
+  /// In zh, this message translates to:
+  /// **'撤单中'**
+  String get tradePendingCancel;
+
+  /// No description provided for @tradePricesShownAreDemo.
+  ///
+  /// In zh, this message translates to:
+  /// **'显示价格为演示行情，实际成交以券商（DriveWealth）返回为准'**
+  String get tradePricesShownAreDemo;
+
+  /// No description provided for @tradePleaseEnterALimit.
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入限价'**
+  String get tradePleaseEnterALimit;
+
+  /// No description provided for @tradeLimitPriceMustBe.
+  ///
+  /// In zh, this message translates to:
+  /// **'限价须大于 0（\$1 以上最多两位小数）'**
+  String get tradeLimitPriceMustBe;
+
+  /// No description provided for @tradeAmountOnHoldExceeds.
+  ///
+  /// In zh, this message translates to:
+  /// **'冻结金额 {v0} 超过可用资金 {v1}'**
+  String tradeAmountOnHoldExceeds(Object v0, Object v1);
+
+  /// No description provided for @tradeWorking.
+  ///
+  /// In zh, this message translates to:
+  /// **'挂单中'**
+  String get tradeWorking;
+
+  /// No description provided for @tradePaperTradingOrdersFill.
+  ///
+  /// In zh, this message translates to:
+  /// **'模拟盘：按演示行情撮合（市价买入按卖一价、卖出按买一价），使用虚拟资金，不产生真实交易'**
+  String get tradePaperTradingOrdersFill;
+
+  /// No description provided for @paperPaperTradingVirtualFunds.
+  ///
+  /// In zh, this message translates to:
+  /// **'模拟盘 · 虚拟资金，按演示行情撮合，不产生真实交易'**
+  String get paperPaperTradingVirtualFunds;
+
+  /// No description provided for @paperPaper.
+  ///
+  /// In zh, this message translates to:
+  /// **'模拟盘'**
+  String get paperPaper;
+
+  /// No description provided for @paperPaperAccountTotalValue.
+  ///
+  /// In zh, this message translates to:
+  /// **'模拟账户总资产'**
+  String get paperPaperAccountTotalValue;
+
+  /// No description provided for @paperReset.
+  ///
+  /// In zh, this message translates to:
+  /// **'重置'**
+  String get paperReset;
+
+  /// No description provided for @paperPaperPL.
+  ///
+  /// In zh, this message translates to:
+  /// **'模拟盈亏 ••••'**
+  String get paperPaperPL;
+
+  /// No description provided for @paperAvailableFunds.
+  ///
+  /// In zh, this message translates to:
+  /// **'可用资金'**
+  String get paperAvailableFunds;
+
+  /// No description provided for @paperOnHoldForOrders.
+  ///
+  /// In zh, this message translates to:
+  /// **'挂单冻结'**
+  String get paperOnHoldForOrders;
+
+  /// No description provided for @paperStartingBalance.
+  ///
+  /// In zh, this message translates to:
+  /// **'初始资金'**
+  String get paperStartingBalance;
+
+  /// No description provided for @paperResetPaperAccount.
+  ///
+  /// In zh, this message translates to:
+  /// **'重置模拟账户？'**
+  String get paperResetPaperAccount;
+
+  /// No description provided for @paperYourVirtualFundsWill.
+  ///
+  /// In zh, this message translates to:
+  /// **'模拟资金将恢复为初始金额，模拟持仓与订单全部清空。此操作只影响模拟盘，不影响实盘账户。'**
+  String get paperYourVirtualFundsWill;
+
+  /// No description provided for @ordersCancelOrder.
+  ///
+  /// In zh, this message translates to:
+  /// **'撤销订单？'**
+  String get ordersCancelOrder;
+
+  /// No description provided for @ordersCancelingReleasesTheVirtual.
+  ///
+  /// In zh, this message translates to:
+  /// **'{v0} {symbol} {v2}。撤单后释放冻结的模拟资金 / 股数。'**
+  String ordersCancelingReleasesTheVirtual(Object v0, Object symbol, Object v2);
+
+  /// No description provided for @ordersTheCancellationResultIs.
+  ///
+  /// In zh, this message translates to:
+  /// **'{v0} {symbol} {v2}。撤单结果以券商返回为准，已成交部分不会撤销。'**
+  String ordersTheCancellationResultIs(Object v0, Object symbol, Object v2);
+
+  /// No description provided for @ordersKeepOrder.
+  ///
+  /// In zh, this message translates to:
+  /// **'再想想'**
+  String get ordersKeepOrder;
+
+  /// No description provided for @ordersCancelOrder2.
+  ///
+  /// In zh, this message translates to:
+  /// **'撤单'**
+  String get ordersCancelOrder2;
+
+  /// No description provided for @ordersOrderCanceled.
+  ///
+  /// In zh, this message translates to:
+  /// **'订单已撤销'**
+  String get ordersOrderCanceled;
+
+  /// No description provided for @ordersCancelRequestSubmittedWaiting.
+  ///
+  /// In zh, this message translates to:
+  /// **'撤单已提交，等待券商确认'**
+  String get ordersCancelRequestSubmittedWaiting;
+
+  /// No description provided for @ordersShares.
+  ///
+  /// In zh, this message translates to:
+  /// **'{v0} 股'**
+  String ordersShares(Object v0);
+
+  /// No description provided for @ordersNoOrdersYet.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无订单'**
+  String get ordersNoOrdersYet;
+
+  /// No description provided for @ordersYouCanPlaceOrders.
+  ///
+  /// In zh, this message translates to:
+  /// **'交易账户开立后即可下单。'**
+  String get ordersYouCanPlaceOrders;
+
+  /// No description provided for @ordersBackToAssets.
+  ///
+  /// In zh, this message translates to:
+  /// **'返回资产页'**
+  String get ordersBackToAssets;
+
+  /// No description provided for @ordersOpen.
+  ///
+  /// In zh, this message translates to:
+  /// **'未完成'**
+  String get ordersOpen;
+
+  /// No description provided for @ordersClosed.
+  ///
+  /// In zh, this message translates to:
+  /// **'已结束'**
+  String get ordersClosed;
+
+  /// No description provided for @ordersNoOrdersYetTap.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无订单。在个股页点击\"买入\"或\"卖出\"即可下单。'**
+  String get ordersNoOrdersYetTap;
+
+  /// No description provided for @ordersPaperOrdersAreFilled.
+  ///
+  /// In zh, this message translates to:
+  /// **'模拟订单按演示行情撮合，不产生真实交易。'**
+  String get ordersPaperOrdersAreFilled;
+
+  /// No description provided for @ordersOrderStatusFilledQuantity.
+  ///
+  /// In zh, this message translates to:
+  /// **'订单状态、成交数量与成交价均以券商（DriveWealth）返回为准。'**
+  String get ordersOrderStatusFilledQuantity;
+
+  /// No description provided for @ordersOrder.
+  ///
+  /// In zh, this message translates to:
+  /// **'委托'**
+  String get ordersOrder;
+
+  /// No description provided for @ordersLimitDay.
+  ///
+  /// In zh, this message translates to:
+  /// **'限价 {v0} · {v1} · 当日有效'**
+  String ordersLimitDay(Object v0, Object v1);
+
+  /// No description provided for @ordersMarket.
+  ///
+  /// In zh, this message translates to:
+  /// **'市价单 · {v0}'**
+  String ordersMarket(Object v0);
+
+  /// No description provided for @ordersAvgFillPrice.
+  ///
+  /// In zh, this message translates to:
+  /// **'成交均价'**
+  String get ordersAvgFillPrice;
+
+  /// No description provided for @ordersFilledAmount.
+  ///
+  /// In zh, this message translates to:
+  /// **'成交金额'**
+  String get ordersFilledAmount;
+
+  /// No description provided for @ordersFees.
+  ///
+  /// In zh, this message translates to:
+  /// **'费用'**
+  String get ordersFees;
+
+  /// No description provided for @ordersSubmitted.
+  ///
+  /// In zh, this message translates to:
+  /// **'提交时间'**
+  String get ordersSubmitted;
+
+  /// No description provided for @ordersCompleted.
+  ///
+  /// In zh, this message translates to:
+  /// **'完成时间'**
+  String get ordersCompleted;
+
+  /// No description provided for @ordersOrderNo.
+  ///
+  /// In zh, this message translates to:
+  /// **'订单号'**
+  String get ordersOrderNo;
+
+  /// No description provided for @ordersTheBrokerHasnT.
+  ///
+  /// In zh, this message translates to:
+  /// **'券商受理结果暂未确认，我们会自动核对，请勿重复下单。'**
+  String get ordersTheBrokerHasnT;
+
+  /// No description provided for @positionsNoPositionsYet.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无持仓'**
+  String get positionsNoPositionsYet;
+
+  /// No description provided for @positionsYouCanBuyStocks.
+  ///
+  /// In zh, this message translates to:
+  /// **'交易账户开立后即可买入股票。'**
+  String get positionsYouCanBuyStocks;
+
+  /// No description provided for @positionsNoPositionsYet2.
+  ///
+  /// In zh, this message translates to:
+  /// **'还没有持仓。'**
+  String get positionsNoPositionsYet2;
+
+  /// No description provided for @positionsPickAStockOn.
+  ///
+  /// In zh, this message translates to:
+  /// **'在市场页选择股票，点击\"买入\"即可下单。'**
+  String get positionsPickAStockOn;
+
+  /// No description provided for @positionsPaperPositionsAreValued.
+  ///
+  /// In zh, this message translates to:
+  /// **'模拟持仓按演示行情估值，不代表真实资产。'**
+  String get positionsPaperPositionsAreValued;
+
+  /// No description provided for @positionsPaperPositionsValue.
+  ///
+  /// In zh, this message translates to:
+  /// **'模拟持仓市值'**
+  String get positionsPaperPositionsValue;
+
+  /// No description provided for @positionsSharesHeld.
+  ///
+  /// In zh, this message translates to:
+  /// **'持有数量'**
+  String get positionsSharesHeld;
+
+  /// No description provided for @positionsSellable.
+  ///
+  /// In zh, this message translates to:
+  /// **'可卖数量'**
+  String get positionsSellable;
+
+  /// No description provided for @positionsCostBasis.
+  ///
+  /// In zh, this message translates to:
+  /// **'成本'**
+  String get positionsCostBasis;
+
+  /// No description provided for @positionsAvgCurrentPrice.
+  ///
+  /// In zh, this message translates to:
+  /// **'均价 / 现价'**
+  String get positionsAvgCurrentPrice;
+
+  /// No description provided for @orderSideBuy.
+  ///
+  /// In zh, this message translates to:
+  /// **'买入'**
+  String get orderSideBuy;
+
+  /// No description provided for @orderSideSell.
+  ///
+  /// In zh, this message translates to:
+  /// **'卖出'**
+  String get orderSideSell;
+
+  /// No description provided for @orderDemoQuote.
+  ///
+  /// In zh, this message translates to:
+  /// **'演示行情'**
+  String get orderDemoQuote;
+
+  /// No description provided for @orderLimitHelpBuy.
+  ///
+  /// In zh, this message translates to:
+  /// **'买入：价格不高于限价时成交；当日有效'**
+  String get orderLimitHelpBuy;
+
+  /// No description provided for @orderLimitHelpSell.
+  ///
+  /// In zh, this message translates to:
+  /// **'卖出：价格不低于限价时成交；当日有效'**
+  String get orderLimitHelpSell;
+
+  /// No description provided for @orderBuyAmountUsd.
+  ///
+  /// In zh, this message translates to:
+  /// **'买入金额 (USD)'**
+  String get orderBuyAmountUsd;
+
+  /// No description provided for @orderSellAmountUsd.
+  ///
+  /// In zh, this message translates to:
+  /// **'卖出金额 (USD)'**
+  String get orderSellAmountUsd;
+
+  /// No description provided for @orderBuyShares.
+  ///
+  /// In zh, this message translates to:
+  /// **'买入股数'**
+  String get orderBuyShares;
+
+  /// No description provided for @orderSellShares.
+  ///
+  /// In zh, this message translates to:
+  /// **'卖出股数'**
+  String get orderSellShares;
+
+  /// No description provided for @orderYourAccountIsCurrently.
+  ///
+  /// In zh, this message translates to:
+  /// **'账户当前受限，暂不能交易。如有疑问请联系客服。'**
+  String get orderYourAccountIsCurrently;
+
+  /// No description provided for @orderYourAccountIsFrozen.
+  ///
+  /// In zh, this message translates to:
+  /// **'账户已冻结，暂不能交易。资产仍安全托管，请联系客服了解原因。'**
+  String get orderYourAccountIsFrozen;
+
+  /// No description provided for @orderYourAccountIsClosed.
+  ///
+  /// In zh, this message translates to:
+  /// **'账户已关闭，不能交易。'**
+  String get orderYourAccountIsClosed;
+
+  /// No description provided for @orderYourAccountIsCurrently2.
+  ///
+  /// In zh, this message translates to:
+  /// **'账户当前仅可卖出，暂不能买入。'**
+  String get orderYourAccountIsCurrently2;
+
+  /// No description provided for @orderOrderAmount.
+  ///
+  /// In zh, this message translates to:
+  /// **'委托金额'**
+  String get orderOrderAmount;
+
+  /// No description provided for @orderOrderQuantity.
+  ///
+  /// In zh, this message translates to:
+  /// **'委托股数'**
+  String get orderOrderQuantity;
+
+  /// No description provided for @orderShares.
+  ///
+  /// In zh, this message translates to:
+  /// **'约 {v0} 股'**
+  String orderShares(Object v0);
+
+  /// No description provided for @orderText.
+  ///
+  /// In zh, this message translates to:
+  /// **'约 {v0}'**
+  String orderText(Object v0);
+
+  /// No description provided for @orderEstimatedAmountOnHold.
+  ///
+  /// In zh, this message translates to:
+  /// **'预估金额（冻结）'**
+  String get orderEstimatedAmountOnHold;
+
+  /// No description provided for @orderEstimatedAmount.
+  ///
+  /// In zh, this message translates to:
+  /// **'预估金额'**
+  String get orderEstimatedAmount;
+
+  /// No description provided for @orderEstimatedShares.
+  ///
+  /// In zh, this message translates to:
+  /// **'预估股数'**
+  String get orderEstimatedShares;
+
+  /// No description provided for @orderLimitOrderDay.
+  ///
+  /// In zh, this message translates to:
+  /// **'限价单 · 当日有效'**
+  String get orderLimitOrderDay;
+
+  /// No description provided for @orderMarketOrder.
+  ///
+  /// In zh, this message translates to:
+  /// **'市价单'**
+  String get orderMarketOrder;
+
+  /// No description provided for @orderOpenAnAccountTo.
+  ///
+  /// In zh, this message translates to:
+  /// **'开户后即可交易'**
+  String get orderOpenAnAccountTo;
+
+  /// No description provided for @orderYouCanPlaceOrders.
+  ///
+  /// In zh, this message translates to:
+  /// **'交易账户开立后才能下单。请先完成开户，或切换到模拟盘练习。'**
+  String get orderYouCanPlaceOrders;
+
+  /// No description provided for @orderSwitchToPaperTrading.
+  ///
+  /// In zh, this message translates to:
+  /// **'切换到模拟盘'**
+  String get orderSwitchToPaperTrading;
+
+  /// No description provided for @orderMarket.
+  ///
+  /// In zh, this message translates to:
+  /// **'市价'**
+  String get orderMarket;
+
+  /// No description provided for @orderLimit.
+  ///
+  /// In zh, this message translates to:
+  /// **'限价'**
+  String get orderLimit;
+
+  /// No description provided for @orderByAmount.
+  ///
+  /// In zh, this message translates to:
+  /// **'按金额'**
+  String get orderByAmount;
+
+  /// No description provided for @orderByShares.
+  ///
+  /// In zh, this message translates to:
+  /// **'按股数'**
+  String get orderByShares;
+
+  /// No description provided for @orderLimitPriceUsd.
+  ///
+  /// In zh, this message translates to:
+  /// **'限价 (USD)'**
+  String get orderLimitPriceUsd;
+
+  /// No description provided for @orderFractionalSharesSupported.
+  ///
+  /// In zh, this message translates to:
+  /// **'支持碎股；{minOrderText}'**
+  String orderFractionalSharesSupported(Object minOrderText);
+
+  /// No description provided for @orderFractionalSharesSupportedUp.
+  ///
+  /// In zh, this message translates to:
+  /// **'支持小数股，最多 6 位小数'**
+  String get orderFractionalSharesSupportedUp;
+
+  /// No description provided for @orderSellAllShares.
+  ///
+  /// In zh, this message translates to:
+  /// **'全部卖出（{v0} 股）'**
+  String orderSellAllShares(Object v0);
+
+  /// No description provided for @orderOrderType.
+  ///
+  /// In zh, this message translates to:
+  /// **'订单类型'**
+  String get orderOrderType;
+
+  /// No description provided for @orderReferencePriceDemoQuote.
+  ///
+  /// In zh, this message translates to:
+  /// **'参考价（演示行情）'**
+  String get orderReferencePriceDemoQuote;
+
+  /// No description provided for @orderPaperAvailableFunds.
+  ///
+  /// In zh, this message translates to:
+  /// **'模拟可用资金'**
+  String get orderPaperAvailableFunds;
+
+  /// No description provided for @orderBuyingPower.
+  ///
+  /// In zh, this message translates to:
+  /// **'可用购买力'**
+  String get orderBuyingPower;
+
+  /// No description provided for @orderPaperLimitOrderFills.
+  ///
+  /// In zh, this message translates to:
+  /// **'模拟限价单：演示行情到达限价时自动成交，未成交前冻结资金 / 股数，当日有效。'**
+  String get orderPaperLimitOrderFills;
+
+  /// No description provided for @orderPaperMarketOrdersFill.
+  ///
+  /// In zh, this message translates to:
+  /// **'模拟市价单按演示行情即时成交（买入按卖一价、卖出按买一价）。'**
+  String get orderPaperMarketOrdersFill;
+
+  /// No description provided for @orderYourCurrentBuyingPower.
+  ///
+  /// In zh, this message translates to:
+  /// **'当前可用购买力为 \$0.00。入金结算后才计入购买力，日期以资金记录中券商返回的为准。'**
+  String get orderYourCurrentBuyingPower;
+
+  /// No description provided for @orderLimitOrdersAreGood.
+  ///
+  /// In zh, this message translates to:
+  /// **'限价单当日有效，价格到达限价才可能成交，未成交部分收盘后自动撤销，状态以券商返回为准。'**
+  String get orderLimitOrdersAreGood;
+
+  /// No description provided for @orderMarketOrdersFillAt.
+  ///
+  /// In zh, this message translates to:
+  /// **'市价单按券商实际成交价成交。本期不区分盘前盘后，休市时提交的订单可能排队至开盘，状态以券商返回为准。'**
+  String get orderMarketOrdersFillAt;
+
+  /// No description provided for @orderNext.
+  ///
+  /// In zh, this message translates to:
+  /// **'下一步'**
+  String get orderNext;
+
+  /// No description provided for @orderReviewOrder.
+  ///
+  /// In zh, this message translates to:
+  /// **'确认订单'**
+  String get orderReviewOrder;
+
+  /// No description provided for @orderPaperVirtualFunds.
+  ///
+  /// In zh, this message translates to:
+  /// **'模拟盘（虚拟资金）'**
+  String get orderPaperVirtualFunds;
+
+  /// No description provided for @orderLiveDrivewealth.
+  ///
+  /// In zh, this message translates to:
+  /// **'实盘（DriveWealth）'**
+  String get orderLiveDrivewealth;
+
+  /// No description provided for @orderSide.
+  ///
+  /// In zh, this message translates to:
+  /// **'方向'**
+  String get orderSide;
+
+  /// No description provided for @orderLimitPrice.
+  ///
+  /// In zh, this message translates to:
+  /// **'限价'**
+  String get orderLimitPrice;
+
+  /// No description provided for @orderCustodian.
+  ///
+  /// In zh, this message translates to:
+  /// **'托管券商'**
+  String get orderCustodian;
+
+  /// No description provided for @orderEditOrder.
+  ///
+  /// In zh, this message translates to:
+  /// **'返回修改'**
+  String get orderEditOrder;
+
+  /// No description provided for @orderConfirmBuy.
+  ///
+  /// In zh, this message translates to:
+  /// **'确认买入'**
+  String get orderConfirmBuy;
+
+  /// No description provided for @orderConfirmSell.
+  ///
+  /// In zh, this message translates to:
+  /// **'确认卖出'**
+  String get orderConfirmSell;
+
+  /// No description provided for @orderOrderRecorded.
+  ///
+  /// In zh, this message translates to:
+  /// **'订单已记录'**
+  String get orderOrderRecorded;
+
+  /// No description provided for @orderPaperOrderFilled.
+  ///
+  /// In zh, this message translates to:
+  /// **'模拟订单已成交'**
+  String get orderPaperOrderFilled;
+
+  /// No description provided for @orderOrderFilled.
+  ///
+  /// In zh, this message translates to:
+  /// **'订单已成交'**
+  String get orderOrderFilled;
+
+  /// No description provided for @orderOrderRejectedByThe.
+  ///
+  /// In zh, this message translates to:
+  /// **'券商已拒绝该订单'**
+  String get orderOrderRejectedByThe;
+
+  /// No description provided for @orderPaperLimitOrderPlaced.
+  ///
+  /// In zh, this message translates to:
+  /// **'模拟限价单已挂单'**
+  String get orderPaperLimitOrderPlaced;
+
+  /// No description provided for @orderLimitOrderSubmitted.
+  ///
+  /// In zh, this message translates to:
+  /// **'限价单已提交'**
+  String get orderLimitOrderSubmitted;
+
+  /// No description provided for @orderOrderSubmitted.
+  ///
+  /// In zh, this message translates to:
+  /// **'订单已提交'**
+  String get orderOrderSubmitted;
+
+  /// No description provided for @orderTheBrokerHasnT.
+  ///
+  /// In zh, this message translates to:
+  /// **'券商受理结果暂未确认，我们会自动核对，请稍后在订单列表中查看状态。请勿重复提交。'**
+  String get orderTheBrokerHasnT;
+
+  /// No description provided for @orderSimulatedFillAtDemo.
+  ///
+  /// In zh, this message translates to:
+  /// **'按演示行情模拟成交，使用虚拟资金，不产生真实交易。'**
+  String get orderSimulatedFillAtDemo;
+
+  /// No description provided for @orderFillPriceAndQuantity.
+  ///
+  /// In zh, this message translates to:
+  /// **'成交价与数量以券商返回为准。'**
+  String get orderFillPriceAndQuantity;
+
+  /// No description provided for @orderTheBrokerRejectedThis.
+  ///
+  /// In zh, this message translates to:
+  /// **'券商已拒绝该订单，请稍后重试或联系客服。'**
+  String get orderTheBrokerRejectedThis;
+
+  /// No description provided for @orderFillsAutomaticallyWhenThe.
+  ///
+  /// In zh, this message translates to:
+  /// **'演示行情到达限价时自动成交；未成交前冻结资金 / 股数，可在模拟订单中撤单。当日有效。'**
+  String get orderFillsAutomaticallyWhenThe;
+
+  /// No description provided for @orderMayFillOnlyWhen.
+  ///
+  /// In zh, this message translates to:
+  /// **'价格到达限价才可能成交，当日有效，可在订单列表中撤单。状态以券商返回为准。'**
+  String get orderMayFillOnlyWhen;
+
+  /// No description provided for @orderYourOrderHasBeen.
+  ///
+  /// In zh, this message translates to:
+  /// **'订单已发送至券商，成交后状态会在订单列表中更新。休市期间提交的订单可能排队至开盘。'**
+  String get orderYourOrderHasBeen;
+
+  /// No description provided for @orderOrderResult.
+  ///
+  /// In zh, this message translates to:
+  /// **'下单结果'**
+  String get orderOrderResult;
+
+  /// No description provided for @orderStatus.
+  ///
+  /// In zh, this message translates to:
+  /// **'状态'**
+  String get orderStatus;
+
+  /// No description provided for @orderFilledQuantity.
+  ///
+  /// In zh, this message translates to:
+  /// **'成交数量'**
+  String get orderFilledQuantity;
+
+  /// No description provided for @orderViewPaperOrders.
+  ///
+  /// In zh, this message translates to:
+  /// **'查看模拟订单'**
+  String get orderViewPaperOrders;
+
+  /// No description provided for @orderViewOrders.
+  ///
+  /// In zh, this message translates to:
+  /// **'查看订单'**
+  String get orderViewOrders;
+
+  /// No description provided for @orderDone.
+  ///
+  /// In zh, this message translates to:
+  /// **'完成'**
+  String get orderDone;
 }
 
 class _AppLocalizationsDelegate

@@ -801,4 +801,514 @@ class AppLocalizationsEn extends AppLocalizations {
   String moodDown2(Object down) {
     return 'Down $down';
   }
+
+  @override
+  String paperPlValue(Object pl, Object pct) {
+    return 'Paper P&L $pl ($pct)';
+  }
+
+  @override
+  String get positionsFromDw => 'Position data from DriveWealth';
+
+  @override
+  String positionsFromDwUpdated(Object time) {
+    return 'Position data from DriveWealth · Updated $time';
+  }
+
+  @override
+  String positionsTotalPl(Object pl) {
+    return 'Unrealized P&L $pl';
+  }
+
+  @override
+  String get tradePleaseEnterAnAmount => 'Please enter an amount.';
+
+  @override
+  String get tradeEnterAValidAmount =>
+      'Enter a valid amount with up to 2 decimal places.';
+
+  @override
+  String tradeExceedsYourAvailableBuying(Object v0) {
+    return 'Exceeds your available buying power of $v0';
+  }
+
+  @override
+  String tradeExceedsTheSellableMarket(Object v0) {
+    return 'Exceeds the sellable market value of $v0';
+  }
+
+  @override
+  String get tradePleaseEnterTheNumber => 'Please enter the number of shares.';
+
+  @override
+  String get tradeEnterAValidNumber =>
+      'Enter a valid number of shares with up to 6 decimal places.';
+
+  @override
+  String get tradeSharesMustBeGreater => 'Shares must be greater than 0.';
+
+  @override
+  String get tradeNoQuoteAvailablePlease =>
+      'No quote available. Please buy by dollar amount.';
+
+  @override
+  String tradeEstimatedAmountExceedsYour(Object v0, Object v1) {
+    return 'Estimated amount $v0 exceeds your available buying power of $v1';
+  }
+
+  @override
+  String tradeExceedsYourSellableQuantity(Object v0) {
+    return 'Exceeds your sellable quantity of $v0 shares';
+  }
+
+  @override
+  String get tradeSubmitting => 'Submitting';
+
+  @override
+  String get tradeQueued => 'Queued';
+
+  @override
+  String get tradePartiallyFilled => 'Partially Filled';
+
+  @override
+  String get tradeFilled => 'Filled';
+
+  @override
+  String get tradeRejected => 'Rejected';
+
+  @override
+  String get tradeCanceled => 'Canceled';
+
+  @override
+  String get tradePendingCancel => 'Pending Cancel';
+
+  @override
+  String get tradePricesShownAreDemo =>
+      'Prices shown are demo quotes. Actual execution is determined by the broker (DriveWealth).';
+
+  @override
+  String get tradePleaseEnterALimit => 'Please enter a limit price.';
+
+  @override
+  String get tradeLimitPriceMustBe =>
+      'Limit price must be greater than 0 (up to 2 decimal places for prices of \$1 or more).';
+
+  @override
+  String tradeAmountOnHoldExceeds(Object v0, Object v1) {
+    return 'Amount on hold $v0 exceeds your available funds of $v1';
+  }
+
+  @override
+  String get tradeWorking => 'Working';
+
+  @override
+  String get tradePaperTradingOrdersFill =>
+      'Paper trading: orders fill at demo prices (market buys at the ask, sells at the bid) using virtual funds. No real trades are placed.';
+
+  @override
+  String get paperPaperTradingVirtualFunds =>
+      'Paper Trading · Virtual funds, filled at demo prices. No real trades are placed.';
+
+  @override
+  String get paperPaper => 'Paper';
+
+  @override
+  String get paperPaperAccountTotalValue => 'Paper Account Total Value';
+
+  @override
+  String get paperReset => 'Reset';
+
+  @override
+  String get paperPaperPL => 'Paper P&L ••••';
+
+  @override
+  String get paperAvailableFunds => 'Available Funds';
+
+  @override
+  String get paperOnHoldForOrders => 'On Hold for Orders';
+
+  @override
+  String get paperStartingBalance => 'Starting Balance';
+
+  @override
+  String get paperResetPaperAccount => 'Reset paper account?';
+
+  @override
+  String get paperYourVirtualFundsWill =>
+      'Your virtual funds will return to the starting balance, and all paper positions and orders will be cleared. This only affects paper trading, not your live account.';
+
+  @override
+  String get ordersCancelOrder => 'Cancel order?';
+
+  @override
+  String ordersCancelingReleasesTheVirtual(
+    Object v0,
+    Object symbol,
+    Object v2,
+  ) {
+    return '$v0 $symbol $v2. Canceling releases the virtual funds or shares on hold.';
+  }
+
+  @override
+  String ordersTheCancellationResultIs(Object v0, Object symbol, Object v2) {
+    return '$v0 $symbol $v2. The cancellation result is determined by the broker; any filled portion won\'t be reversed.';
+  }
+
+  @override
+  String get ordersKeepOrder => 'Keep Order';
+
+  @override
+  String get ordersCancelOrder2 => 'Cancel Order';
+
+  @override
+  String get ordersOrderCanceled => 'Order canceled';
+
+  @override
+  String get ordersCancelRequestSubmittedWaiting =>
+      'Cancel request submitted. Waiting for the broker to confirm.';
+
+  @override
+  String ordersShares(Object v0) {
+    return '$v0 shares';
+  }
+
+  @override
+  String get ordersNoOrdersYet => 'No orders yet';
+
+  @override
+  String get ordersYouCanPlaceOrders =>
+      'You can place orders once your brokerage account is open.';
+
+  @override
+  String get ordersBackToAssets => 'Back to Assets';
+
+  @override
+  String get ordersOpen => 'Open';
+
+  @override
+  String get ordersClosed => 'Closed';
+
+  @override
+  String get ordersNoOrdersYetTap =>
+      'No orders yet. Tap \"Buy\" or \"Sell\" on a stock page to place an order.';
+
+  @override
+  String get ordersPaperOrdersAreFilled =>
+      'Paper orders are filled at demo prices. No real trades are placed.';
+
+  @override
+  String get ordersOrderStatusFilledQuantity =>
+      'Order status, filled quantity, and fill prices are all as reported by the broker (DriveWealth).';
+
+  @override
+  String get ordersOrder => 'Order';
+
+  @override
+  String ordersLimitDay(Object v0, Object v1) {
+    return 'Limit $v0 · $v1 · Day';
+  }
+
+  @override
+  String ordersMarket(Object v0) {
+    return 'Market · $v0';
+  }
+
+  @override
+  String get ordersAvgFillPrice => 'Avg Fill Price';
+
+  @override
+  String get ordersFilledAmount => 'Filled Amount';
+
+  @override
+  String get ordersFees => 'Fees';
+
+  @override
+  String get ordersSubmitted => 'Submitted';
+
+  @override
+  String get ordersCompleted => 'Completed';
+
+  @override
+  String get ordersOrderNo => 'Order No.';
+
+  @override
+  String get ordersTheBrokerHasnT =>
+      'The broker hasn\'t confirmed this order yet. We\'ll check it automatically, so please don\'t place it again.';
+
+  @override
+  String get positionsNoPositionsYet => 'No positions yet';
+
+  @override
+  String get positionsYouCanBuyStocks =>
+      'You can buy stocks once your brokerage account is open.';
+
+  @override
+  String get positionsNoPositionsYet2 => 'No positions yet.';
+
+  @override
+  String get positionsPickAStockOn =>
+      'Pick a stock on the Markets tab and tap \"Buy\" to place an order.';
+
+  @override
+  String get positionsPaperPositionsAreValued =>
+      'Paper positions are valued at demo prices and don\'t represent real assets.';
+
+  @override
+  String get positionsPaperPositionsValue => 'Paper Positions Value';
+
+  @override
+  String get positionsSharesHeld => 'Shares Held';
+
+  @override
+  String get positionsSellable => 'Sellable';
+
+  @override
+  String get positionsCostBasis => 'Cost Basis';
+
+  @override
+  String get positionsAvgCurrentPrice => 'Avg / Current Price';
+
+  @override
+  String get orderSideBuy => 'Buy';
+
+  @override
+  String get orderSideSell => 'Sell';
+
+  @override
+  String get orderDemoQuote => 'Demo quote';
+
+  @override
+  String get orderLimitHelpBuy =>
+      'Buy: fills at or below your limit price. Good for the day.';
+
+  @override
+  String get orderLimitHelpSell =>
+      'Sell: fills at or above your limit price. Good for the day.';
+
+  @override
+  String get orderBuyAmountUsd => 'Buy Amount (USD)';
+
+  @override
+  String get orderSellAmountUsd => 'Sell Amount (USD)';
+
+  @override
+  String get orderBuyShares => 'Shares to Buy';
+
+  @override
+  String get orderSellShares => 'Shares to Sell';
+
+  @override
+  String get orderYourAccountIsCurrently =>
+      'Your account is currently restricted and can\'t trade. Please contact support if you have questions.';
+
+  @override
+  String get orderYourAccountIsFrozen =>
+      'Your account is frozen and can\'t trade. Your assets remain safely held. Please contact support for details.';
+
+  @override
+  String get orderYourAccountIsClosed =>
+      'Your account is closed and can\'t trade.';
+
+  @override
+  String get orderYourAccountIsCurrently2 =>
+      'Your account is currently limited to selling. Buying isn\'t available.';
+
+  @override
+  String get orderOrderAmount => 'Order Amount';
+
+  @override
+  String get orderOrderQuantity => 'Order Quantity';
+
+  @override
+  String orderShares(Object v0) {
+    return '≈ $v0 shares';
+  }
+
+  @override
+  String orderText(Object v0) {
+    return '≈ $v0';
+  }
+
+  @override
+  String get orderEstimatedAmountOnHold => 'Estimated Amount (on hold)';
+
+  @override
+  String get orderEstimatedAmount => 'Estimated Amount';
+
+  @override
+  String get orderEstimatedShares => 'Estimated Shares';
+
+  @override
+  String get orderLimitOrderDay => 'Limit Order · Day';
+
+  @override
+  String get orderMarketOrder => 'Market Order';
+
+  @override
+  String get orderOpenAnAccountTo => 'Open an account to start trading';
+
+  @override
+  String get orderYouCanPlaceOrders =>
+      'You can place orders once your brokerage account is open. Finish opening your account, or switch to paper trading to practice.';
+
+  @override
+  String get orderSwitchToPaperTrading => 'Switch to Paper Trading';
+
+  @override
+  String get orderMarket => 'Market';
+
+  @override
+  String get orderLimit => 'Limit';
+
+  @override
+  String get orderByAmount => 'By Amount';
+
+  @override
+  String get orderByShares => 'By Shares';
+
+  @override
+  String get orderLimitPriceUsd => 'Limit Price (USD)';
+
+  @override
+  String orderFractionalSharesSupported(Object minOrderText) {
+    return 'Fractional shares supported; $minOrderText';
+  }
+
+  @override
+  String get orderFractionalSharesSupportedUp =>
+      'Fractional shares supported, up to 6 decimal places';
+
+  @override
+  String orderSellAllShares(Object v0) {
+    return 'Sell All ($v0 shares)';
+  }
+
+  @override
+  String get orderOrderType => 'Order Type';
+
+  @override
+  String get orderReferencePriceDemoQuote => 'Reference Price (demo quote)';
+
+  @override
+  String get orderPaperAvailableFunds => 'Paper Available Funds';
+
+  @override
+  String get orderBuyingPower => 'Buying Power';
+
+  @override
+  String get orderPaperLimitOrderFills =>
+      'Paper limit order: fills automatically when the demo price reaches your limit. Funds or shares are held until it fills. Good for the day.';
+
+  @override
+  String get orderPaperMarketOrdersFill =>
+      'Paper market orders fill instantly at demo prices (buys at the ask, sells at the bid).';
+
+  @override
+  String get orderYourCurrentBuyingPower =>
+      'Your current buying power is \$0.00. Deposits count toward buying power once they settle; dates are as reported by the broker in your transfer history.';
+
+  @override
+  String get orderLimitOrdersAreGood =>
+      'Limit orders are good for the day and may fill only when the price reaches your limit. Any unfilled portion is canceled automatically after the close. Status is as reported by the broker.';
+
+  @override
+  String get orderMarketOrdersFillAt =>
+      'Market orders fill at the broker\'s actual execution price. Extended-hours trading isn\'t separated in this release; orders placed while the market is closed may queue until the open. Status is as reported by the broker.';
+
+  @override
+  String get orderNext => 'Next';
+
+  @override
+  String get orderReviewOrder => 'Review Order';
+
+  @override
+  String get orderPaperVirtualFunds => 'Paper (virtual funds)';
+
+  @override
+  String get orderLiveDrivewealth => 'Live (DriveWealth)';
+
+  @override
+  String get orderSide => 'Side';
+
+  @override
+  String get orderLimitPrice => 'Limit Price';
+
+  @override
+  String get orderCustodian => 'Custodian';
+
+  @override
+  String get orderEditOrder => 'Edit Order';
+
+  @override
+  String get orderConfirmBuy => 'Confirm Buy';
+
+  @override
+  String get orderConfirmSell => 'Confirm Sell';
+
+  @override
+  String get orderOrderRecorded => 'Order recorded';
+
+  @override
+  String get orderPaperOrderFilled => 'Paper order filled';
+
+  @override
+  String get orderOrderFilled => 'Order filled';
+
+  @override
+  String get orderOrderRejectedByThe => 'Order rejected by the broker';
+
+  @override
+  String get orderPaperLimitOrderPlaced => 'Paper limit order placed';
+
+  @override
+  String get orderLimitOrderSubmitted => 'Limit order submitted';
+
+  @override
+  String get orderOrderSubmitted => 'Order submitted';
+
+  @override
+  String get orderTheBrokerHasnT =>
+      'The broker hasn\'t confirmed this order yet. We\'ll check it automatically — please check its status in your orders shortly. Don\'t submit it again.';
+
+  @override
+  String get orderSimulatedFillAtDemo =>
+      'Simulated fill at demo prices using virtual funds. No real trades are placed.';
+
+  @override
+  String get orderFillPriceAndQuantity =>
+      'Fill price and quantity are as reported by the broker.';
+
+  @override
+  String get orderTheBrokerRejectedThis =>
+      'The broker rejected this order. Please try again later or contact support.';
+
+  @override
+  String get orderFillsAutomaticallyWhenThe =>
+      'Fills automatically when the demo price reaches your limit. Funds or shares are held until then, and you can cancel it in Paper Orders. Good for the day.';
+
+  @override
+  String get orderMayFillOnlyWhen =>
+      'May fill only when the price reaches your limit. Good for the day; you can cancel it in your orders. Status is as reported by the broker.';
+
+  @override
+  String get orderYourOrderHasBeen =>
+      'Your order has been sent to the broker. Its status will update in your orders once filled. Orders placed while the market is closed may queue until the open.';
+
+  @override
+  String get orderOrderResult => 'Order Result';
+
+  @override
+  String get orderStatus => 'Status';
+
+  @override
+  String get orderFilledQuantity => 'Filled Quantity';
+
+  @override
+  String get orderViewPaperOrders => 'View Paper Orders';
+
+  @override
+  String get orderViewOrders => 'View Orders';
+
+  @override
+  String get orderDone => 'Done';
 }

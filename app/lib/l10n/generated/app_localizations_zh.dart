@@ -745,4 +745,486 @@ class AppLocalizationsZh extends AppLocalizations {
   String moodDown2(Object down) {
     return '下跌 $down';
   }
+
+  @override
+  String paperPlValue(Object pl, Object pct) {
+    return '模拟盈亏 $pl（$pct）';
+  }
+
+  @override
+  String get positionsFromDw => '持仓数据来自 DriveWealth';
+
+  @override
+  String positionsFromDwUpdated(Object time) {
+    return '持仓数据来自 DriveWealth · 更新于 $time';
+  }
+
+  @override
+  String positionsTotalPl(Object pl) {
+    return '持仓盈亏 $pl';
+  }
+
+  @override
+  String get tradePleaseEnterAnAmount => '请输入金额';
+
+  @override
+  String get tradeEnterAValidAmount => '请输入有效金额，最多两位小数';
+
+  @override
+  String tradeExceedsYourAvailableBuying(Object v0) {
+    return '超过可用购买力 $v0';
+  }
+
+  @override
+  String tradeExceedsTheSellableMarket(Object v0) {
+    return '超过可卖市值 $v0';
+  }
+
+  @override
+  String get tradePleaseEnterTheNumber => '请输入股数';
+
+  @override
+  String get tradeEnterAValidNumber => '请输入有效股数，最多 6 位小数';
+
+  @override
+  String get tradeSharesMustBeGreater => '股数须大于 0';
+
+  @override
+  String get tradeNoQuoteAvailablePlease => '暂无报价，请按金额买入';
+
+  @override
+  String tradeEstimatedAmountExceedsYour(Object v0, Object v1) {
+    return '预估金额 $v0 超过可用购买力 $v1';
+  }
+
+  @override
+  String tradeExceedsYourSellableQuantity(Object v0) {
+    return '超过可卖数量 $v0 股';
+  }
+
+  @override
+  String get tradeSubmitting => '提交中';
+
+  @override
+  String get tradeQueued => '排队中';
+
+  @override
+  String get tradePartiallyFilled => '部分成交';
+
+  @override
+  String get tradeFilled => '已成交';
+
+  @override
+  String get tradeRejected => '已拒绝';
+
+  @override
+  String get tradeCanceled => '已撤单';
+
+  @override
+  String get tradePendingCancel => '撤单中';
+
+  @override
+  String get tradePricesShownAreDemo => '显示价格为演示行情，实际成交以券商（DriveWealth）返回为准';
+
+  @override
+  String get tradePleaseEnterALimit => '请输入限价';
+
+  @override
+  String get tradeLimitPriceMustBe => '限价须大于 0（\$1 以上最多两位小数）';
+
+  @override
+  String tradeAmountOnHoldExceeds(Object v0, Object v1) {
+    return '冻结金额 $v0 超过可用资金 $v1';
+  }
+
+  @override
+  String get tradeWorking => '挂单中';
+
+  @override
+  String get tradePaperTradingOrdersFill =>
+      '模拟盘：按演示行情撮合（市价买入按卖一价、卖出按买一价），使用虚拟资金，不产生真实交易';
+
+  @override
+  String get paperPaperTradingVirtualFunds => '模拟盘 · 虚拟资金，按演示行情撮合，不产生真实交易';
+
+  @override
+  String get paperPaper => '模拟盘';
+
+  @override
+  String get paperPaperAccountTotalValue => '模拟账户总资产';
+
+  @override
+  String get paperReset => '重置';
+
+  @override
+  String get paperPaperPL => '模拟盈亏 ••••';
+
+  @override
+  String get paperAvailableFunds => '可用资金';
+
+  @override
+  String get paperOnHoldForOrders => '挂单冻结';
+
+  @override
+  String get paperStartingBalance => '初始资金';
+
+  @override
+  String get paperResetPaperAccount => '重置模拟账户？';
+
+  @override
+  String get paperYourVirtualFundsWill =>
+      '模拟资金将恢复为初始金额，模拟持仓与订单全部清空。此操作只影响模拟盘，不影响实盘账户。';
+
+  @override
+  String get ordersCancelOrder => '撤销订单？';
+
+  @override
+  String ordersCancelingReleasesTheVirtual(
+    Object v0,
+    Object symbol,
+    Object v2,
+  ) {
+    return '$v0 $symbol $v2。撤单后释放冻结的模拟资金 / 股数。';
+  }
+
+  @override
+  String ordersTheCancellationResultIs(Object v0, Object symbol, Object v2) {
+    return '$v0 $symbol $v2。撤单结果以券商返回为准，已成交部分不会撤销。';
+  }
+
+  @override
+  String get ordersKeepOrder => '再想想';
+
+  @override
+  String get ordersCancelOrder2 => '撤单';
+
+  @override
+  String get ordersOrderCanceled => '订单已撤销';
+
+  @override
+  String get ordersCancelRequestSubmittedWaiting => '撤单已提交，等待券商确认';
+
+  @override
+  String ordersShares(Object v0) {
+    return '$v0 股';
+  }
+
+  @override
+  String get ordersNoOrdersYet => '暂无订单';
+
+  @override
+  String get ordersYouCanPlaceOrders => '交易账户开立后即可下单。';
+
+  @override
+  String get ordersBackToAssets => '返回资产页';
+
+  @override
+  String get ordersOpen => '未完成';
+
+  @override
+  String get ordersClosed => '已结束';
+
+  @override
+  String get ordersNoOrdersYetTap => '暂无订单。在个股页点击\"买入\"或\"卖出\"即可下单。';
+
+  @override
+  String get ordersPaperOrdersAreFilled => '模拟订单按演示行情撮合，不产生真实交易。';
+
+  @override
+  String get ordersOrderStatusFilledQuantity =>
+      '订单状态、成交数量与成交价均以券商（DriveWealth）返回为准。';
+
+  @override
+  String get ordersOrder => '委托';
+
+  @override
+  String ordersLimitDay(Object v0, Object v1) {
+    return '限价 $v0 · $v1 · 当日有效';
+  }
+
+  @override
+  String ordersMarket(Object v0) {
+    return '市价单 · $v0';
+  }
+
+  @override
+  String get ordersAvgFillPrice => '成交均价';
+
+  @override
+  String get ordersFilledAmount => '成交金额';
+
+  @override
+  String get ordersFees => '费用';
+
+  @override
+  String get ordersSubmitted => '提交时间';
+
+  @override
+  String get ordersCompleted => '完成时间';
+
+  @override
+  String get ordersOrderNo => '订单号';
+
+  @override
+  String get ordersTheBrokerHasnT => '券商受理结果暂未确认，我们会自动核对，请勿重复下单。';
+
+  @override
+  String get positionsNoPositionsYet => '暂无持仓';
+
+  @override
+  String get positionsYouCanBuyStocks => '交易账户开立后即可买入股票。';
+
+  @override
+  String get positionsNoPositionsYet2 => '还没有持仓。';
+
+  @override
+  String get positionsPickAStockOn => '在市场页选择股票，点击\"买入\"即可下单。';
+
+  @override
+  String get positionsPaperPositionsAreValued => '模拟持仓按演示行情估值，不代表真实资产。';
+
+  @override
+  String get positionsPaperPositionsValue => '模拟持仓市值';
+
+  @override
+  String get positionsSharesHeld => '持有数量';
+
+  @override
+  String get positionsSellable => '可卖数量';
+
+  @override
+  String get positionsCostBasis => '成本';
+
+  @override
+  String get positionsAvgCurrentPrice => '均价 / 现价';
+
+  @override
+  String get orderSideBuy => '买入';
+
+  @override
+  String get orderSideSell => '卖出';
+
+  @override
+  String get orderDemoQuote => '演示行情';
+
+  @override
+  String get orderLimitHelpBuy => '买入：价格不高于限价时成交；当日有效';
+
+  @override
+  String get orderLimitHelpSell => '卖出：价格不低于限价时成交；当日有效';
+
+  @override
+  String get orderBuyAmountUsd => '买入金额 (USD)';
+
+  @override
+  String get orderSellAmountUsd => '卖出金额 (USD)';
+
+  @override
+  String get orderBuyShares => '买入股数';
+
+  @override
+  String get orderSellShares => '卖出股数';
+
+  @override
+  String get orderYourAccountIsCurrently => '账户当前受限，暂不能交易。如有疑问请联系客服。';
+
+  @override
+  String get orderYourAccountIsFrozen => '账户已冻结，暂不能交易。资产仍安全托管，请联系客服了解原因。';
+
+  @override
+  String get orderYourAccountIsClosed => '账户已关闭，不能交易。';
+
+  @override
+  String get orderYourAccountIsCurrently2 => '账户当前仅可卖出，暂不能买入。';
+
+  @override
+  String get orderOrderAmount => '委托金额';
+
+  @override
+  String get orderOrderQuantity => '委托股数';
+
+  @override
+  String orderShares(Object v0) {
+    return '约 $v0 股';
+  }
+
+  @override
+  String orderText(Object v0) {
+    return '约 $v0';
+  }
+
+  @override
+  String get orderEstimatedAmountOnHold => '预估金额（冻结）';
+
+  @override
+  String get orderEstimatedAmount => '预估金额';
+
+  @override
+  String get orderEstimatedShares => '预估股数';
+
+  @override
+  String get orderLimitOrderDay => '限价单 · 当日有效';
+
+  @override
+  String get orderMarketOrder => '市价单';
+
+  @override
+  String get orderOpenAnAccountTo => '开户后即可交易';
+
+  @override
+  String get orderYouCanPlaceOrders => '交易账户开立后才能下单。请先完成开户，或切换到模拟盘练习。';
+
+  @override
+  String get orderSwitchToPaperTrading => '切换到模拟盘';
+
+  @override
+  String get orderMarket => '市价';
+
+  @override
+  String get orderLimit => '限价';
+
+  @override
+  String get orderByAmount => '按金额';
+
+  @override
+  String get orderByShares => '按股数';
+
+  @override
+  String get orderLimitPriceUsd => '限价 (USD)';
+
+  @override
+  String orderFractionalSharesSupported(Object minOrderText) {
+    return '支持碎股；$minOrderText';
+  }
+
+  @override
+  String get orderFractionalSharesSupportedUp => '支持小数股，最多 6 位小数';
+
+  @override
+  String orderSellAllShares(Object v0) {
+    return '全部卖出（$v0 股）';
+  }
+
+  @override
+  String get orderOrderType => '订单类型';
+
+  @override
+  String get orderReferencePriceDemoQuote => '参考价（演示行情）';
+
+  @override
+  String get orderPaperAvailableFunds => '模拟可用资金';
+
+  @override
+  String get orderBuyingPower => '可用购买力';
+
+  @override
+  String get orderPaperLimitOrderFills =>
+      '模拟限价单：演示行情到达限价时自动成交，未成交前冻结资金 / 股数，当日有效。';
+
+  @override
+  String get orderPaperMarketOrdersFill => '模拟市价单按演示行情即时成交（买入按卖一价、卖出按买一价）。';
+
+  @override
+  String get orderYourCurrentBuyingPower =>
+      '当前可用购买力为 \$0.00。入金结算后才计入购买力，日期以资金记录中券商返回的为准。';
+
+  @override
+  String get orderLimitOrdersAreGood =>
+      '限价单当日有效，价格到达限价才可能成交，未成交部分收盘后自动撤销，状态以券商返回为准。';
+
+  @override
+  String get orderMarketOrdersFillAt =>
+      '市价单按券商实际成交价成交。本期不区分盘前盘后，休市时提交的订单可能排队至开盘，状态以券商返回为准。';
+
+  @override
+  String get orderNext => '下一步';
+
+  @override
+  String get orderReviewOrder => '确认订单';
+
+  @override
+  String get orderPaperVirtualFunds => '模拟盘（虚拟资金）';
+
+  @override
+  String get orderLiveDrivewealth => '实盘（DriveWealth）';
+
+  @override
+  String get orderSide => '方向';
+
+  @override
+  String get orderLimitPrice => '限价';
+
+  @override
+  String get orderCustodian => '托管券商';
+
+  @override
+  String get orderEditOrder => '返回修改';
+
+  @override
+  String get orderConfirmBuy => '确认买入';
+
+  @override
+  String get orderConfirmSell => '确认卖出';
+
+  @override
+  String get orderOrderRecorded => '订单已记录';
+
+  @override
+  String get orderPaperOrderFilled => '模拟订单已成交';
+
+  @override
+  String get orderOrderFilled => '订单已成交';
+
+  @override
+  String get orderOrderRejectedByThe => '券商已拒绝该订单';
+
+  @override
+  String get orderPaperLimitOrderPlaced => '模拟限价单已挂单';
+
+  @override
+  String get orderLimitOrderSubmitted => '限价单已提交';
+
+  @override
+  String get orderOrderSubmitted => '订单已提交';
+
+  @override
+  String get orderTheBrokerHasnT => '券商受理结果暂未确认，我们会自动核对，请稍后在订单列表中查看状态。请勿重复提交。';
+
+  @override
+  String get orderSimulatedFillAtDemo => '按演示行情模拟成交，使用虚拟资金，不产生真实交易。';
+
+  @override
+  String get orderFillPriceAndQuantity => '成交价与数量以券商返回为准。';
+
+  @override
+  String get orderTheBrokerRejectedThis => '券商已拒绝该订单，请稍后重试或联系客服。';
+
+  @override
+  String get orderFillsAutomaticallyWhenThe =>
+      '演示行情到达限价时自动成交；未成交前冻结资金 / 股数，可在模拟订单中撤单。当日有效。';
+
+  @override
+  String get orderMayFillOnlyWhen => '价格到达限价才可能成交，当日有效，可在订单列表中撤单。状态以券商返回为准。';
+
+  @override
+  String get orderYourOrderHasBeen =>
+      '订单已发送至券商，成交后状态会在订单列表中更新。休市期间提交的订单可能排队至开盘。';
+
+  @override
+  String get orderOrderResult => '下单结果';
+
+  @override
+  String get orderStatus => '状态';
+
+  @override
+  String get orderFilledQuantity => '成交数量';
+
+  @override
+  String get orderViewPaperOrders => '查看模拟订单';
+
+  @override
+  String get orderViewOrders => '查看订单';
+
+  @override
+  String get orderDone => '完成';
 }

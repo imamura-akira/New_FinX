@@ -7,6 +7,7 @@ import '../../../core/widgets/widgets.dart';
 import '../../market/presentation/market_widgets.dart';
 import '../data/trading_api.dart';
 import '../domain/trading_mode.dart';
+import '../../../l10n/l10n.dart';
 
 /// 模拟盘品牌色：琥珀色系，与实盘的紫色明显区分（design/theme.md 第 7 节"模拟盘标识"）。
 abstract final class PaperColors {
@@ -17,8 +18,8 @@ abstract final class PaperColors {
 
 /// 模拟盘横幅：模拟模式下的每个页面顶部常驻（F15"明显的模拟盘标识"）。
 class PaperBanner extends StatelessWidget {
-  const PaperBanner({super.key, this.text = '模拟盘 · 虚拟资金，按演示行情撮合，不产生真实交易'});
-  final String text;
+  const PaperBanner({super.key, this.text});
+  final String? text; // null = 默认横幅文案
 
   @override
   Widget build(BuildContext context) => Container(
@@ -35,7 +36,7 @@ class PaperBanner extends StatelessWidget {
         const Icon(Icons.science_outlined, size: 18, color: PaperColors.fg),
         const SizedBox(width: 8),
         Expanded(
-          child: Text(text, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: PaperColors.fg)),
+          child: Text(text ?? t.paperPaperTradingVirtualFunds, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: PaperColors.fg)),
         ),
       ],
     ),
@@ -51,7 +52,7 @@ class PaperBadge extends StatelessWidget {
     key: const Key('paper.badge'),
     padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
     decoration: BoxDecoration(color: PaperColors.fg, borderRadius: BorderRadius.circular(8)),
-    child: const Text('模拟', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Colors.white)),
+    child: Text(t.drawerPaper, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Colors.white)),
   );
 }
 
@@ -70,7 +71,7 @@ class AccountModeSwitch extends StatelessWidget {
     valueListenable: TradingMode.instance,
     builder: (context, paper, _) => Seg2<bool>(
       key: const Key('mode.switch'),
-      items: const [(false, '实盘'), (true, '模拟盘')],
+      items: [(false, t.drawerLive), (true, t.paperPaper)],
       value: paper,
       onChanged: (v) {
         if (v == TradingMode.instance.paper) return;
@@ -110,28 +111,30 @@ class PaperAccountCard extends StatelessWidget {
             children: [
               const PaperBadge(),
               const SizedBox(width: 8),
-              const Expanded(
-                child: Text('模拟账户总资产', style: TextStyle(fontSize: 13, color: PaperColors.fg, fontWeight: FontWeight.w600)),
+              Expanded(
+                child: Text(t.paperPaperAccountTotalValue, style: TextStyle(fontSize: 13, color: PaperColors.fg, fontWeight: FontWeight.w600)),
               ),
               TextButton.icon(
                 key: const Key('paper.reset'),
                 onPressed: onReset,
                 icon: const Icon(Icons.restart_alt_rounded, size: 18, color: PaperColors.fg),
-                label: const Text('重置', style: TextStyle(color: PaperColors.fg)),
+                label: Text(t.paperReset, style: TextStyle(color: PaperColors.fg)),
               ),
             ],
           ),
           Text(v(a.totalValue), key: const Key('paper.total'), style: const TextStyle(fontSize: 30, fontWeight: FontWeight.w800)),
           Text(
-            hide ? '模拟盈亏 ••••' : '模拟盈亏 ${a.totalPL >= 0 ? '+' : ''}${fmtUsd(a.totalPL)}（${a.totalPLPct >= 0 ? '+' : ''}${a.totalPLPct.toStringAsFixed(2)}%）',
+            hide
+                ? t.paperPaperPL
+                : t.paperPlValue('${a.totalPL >= 0 ? '+' : ''}${fmtUsd(a.totalPL)}', '${a.totalPLPct >= 0 ? '+' : ''}${a.totalPLPct.toStringAsFixed(2)}%'),
             key: const Key('paper.pl'),
             style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: plColor),
           ),
           const Divider(height: 22, color: PaperColors.border),
-          KvRow('可用资金', v(a.buyingPower), valueKey: const Key('paper.buyingPower')),
-          KvRow('持仓市值', v(a.positionsValue), valueKey: const Key('paper.positionsValue')),
-          if (a.reservedCash > 0) KvRow('挂单冻结', v(a.reservedCash)),
-          KvRow('初始资金', v(a.initialCash)),
+          KvRow(t.paperAvailableFunds, v(a.buyingPower), valueKey: const Key('paper.buyingPower')),
+          KvRow(t.drawerPositionsValue, v(a.positionsValue), valueKey: const Key('paper.positionsValue')),
+          if (a.reservedCash > 0) KvRow(t.paperOnHoldForOrders, v(a.reservedCash)),
+          KvRow(t.paperStartingBalance, v(a.initialCash)),
         ],
       ),
     );
@@ -143,11 +146,11 @@ Future<bool> confirmPaperReset(BuildContext context) async =>
     await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('重置模拟账户？'),
-        content: const Text('模拟资金将恢复为初始金额，模拟持仓与订单全部清空。此操作只影响模拟盘，不影响实盘账户。'),
+        title: Text(t.paperResetPaperAccount),
+        content: Text(t.paperYourVirtualFundsWill),
         actions: [
-          TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('取消')),
-          TextButton(key: const Key('paper.reset.confirm'), onPressed: () => Navigator.of(ctx).pop(true), child: const Text('重置')),
+          TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: Text(t.drawerCancel)),
+          TextButton(key: const Key('paper.reset.confirm'), onPressed: () => Navigator.of(ctx).pop(true), child: Text(t.paperReset)),
         ],
       ),
     ) ==
