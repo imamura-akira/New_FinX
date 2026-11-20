@@ -21,15 +21,18 @@ FakeBackend _backend() => FakeBackend()
   ..on('POST /auth/logout', (_) => FakeBackend.ok());
 
 Future<void> _goLogin(WidgetTester tester, {bool register = false}) async {
-  await tester.tap(find.byKey(Key(register ? 'welcome.register' : 'welcome.login')));
+  final btn = find.byKey(Key(register ? 'welcome.register' : 'welcome.login'));
+  await tester.ensureVisible(btn); // F20 欢迎页在小窗口下需滚动
+  await tester.pumpAndSettle();
+  await tester.tap(btn);
   await tester.pumpAndSettle();
 }
 
 void main() {
   testWidgets('P-01 未登录时显示欢迎页，可进入注册', (tester) async {
     await pumpApp(tester);
-    expect(find.text('美股与 ETF 投资，开户、入金、交易一站完成。'), findsOneWidget);
-    expect(find.byKey(const Key('welcome.logo')), findsOneWidget, reason: 'FinX 字标（design/theme.md 第 4 节）');
+    expect(find.text('美股与 ETF 投资\n开户、入金、交易，一站完成。'), findsOneWidget);
+    expect(find.byKey(const Key('welcome.logo')), findsOneWidget, reason: 'AK 字标（F20，design/theme.md 第 4 节）');
     await _goLogin(tester, register: true);
     expect(find.text('注册并登录'), findsOneWidget);
     expect(find.textContaining('《用户服务协议》'), findsOneWidget);

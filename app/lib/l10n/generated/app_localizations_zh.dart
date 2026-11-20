@@ -2199,4 +2199,16 @@ class AppLocalizationsZh extends AppLocalizations {
   String predictMonthDay(Object month, Object day) {
     return '$month月$day日';
   }
+
+  @override
+  String get welcomeSlogan1 => '美股与 ETF 投资';
+
+  @override
+  String get welcomeSlogan2 => '开户、入金、交易，一站完成。';
+
+  @override
+  String get welcomeLogIn => '登录';
+
+  @override
+  String get welcomeBrowseMarkets => '先逛逛行情';
 }

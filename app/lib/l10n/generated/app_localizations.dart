@@ -4082,6 +4082,30 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'{month}月{day}日'**
   String predictMonthDay(Object month, Object day);
+
+  /// No description provided for @welcomeSlogan1.
+  ///
+  /// In zh, this message translates to:
+  /// **'美股与 ETF 投资'**
+  String get welcomeSlogan1;
+
+  /// No description provided for @welcomeSlogan2.
+  ///
+  /// In zh, this message translates to:
+  /// **'开户、入金、交易，一站完成。'**
+  String get welcomeSlogan2;
+
+  /// No description provided for @welcomeLogIn.
+  ///
+  /// In zh, this message translates to:
+  /// **'登录'**
+  String get welcomeLogIn;
+
+  /// No description provided for @welcomeBrowseMarkets.
+  ///
+  /// In zh, this message translates to:
+  /// **'先逛逛行情'**
+  String get welcomeBrowseMarkets;
 }
 
 class _AppLocalizationsDelegate

@@ -47,6 +47,7 @@
 | fifi_paw.png | Fifi 举爪 + 爪形图表 logo | P-26 Fifi 预告卡；可用于空状态 |
 | fifi_avatar.png | Fifi 圆形头像（透明底） | 账户抽屉、Fifi 相关入口 |
 | cat_xmas.png（app/assets/brand/，来源 design/reward-design/） | 圣诞毛衣 + 圣诞帽 Fifi，眨眼举爪，已抠图透明背景（427×601） | P-27 奖励页英雄区（F16 圣诞季限定） |
+| ak_mark.png（app/assets/brand/，来源 design/brand/ak_mark.png，缩至 600px 宽） | AK 立体字标（白 / 橙 / 黑描边，透明背景） | P-01 欢迎页字标（F20，约 200pt 宽，按轮廓的轻投影） |
 | ak_icon_1024.png（design/brand/） | **App 图标母版（2026-11-20 起）**：白底 1024×1024（无透明通道），深紫圆形 "AK" 徽标 | iOS AppIcon 全尺寸（15 个）由此生成；App 显示名称 AK Stocks |
 | app_icon_1024.png（design/brand/） | 原 FinX Stocks 图标母版（渐变爪印 + 涨幅柱，来源 app_icon_source.png），**保留备查**，不再用于 AppIcon | 已停用 |
 
@@ -90,18 +91,18 @@
 - 只播一次：同一账户号码 / 同一笔入金流水在本次运行中只播放一次，状态页轮询刷新、页面重建与重新进入都不重播。
 - 无障碍：系统开启"减弱动态效果"时不播放动画（触感保留）。
 
-**P-01 品牌入场 + 提示音**（实现：`app/lib/features/auth/presentation/welcome_page.dart`、`app/lib/core/sound/ui_sound.dart`、iOS `AppDelegate.swift`）
+**P-01 品牌入场 + 高点"滴"声**（F20 AK 品牌版，2026-11-20 起替换原 FiNX 字标滑入 + Fifi 弹跳与钟声和弦；实现：`app/lib/features/auth/presentation/welcome_page.dart`、`app/lib/core/sound/ui_sound.dart`、iOS `AppDelegate.swift`）
 
 | 项 | 规格 |
 |---|---|
-| 触发 | 冷启动后第一个出现的页面是 P-01 时播放一次；冷启动直接进入资产页（已登录）则不播，之后退出登录回到 P-01 也不播；离开 P-01 再回来不重播 |
-| 动效（共 1.6 秒，< 2 秒） | 0–0.64 s：FinX 字标从左侧 80pt 处滑入并淡入定格（easeOutCubic）；0.19–0.99 s：Fifi 从上方 48pt 落下，easeOutBack 形成落位时的轻微弹跳；0.99–1.6 s：Fifi 以底边为轴左右摆动两下（约 ±5.7°，逐渐减小），表示"挥手"；0.4–0.96 s：标语与按钮淡入 |
-| 减弱动态效果 | 系统开启时只做 0.4 秒整体淡入，无位移、无旋转（提示音照常，跟随静音开关） |
+| 触发 | 冷启动后第一个出现的页面是 P-01 时播放一次；冷启动直接进入资产页（已登录）则不播，之后退出登录回到 P-01 也不播；离开 P-01 再回来不重播（直接显示完整趋势线） |
+| 动效（约 2.05 秒） | 0–0.41 s：AK 字标淡入；0.12–0.53 s：slogan 淡入；0.2–0.62 s：按钮区淡入；0.3–1.65 s：趋势线从左向右描画（easeInOutCubic，按路径长度推进，线下淡橙填充随之推进）；1.65 s：终点光点亮起并呼吸 3 次（每次 2.4 秒，其后常亮）；1.65–2.05 s："注册"按钮 1.0 → 1.04 → 1.0 放大一次 |
+| 高点"滴"声 | 路径的 5 个阶段性高点（3 个局部高点 (48,108)(128,86)(206,58)、上升由陡转缓的拐点 (284,30)、终点 (322,14)）：描画越过每个高点时"滴"一声，音调依次升高（C6 → E6 → G6 → A6 → C7，大调五声音阶上行）。每声约 100 ms，正弦基音 + 少量泛音、快速衰减，峰值约 -16 dBFS。**由脚本 `app/tool/gen_peak_ticks.py` 合成（仅用 Python 标准库），不使用任何外部音频素材**；产物 `app/assets/sounds/peak_1.wav … peak_5.wav`（各约 9 KB） |
+| 减弱动态效果 | 系统开启时直接显示完整静态线与终点光点，不描画、不放大、不呼吸、**不播声音** |
 | 可用性 | 动画期间按钮始终可点，不阻塞登录 / 注册 |
-| 提示音 | 一声约 0.7 秒的柔和钟声和弦：C 大三和弦（C6–E6–G6）快速琶音，正弦基音 + 少量泛音，指数衰减，峰值约 -16 dBFS。**由脚本 `app/tool/gen_welcome_chime.py` 合成（仅用 Python 标准库），不使用任何外部音频素材**；产物 `app/assets/sounds/welcome_chime.wav`（约 62 KB） |
-| 静音 | iOS 以 AVAudioSession `.ambient` + `mixWithOthers` 播放：跟随系统静音开关（静音时只有动效），不打断用户正在播放的音乐；其他平台未实现时无声 |
+| 静音 | iOS 以 AVAudioSession `.ambient` + `mixWithOthers` 播放：跟随系统静音开关（静音时只有动效），不打断用户正在播放的音乐；多声连续播放互不截断；其他平台未实现时无声 |
 
-> Fifi 主视觉是单张位图，无法单独驱动爪子；"挥手"用整只 Fifi 的左右摆动表现。若要真正的爪子挥动，需要分层的 Fifi 素材（身体 / 前爪分图）。
+> 原 P-01 钟声和弦（welcome_chime.wav）及其生成脚本已移除（git 历史可查）。
 
 **模拟盘标识**（F15；实现：`app/lib/features/trading/presentation/paper_widgets.dart`）
 
@@ -130,6 +131,21 @@
 | 底部小字 | #A7A1BC，11pt |
 | 提醒提示音 | 开启时播放一声约 0.4 秒的清脆"叮"：A6（1760 Hz）正弦基音 + 少量谐波与钟声式非谐波泛音，3 ms 起音、短指数衰减，比 P-01 欢迎和弦更短促明亮，峰值约 -16 dBFS。**由脚本 `app/tool/gen_reminder_ding.py` 合成（仅用 Python 标准库），不使用任何外部音频素材**；产物 `app/assets/sounds/reminder_ding.wav`（约 35 KB）。播放方式同第 7 节（`.ambient` + `mixWithOthers`：跟随静音开关，不打断音乐）；同时 `HapticFeedback.lightImpact` 一次；取消提醒不出声 |
 
+## 9. P-01 欢迎页 AK 品牌版配色（F20）
+
+定稿：`design/reward-design/welcome_v3.png`；版式与趋势线路径参考同目录 `welcome_reference.html`。**橙色为欢迎页专属强调色，App 内部主题仍为紫色系（第 1 节）。**
+
+| 元素 | 规格 |
+|---|---|
+| 背景 | #F6F5FC（与 App 背景一致） |
+| 字标 | ak_mark.png，宽约 200pt，轮廓投影 rgba(27,24,48,.18)、模糊 13、下移 16 |
+| slogan | 两行居中，#7A7490，14.5pt，字重 600，行高 1.7 |
+| 趋势线 | SVG 路径 viewBox 342×150 等比缩放；描边 4pt 圆角，横向渐变 #FEA81E（50% 透明）→ #F58500；线下填充 #FE9502 由 14% → 0 纵向渐变；终点光点 #F58500 半径 5.5，外圈 #FE9502 22% 半径 10（呼吸时放大至 13） |
+| 注册按钮 | 135deg #FEA81E → #F58500 全圆角，高 56，白字 17pt 800，投影 rgba(254,149,2,.38) 0 10 24 |
+| 登录按钮 | 白底，1.5px #E4E0F5 描边，全圆角，高 54，#1B1830 字 |
+| 先逛逛行情 | #6C5BF5（主题紫），14.5pt 700 |
+| 免责 | #A7A1BC，12pt |
+
 ## 变更记录
 
 | 日期 | 内容 |
@@ -142,3 +158,4 @@
 | 2026-11-20 | v1.4：第 7 节新增 P-01 冷启动品牌入场（字标滑入 + Fifi 弹跳落位与摆动，1.6 秒）与脚本合成提示音（跟随静音开关）；庆祝特效补登 P-19 下单成功（轻量版） |
 | 2026-11-20 | v1.6：第 4 节登记 cat_xmas.png（圣诞毛衣 Fifi）；新增第 8 节 P-27 奖励页圣诞季版式（浅紫英雄区配色、等级胶囊、奖品卡、提醒按钮与脚本合成"叮"提示音，F16） |
 | 2026-11-20 | v1.7：品牌更新——App 图标改用 design/brand/ak_icon_1024.png（"AK" 徽标）为母版重新生成 iOS AppIcon 全部尺寸；App 显示名称（CFBundleDisplayName）由 FinX Stocks 改为 AK Stocks，中英文环境均显示 AK Stocks、不翻译；原 FinX Stocks 图标母版 app_icon_1024.png 保留备查。启动图与 App 内品牌素材（FinX 字标、Fifi）本次不变 |
+| 2026-11-20 | v1.8：F20 欢迎页 AK 品牌版——第 4 节登记 ak_mark.png；第 7 节 P-01 入场改为字标淡入 + 橙色趋势线描画 + 5 个高点音调递增"滴"声 + 光点呼吸 + 注册按钮放大一次（替换原 Fifi 入场与钟声和弦）；新增第 9 节欢迎页橙色配色（欢迎页专属，App 内部仍为紫色系） |

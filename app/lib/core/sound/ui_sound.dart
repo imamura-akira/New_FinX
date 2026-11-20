@@ -5,8 +5,14 @@ import 'package:flutter/services.dart';
 abstract final class UiSound {
   static const channel = MethodChannel('finx/ui_sound');
 
-  /// P-01 欢迎页品牌提示音（tool/gen_welcome_chime.py 脚本合成）。
-  static const welcomeChime = 'assets/sounds/welcome_chime.wav';
+  /// P-01 欢迎页趋势线 5 个高点的"滴"声，音调依次升高（tool/gen_peak_ticks.py 脚本合成，每声约 100 ms；F20）。
+  static const peakTicks = [
+    'assets/sounds/peak_1.wav',
+    'assets/sounds/peak_2.wav',
+    'assets/sounds/peak_3.wav',
+    'assets/sounds/peak_4.wav',
+    'assets/sounds/peak_5.wav',
+  ];
 
   /// P-27 "开启上线提醒"清脆提示音（tool/gen_reminder_ding.py 脚本合成，约 0.4 秒）。
   static const reminderDing = 'assets/sounds/reminder_ding.wav';

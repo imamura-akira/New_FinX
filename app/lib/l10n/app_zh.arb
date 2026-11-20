@@ -1343,5 +1343,9 @@
         "type": "Object"
       }
     }
-  }
+  },
+  "welcomeSlogan1": "美股与 ETF 投资",
+  "welcomeSlogan2": "开户、入金、交易，一站完成。",
+  "welcomeLogIn": "登录",
+  "welcomeBrowseMarkets": "先逛逛行情"
 }

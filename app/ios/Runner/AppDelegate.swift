@@ -5,7 +5,7 @@ import UIKit
 @main
 @objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate {
   /// 界面提示音（P-01 欢迎页，design/theme.md 第 7 节）。保持强引用直到播放结束。
-  private var uiSoundPlayer: AVAudioPlayer?
+  private var uiSoundPlayers: [AVAudioPlayer] = [] // 连续短音（P-01 高点滴声）互不截断
 
   override func application(
     _ application: UIApplication,
@@ -39,7 +39,8 @@ import UIKit
       player.volume = 0.8
       player.prepareToPlay()
       player.play()
-      uiSoundPlayer = player
+      uiSoundPlayers.removeAll { !$0.isPlaying }
+      uiSoundPlayers.append(player)
       return true
     } catch {
       return false

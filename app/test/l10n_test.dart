@@ -358,9 +358,10 @@ void main() {
       _ignoreOverflow();
       await pumpApp(tester, backend: FakeBackend(), locale: 'en');
       expect(find.text('Sign Up'), findsOneWidget);
-      expect(find.text('Browse Markets First'), findsOneWidget);
+      expect(find.text('Browse Markets'), findsOneWidget);
+      expect(find.text('Log In'), findsOneWidget);
       _expectNoChinese(tester, 'P-01');
-      await tester.tap(find.text('Sign In'));
+      await tester.tap(find.text('Log In'));
       await tester.pumpAndSettle();
       expect(find.text('Get Code'), findsOneWidget);
       _expectNoChinese(tester, 'P-02');

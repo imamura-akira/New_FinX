@@ -2322,4 +2322,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String predictMonthDay(Object month, Object day) {
     return '$month $day';
   }
+
+  @override
+  String get welcomeSlogan1 => 'Invest in U.S. stocks & ETFs';
+
+  @override
+  String get welcomeSlogan2 => 'Open, fund, and trade — all in one place.';
+
+  @override
+  String get welcomeLogIn => 'Log In';
+
+  @override
+  String get welcomeBrowseMarkets => 'Browse Markets';
 }

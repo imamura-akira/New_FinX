@@ -662,5 +662,9 @@
   "srvPredictInsufficient": "Not enough prediction points.",
   "srvPredictClosed": "This prediction market has closed.",
   "srvPredictNotFound": "Prediction market not found.",
-  "predictMonthDay": "{month} {day}"
+  "predictMonthDay": "{month} {day}",
+  "welcomeSlogan1": "Invest in U.S. stocks & ETFs",
+  "welcomeSlogan2": "Open, fund, and trade — all in one place.",
+  "welcomeLogIn": "Log In",
+  "welcomeBrowseMarkets": "Browse Markets"
 }

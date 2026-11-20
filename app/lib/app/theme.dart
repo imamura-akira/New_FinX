@@ -85,6 +85,9 @@ abstract final class BrandAssets {
 
   /// F16 P-27 圣诞季限定：圣诞毛衣 Fifi（透明背景，来源 design/reward-design/cat_xmas.png）。
   static const catXmas = 'assets/brand/cat_xmas.png';
+
+  /// F20 P-01 欢迎页 AK 字标（透明背景，来源 design/brand/ak_mark.png，缩至 600px 宽）。
+  static const akMark = 'assets/brand/ak_mark.png';
 }
 
 ThemeData buildTheme() {

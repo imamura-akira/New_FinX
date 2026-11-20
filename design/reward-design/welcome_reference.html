@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<style>
+  :root{--bg:#F6F5FC;--ink:#1B1830;--sub:#7A7490;--orange:#FE9502;}
+  *{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,"PingFang SC",sans-serif;}
+  body{width:390px;height:844px;background:var(--bg);color:var(--ink);overflow:hidden;}
+  .p{padding:14px 24px 0;height:100%;display:flex;flex-direction:column;}
+  .status{display:flex;justify-content:space-between;font-size:13px;font-weight:600;padding:2px 2px 0;}
+  .logo{display:flex;justify-content:center;margin-top:92px;}
+  .logo img{width:200px;filter:drop-shadow(0 16px 26px rgba(27,24,48,.18));}
+  .tag{text-align:center;font-size:14.5px;color:var(--sub);margin-top:34px;font-weight:600;line-height:1.7;}
+  .btns{padding-bottom:40px;}
+  .reg{background:linear-gradient(135deg,#FEA81E,#F58500);color:#fff;text-align:center;border-radius:999px;
+    padding:16px 0;font-size:17px;font-weight:800;box-shadow:0 10px 24px rgba(254,149,2,.38);letter-spacing:2px;}
+  .login{background:#fff;border:1.5px solid #E4E0F5;color:var(--ink);text-align:center;border-radius:999px;
+    padding:15px 0;font-size:16px;font-weight:700;margin-top:12px;}
+  .browse{text-align:center;font-size:14.5px;color:#6C5BF5;font-weight:700;margin-top:18px;}
+  .disc{text-align:center;font-size:12px;color:#A7A1BC;margin-top:14px;}
+</style>
+</head>
+<body>
+<div class="p">
+  <div class="status"><span>9:41</span><span>&#9679;&#9679;&#9679; &#9647;</span></div>
+  <div class="logo"><img src="assets/ak_mark.png"></div>
+  <div class="tag">美股与 ETF 投资<br>开户、入金、交易,一站完成。</div>
+    <div style="flex:1;display:flex;align-items:center;padding:0 2px;">
+    <svg viewBox="0 0 342 150" style="width:100%;">
+      <defs>
+        <linearGradient id="tl" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#FEA81E" stop-opacity=".5"/>
+          <stop offset="1" stop-color="#F58500"/>
+        </linearGradient>
+        <linearGradient id="tf" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#FE9502" stop-opacity=".14"/>
+          <stop offset="1" stop-color="#FE9502" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      <path d="M6 128 L48 108 L84 120 L128 86 L162 98 L206 58 L240 72 L284 30 L322 14 L322 148 L6 148 Z" fill="url(#tf)"/>
+      <path d="M6 128 L48 108 L84 120 L128 86 L162 98 L206 58 L240 72 L284 30 L322 14"
+        fill="none" stroke="url(#tl)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="322" cy="14" r="5.5" fill="#F58500"/>
+      <circle cx="322" cy="14" r="10" fill="#FE9502" opacity=".22"/>
+    </svg>
+  </div>
+  <div class="btns">
+    <div class="reg">注 册</div>
+    <div class="login">登 录</div>
+    <div class="browse">先逛逛行情</div>
+    <div class="disc">证券服务由合作券商提供。投资有风险。</div>
+  </div>
+</div>
+</body>
+</html>
