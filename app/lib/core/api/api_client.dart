@@ -4,6 +4,8 @@ import 'dart:io';
 
 import 'package:http/http.dart' as http;
 
+import '../../l10n/l10n.dart';
+
 /// 我方后端业务错误码（api-spec.md 第 8 节）。
 abstract final class ApiCodes {
   static const unauthorized = 40101;
@@ -29,12 +31,15 @@ class FieldError {
   final String reason;
 }
 
-/// 后端返回的业务错误或网络错误。message 均为可直接展示的简体中文。
+/// 后端返回的业务错误或网络错误。[message] 为按当前语言本地化后的展示文案（F18：按错误码映射，
+/// 服务器原文 [serverMessage] 只在无映射时兜底）。
 class ApiException implements Exception {
-  ApiException({required this.code, required this.message, this.httpStatus, this.data, this.fields = const []});
+  ApiException({required this.code, required String message, this.httpStatus, this.data, this.fields = const []})
+    : serverMessage = message;
 
   final int code;
-  final String message;
+  final String serverMessage;
+  String get message => localizeError(code, serverMessage);
   final int? httpStatus;
   final Object? data;
   final List<FieldError> fields;
@@ -42,10 +47,10 @@ class ApiException implements Exception {
   bool get isSessionInvalid => code == ApiCodes.unauthorized || code == ApiCodes.sessionExpired;
 
   /// 字段名 → 错误文案（同一字段取第一条）。
-  Map<String, String> get fieldMap => {for (final f in fields.reversed) f.field: f.reason};
+  Map<String, String> get fieldMap => {for (final f in fields.reversed) f.field: localizeFieldReason(f.reason)};
 
   @override
-  String toString() => 'ApiException($code, $message)';
+  String toString() => 'ApiException($code, $serverMessage)';
 }
 
 /// 统一的后端客户端：信封解包、错误映射、Bearer token、会话失效回调。

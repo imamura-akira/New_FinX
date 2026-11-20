@@ -32,7 +32,7 @@ void main() {
   testWidgets('P-23 股票大师：按收益排序、切换最近更新、个股机会筛选，底部标注演示数据', (tester) async {
     await _phone(tester);
     final (be, _, _) = await pumpApp(tester, backend: _backend(), storedToken: 'tok');
-    await _tab(tester, '股票大师');
+    await _tab(tester, 'masters');
     expect(find.text('看看大机构在买什么'), findsOneWidget);
     // 收益最高：晨湾资管（+21.30%）排第一，北岸资本第二
     expect(find.text('+21.30%'), findsOneWidget);
@@ -62,7 +62,7 @@ void main() {
   testWidgets('P-24：全部机构按收益排序；机构详情显示前五大持仓', (tester) async {
     await _phone(tester);
     await pumpApp(tester, backend: _backend(), storedToken: 'tok');
-    await _tab(tester, '股票大师');
+    await _tab(tester, 'masters');
     await tester.tap(find.byKey(const Key('p23.more')));
     await tester.pumpAndSettle();
     expect(find.text('全部机构'), findsOneWidget);
@@ -83,7 +83,7 @@ void main() {
   testWidgets('P-26 Fifi：六个功能卡，点击提示即将上线；保留合规提示', (tester) async {
     await _phone(tester);
     await pumpApp(tester, backend: _backend(), storedToken: 'tok');
-    await _tab(tester, 'Fifi');
+    await _tab(tester, 'fifi');
     expect(find.textContaining('首期不做，待合规评估'), findsOneWidget);
     for (var k = 0; k < 6; k++) {
       await _scrollTo(tester, find.byKey(Key('p26.feat.$k')));

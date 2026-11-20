@@ -10,6 +10,7 @@ import '../../../core/widgets/form_widgets.dart';
 import '../../../core/widgets/widgets.dart';
 import '../data/account_api.dart';
 import '../domain/account_overview.dart';
+import '../../../l10n/l10n.dart';
 
 /// 入金入口（P-13）。
 void openDeposit(BuildContext context) => context.push('/funding/deposit');
@@ -121,6 +122,14 @@ class AccountDrawer extends StatelessWidget {
                 ListRow(icon: Icons.description_outlined, title: '文件', onTap: () => _notInDemo(context)),
               ]),
               _group('管理', [
+                ListRow(
+                  key: const Key('drawer.language'),
+                  icon: Icons.translate_rounded,
+                  title: t.langTitle,
+                  subtitle: _languageLabel(LocaleController.instance.value),
+                  trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.faint),
+                  onTap: () => _pickLanguage(context),
+                ),
                 ListRow(icon: Icons.settings_outlined, title: '设置', onTap: () => _notInDemo(context)),
                 ListRow(icon: Icons.help_outline_rounded, title: '帮助中心', onTap: () => _notInDemo(context)),
                 ListRow(key: const Key('drawer.logout'), icon: Icons.logout_rounded, title: '退出登录', onTap: () => _logout(context)),
@@ -262,6 +271,42 @@ class AccountDrawer extends StatelessWidget {
   );
 
   void _notInDemo(BuildContext context) => showToast(context, '该功能不在本次演示范围');
+
+  static String _languageLabel(String? code) => switch (code) {
+    'zh' => t.langZh,
+    'en' => t.langEn,
+    _ => t.langSystem,
+  };
+
+  /// F18：语言选择（跟随系统 / 简体中文 / English），持久化；切换后页面立即按新语言重建。
+  Future<void> _pickLanguage(BuildContext context) async {
+    final current = LocaleController.instance.value;
+    final picked = await showModalBottomSheet<(String?,)>(
+      context: context,
+      showDragHandle: true,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+              child: Text(t.langTitle, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+            ),
+            for (final code in const [null, 'zh', 'en'])
+              ListTile(
+                key: Key('language.${code ?? 'system'}'),
+                title: Text(_languageLabel(code)),
+                trailing: code == current ? const Icon(Icons.check_rounded, color: AppColors.primary) : null,
+                onTap: () => Navigator.of(ctx).pop((code,)),
+              ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+    if (picked == null || picked.$1 == current) return;
+    await LocaleController.instance.select(picked.$1);
+  }
 
   Future<void> _logout(BuildContext context) async {
     final session = AppScope.of(context).session;

@@ -44,7 +44,7 @@ Future<void> _phone(WidgetTester tester) async {
 Future<void> _openRewards(WidgetTester tester) async {
   await _phone(tester);
   await pumpApp(tester, backend: _backend(), storedToken: 'tok');
-  await tester.tap(find.byKey(const Key('tab.奖励')));
+  await tester.tap(find.byKey(const Key('tab.rewards')));
   await tester.pumpAndSettle();
 }
 
@@ -124,7 +124,7 @@ void main() {
     // 模拟重启：先卸载再重新挂载整个 App
     await tester.pumpWidget(const SizedBox());
     await pumpApp(tester, backend: _backend(), storedToken: 'tok');
-    await tester.tap(find.byKey(const Key('tab.奖励')));
+    await tester.tap(find.byKey(const Key('tab.rewards')));
     await tester.pumpAndSettle();
     await _showNotify(tester);
     expect(find.text('🔔 开启上线提醒'), findsOneWidget);

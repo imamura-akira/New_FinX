@@ -8,6 +8,8 @@ import 'package:finx_app/features/auth/presentation/welcome_page.dart';
 import 'package:finx_app/features/market/domain/instruments.dart';
 import 'package:finx_app/features/trading/domain/trading_mode.dart';
 import 'package:finx_app/main.dart';
+import 'package:finx_app/l10n/l10n.dart';
+import 'package:material_ui/material_ui.dart' show Locale;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
@@ -51,7 +53,10 @@ Future<(FakeBackend, SessionController, MemoryTokenStore)> pumpApp(
   FakeBackend? backend,
   String? storedToken,
   bool demo = true,
+  String? locale = 'zh', // F18：测试默认固定中文；null = 跟随系统（测试环境系统语言为英文）
 }) async {
+  LocaleController.instance.value = locale;
+  debugSetLocale(Locale(locale ?? 'en'));
   final be = backend ?? FakeBackend();
   // 行情默认模拟（虚拟行情，价格随请求次数变化）；测试可自行覆盖
   be.handlers.putIfAbsent('GET /market/quotes', () => fakeQuotes());

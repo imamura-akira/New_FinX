@@ -22,7 +22,7 @@ Future<void> _phone(WidgetTester tester) async {
 Future<void> _openMarket(WidgetTester tester, FakeBackend be) async {
   await _phone(tester);
   await pumpApp(tester, backend: be, storedToken: 'tok');
-  await tester.tap(find.byKey(const Key('tab.市场')));
+  await tester.tap(find.byKey(const Key('tab.market')));
   await tester.pumpAndSettle();
 }
 

@@ -54,7 +54,7 @@ void main() {
   testWidgets('P-09：涨幅榜按涨跌幅排序，跌幅为红色；ETF 分类筛选', (tester) async {
     await _phone(tester);
     await pumpApp(tester, backend: _backend(), storedToken: 'tok');
-    await tester.tap(find.byKey(const Key('tab.市场')));
+    await tester.tap(find.byKey(const Key('tab.market')));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('market.index.SPY')), findsOneWidget);
     // 涨幅榜第一名是 NVDA（+2.10%）
@@ -77,7 +77,7 @@ void main() {
   testWidgets('P-10：个股详情、加入/移出自选', (tester) async {
     await _phone(tester);
     await pumpApp(tester, backend: _backend(), storedToken: 'tok');
-    await tester.tap(find.byKey(const Key('tab.市场')));
+    await tester.tap(find.byKey(const Key('tab.market')));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('quote.NVDA')).first);
     await tester.pumpAndSettle();

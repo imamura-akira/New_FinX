@@ -48,7 +48,7 @@ void main() {
     // 离开 P-01（未登录逛行情）再回来：重新挂载也不重播
     await tester.tap(find.byKey(const Key('welcome.market')));
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('tab.资产')));
+    await tester.tap(find.byKey(const Key('tab.home')));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('welcome.logo')), findsOneWidget);
     expect(find.byKey(const Key('welcome.intro')), findsNothing, reason: '回到 P-01 不重播');
@@ -62,7 +62,7 @@ void main() {
     await tester.tap(find.byKey(const Key('welcome.market')));
     await tester.pumpAndSettle();
     LaunchIntro.resetForTest(); // 模拟冷启动：重新进入 P-01 时播放入场
-    await tester.tap(find.byKey(const Key('tab.资产')));
+    await tester.tap(find.byKey(const Key('tab.home')));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 200)); // 入场进行中
     expect(find.byKey(const Key('welcome.intro')), findsOneWidget);
