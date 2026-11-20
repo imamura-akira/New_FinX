@@ -4,6 +4,7 @@ import 'package:finx_app/app/config.dart';
 import 'package:finx_app/core/api/api_client.dart';
 import 'package:finx_app/core/session/session.dart';
 import 'package:finx_app/core/widgets/celebration.dart';
+import 'package:finx_app/features/auth/presentation/welcome_page.dart';
 import 'package:finx_app/features/market/domain/instruments.dart';
 import 'package:finx_app/main.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -55,6 +56,7 @@ Future<(FakeBackend, SessionController, MemoryTokenStore)> pumpApp(
   be.handlers.putIfAbsent('GET /market/quotes', () => fakeQuotes());
   Watchlist.instance.reset();
   Celebration.resetForTest();
+  LaunchIntro.resetForTest();
   final api = ApiClient(baseUrl: 'http://test/api/v1', httpClient: be.client);
   final store = MemoryTokenStore()..value = storedToken;
   final session = SessionController(api: api, store: store);

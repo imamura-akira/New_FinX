@@ -65,6 +65,8 @@ flutter:
   # FinX 品牌素材（来源 prototype/assets/，登记见 design/theme.md 第 4 节）
   assets:
     - assets/brand/
+    # P-01 提示音（tool/gen_welcome_chime.py 脚本合成，见 design/theme.md 第 7 节）
+    - assets/sounds/
 
   # To add assets to your application, add an assets section, like this:
   # assets:

@@ -10,6 +10,7 @@ import '../../../core/widgets/widgets.dart';
 import '../../account/data/account_api.dart';
 import '../../account/domain/account_overview.dart';
 import '../../account/presentation/account_drawer.dart';
+import '../../auth/presentation/welcome_page.dart';
 import '../../market/data/market_api.dart';
 import '../../market/domain/instruments.dart';
 import '../../market/presentation/market_widgets.dart';
@@ -30,6 +31,12 @@ class _HomePageState extends State<HomePage> {
   bool _hide = false;
   QuoteFeed? _feed;
   final _watch = Watchlist.instance;
+
+  @override
+  void initState() {
+    super.initState();
+    LaunchIntro.skip(); // 冷启动直接进入资产页：之后回到 P-01 不再播放品牌入场
+  }
 
   @override
   void didChangeDependencies() {
