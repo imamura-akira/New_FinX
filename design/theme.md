@@ -48,7 +48,8 @@
 | fifi_avatar.png | Fifi 圆形头像（透明底） | 账户抽屉、Fifi 相关入口 |
 | cat_xmas.png（app/assets/brand/，来源 design/reward-design/） | 圣诞毛衣 + 圣诞帽 Fifi，眨眼举爪，已抠图透明背景（427×601） | P-27 奖励页英雄区（F16 圣诞季限定） |
 | ak_mark.png（app/assets/brand/，来源 design/brand/ak_mark.png，缩至 600px 宽） | AK 立体字标（白 / 橙 / 黑描边，透明背景） | P-01 欢迎页字标（F20，约 200pt 宽，按轮廓的轻投影） |
-| ak_icon_1024.png（design/brand/） | **App 图标母版（2026-11-20 起）**：白底 1024×1024（无透明通道），深紫圆形 "AK" 徽标 | iOS AppIcon 全尺寸（15 个）由此生成；App 显示名称 AK Stocks |
+| ak_mark_icon_1024.png（design/brand/） | **App 图标母版（2026-11-20 晚起）**：白底 1024×1024（无透明通道），AK 立体字标（白 / 橙 / 黑描边，与 P-01 欢迎页字标同款） | iOS AppIcon 全尺寸（15 个）由此生成；App 显示名称 AK Stocks |
+| ak_icon_1024.png（design/brand/） | 深蓝圆徽 "AK" 图标母版（v1.7 使用），**保留备查**，不再用于 AppIcon | 已停用 |
 | app_icon_1024.png（design/brand/） | 原 FinX Stocks 图标母版（渐变爪印 + 涨幅柱，来源 app_icon_source.png），**保留备查**，不再用于 AppIcon | 已停用 |
 
 规则：素材为我方品牌资产，可在任何页面使用；新素材先入 `assets/` 并登记到本表。
@@ -64,7 +65,7 @@
 
 ## 5. 文案与命名
 
-- 品牌名：FinX（APP_NAME）；**App 显示名称：FinX Stocks**（主屏图标下方 / CFBundleDisplayName）；吉祥物：Fifi。
+- 品牌名：FinX（APP_NAME）；**App 显示名称：AK Stocks**（主屏图标下方 / CFBundleDisplayName，中英文环境均不翻译；2026-11-20 由 FinX Stocks 改名）；吉祥物：Fifi。
 - 底部 Tab：首页(资产) / 市场 / 股票大师 / Fifi / 奖励。
 - **语言**：开户与 KYC 模块（P-03–P-06、P-30、P-34–P-36）界面与用户输入一律英文；其余模块简体中文。英文文案以原型为基准。
 - P-23 对外名称"股票大师"（规格内部编号与数据口径不变，13F 公开申报数据）。
@@ -159,3 +160,4 @@
 | 2026-11-20 | v1.6：第 4 节登记 cat_xmas.png（圣诞毛衣 Fifi）；新增第 8 节 P-27 奖励页圣诞季版式（浅紫英雄区配色、等级胶囊、奖品卡、提醒按钮与脚本合成"叮"提示音，F16） |
 | 2026-11-20 | v1.7：品牌更新——App 图标改用 design/brand/ak_icon_1024.png（"AK" 徽标）为母版重新生成 iOS AppIcon 全部尺寸；App 显示名称（CFBundleDisplayName）由 FinX Stocks 改为 AK Stocks，中英文环境均显示 AK Stocks、不翻译；原 FinX Stocks 图标母版 app_icon_1024.png 保留备查。启动图与 App 内品牌素材（FinX 字标、Fifi）本次不变 |
 | 2026-11-20 | v1.8：F20 欢迎页 AK 品牌版——第 4 节登记 ak_mark.png；第 7 节 P-01 入场改为字标淡入 + 橙色趋势线描画 + 5 个高点音调递增"滴"声 + 光点呼吸 + 注册按钮放大一次（替换原 Fifi 入场与钟声和弦）；新增第 9 节欢迎页橙色配色（欢迎页专属，App 内部仍为紫色系） |
+| 2026-11-20 | v1.9：App 图标母版改用 design/brand/ak_mark_icon_1024.png（AK 立体字标）重新生成 iOS AppIcon 全部尺寸，替换深蓝圆徽版（ak_icon_1024.png 保留备查）；第 5 节显示名称更正为 AK Stocks |
