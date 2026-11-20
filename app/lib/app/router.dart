@@ -8,6 +8,7 @@ import '../features/auth/presentation/login_page.dart';
 import '../features/auth/presentation/welcome_page.dart';
 import '../features/common/session_expired_page.dart';
 import '../features/discover/presentation/discover_pages.dart';
+import '../features/discover/presentation/rewards_page.dart';
 import '../features/funding/presentation/bank_pages.dart';
 import '../features/funding/presentation/transfer_pages.dart';
 import '../features/home/presentation/home_page.dart';

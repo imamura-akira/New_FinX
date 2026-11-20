@@ -93,19 +93,4 @@ void main() {
     await tester.pump();
     expect(find.text('持仓体检即将上线'), findsOneWidget);
   });
-
-  testWidgets('P-27 奖励：等级切换显示对应商品，兑换提示即将上线', (tester) async {
-    await _phone(tester);
-    await pumpApp(tester, backend: _backend(), storedToken: 'tok');
-    await _tab(tester, '奖励');
-    expect(find.text('0 XP'), findsOneWidget);
-    expect(find.byKey(const Key('p27.item.新手徽章')), findsOneWidget);
-    await tester.tap(find.byKey(const Key('p27.level.2')));
-    await tester.pumpAndSettle();
-    expect(find.byKey(const Key('p27.item.高级图表主题')), findsOneWidget);
-    expect(find.byKey(const Key('p27.item.新手徽章')), findsNothing);
-    await tester.tap(find.byKey(const Key('p27.item.高级图表主题')));
-    await tester.pump();
-    expect(find.text('兑换即将上线'), findsOneWidget);
-  });
 }

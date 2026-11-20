@@ -9,7 +9,7 @@ import '../../market/data/market_api.dart';
 import '../../market/presentation/market_widgets.dart';
 import '../domain/demo_data.dart';
 
-// F13：股票大师（P-23 / P-24）、Fifi（P-26）、奖励（P-27）。纯客户端模拟数据，不调用新接口；
+// F13：股票大师（P-23 / P-24）、Fifi（P-26）。奖励（P-27）见 rewards_page.dart（F16）。纯客户端模拟数据，不调用新接口；
 // 个股最新价取自虚拟行情（F11）。版式参照 prototype/js/pages/discover.js 与 design/screens/。
 
 const comingSoon = '即将上线';
@@ -588,7 +588,7 @@ class _FifiPageState extends State<FifiPage> {
   );
 }
 
-/// 带锁的功能 / 商品卡（原型 .feat）。
+/// 带锁的功能卡（原型 .feat）。
 class _LockedCard extends StatelessWidget {
   const _LockedCard({
     super.key,
@@ -596,15 +596,11 @@ class _LockedCard extends StatelessWidget {
     required this.title,
     required this.sub,
     required this.onTap,
-    this.centered = false,
-    this.badge,
   });
   final IconData icon;
   final String title;
   final String sub;
   final VoidCallback onTap;
-  final bool centered;
-  final String? badge;
 
   @override
   Widget build(BuildContext context) => InkWell(
@@ -617,18 +613,14 @@ class _LockedCard extends StatelessWidget {
         children: [
           const Positioned(right: 0, top: 0, child: Icon(Icons.lock_outline_rounded, size: 14, color: AppColors.faint)),
           Column(
-            crossAxisAlignment: centered ? CrossAxisAlignment.center : CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                width: centered ? 52 : 34,
-                height: centered ? 52 : 34,
-                decoration: BoxDecoration(
-                  color: AppColors.primaryWeak,
-                  shape: centered ? BoxShape.circle : BoxShape.rectangle,
-                  borderRadius: centered ? null : BorderRadius.circular(10),
-                ),
-                child: Icon(icon, size: centered ? 24 : 18, color: AppColors.primary),
+                width: 34,
+                height: 34,
+                decoration: BoxDecoration(color: AppColors.primaryWeak, borderRadius: BorderRadius.circular(10)),
+                child: Icon(icon, size: 18, color: AppColors.primary),
               ),
               const SizedBox(height: 8),
               Text(
@@ -641,94 +633,12 @@ class _LockedCard extends StatelessWidget {
                 sub,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                textAlign: centered ? TextAlign.center : TextAlign.start,
                 style: const TextStyle(fontSize: 12, color: AppColors.muted),
               ),
-              if (badge != null) ...[const SizedBox(height: 6), StatusBadge(badge!)],
             ],
           ),
         ],
       ),
-    ),
-  );
-}
-
-// ---------------------------------------------------------------------------
-// P-27 奖励中心
-
-const _rewardGradient = LinearGradient(
-  begin: Alignment(-1, -0.6),
-  end: Alignment(1, 0.6),
-  colors: [Color(0xFF8A3FE0), Color(0xFFD63AA8), Color(0xFFF0A13C)],
-  stops: [0, .6, 1],
-);
-
-class RewardsPage extends StatefulWidget {
-  const RewardsPage({super.key});
-
-  @override
-  State<RewardsPage> createState() => _RewardsPageState();
-}
-
-class _RewardsPageState extends State<RewardsPage> {
-  int _level = 1;
-  bool _subscribed = false;
-
-  @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('奖励'), actions: [_xpBadge('0 XP')]),
-    body: ListView(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-      children: [
-        const _Banner(gradient: _rewardGradient, kicker: '奖励中心', title: '即将推出', sub: '完成学习任务赚取积分，解锁徽章、主题与更多奖励。'),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: [
-            for (var lv = 1; lv <= 4; lv++)
-              ChipToggle(
-                key: Key('p27.level.$lv'),
-                label: '等级 $lv${lv > 1 ? ' 🔒' : ''}',
-                selected: _level == lv,
-                onTap: () => setState(() => _level = lv),
-              ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        GridView.count(
-          crossAxisCount: 2,
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          mainAxisSpacing: 10,
-          crossAxisSpacing: 10,
-          childAspectRatio: 1,
-          children: [
-            for (final (name, xp) in rewardItems[_level]!)
-              _LockedCard(
-                key: Key('p27.item.$name'),
-                icon: Icons.card_giftcard_rounded,
-                title: name,
-                sub: '$xp XP',
-                centered: true,
-                badge: '即将推出',
-                onTap: () => showToast(context, '兑换$comingSoon'),
-              ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        const Notice('若积分获取与入金或交易行为挂钩，需确认相关激励合规要求。'),
-        AppButton(
-          _subscribed ? '已订阅上线提醒' : '上线提醒我',
-          key: const Key('p27.sub'),
-          kind: _subscribed ? ButtonKind.ghost : ButtonKind.secondary,
-          icon: const Icon(Icons.notifications_none_rounded, size: 18),
-          onPressed: () {
-            setState(() => _subscribed = !_subscribed);
-            showToast(context, _subscribed ? '已订阅上线提醒' : '已取消提醒');
-          },
-        ),
-        const DemoDataNote('演示数据：积分与奖励为模拟展示，暂不可兑换'),
-      ],
     ),
   );
 }

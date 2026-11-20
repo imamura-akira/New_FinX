@@ -82,6 +82,9 @@ abstract final class BrandAssets {
   static const fifiPill = 'assets/brand/fifi_pill.png';
   static const fifiPaw = 'assets/brand/fifi_paw.png';
   static const fifiAvatar = 'assets/brand/fifi_avatar.png';
+
+  /// F16 P-27 圣诞季限定：圣诞毛衣 Fifi（透明背景，来源 design/reward-design/cat_xmas.png）。
+  static const catXmas = 'assets/brand/cat_xmas.png';
 }
 
 ThemeData buildTheme() {

@@ -8,6 +8,9 @@ abstract final class UiSound {
   /// P-01 欢迎页品牌提示音（tool/gen_welcome_chime.py 脚本合成）。
   static const welcomeChime = 'assets/sounds/welcome_chime.wav';
 
+  /// P-27 "开启上线提醒"清脆提示音（tool/gen_reminder_ding.py 脚本合成，约 0.4 秒）。
+  static const reminderDing = 'assets/sounds/reminder_ding.wav';
+
   static Future<void> play(String asset) async {
     try {
       await channel.invokeMethod<bool>('play', {'asset': asset});

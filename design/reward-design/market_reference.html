@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<style>
+  :root{--bg:#F6F5FC;--primary:#6C5BF5;--ink:#1B1830;--sub:#7A7490;--up:#16A34A;--dn:#E5484D;}
+  *{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,"PingFang SC",sans-serif;}
+  body{width:390px;background:var(--bg);color:var(--ink);}
+  .p{padding:12px 16px 90px;}
+  .title{text-align:center;font-size:17px;font-weight:700;padding:10px 0 14px;}
+  .seg{display:flex;background:#EDEAF8;border-radius:14px;padding:4px;margin-bottom:14px;}
+  .seg div{flex:1;text-align:center;padding:10px 0;font-size:15px;color:var(--sub);font-weight:600;border-radius:11px;}
+  .seg .on{background:#fff;color:var(--ink);box-shadow:0 2px 8px rgba(27,24,48,.08);}
+  .idx{display:flex;gap:10px;overflow:hidden;margin-bottom:14px;}
+  .icard{flex:1;min-width:0;background:#fff;border-radius:16px;padding:12px 10px;box-shadow:0 4px 14px rgba(27,24,48,.05);}
+  .icard .s{font-size:13px;color:var(--sub);font-weight:600;}
+  .icard .v{font-size:16.5px;font-weight:800;margin:4px 0 3px;letter-spacing:.3px;}
+  .icard .c{font-size:13px;font-weight:700;}
+  .up{color:var(--up);} .dn{color:var(--dn);}
+  .vix .s{display:flex;align-items:center;gap:5px;}
+  .vix .tag{font-size:9px;background:#F1EFFA;color:var(--primary);border-radius:6px;padding:1px 5px;font-weight:700;}
+  /* 情绪卡 */
+  .mood{background:#fff;border-radius:18px;padding:16px 16px 14px;box-shadow:0 6px 18px rgba(27,24,48,.06);margin-bottom:18px;}
+  .mood .hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+  .mood .hd b{font-size:15px;font-weight:800;}
+  .mood .hd span{font-size:10.5px;color:#A7A1BC;background:#F4F2FB;border-radius:999px;padding:3px 9px;font-weight:600;}
+  .gwrap{display:flex;align-items:center;gap:16px;}
+  .gauge{width:150px;flex:none;}
+  .gtxt{flex:1;}
+  .gval{font-size:30px;font-weight:800;line-height:1;}
+  .glab{display:inline-block;margin-top:6px;font-size:12.5px;font-weight:800;color:#B57E0C;background:#FBF3DF;border-radius:999px;padding:4px 12px;}
+  .gdesc{margin-top:8px;font-size:11.5px;color:var(--sub);line-height:1.6;}
+  /* 宽度条 */
+  .bw{margin-top:14px;padding-top:13px;border-top:1px solid #F1EFF8;}
+  .bw .row{display:flex;justify-content:space-between;font-size:12px;color:var(--sub);font-weight:600;margin-bottom:7px;}
+  .bw .row b{color:var(--ink);font-weight:800;}
+  .bar{display:flex;height:9px;border-radius:999px;overflow:hidden;gap:2px;}
+  .bar i{display:block;height:100%;}
+  .legend{display:flex;gap:14px;margin-top:8px;font-size:11.5px;color:var(--sub);font-weight:600;}
+  .dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:4px;}
+  /* 榜单 */
+  .sec{font-size:17px;font-weight:800;margin:4px 0 10px;}
+  .list{background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 14px rgba(27,24,48,.05);margin-bottom:18px;}
+  .rowi{display:flex;align-items:center;padding:13px 14px;border-bottom:1px solid #F4F2FA;}
+  .rowi:last-child{border-bottom:none;}
+  .rowi .l{flex:1;}
+  .rowi .sym{font-size:15.5px;font-weight:800;}
+  .rowi .nm{font-size:12px;color:var(--sub);margin-top:2px;}
+  .rowi .px{font-size:15.5px;font-weight:700;margin-right:12px;letter-spacing:.3px;}
+  .pill{min-width:74px;text-align:center;border-radius:10px;padding:7px 0;font-size:13px;font-weight:800;color:#fff;}
+  .pg{background:var(--up);} .pr{background:var(--dn);}
+  .tabbar{position:fixed;left:0;bottom:0;width:390px;background:#fff;border-top:1px solid #EEEAF8;display:flex;padding:10px 0 16px;}
+  .tab{flex:1;text-align:center;font-size:11.5px;color:#B5AFC9;font-weight:600;}
+  .tab.on{color:var(--primary);}
+</style>
+</head>
+<body>
+<div class="p">
+  <div class="title">市场</div>
+  <div class="seg"><div class="on">股票</div><div>ETF</div></div>
+
+  <!-- ① 指数卡行:加第四张 VIX,可横滑 -->
+  <div class="idx">
+    <div class="icard"><div class="s">SPY</div><div class="v">585.19</div><div class="c dn">-1.15%</div></div>
+    <div class="icard"><div class="s">QQQ</div><div class="v">510.04</div><div class="c up">+0.26%</div></div>
+    <div class="icard"><div class="s">DIA</div><div class="v">439.42</div><div class="c dn">-0.34%</div></div>
+    <div class="icard"><div class="s">IWM</div><div class="v">234.56</div><div class="c up">+0.42%</div></div>
+  </div>
+
+  <!-- ② 市场情绪卡:恐慌贪婪仪表盘 + ③ 涨跌家数 -->
+  <div class="mood">
+    <div class="hd"><b>市场情绪</b><span>演示数据 · 每 3 秒更新</span></div>
+    <div class="gwrap">
+      <svg class="gauge" viewBox="0 0 200 118">
+        <defs>
+          <linearGradient id="arc" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="#E5484D"/><stop offset=".3" stop-color="#F0A13C"/>
+            <stop offset=".62" stop-color="#E9C878"/><stop offset="1" stop-color="#16A34A"/>
+          </linearGradient>
+        </defs>
+        <path d="M18 104 A 82 82 0 0 1 182 104" fill="none" stroke="#F1EFF8" stroke-width="15" stroke-linecap="round"/>
+        <path d="M18 104 A 82 82 0 0 1 182 104" fill="none" stroke="url(#arc)" stroke-width="15" stroke-linecap="round" stroke-dasharray="258" stroke-dashoffset="0" opacity=".92"/>
+        <!-- 刻度文字 -->
+        <text x="18" y="117" font-size="10" fill="#A7A1BC" font-weight="600">0</text>
+        <text x="172" y="117" font-size="10" fill="#A7A1BC" font-weight="600">100</text>
+        <!-- 指针: 62 → 约 112° -->
+        <g transform="rotate(28 100 104)">
+          <line x1="100" y1="104" x2="100" y2="38" stroke="#2E2752" stroke-width="4" stroke-linecap="round"/>
+        </g>
+        <circle cx="100" cy="104" r="7" fill="#2E2752"/>
+        <circle cx="100" cy="104" r="3" fill="#fff"/>
+      </svg>
+      <div class="gtxt">
+        <div class="gval">62</div>
+        <div class="glab">贪婪</div>
+        <div class="gdesc">由虚拟行情的涨跌幅、动量与波动合成</div>
+      </div>
+    </div>
+    <div class="bw">
+      <div class="row"><span>涨跌家数</span><span><b class="up">18 涨</b> · <b class="dn">9 跌</b> · <b>3 平</b></span></div>
+      <div class="bar">
+        <i style="width:60%;background:var(--up);"></i>
+        <i style="width:10%;background:#C9C4DC;"></i>
+        <i style="width:30%;background:var(--dn);"></i>
+      </div>
+      <div class="legend"><span><span class="dot" style="background:var(--up)"></span>上涨 18</span><span><span class="dot" style="background:#C9C4DC"></span>平盘 3</span><span><span class="dot" style="background:var(--dn)"></span>下跌 9</span></div>
+    </div>
+  </div>
+
+  <div class="sec">涨幅榜</div>
+  <div class="list">
+    <div class="rowi"><div class="l"><div class="sym">NFLX</div><div class="nm">Netflix Inc.</div></div><div class="px">767.19</div><div class="pill pg">+2.02%</div></div>
+    <div class="rowi"><div class="l"><div class="sym">META</div><div class="nm">Meta Platforms Inc.</div></div><div class="px">569.33</div><div class="pill pg">+1.67%</div></div>
+    <div class="rowi"><div class="l"><div class="sym">DIS</div><div class="nm">Walt Disney Co.</div></div><div class="px">110.99</div><div class="pill pg">+0.81%</div></div>
+  </div>
+
+  <div class="sec">跌幅榜</div>
+  <div class="list">
+    <div class="rowi"><div class="l"><div class="sym">KO</div><div class="nm">Coca-Cola Co.</div></div><div class="px">61.59</div><div class="pill pr">-2.32%</div></div>
+  </div>
+</div>
+<div class="tabbar">
+  <div class="tab">资产</div><div class="tab on">市场</div><div class="tab">股票大师</div><div class="tab">Fifi</div><div class="tab">奖励</div>
+</div>
+</body>
+</html>

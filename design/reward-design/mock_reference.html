@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=390">
+<style>
+  :root{
+    --bg:#F6F5FC; --primary:#6C5BF5; --ink:#1B1830; --sub:#7A7490;
+    --gold:#E9C878; --gold-d:#C9A14E;
+    --grad:linear-gradient(100deg,#5A57EE 0%,#A944D8 55%,#D63AA8 100%);
+    --grad-soft:linear-gradient(135deg,#7D4DF0,#C13AC8);
+    --card:#fff; --r:20px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,"PingFang SC","Noto Sans SC",sans-serif;}
+  body{width:390px;background:var(--bg);color:var(--ink);}
+  body::before{content:"";position:absolute;inset:0;pointer-events:none;
+    background:
+      radial-gradient(2px 2px at 40px 760px,#DED8F2 50%,transparent 51%),
+      radial-gradient(2.5px 2.5px at 330px 900px,#E3DDF5 50%,transparent 51%),
+      radial-gradient(2px 2px at 90px 1180px,#DED8F2 50%,transparent 51%),
+      radial-gradient(2px 2px at 300px 1420px,#E3DDF5 50%,transparent 51%),
+      radial-gradient(2.5px 2.5px at 60px 1680px,#DED8F2 50%,transparent 51%),
+      radial-gradient(2px 2px at 340px 1860px,#E3DDF5 50%,transparent 51%);}
+  .device{width:390px;padding:14px 16px 0;position:relative;}
+  .status{display:flex;justify-content:space-between;font-size:13px;font-weight:600;padding:2px 6px 10px;}
+  /* header */
+  .hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+  .hd h1{font-size:25px;font-weight:800;letter-spacing:.5px;}
+  .hd .right{display:flex;align-items:center;gap:10px;}
+  .xp{display:flex;align-items:center;gap:6px;border:1.5px solid #D9D4F7;background:#fff;border-radius:999px;padding:7px 14px;font-size:14px;font-weight:700;color:var(--primary);}
+  .xp .g{color:var(--gold-d);}
+  .ava{width:38px;height:38px;border-radius:50%;border:2px solid var(--primary);overflow:hidden;background:#EDE9FF;}
+  .ava img{width:100%;height:100%;object-fit:cover;}
+  /* hero */
+  .hero{position:relative;border-radius:24px;padding:24px 20px 20px;color:#241F4E;overflow:hidden;
+    background:linear-gradient(135deg,#F2EDFC 0%,#F7F2FC 55%,#F6EBF7 100%);
+    border:1px solid #E7E0F7;box-shadow:0 16px 36px rgba(108,91,245,.16);}
+  .hero .glow{position:absolute;border-radius:50%;filter:blur(26px);opacity:.5;pointer-events:none;}
+  .hero .snow{position:absolute;background:#C9B9F2;border-radius:50%;opacity:.9;pointer-events:none;}
+  .hero .star{position:absolute;color:var(--gold-d);pointer-events:none;}
+  /* string lights */
+  .lights{position:absolute;top:0;left:0;width:100%;height:46px;pointer-events:none;}
+  .badge{position:relative;display:inline-flex;align-items:center;gap:6px;border:1px solid #D4B46A;color:#9A7524;border-radius:999px;padding:5px 12px;font-size:11.5px;font-weight:700;letter-spacing:2px;background:rgba(233,200,120,.14);}
+  .hero h2{position:relative;font-size:25px;font-weight:800;line-height:1.32;margin-top:12px;}
+  .hero h2 .thin{font-weight:600;opacity:.9;}
+  .hero p{position:relative;margin-top:10px;font-size:13px;line-height:1.7;color:#5F5880;max-width:184px;}
+  .hero .cta{position:relative;display:inline-flex;align-items:center;gap:7px;margin-top:16px;border-radius:999px;padding:10px 18px;font-size:13.5px;font-weight:700;color:#2E2752;background:linear-gradient(135deg,#F6E7BF,#E9C878);box-shadow:0 6px 16px rgba(233,200,120,.35);}
+  .hero img.cat{position:absolute;right:-4px;bottom:-4px;height:226px;filter:drop-shadow(0 12px 20px rgba(0,0,0,.35));}
+  .hat{position:absolute;pointer-events:none;}
+  .hero .ground{position:absolute;left:0;right:0;bottom:0;height:26px;background:linear-gradient(to top,rgba(255,255,255,.22),transparent);}
+  /* chips */
+  .chips{display:flex;gap:6px;margin:18px 0 20px;position:relative;}
+  .chip{flex:1;display:flex;align-items:center;justify-content:center;gap:4px;border-radius:999px;padding:8px 11px;font-size:12.5px;font-weight:700;background:#fff;border:1.5px solid #E4E0F5;color:var(--sub);}
+  .chip .lock{font-size:10px;}
+  .chip.on{background:var(--grad-soft);border-color:transparent;color:#fff;box-shadow:0 8px 18px rgba(125,77,240,.32);}
+  .lock{font-size:11px;opacity:.7;}
+  /* section */
+  .sec{position:relative;display:flex;align-items:baseline;gap:10px;margin:6px 0 14px;}
+  .sec b{font-size:19px;font-weight:800;letter-spacing:.3px;}
+  .sec span{font-size:12px;color:var(--sub);font-weight:600;}
+  .sec .flake{color:var(--primary);font-size:15px;}
+  .grid{position:relative;display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px;}
+  .item{background:var(--card);border-radius:var(--r);padding:16px 12px 14px;position:relative;
+    box-shadow:0 10px 24px rgba(27,24,48,.07);border:1px solid #EFECFA;}
+  .item::after{content:"";position:absolute;inset:0;border-radius:var(--r);padding:1px;
+    background:linear-gradient(135deg,rgba(125,77,240,.35),rgba(233,200,120,.4) 60%,rgba(214,58,168,.3));
+    -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;}
+  .item .lk{position:absolute;top:10px;right:10px;width:24px;height:24px;border-radius:50%;background:#F3F0FC;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--sub);z-index:2;}
+  .pic{height:96px;display:flex;align-items:center;justify-content:center;border-radius:14px;
+    background:radial-gradient(60% 70% at 50% 46%,#F1EDFF 0%,#FAF8FF 70%,transparent 100%);}
+  .pic svg{height:82px;}
+  .item .nm{text-align:center;font-size:14.5px;font-weight:700;margin-top:9px;}
+  .item .xpv{display:flex;align-items:center;justify-content:center;gap:5px;font-size:13.5px;font-weight:800;color:var(--primary);margin-top:5px;}
+  .item .xpv .st8{color:var(--gold-d);}
+  .item .st{margin:9px auto 0;width:fit-content;background:#F1EFFA;color:var(--sub);font-size:11.5px;font-weight:600;border-radius:999px;padding:4px 12px;}
+  /* dream cards */
+  .dgrid{position:relative;display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:26px;}
+  .dcard{border-radius:var(--r);overflow:hidden;position:relative;color:#fff;
+    background:linear-gradient(150deg,#332B66 0%,#5F43C9 55%,#9A3FC9 100%);
+    box-shadow:0 12px 26px rgba(51,43,102,.3);}
+  .dcard .snowc{position:absolute;background:#fff;border-radius:50%;opacity:.7;}
+  .dcard .img{height:88px;display:flex;align-items:center;justify-content:center;}
+  .dcard .img svg{height:60px;filter:drop-shadow(0 6px 10px rgba(0,0,0,.3));}
+  .dcard .lk{position:absolute;top:8px;right:8px;width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;}
+  .dcard .nm{text-align:center;font-size:14px;font-weight:700;}
+  .dcard .lv{text-align:center;font-size:12px;font-weight:700;color:var(--gold);margin:4px 0 14px;letter-spacing:1px;}
+  /* notify */
+  .notify{position:relative;background:var(--grad);color:#fff;text-align:center;border-radius:999px;padding:16px 0;font-size:16px;font-weight:800;box-shadow:0 12px 26px rgba(125,77,240,.35);letter-spacing:1px;}
+  .note{text-align:center;font-size:11px;color:#A7A1BC;margin:10px 0 18px;}
+  /* tabbar */
+  .tabbar{width:390px;background:#fff;border-top:1px solid #EEEAF8;display:flex;padding:10px 0 18px;}
+  .tab{flex:1;text-align:center;font-size:11.5px;color:#B5AFC9;font-weight:600;}
+  .tab .ic{display:block;margin:0 auto 3px;width:22px;height:22px;}
+  .tab.on{color:var(--primary);}
+</style>
+</head>
+<body>
+<div class="device">
+  <div class="status"><span>22:47</span><span>&#9679;&#9679;&#9679; &#128246; 74%</span></div>
+
+  <div class="hd">
+    <h1>Fifi 奖励</h1>
+    <div class="right">
+      <div class="xp">&#128274; <span>XP</span></div>
+      <div class="ava"><img src="assets/fifi_avatar.png"></div>
+    </div>
+  </div>
+
+  <div class="hero">
+    <div class="glow" style="width:200px;height:200px;background:#D9CEF8;top:-70px;left:-50px;"></div>
+    <div class="glow" style="width:180px;height:180px;background:#F3CBE8;bottom:-60px;right:60px;opacity:.5;"></div>
+    <!-- 彩灯串 -->
+    <svg class="lights" viewBox="0 0 390 46">
+      <path d="M-5 8 Q 70 34 150 20 T 300 22 T 400 10" fill="none" stroke="rgba(108,91,245,.3)" stroke-width="1.6"/>
+      <g>
+        <circle cx="40" cy="22" r="4" fill="#E9C878"/><circle cx="40" cy="22" r="7" fill="#E9C878" opacity=".25"/>
+        <circle cx="105" cy="28" r="4" fill="#A08CF0"/><circle cx="105" cy="28" r="7" fill="#A08CF0" opacity=".25"/>
+        <circle cx="170" cy="20" r="4" fill="#E9C878"/><circle cx="170" cy="20" r="7" fill="#E9C878" opacity=".25"/>
+        <circle cx="235" cy="26" r="4" fill="#A08CF0"/><circle cx="235" cy="26" r="7" fill="#A08CF0" opacity=".25"/>
+        <circle cx="300" cy="22" r="4" fill="#E9C878"/><circle cx="300" cy="22" r="7" fill="#E9C878" opacity=".25"/>
+        <circle cx="358" cy="16" r="4" fill="#A08CF0"/><circle cx="358" cy="16" r="7" fill="#A08CF0" opacity=".25"/>
+      </g>
+    </svg>
+    <!-- 雪花与金星 -->
+    <div class="snow" style="width:3px;height:3px;top:64px;left:150px;"></div>
+    <div class="snow" style="width:2px;height:2px;top:96px;left:30px;opacity:.6;"></div>
+    <div class="snow" style="width:2.5px;height:2.5px;top:150px;left:120px;opacity:.7;"></div>
+    <div class="snow" style="width:2px;height:2px;top:200px;left:60px;opacity:.5;"></div>
+    <div class="snow" style="width:3px;height:3px;top:120px;right:150px;"></div>
+    <span class="star" style="top:70px;right:130px;font-size:13px;">&#10022;</span>
+    <span class="star" style="top:180px;left:160px;font-size:10px;opacity:.8;">&#10022;</span>
+
+    <div class="badge" style="margin-top:14px;">&#10052; 圣诞 &middot; 新年限定</div>
+    <h2>Fifi 圣诞商店<br><span class="thin">即将开启</span></h2>
+    <p>完成任务赚取 XP,解锁节日服饰、房间与新年梦想好礼。</p>
+    <div class="cta">&#127873; 即将推出</div>
+
+    <div style="position:absolute;right:-18px;bottom:-40px;width:250px;height:250px;border-radius:50%;background:radial-gradient(circle,rgba(108,91,245,.09),transparent 65%);pointer-events:none;"></div>
+    <img src="assets/cat_xmas.png" style="position:absolute;right:2px;bottom:-6px;height:236px;filter:drop-shadow(0 12px 20px rgba(0,0,0,.35));">
+    
+    
+  </div>
+
+  <div class="chips">
+    <div class="chip on">等级 1</div>
+    <div class="chip">等级 2 <span class="lock">&#128274;</span></div>
+    <div class="chip">等级 3 <span class="lock">&#128274;</span></div>
+    <div class="chip">等级 4 <span class="lock">&#128274;</span></div>
+      </div>
+
+  <div class="sec"><span class="flake">&#10052;</span><b>圣诞新手礼</b><span>等级 1 解锁</span></div>
+  <div class="grid">
+    <div class="item"><div class="lk">&#128274;</div>
+      <div class="pic">
+        <svg viewBox="0 0 80 100"><rect x="30" y="2" width="20" height="9" rx="4.5" fill="#2E2752"/><path d="M50 11 q14 2 10 12 l-4 4" fill="none" stroke="#2E2752" stroke-width="5" stroke-linecap="round"/><rect x="26" y="11" width="28" height="10" rx="4" fill="#6C5BF5"/><path d="M20 28 q0-8 10-8 h20 q10 0 10 8 v58 q0 10-10 10 H30 q-10 0-10-10 Z" fill="url(#g1)"/><rect x="20" y="48" width="40" height="22" fill="#fff" opacity=".92"/><text x="40" y="63" font-size="11" font-weight="800" fill="#6C5BF5" text-anchor="middle">FinX</text><defs><linearGradient id="g1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7D4DF0"/><stop offset="1" stop-color="#C13AC8"/></linearGradient></defs></svg>
+      </div>
+      <div class="nm">FinX 运动水壶</div><div class="xpv"><span class="st8">&#9733;</span>150 XP</div><div class="st">即将推出</div>
+    </div>
+    <div class="item"><div class="lk">&#128274;</div>
+      <div class="pic">
+        <svg viewBox="0 0 100 80"><path d="M14 46 a36 30 0 0 1 72 0 l0 6 H14 Z" fill="url(#g2)"/><path d="M50 16 a36 30 0 0 1 36 30 l0 6 h-8 a28 24 0 0 0-28-30 Z" fill="#4a3ed1" opacity=".35"/><path d="M12 52 q38-10 82 2 q2 10-10 8 l-62 0 q-12 0-10-10" fill="#2E2752"/><circle cx="50" cy="16" r="4" fill="#A08CF0"/><text x="50" y="42" font-size="13" font-weight="800" fill="#E9C878" text-anchor="middle">&#10022;</text><defs><linearGradient id="g2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6C5BF5"/><stop offset="1" stop-color="#A944D8"/></linearGradient></defs></svg>
+      </div>
+      <div class="nm">Fifi 圣诞绒帽</div><div class="xpv"><span class="st8">&#9733;</span>200 XP</div><div class="st">即将推出</div>
+    </div>
+    <div class="item"><div class="lk">&#128274;</div>
+      <div class="pic">
+        <svg viewBox="0 0 100 90"><path d="M20 58 v-8 a30 30 0 0 1 60 0 v8" fill="none" stroke="url(#g3)" stroke-width="9" stroke-linecap="round"/><rect x="12" y="52" width="18" height="28" rx="8" fill="#6C5BF5"/><rect x="70" y="52" width="18" height="28" rx="8" fill="#C13AC8"/><defs><linearGradient id="g3" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#6C5BF5"/><stop offset="1" stop-color="#C13AC8"/></linearGradient></defs></svg>
+      </div>
+      <div class="nm">无线耳机</div><div class="xpv"><span class="st8">&#9733;</span>600 XP</div><div class="st">即将推出</div>
+    </div>
+    <div class="item"><div class="lk">&#128274;</div>
+      <div class="pic">
+        <svg viewBox="0 0 100 90"><path d="M24 34 L76 20" stroke="#2E2752" stroke-width="6" stroke-linecap="round"/><rect x="18" y="30" width="52" height="40" rx="12" transform="rotate(-8 44 50)" fill="url(#g4)"/><rect x="30" y="40" width="26" height="8" rx="4" transform="rotate(-8 44 50)" fill="#fff" opacity=".85"/><defs><linearGradient id="g4" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8F5BF5"/><stop offset="1" stop-color="#D63AA8"/></linearGradient></defs></svg>
+      </div>
+      <div class="nm">Fifi 斜挎包</div><div class="xpv"><span class="st8">&#9733;</span>250 XP</div><div class="st">即将推出</div>
+    </div>
+  </div>
+
+  <div class="notify">&#128276; 开启上线提醒</div>
+  <div class="note">奖励内容为演示示例,正式奖品与兑换规则以上线公告为准</div>
+</div>
+
+<div class="tabbar">
+  <div class="tab"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11 L12 4 L21 11 V20 H14 V14 H10 V20 H3 Z"/></svg>首页</div>
+  <div class="tab"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 18 L10 11 L14 14 L20 6"/><path d="M20 10 V6 H16"/></svg>市场</div>
+  <div class="tab"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="4" height="10"/><rect x="10" y="5" width="4" height="15"/><rect x="16" y="13" width="4" height="7"/></svg>股票大师</div>
+  <div class="tab"><svg class="ic" viewBox="0 0 24 24" fill="currentColor"><ellipse cx="8" cy="7" rx="2.2" ry="3"/><ellipse cx="16" cy="7" rx="2.2" ry="3"/><ellipse cx="4.5" cy="12" rx="2" ry="2.6"/><ellipse cx="19.5" cy="12" rx="2" ry="2.6"/><path d="M12 11 q5 0 5.5 5 q.3 4-5.5 4 q-5.8 0-5.5-4 q.5-5 5.5-5"/></svg>Fifi</div>
+  <div class="tab on"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="9" width="16" height="11" rx="2"/><path d="M4 12 H20 M12 9 V20 M12 9 C9 9 7 7.5 7 6 a2.5 2.5 0 0 1 5-1 a2.5 2.5 0 0 1 5 1 c0 1.5-2 3-5 3"/></svg>奖励</div>
+</div>
+</body>
+</html>

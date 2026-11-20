@@ -125,12 +125,8 @@ const fifiFeatures = <(IconData, String, String)>[
 ];
 
 /// 奖励中心（P-27）各等级商品：名称、所需 XP。
-const rewardItems = <int, List<(String, int)>>{
-  1: [('新手徽章', 200), ('主题皮肤', 300), ('专属头像框', 250), ('学习卡片', 150)],
-  2: [('高级图表主题', 600), ('动态头像框', 800)],
-  3: [('年度纪念徽章', 1500)],
-  4: [('神秘奖励', 3000)],
-};
+/// F16 P-27 圣诞新手礼（等级 1 解锁；演示示例，正式奖品以上线公告为准）。顺序对应 rewards_page.dart 的奖品图。
+const xmasRewards = <(String, int)>[('FinX 运动水壶', 150), ('Fifi 圣诞绒帽', 200), ('无线耳机', 600), ('Fifi 斜挎包', 250)];
 
 /// 头像底色（按名称稳定取色，原型 nameAvatar）。
 const _avatarColors = [
