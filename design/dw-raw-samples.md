@@ -6,7 +6,7 @@
 | 项 | 内容 |
 |---|---|
 | 环境 | DriveWealth UAT 沙盒（`bo-api.drivewealth.io/back-office`），本机后端 `DW_LOG_BODIES=true` |
-| 采集时间 | 2026-11-20 05:50 UTC（美东 11-20 00:50，非工作时间） |
+| 采集时间 | 2026-11-20 05:50 UTC（美东 11-20 00:50，非工作时间）；窗口期后复查 2026-11-20 14:33 UTC（第 4 节） |
 | 测试用户 | 虚构沙盒测试用户（`funded1@example.com`），已开户（LIVE / CASH / SELF），已绑定虚构银行账户 |
 | 操作 | 在 App 后端发起一笔 **$10 ACH 入金**，随后查询资金汇总，后台对账任务每 10 秒查询入金状态 |
 | 来源 | 后端日志中 `dwclient` 记录的请求体 / 响应体，未经手工改写 |
@@ -218,6 +218,178 @@
   "updated": "2026-11-20T05:50:23.625Z"
 }
 ```
+
+---
+
+## 4. 窗口期后复查（2026-11-20 美东 09:31 / 北京 22:31）
+
+同一笔 $10 ACH 入金在资金划转窗口开放后的状态。**DW 于 2026-11-20 09:01:04 UTC（美东 04:01）开放窗口**（状态历史 "MMW Open. Moving to Successful"），入金由 14 Approved 推进到 **2 Successful**，现金入账；同时 DW 记录"购买力与可提现暂扣至 2026-11-23"（`seasoningDetails.statusMessage = AWAITING_BUYING_POWER`）。采集方式：本机临时后端（`DW_LOG_BODIES=true`）查询资金汇总；入金详情因本地记录已是 SUCCESSFUL、对账任务不再查询，改用一次性临时命令按入金 id 查询（同一 dwclient，日志脱敏规则相同，命令未入库）。
+
+`GET /funding/deposits/FEYQ000001-1795153819661-DOZDW` · HTTP 200 · 2026-11-20T22:34:06.312456+08:00 · DW request id `request_3ebe0af4-5882-44fb-9f11-319ba8f1d3c6_clm`
+
+**DW 响应体**
+
+```json
+{
+  "accountDetails": {
+    "accountID": "0e05d5c1-b209-4237-a4a7-6296bc726534.1795093468784",
+    "accountManagementType": {
+      "description": "Self Directed Account",
+      "name": "SELF"
+    },
+    "accountNo": "******0001",
+    "accountType": {
+      "description": "Live Account",
+      "name": "LIVE"
+    }
+  },
+  "amount": 10,
+  "bankAccountID": "bank_02797f3e-7f75-4cbf-b437-407b58c98cd9",
+  "batch": true,
+  "category": "DEPOSIT",
+  "created": "2026-11-20T05:50:19.662Z",
+  "currency": {
+    "description": "US Dollar",
+    "name": "USD",
+    "symbol": "$"
+  },
+  "details": {
+    "accountHolderName": "D***",
+    "bankAccountNickname": "Demo Checking",
+    "bankAccountNumber": "****6789",
+    "bankAccountType": "CHECKING",
+    "bankRoutingNumber": "****0021",
+    "country": "USA"
+  },
+  "finTranRef": "NK.481ba7a4-e980-492e-963c-00b1bef59e22",
+  "id": "FEYQ000001-1795153819661-DOZDW",
+  "note": "null|Demo Checking|****6789",
+  "otherDetails": "null|Demo Checking|****6789",
+  "seasoningDetails": {
+    "depositBuyingPowerHoldExpires": "2026-11-23T00:00:00Z",
+    "seasoningPeriodExpires": "2026-11-23T00:00:00Z",
+    "status": 6,
+    "statusMessage": "AWAITING_BUYING_POWER",
+    "updated": "2026-11-20T09:01:04.909Z"
+  },
+  "status": {
+    "comment": "MMW Open. Moving to Successful",
+    "id": 2,
+    "message": "Successful",
+    "updated": "2026-11-20T09:01:04.904Z"
+  },
+  "statusHistory": [
+    {
+      "comment": "New deposit request from the back-office",
+      "created": "2026-11-20T05:50:19.658935597Z",
+      "status": 0,
+      "statusMessage": "Started",
+      "updatedBy": "bo.finx.api"
+    },
+    {
+      "comment": "Valid request. Auto-move to Pending",
+      "created": "2026-11-20T05:50:19.658955127Z",
+      "status": 1,
+      "statusMessage": "Pending",
+      "updatedBy": "SYSTEM"
+    },
+    {
+      "comment": "Valid request. Auto-move to Processing",
+      "created": "2026-11-20T05:50:19.658956951Z",
+      "status": 17,
+      "statusMessage": "Processing",
+      "updatedBy": "SYSTEM"
+    },
+    {
+      "comment": "Payment successfully submitted. Moved to Approved",
+      "created": "2026-11-20T05:50:20.152776193Z",
+      "status": 14,
+      "statusMessage": "Approved",
+      "updatedBy": "BO-API ACH deposit service"
+    },
+    {
+      "comment": "Awaiting money movement window to open.",
+      "created": "2026-11-20T05:50:21.280458839Z",
+      "status": 14,
+      "statusMessage": "Approved",
+      "updatedBy": "SYSTEM"
+    },
+    {
+      "comment": "MMW Open. Moving to Successful",
+      "created": "2026-11-20T09:01:04.896531347Z",
+      "status": 2,
+      "statusMessage": "Successful",
+      "updatedBy": "SYSTEM"
+    },
+    {
+      "comment": "Buying power withheld until 2026-11-23. Withdrawal power withheld until 2026-11-23",
+      "created": "2026-11-20T09:01:04.904846203Z",
+      "status": 2,
+      "statusMessage": "Successful",
+      "updatedBy": "SYSTEM"
+    }
+  ],
+  "transactionCode": {
+    "code": "RECEIPT_ACH_MT",
+    "description": "Cash Receipt - ACH MT",
+    "type": "CSR"
+  },
+  "userDetails": {
+    "email": "s***@example.com",
+    "firstName": "D***",
+    "lastName": "T***",
+    "parentIB": {
+      "id": "be390250-511f-4143-89e2-fd0e502039f0",
+      "name": "Golden State Capital Inc."
+    },
+    "userID": "0e05d5c1-b209-4237-a4a7-6296bc726534",
+    "username": "[REDACTED]",
+    "wlpID": "FINX"
+  },
+  "wlpFinTranTypeID": "536c7cff-c7eb-472c-bb88-30f6a2169227"
+}
+```
+
+`GET /accounts/{accountID}/summary/money` · HTTP 200 · 2026-11-20T14:33:19.718034Z · DW request id `request_3c9c2235-d279-4a85-ab77-3140560d69af_clm`
+
+`cashBalance` 由 1,000 变为 **1,010**（$10 已入账）；购买力与可提现仍为 0，`pendingDepositsAmountNotAvailable` / `amountWithheldFromRedemptions` 均为 1,010，DW 下一结算时点 `cashSettlement.utcTime` 为 2026-11-23T14:30Z——与入金详情中的 2026-11-23 一致。
+
+**DW 响应体**
+
+```json
+{
+  "accountID": "0e05d5c1-b209-4237-a4a7-6296bc726534.1795093468784",
+  "accountNo": "******0001",
+  "cash": {
+    "cashAvailableForTrade": 0,
+    "cashAvailableForTradeNonMarginable": 0,
+    "cashAvailableForWithdrawal": 0,
+    "cashBalance": 1010,
+    "cashPendingSettlement": 0,
+    "cashSettlement": [
+      {
+        "cash": 0,
+        "utcTime": "2026-11-23T14:30:00.001Z"
+      }
+    ],
+    "noBuyingPowerReason": null,
+    "pendingPaymentsAmount": 0
+  },
+  "payments": {
+    "buyingPower": {
+      "pendingDepositsAmountAvailable": -1010,
+      "pendingDepositsAmountNotAvailable": 1010
+    },
+    "redemptions": {
+      "amountWithheldFromRedemptions": 1010
+    }
+  },
+  "tradingType": "CASH",
+  "updated": "2026-11-20T14:33:19.507Z"
+}
+```
+
+我方接口对应：`GET /api/v1/funding/transfers` 显示该笔为"已完成"（SUCCESSFUL），购买力可用日与可提现日均为 2026-11-23；`GET /api/v1/account/money` 显示现金 $1,010、购买力 $0、可提现 $0、在途入金 $1,010、观察期内 $1,010。
 
 ---
 

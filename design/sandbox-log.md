@@ -159,6 +159,13 @@
 - 窗口开放后余额会自动更新（后端对账每分钟一次，App 下拉刷新即可）。购买力与可提现仍按 DW 返回的可用日（约 2 个工作日后）。
 - 演示提示：入金演示请在美东工作时间进行，否则结果页显示"已提交"，但余额要等到下一个窗口。窗口具体开放时间待 11-20 美东白天观察后回写。
 
+## 2026-11-20 · 资金划转窗口实测（美东 09:31 复查）
+
+- 11-20 美东 00:50 提交的 $10 ACH 入金（funded1，沙盒虚构用户）：**DW 在 2026-11-20 09:01:04 UTC（美东 04:01、北京 17:01）开放资金划转窗口**，状态 Approved → **Successful**（"MMW Open. Moving to Successful"），现金 $1,000 → $1,010。
+- 同时 DW 写入"Buying power withheld until 2026-11-23. Withdrawal power withheld until 2026-11-23"；`seasoningDetails.status = 6 AWAITING_BUYING_POWER`，`depositBuyingPowerHoldExpires` 与 `seasoningPeriodExpires` 均为 2026-11-23。资金汇总：购买力 0、可提现 0、`pendingDepositsAmountNotAvailable` 与 `amountWithheldFromRedemptions` 均 1,010。funded2 同样为现金 $5,000、购买力 0（等 11-23）。
+- **修正此前假设**：窗口并非"美东工作日白天"才开，本次在美东凌晨 04:01 开放；入账（Successful）与购买力 / 可提现生效是两回事——入账后仍按 DW 返回日期（本次 11-23，周一）才可交易与提现。App 现状（在途入金 / 观察期内金额、按 DW 日期显示）与此一致，无需改动。
+- 原始报文：dw-raw-samples.md 第 4 节。下单实测（T-1–T-13）仍须等 11-23 购买力生效。
+
 ## 2026-11-20 · F14 交易模块：未实测项与假设（11-23 实测后回写）
 
 > 依据 DW 参考文档（Create Order / Retrieve Order / Update Order / List Account Positions / Errors / Idempotent requests，2026-11-20 查阅）。已入金测试用户的购买力 2026-11-23 生效，真实下单实测排在当天；今天只用 fake DW 单测。
