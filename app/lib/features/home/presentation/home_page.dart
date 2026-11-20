@@ -11,6 +11,7 @@ import '../../../core/widgets/widgets.dart';
 import '../../account/data/account_api.dart';
 import '../../account/domain/account_overview.dart';
 import '../../account/presentation/account_drawer.dart';
+import '../../account/presentation/asset_analysis.dart';
 import '../../auth/presentation/welcome_page.dart';
 import '../../market/data/market_api.dart';
 import '../../market/domain/instruments.dart';
@@ -21,6 +22,7 @@ import '../../trading/presentation/paper_widgets.dart';
 
 /// P-07 资产首页（Demo-1：资产卡取 DW 真实资金汇总 F12；未开户 / 开户中显示开户提示卡）。
 /// 自选股报价来自虚拟行情（F11），每 3 秒刷新；已开户时显示持仓 P-12 / 订单 P-11 入口（F14）；智能组合不在本期范围。
+/// F17：已开户（或模拟盘模式）时在资产卡下方显示资产分布与资产趋势（各自加载，失败整卡隐藏）。
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -38,6 +40,7 @@ class _HomePageState extends State<HomePage> {
   final _mode = TradingMode.instance;
   PaperAccount? _paper; // F15 模拟账户（只在模拟盘模式显示）
   String? _paperError;
+  int _analysisGen = 0; // F17：变化时资产分布 / 趋势重新加载
 
   @override
   void initState() {
@@ -72,6 +75,7 @@ class _HomePageState extends State<HomePage> {
       setState(() {
         _paper = a;
         _paperError = null;
+        _analysisGen++;
       });
     } on ApiException catch (e) {
       if (mounted && !e.isSessionInvalid) setState(() => _paperError = e.message);
@@ -102,6 +106,7 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _refresh() async {
     if (_mode.paper) return _loadPaper();
+    setState(() => _analysisGen++);
     final session = AppScope.of(context).session;
     try {
       await session.refreshMe();
@@ -180,6 +185,7 @@ class _HomePageState extends State<HomePage> {
                         ],
                       ),
                     ),
+                  if (opened) AssetAnalysis(key: const Key('home.analysis'), paper: false, generation: _analysisGen),
                   if (opened && money.cash == 0 && money.pendingDeposits == 0 && ov.restriction == null)
                     AppCard(
                       child: Row(
@@ -255,6 +261,7 @@ class _HomePageState extends State<HomePage> {
         padding: EdgeInsets.all(24),
         child: Center(child: CircularProgressIndicator()),
       ),
+    if (_paper != null) AssetAnalysis(key: const Key('home.paper.analysis'), paper: true, generation: _analysisGen),
     const SectionTitle('模拟交易'),
     ListGroup(
       children: [
