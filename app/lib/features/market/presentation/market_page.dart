@@ -9,6 +9,7 @@ import '../data/market_api.dart';
 import '../domain/instruments.dart';
 import 'market_widgets.dart';
 import 'sentiment_card.dart';
+import '../../../l10n/l10n.dart';
 
 /// P-09 市场（Tab 2，仅展示）。数据来自后端虚拟行情（F11）。
 /// Demo-1 范围：指数卡片（SPY / QQQ / DIA / IWM）、市场情绪（恐慌贪婪指数 + 涨跌家数，由虚拟行情合成，F11 扩展）、
@@ -27,7 +28,7 @@ class _MarketPageState extends State<MarketPage> {
   QuoteFeed? _feed;
   SentimentFeed? _mood;
   String _seg = 'STOCK';
-  String _etfCat = '全部';
+  String? _etfCat; // null = 全部
 
   @override
   void didChangeDependencies() {
@@ -52,15 +53,15 @@ class _MarketPageState extends State<MarketPage> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('市场')),
+    appBar: AppBar(title: Text(t.tabMarkets)),
     body: ListenableBuilder(
       listenable: Listenable.merge([_feed!, _mood!]),
       builder: (context, _) {
         final f = _feed!;
         final children = <Widget>[
-          Seg2<String>(items: const [('STOCK', '股票'), ('ETF', 'ETF')], value: _seg, onChanged: (v) => setState(() => _seg = v)),
+          Seg2<String>(items: [('STOCK', t.assetStock), ('ETF', 'ETF')], value: _seg, onChanged: (v) => setState(() => _seg = v)),
           const SizedBox(height: 12),
-          if (f.error != null) Notice('行情暂时无法刷新：${f.error}', kind: NoticeKind.warn),
+          if (f.error != null) Notice(t.marketCouldnTRefreshQuotes(f.error!), kind: NoticeKind.warn),
           if (f.quotes.isEmpty && f.error == null)
             const Padding(
               padding: EdgeInsets.all(40),
@@ -79,30 +80,33 @@ class _MarketPageState extends State<MarketPage> {
                 ],
               ),
               if (_mood!.data case final m?) ...[const SizedBox(height: 14), MarketSentimentCard(data: m)],
-              const SectionTitle('涨幅榜'),
+              SectionTitle(t.marketTopGainers),
               _list([for (final i in _sorted('STOCK').take(5)) i.symbol], f),
-              const SectionTitle('跌幅榜'),
+              SectionTitle(t.marketTopLosers),
               _list([for (final i in _sorted('STOCK', desc: false).take(3)) i.symbol], f),
             ]);
           } else {
-            const cats = ['全部', '大盘指数', '大宗商品', '债券', '行业', '海外市场', '波动率'];
             children.addAll([
-              const SectionTitle('ETF 排行'),
+              SectionTitle(t.marketEtfRankings),
               SizedBox(
                 height: 36,
                 child: ListView(
                   scrollDirection: Axis.horizontal,
                   children: [
-                    for (final c in cats)
+                    for (final c in <String?>[null, ...etfCategories])
                       Padding(
                         padding: const EdgeInsets.only(right: 8),
-                        child: ChipToggle(label: c, selected: _etfCat == c, onTap: () => setState(() => _etfCat = c)),
+                        child: ChipToggle(
+                          label: c == null ? t.marketAll : etfCategoryLabel(c),
+                          selected: _etfCat == c,
+                          onTap: () => setState(() => _etfCat = c),
+                        ),
                       ),
                   ],
                 ),
               ),
               const SizedBox(height: 10),
-              _list([for (final i in _sorted('ETF', cat: _etfCat == '全部' ? null : _etfCat)) i.symbol], f),
+              _list([for (final i in _sorted('ETF', cat: _etfCat)) i.symbol], f),
             ]);
           }
         }
@@ -149,8 +153,8 @@ class _MarketPageState extends State<MarketPage> {
   }
 
   Widget _list(List<String> symbols, QuoteFeed f) => symbols.isEmpty
-      ? const AppCard(
-          child: Text('暂无', style: TextStyle(color: AppColors.muted)),
+      ? AppCard(
+          child: Text(t.marketNone, style: TextStyle(color: AppColors.muted)),
         )
       : ListGroup(
           children: [for (final s in symbols) QuoteRow(symbol: s, quote: f.quotes[s], moved: f.moved[s] ?? 0)],

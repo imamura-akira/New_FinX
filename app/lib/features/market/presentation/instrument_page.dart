@@ -13,6 +13,7 @@ import '../data/market_api.dart';
 import '../domain/instruments.dart';
 import '../../trading/domain/trading_mode.dart';
 import 'market_widgets.dart';
+import '../../../l10n/l10n.dart';
 
 /// P-10 个股详情。报价区展示买一 / 卖一（PDF-5 NBBO 的数量与交易所标识在接入真实行情后补齐）；
 /// 图表为虚拟行情的 1 分钟分时。底部买入 / 卖出进入 P-19（F14）。
@@ -78,7 +79,7 @@ class _InstrumentPageState extends State<InstrumentPage> {
           actions: [
             IconButton(
               key: const Key('p10.watch'),
-              tooltip: '自选',
+              tooltip: t.instrumentWatchlist,
               icon: Icon(
                 wl.contains(widget.symbol) ? Icons.star_rounded : Icons.star_border_rounded,
                 color: wl.contains(widget.symbol) ? AppColors.warn : null,
@@ -86,7 +87,7 @@ class _InstrumentPageState extends State<InstrumentPage> {
               onPressed: () {
                 final had = wl.contains(widget.symbol);
                 wl.toggle(widget.symbol);
-                showToast(context, had ? '已从自选移除' : '已加入自选');
+                showToast(context, had ? t.instrumentRemovedFromWatchlist : t.instrumentAddedToWatchlist);
               },
             ),
           ],
@@ -98,7 +99,7 @@ class _InstrumentPageState extends State<InstrumentPage> {
               children: [
                 Expanded(
                   child: AppButton(
-                    '卖出',
+                    t.instrumentSell,
                     key: const Key('p10.sell'),
                     kind: ButtonKind.secondary,
                     onPressed: _d == null ? null : () => context.push('/trade/${widget.symbol}?side=SELL${paperQuery(TradingMode.instance.paper, '&')}'),
@@ -106,7 +107,7 @@ class _InstrumentPageState extends State<InstrumentPage> {
                 ),
                 Expanded(
                   child: AppButton(
-                    '买入',
+                    t.instrumentBuy,
                     key: const Key('p10.buy'),
                     onPressed: _d == null ? null : () => context.push('/trade/${widget.symbol}?side=BUY${paperQuery(TradingMode.instance.paper, '&')}'),
                   ),
@@ -124,17 +125,17 @@ class _InstrumentPageState extends State<InstrumentPage> {
     if (d == null) {
       return _error == null
           ? const Center(child: CircularProgressIndicator())
-          : StateView(icon: Icons.search_off_rounded, title: '暂时无法查看', message: _error!);
+          : StateView(icon: Icons.search_off_rounded, title: t.instrumentUnavailableRightNow, message: _error!);
     }
     final q = d.quote;
     final color = chgColor(q.chg);
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
       children: [
-        if (_error != null) Notice('行情暂时无法刷新：$_error', kind: NoticeKind.warn),
+        if (_error != null) Notice(t.instrumentCouldnTRefreshQuotes(_error!), kind: NoticeKind.warn),
         Text(d.name, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
         Text(
-          '${d.symbol} · ${d.exchange} · ${d.type == 'ETF' ? 'ETF' : '股票'}',
+          '${d.symbol} · ${d.exchange} · ${d.type == 'ETF' ? 'ETF' : t.instrumentStock}',
           style: const TextStyle(fontSize: 12, color: AppColors.muted),
         ),
         const SizedBox(height: 10),
@@ -157,13 +158,13 @@ class _InstrumentPageState extends State<InstrumentPage> {
             ),
           ],
         ),
-        Text('${d.simulated ? '虚拟行情（演示数据）' : '实时'} · 更新于 ${fmtTime(_at)}', style: const TextStyle(fontSize: 12, color: AppColors.muted)),
-        const SectionTitle('报价'),
+        Text(t.instrumentUpdated(d.simulated ? t.instrumentSimulated : t.instrumentRealtime, fmtTime(_at)), style: const TextStyle(fontSize: 12, color: AppColors.muted)),
+        SectionTitle(t.instrumentQuote),
         Row(
           children: [
-            Expanded(child: _px('买一价（Bid）', _nbbo?.bid, AppColors.up)),
+            Expanded(child: _px(t.instrumentBid, _nbbo?.bid, AppColors.up)),
             const SizedBox(width: 8),
-            Expanded(child: _px('卖一价（Ask）', _nbbo?.ask, AppColors.down)),
+            Expanded(child: _px(t.instrumentAsk, _nbbo?.ask, AppColors.down)),
           ],
         ),
         AppCard(
@@ -179,16 +180,16 @@ class _InstrumentPageState extends State<InstrumentPage> {
                   painter: LineChartPainter([for (final c in d.candles) c.c], color: color, baseline: d.prevClose),
                 ),
               ),
-              const Padding(
+              Padding(
                 padding: EdgeInsets.fromLTRB(8, 8, 8, 0),
-                child: Text('分时（1 分钟） · 虚线为昨收', style: TextStyle(fontSize: 12, color: AppColors.faint)),
+                child: Text(t.instrumentIntraday1MinDashed, style: TextStyle(fontSize: 12, color: AppColors.faint)),
               ),
             ],
           ),
         ),
-        const SectionTitle('关键数据'),
+        SectionTitle(t.instrumentKeyStats),
         AppCard(
-          child: Column(children: [KvRow('昨收', fmtPx(d.prevClose)), KvRow('今日最高', fmtPx(d.dayHigh)), KvRow('今日最低', fmtPx(d.dayLow))]),
+          child: Column(children: [KvRow(t.instrumentPrevClose, fmtPx(d.prevClose)), KvRow(t.instrumentDayHigh, fmtPx(d.dayHigh)), KvRow(t.instrumentDayLow, fmtPx(d.dayLow))]),
         ),
         MarketDataNote(ts: _at),
       ],

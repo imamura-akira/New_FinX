@@ -8,6 +8,7 @@ import '../../../core/api/api_client.dart';
 import '../data/market_api.dart';
 import '../domain/sentiment.dart';
 import 'market_widgets.dart';
+import '../../../l10n/l10n.dart';
 
 // F11 扩展：P-09 市场情绪卡（design/reward-design/market_mock.png 定稿；版式参考 market_reference.html）。
 // 数据来自 GET /market/sentiment（虚拟行情合成，演示数据），与报价同频每 3 秒刷新。
@@ -74,17 +75,17 @@ class MarketSentimentCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Expanded(
+              Expanded(
                 child: Text(
-                  '市场情绪',
+                  t.moodMarketSentiment,
                   style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: _ink),
                 ),
               ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
                 decoration: BoxDecoration(color: const Color(0xFFF4F2FB), borderRadius: BorderRadius.circular(999)),
-                child: const Text(
-                  '演示数据 · 每 3 秒更新',
+                child: Text(
+                  t.moodDemoDataUpdatesEvery,
                   style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w600, color: _faint),
                 ),
               ),
@@ -131,8 +132,8 @@ class MarketSentimentCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    const Text(
-                      '由虚拟行情的涨跌幅、动量与波动合成',
+                    Text(
+                      t.moodDerivedFromSimulatedPrice,
                       style: TextStyle(fontSize: 11.5, height: 1.6, color: _sub),
                     ),
                   ],
@@ -145,9 +146,9 @@ class MarketSentimentCard extends StatelessWidget {
           const SizedBox(height: 13),
           Row(
             children: [
-              const Expanded(
+              Expanded(
                 child: Text(
-                  '涨跌家数',
+                  t.moodAdvancersDecliners,
                   style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: _sub),
                 ),
               ),
@@ -157,17 +158,17 @@ class MarketSentimentCard extends StatelessWidget {
                   style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: _sub),
                   children: [
                     TextSpan(
-                      text: '${b.up} 涨',
+                      text: t.moodUp(b.up),
                       style: const TextStyle(fontWeight: FontWeight.w800, color: AppColors.up),
                     ),
                     const TextSpan(text: ' · '),
                     TextSpan(
-                      text: '${b.down} 跌',
+                      text: t.moodDown(b.down),
                       style: const TextStyle(fontWeight: FontWeight.w800, color: AppColors.down),
                     ),
                     const TextSpan(text: ' · '),
                     TextSpan(
-                      text: '${b.flat} 平',
+                      text: t.moodFlat(b.flat),
                       style: const TextStyle(fontWeight: FontWeight.w800, color: _ink),
                     ),
                   ],
@@ -203,11 +204,11 @@ class MarketSentimentCard extends StatelessWidget {
           const SizedBox(height: 8),
           Row(
             children: [
-              _legend(AppColors.up, '上涨 ${b.up}'),
+              _legend(AppColors.up, t.moodUp2(b.up)),
               const SizedBox(width: 14),
-              _legend(_flat, '平盘 ${b.flat}'),
+              _legend(_flat, t.moodFlat2(b.flat)),
               const SizedBox(width: 14),
-              _legend(AppColors.down, '下跌 ${b.down}'),
+              _legend(AppColors.down, t.moodDown2(b.down)),
             ],
           ),
         ],

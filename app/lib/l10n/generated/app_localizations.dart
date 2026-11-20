@@ -1199,6 +1199,294 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'记录积累中，次日起可见趋势'**
   String get allocBuildingYourHistoryThe;
+
+  /// No description provided for @etfCatIndex.
+  ///
+  /// In zh, this message translates to:
+  /// **'大盘指数'**
+  String get etfCatIndex;
+
+  /// No description provided for @etfCatCommodity.
+  ///
+  /// In zh, this message translates to:
+  /// **'大宗商品'**
+  String get etfCatCommodity;
+
+  /// No description provided for @etfCatBond.
+  ///
+  /// In zh, this message translates to:
+  /// **'债券'**
+  String get etfCatBond;
+
+  /// No description provided for @etfCatSector.
+  ///
+  /// In zh, this message translates to:
+  /// **'行业'**
+  String get etfCatSector;
+
+  /// No description provided for @etfCatIntl.
+  ///
+  /// In zh, this message translates to:
+  /// **'海外市场'**
+  String get etfCatIntl;
+
+  /// No description provided for @etfCatVolatility.
+  ///
+  /// In zh, this message translates to:
+  /// **'波动率'**
+  String get etfCatVolatility;
+
+  /// No description provided for @marketAll.
+  ///
+  /// In zh, this message translates to:
+  /// **'全部'**
+  String get marketAll;
+
+  /// No description provided for @marketDataNote.
+  ///
+  /// In zh, this message translates to:
+  /// **'演示数据：虚拟行情（随机模拟，非真实报价）\n行情数据仅供参考，不构成投资建议。'**
+  String get marketDataNote;
+
+  /// No description provided for @marketDataNoteUpdated.
+  ///
+  /// In zh, this message translates to:
+  /// **'演示数据：虚拟行情（随机模拟，非真实报价） · 更新于 {time}\n行情数据仅供参考，不构成投资建议。'**
+  String marketDataNoteUpdated(Object time);
+
+  /// No description provided for @instrumentStock.
+  ///
+  /// In zh, this message translates to:
+  /// **'股票'**
+  String get instrumentStock;
+
+  /// No description provided for @instrumentSimulated.
+  ///
+  /// In zh, this message translates to:
+  /// **'虚拟行情（演示数据）'**
+  String get instrumentSimulated;
+
+  /// No description provided for @instrumentRealtime.
+  ///
+  /// In zh, this message translates to:
+  /// **'实时'**
+  String get instrumentRealtime;
+
+  /// No description provided for @instrumentUpdated.
+  ///
+  /// In zh, this message translates to:
+  /// **'{source} · 更新于 {time}'**
+  String instrumentUpdated(Object source, Object time);
+
+  /// No description provided for @fgExtremeFear.
+  ///
+  /// In zh, this message translates to:
+  /// **'极度恐慌'**
+  String get fgExtremeFear;
+
+  /// No description provided for @fgFear.
+  ///
+  /// In zh, this message translates to:
+  /// **'恐慌'**
+  String get fgFear;
+
+  /// No description provided for @fgNeutral.
+  ///
+  /// In zh, this message translates to:
+  /// **'中性'**
+  String get fgNeutral;
+
+  /// No description provided for @fgGreed.
+  ///
+  /// In zh, this message translates to:
+  /// **'贪婪'**
+  String get fgGreed;
+
+  /// No description provided for @fgExtremeGreed.
+  ///
+  /// In zh, this message translates to:
+  /// **'极度贪婪'**
+  String get fgExtremeGreed;
+
+  /// No description provided for @marketCouldnTRefreshQuotes.
+  ///
+  /// In zh, this message translates to:
+  /// **'行情暂时无法刷新：{error}'**
+  String marketCouldnTRefreshQuotes(Object error);
+
+  /// No description provided for @marketTopGainers.
+  ///
+  /// In zh, this message translates to:
+  /// **'涨幅榜'**
+  String get marketTopGainers;
+
+  /// No description provided for @marketTopLosers.
+  ///
+  /// In zh, this message translates to:
+  /// **'跌幅榜'**
+  String get marketTopLosers;
+
+  /// No description provided for @marketEtfRankings.
+  ///
+  /// In zh, this message translates to:
+  /// **'ETF 排行'**
+  String get marketEtfRankings;
+
+  /// No description provided for @marketNone.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无'**
+  String get marketNone;
+
+  /// No description provided for @instrumentWatchlist.
+  ///
+  /// In zh, this message translates to:
+  /// **'自选'**
+  String get instrumentWatchlist;
+
+  /// No description provided for @instrumentRemovedFromWatchlist.
+  ///
+  /// In zh, this message translates to:
+  /// **'已从自选移除'**
+  String get instrumentRemovedFromWatchlist;
+
+  /// No description provided for @instrumentAddedToWatchlist.
+  ///
+  /// In zh, this message translates to:
+  /// **'已加入自选'**
+  String get instrumentAddedToWatchlist;
+
+  /// No description provided for @instrumentSell.
+  ///
+  /// In zh, this message translates to:
+  /// **'卖出'**
+  String get instrumentSell;
+
+  /// No description provided for @instrumentBuy.
+  ///
+  /// In zh, this message translates to:
+  /// **'买入'**
+  String get instrumentBuy;
+
+  /// No description provided for @instrumentUnavailableRightNow.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂时无法查看'**
+  String get instrumentUnavailableRightNow;
+
+  /// No description provided for @instrumentCouldnTRefreshQuotes.
+  ///
+  /// In zh, this message translates to:
+  /// **'行情暂时无法刷新：{_error}'**
+  String instrumentCouldnTRefreshQuotes(Object _error);
+
+  /// No description provided for @instrumentQuote.
+  ///
+  /// In zh, this message translates to:
+  /// **'报价'**
+  String get instrumentQuote;
+
+  /// No description provided for @instrumentBid.
+  ///
+  /// In zh, this message translates to:
+  /// **'买一价（Bid）'**
+  String get instrumentBid;
+
+  /// No description provided for @instrumentAsk.
+  ///
+  /// In zh, this message translates to:
+  /// **'卖一价（Ask）'**
+  String get instrumentAsk;
+
+  /// No description provided for @instrumentIntraday1MinDashed.
+  ///
+  /// In zh, this message translates to:
+  /// **'分时（1 分钟） · 虚线为昨收'**
+  String get instrumentIntraday1MinDashed;
+
+  /// No description provided for @instrumentKeyStats.
+  ///
+  /// In zh, this message translates to:
+  /// **'关键数据'**
+  String get instrumentKeyStats;
+
+  /// No description provided for @instrumentPrevClose.
+  ///
+  /// In zh, this message translates to:
+  /// **'昨收'**
+  String get instrumentPrevClose;
+
+  /// No description provided for @instrumentDayHigh.
+  ///
+  /// In zh, this message translates to:
+  /// **'今日最高'**
+  String get instrumentDayHigh;
+
+  /// No description provided for @instrumentDayLow.
+  ///
+  /// In zh, this message translates to:
+  /// **'今日最低'**
+  String get instrumentDayLow;
+
+  /// No description provided for @moodMarketSentiment.
+  ///
+  /// In zh, this message translates to:
+  /// **'市场情绪'**
+  String get moodMarketSentiment;
+
+  /// No description provided for @moodDemoDataUpdatesEvery.
+  ///
+  /// In zh, this message translates to:
+  /// **'演示数据 · 每 3 秒更新'**
+  String get moodDemoDataUpdatesEvery;
+
+  /// No description provided for @moodDerivedFromSimulatedPrice.
+  ///
+  /// In zh, this message translates to:
+  /// **'由虚拟行情的涨跌幅、动量与波动合成'**
+  String get moodDerivedFromSimulatedPrice;
+
+  /// No description provided for @moodAdvancersDecliners.
+  ///
+  /// In zh, this message translates to:
+  /// **'涨跌家数'**
+  String get moodAdvancersDecliners;
+
+  /// No description provided for @moodUp.
+  ///
+  /// In zh, this message translates to:
+  /// **'{up} 涨'**
+  String moodUp(Object up);
+
+  /// No description provided for @moodDown.
+  ///
+  /// In zh, this message translates to:
+  /// **'{down} 跌'**
+  String moodDown(Object down);
+
+  /// No description provided for @moodFlat.
+  ///
+  /// In zh, this message translates to:
+  /// **'{flat} 平'**
+  String moodFlat(Object flat);
+
+  /// No description provided for @moodUp2.
+  ///
+  /// In zh, this message translates to:
+  /// **'上涨 {up}'**
+  String moodUp2(Object up);
+
+  /// No description provided for @moodFlat2.
+  ///
+  /// In zh, this message translates to:
+  /// **'平盘 {flat}'**
+  String moodFlat2(Object flat);
+
+  /// No description provided for @moodDown2.
+  ///
+  /// In zh, this message translates to:
+  /// **'下跌 {down}'**
+  String moodDown2(Object down);
 }
 
 class _AppLocalizationsDelegate

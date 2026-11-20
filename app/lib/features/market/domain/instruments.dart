@@ -1,13 +1,28 @@
 import 'package:material_ui/material_ui.dart';
 
+import '../../../l10n/l10n.dart';
+
 /// 证券目录（与后端 marketsim.DefaultInstruments 一致；报价接口不含名称与类型，列表页用本目录补全）。
 class InstrumentInfo {
   const InstrumentInfo(this.symbol, this.name, this.type, [this.etfCategory]);
   final String symbol;
   final String name;
   final String type; // STOCK / ETF
-  final String? etfCategory;
+  final String? etfCategory; // ETF 分类代码（INDEX / COMMODITY / BOND / SECTOR / INTL / VOLATILITY），显示文案见 [etfCategoryLabel]
 }
+
+/// ETF 分类代码（P-09 筛选顺序）。
+const etfCategories = ['INDEX', 'COMMODITY', 'BOND', 'SECTOR', 'INTL', 'VOLATILITY'];
+
+String etfCategoryLabel(String code) => switch (code) {
+  'INDEX' => t.etfCatIndex,
+  'COMMODITY' => t.etfCatCommodity,
+  'BOND' => t.etfCatBond,
+  'SECTOR' => t.etfCatSector,
+  'INTL' => t.etfCatIntl,
+  'VOLATILITY' => t.etfCatVolatility,
+  _ => code,
+};
 
 const instruments = <InstrumentInfo>[
   InstrumentInfo('AAPL', 'Apple Inc.', 'STOCK'),
@@ -22,18 +37,18 @@ const instruments = <InstrumentInfo>[
   InstrumentInfo('DIS', 'Walt Disney Co.', 'STOCK'),
   InstrumentInfo('NFLX', 'Netflix Inc.', 'STOCK'),
   InstrumentInfo('AMD', 'Advanced Micro Devices', 'STOCK'),
-  InstrumentInfo('SPY', 'SPDR S&P 500 ETF', 'ETF', '大盘指数'),
-  InstrumentInfo('QQQ', 'Invesco QQQ Trust', 'ETF', '大盘指数'),
-  InstrumentInfo('DIA', 'SPDR Dow Jones Industrial ETF', 'ETF', '大盘指数'),
-  InstrumentInfo('IWM', 'iShares Russell 2000 ETF', 'ETF', '大盘指数'),
-  InstrumentInfo('GLD', 'SPDR Gold Shares', 'ETF', '大宗商品'),
-  InstrumentInfo('SLV', 'iShares Silver Trust', 'ETF', '大宗商品'),
-  InstrumentInfo('USO', 'United States Oil Fund', 'ETF', '大宗商品'),
-  InstrumentInfo('TLT', 'iShares 20+ Year Treasury Bond ETF', 'ETF', '债券'),
-  InstrumentInfo('XLK', 'Technology Select Sector SPDR', 'ETF', '行业'),
-  InstrumentInfo('XLE', 'Energy Select Sector SPDR', 'ETF', '行业'),
-  InstrumentInfo('EEM', 'iShares MSCI Emerging Markets ETF', 'ETF', '海外市场'),
-  InstrumentInfo('VXX', 'iPath S&P 500 VIX ST Futures ETN', 'ETF', '波动率'),
+  InstrumentInfo('SPY', 'SPDR S&P 500 ETF', 'ETF', 'INDEX'),
+  InstrumentInfo('QQQ', 'Invesco QQQ Trust', 'ETF', 'INDEX'),
+  InstrumentInfo('DIA', 'SPDR Dow Jones Industrial ETF', 'ETF', 'INDEX'),
+  InstrumentInfo('IWM', 'iShares Russell 2000 ETF', 'ETF', 'INDEX'),
+  InstrumentInfo('GLD', 'SPDR Gold Shares', 'ETF', 'COMMODITY'),
+  InstrumentInfo('SLV', 'iShares Silver Trust', 'ETF', 'COMMODITY'),
+  InstrumentInfo('USO', 'United States Oil Fund', 'ETF', 'COMMODITY'),
+  InstrumentInfo('TLT', 'iShares 20+ Year Treasury Bond ETF', 'ETF', 'BOND'),
+  InstrumentInfo('XLK', 'Technology Select Sector SPDR', 'ETF', 'SECTOR'),
+  InstrumentInfo('XLE', 'Energy Select Sector SPDR', 'ETF', 'SECTOR'),
+  InstrumentInfo('EEM', 'iShares MSCI Emerging Markets ETF', 'ETF', 'INTL'),
+  InstrumentInfo('VXX', 'iPath S&P 500 VIX ST Futures ETN', 'ETF', 'VOLATILITY'),
 ];
 
 InstrumentInfo? instrumentOf(String symbol) {

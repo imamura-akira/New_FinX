@@ -581,4 +581,168 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get allocBuildingYourHistoryThe => '记录积累中，次日起可见趋势';
+
+  @override
+  String get etfCatIndex => '大盘指数';
+
+  @override
+  String get etfCatCommodity => '大宗商品';
+
+  @override
+  String get etfCatBond => '债券';
+
+  @override
+  String get etfCatSector => '行业';
+
+  @override
+  String get etfCatIntl => '海外市场';
+
+  @override
+  String get etfCatVolatility => '波动率';
+
+  @override
+  String get marketAll => '全部';
+
+  @override
+  String get marketDataNote => '演示数据：虚拟行情（随机模拟，非真实报价）\n行情数据仅供参考，不构成投资建议。';
+
+  @override
+  String marketDataNoteUpdated(Object time) {
+    return '演示数据：虚拟行情（随机模拟，非真实报价） · 更新于 $time\n行情数据仅供参考，不构成投资建议。';
+  }
+
+  @override
+  String get instrumentStock => '股票';
+
+  @override
+  String get instrumentSimulated => '虚拟行情（演示数据）';
+
+  @override
+  String get instrumentRealtime => '实时';
+
+  @override
+  String instrumentUpdated(Object source, Object time) {
+    return '$source · 更新于 $time';
+  }
+
+  @override
+  String get fgExtremeFear => '极度恐慌';
+
+  @override
+  String get fgFear => '恐慌';
+
+  @override
+  String get fgNeutral => '中性';
+
+  @override
+  String get fgGreed => '贪婪';
+
+  @override
+  String get fgExtremeGreed => '极度贪婪';
+
+  @override
+  String marketCouldnTRefreshQuotes(Object error) {
+    return '行情暂时无法刷新：$error';
+  }
+
+  @override
+  String get marketTopGainers => '涨幅榜';
+
+  @override
+  String get marketTopLosers => '跌幅榜';
+
+  @override
+  String get marketEtfRankings => 'ETF 排行';
+
+  @override
+  String get marketNone => '暂无';
+
+  @override
+  String get instrumentWatchlist => '自选';
+
+  @override
+  String get instrumentRemovedFromWatchlist => '已从自选移除';
+
+  @override
+  String get instrumentAddedToWatchlist => '已加入自选';
+
+  @override
+  String get instrumentSell => '卖出';
+
+  @override
+  String get instrumentBuy => '买入';
+
+  @override
+  String get instrumentUnavailableRightNow => '暂时无法查看';
+
+  @override
+  String instrumentCouldnTRefreshQuotes(Object _error) {
+    return '行情暂时无法刷新：$_error';
+  }
+
+  @override
+  String get instrumentQuote => '报价';
+
+  @override
+  String get instrumentBid => '买一价（Bid）';
+
+  @override
+  String get instrumentAsk => '卖一价（Ask）';
+
+  @override
+  String get instrumentIntraday1MinDashed => '分时（1 分钟） · 虚线为昨收';
+
+  @override
+  String get instrumentKeyStats => '关键数据';
+
+  @override
+  String get instrumentPrevClose => '昨收';
+
+  @override
+  String get instrumentDayHigh => '今日最高';
+
+  @override
+  String get instrumentDayLow => '今日最低';
+
+  @override
+  String get moodMarketSentiment => '市场情绪';
+
+  @override
+  String get moodDemoDataUpdatesEvery => '演示数据 · 每 3 秒更新';
+
+  @override
+  String get moodDerivedFromSimulatedPrice => '由虚拟行情的涨跌幅、动量与波动合成';
+
+  @override
+  String get moodAdvancersDecliners => '涨跌家数';
+
+  @override
+  String moodUp(Object up) {
+    return '$up 涨';
+  }
+
+  @override
+  String moodDown(Object down) {
+    return '$down 跌';
+  }
+
+  @override
+  String moodFlat(Object flat) {
+    return '$flat 平';
+  }
+
+  @override
+  String moodUp2(Object up) {
+    return '上涨 $up';
+  }
+
+  @override
+  String moodFlat2(Object flat) {
+    return '平盘 $flat';
+  }
+
+  @override
+  String moodDown2(Object down) {
+    return '下跌 $down';
+  }
 }

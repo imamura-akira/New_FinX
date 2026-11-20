@@ -251,5 +251,126 @@
   "allocAssetTrend": "资产趋势",
   "allocDailySnapshots": "每日快照",
   "allocDailySnapshotsSinceAccount": "每日快照 · 自开户起记录",
-  "allocBuildingYourHistoryThe": "记录积累中，次日起可见趋势"
+  "allocBuildingYourHistoryThe": "记录积累中，次日起可见趋势",
+  "etfCatIndex": "大盘指数",
+  "etfCatCommodity": "大宗商品",
+  "etfCatBond": "债券",
+  "etfCatSector": "行业",
+  "etfCatIntl": "海外市场",
+  "etfCatVolatility": "波动率",
+  "marketAll": "全部",
+  "marketDataNote": "演示数据：虚拟行情（随机模拟，非真实报价）\n行情数据仅供参考，不构成投资建议。",
+  "marketDataNoteUpdated": "演示数据：虚拟行情（随机模拟，非真实报价） · 更新于 {time}\n行情数据仅供参考，不构成投资建议。",
+  "@marketDataNoteUpdated": {
+    "placeholders": {
+      "time": {
+        "type": "Object"
+      }
+    }
+  },
+  "instrumentStock": "股票",
+  "instrumentSimulated": "虚拟行情（演示数据）",
+  "instrumentRealtime": "实时",
+  "instrumentUpdated": "{source} · 更新于 {time}",
+  "@instrumentUpdated": {
+    "placeholders": {
+      "source": {
+        "type": "Object"
+      },
+      "time": {
+        "type": "Object"
+      }
+    }
+  },
+  "fgExtremeFear": "极度恐慌",
+  "fgFear": "恐慌",
+  "fgNeutral": "中性",
+  "fgGreed": "贪婪",
+  "fgExtremeGreed": "极度贪婪",
+  "marketCouldnTRefreshQuotes": "行情暂时无法刷新：{error}",
+  "@marketCouldnTRefreshQuotes": {
+    "placeholders": {
+      "error": {
+        "type": "Object"
+      }
+    }
+  },
+  "marketTopGainers": "涨幅榜",
+  "marketTopLosers": "跌幅榜",
+  "marketEtfRankings": "ETF 排行",
+  "marketNone": "暂无",
+  "instrumentWatchlist": "自选",
+  "instrumentRemovedFromWatchlist": "已从自选移除",
+  "instrumentAddedToWatchlist": "已加入自选",
+  "instrumentSell": "卖出",
+  "instrumentBuy": "买入",
+  "instrumentUnavailableRightNow": "暂时无法查看",
+  "instrumentCouldnTRefreshQuotes": "行情暂时无法刷新：{_error}",
+  "@instrumentCouldnTRefreshQuotes": {
+    "placeholders": {
+      "_error": {
+        "type": "Object"
+      }
+    }
+  },
+  "instrumentQuote": "报价",
+  "instrumentBid": "买一价（Bid）",
+  "instrumentAsk": "卖一价（Ask）",
+  "instrumentIntraday1MinDashed": "分时（1 分钟） · 虚线为昨收",
+  "instrumentKeyStats": "关键数据",
+  "instrumentPrevClose": "昨收",
+  "instrumentDayHigh": "今日最高",
+  "instrumentDayLow": "今日最低",
+  "moodMarketSentiment": "市场情绪",
+  "moodDemoDataUpdatesEvery": "演示数据 · 每 3 秒更新",
+  "moodDerivedFromSimulatedPrice": "由虚拟行情的涨跌幅、动量与波动合成",
+  "moodAdvancersDecliners": "涨跌家数",
+  "moodUp": "{up} 涨",
+  "@moodUp": {
+    "placeholders": {
+      "up": {
+        "type": "Object"
+      }
+    }
+  },
+  "moodDown": "{down} 跌",
+  "@moodDown": {
+    "placeholders": {
+      "down": {
+        "type": "Object"
+      }
+    }
+  },
+  "moodFlat": "{flat} 平",
+  "@moodFlat": {
+    "placeholders": {
+      "flat": {
+        "type": "Object"
+      }
+    }
+  },
+  "moodUp2": "上涨 {up}",
+  "@moodUp2": {
+    "placeholders": {
+      "up": {
+        "type": "Object"
+      }
+    }
+  },
+  "moodFlat2": "平盘 {flat}",
+  "@moodFlat2": {
+    "placeholders": {
+      "flat": {
+        "type": "Object"
+      }
+    }
+  },
+  "moodDown2": "下跌 {down}",
+  "@moodDown2": {
+    "placeholders": {
+      "down": {
+        "type": "Object"
+      }
+    }
+  }
 }

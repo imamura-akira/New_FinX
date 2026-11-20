@@ -634,4 +634,171 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get allocBuildingYourHistoryThe =>
       'Building your history — the trend appears starting tomorrow';
+
+  @override
+  String get etfCatIndex => 'Broad Market';
+
+  @override
+  String get etfCatCommodity => 'Commodities';
+
+  @override
+  String get etfCatBond => 'Bonds';
+
+  @override
+  String get etfCatSector => 'Sectors';
+
+  @override
+  String get etfCatIntl => 'International';
+
+  @override
+  String get etfCatVolatility => 'Volatility';
+
+  @override
+  String get marketAll => 'All';
+
+  @override
+  String get marketDataNote =>
+      'Demo data: simulated quotes (randomly generated, not real prices)\nMarket data is for reference only and isn\'t investment advice.';
+
+  @override
+  String marketDataNoteUpdated(Object time) {
+    return 'Demo data: simulated quotes (randomly generated, not real prices) · Updated $time\nMarket data is for reference only and isn\'t investment advice.';
+  }
+
+  @override
+  String get instrumentStock => 'Stock';
+
+  @override
+  String get instrumentSimulated => 'Simulated quotes (demo data)';
+
+  @override
+  String get instrumentRealtime => 'Real-time';
+
+  @override
+  String instrumentUpdated(Object source, Object time) {
+    return '$source · Updated $time';
+  }
+
+  @override
+  String get fgExtremeFear => 'Extreme Fear';
+
+  @override
+  String get fgFear => 'Fear';
+
+  @override
+  String get fgNeutral => 'Neutral';
+
+  @override
+  String get fgGreed => 'Greed';
+
+  @override
+  String get fgExtremeGreed => 'Extreme Greed';
+
+  @override
+  String marketCouldnTRefreshQuotes(Object error) {
+    return 'Couldn\'t refresh quotes: $error';
+  }
+
+  @override
+  String get marketTopGainers => 'Top Gainers';
+
+  @override
+  String get marketTopLosers => 'Top Losers';
+
+  @override
+  String get marketEtfRankings => 'ETF Rankings';
+
+  @override
+  String get marketNone => 'None';
+
+  @override
+  String get instrumentWatchlist => 'Watchlist';
+
+  @override
+  String get instrumentRemovedFromWatchlist => 'Removed from Watchlist';
+
+  @override
+  String get instrumentAddedToWatchlist => 'Added to Watchlist';
+
+  @override
+  String get instrumentSell => 'Sell';
+
+  @override
+  String get instrumentBuy => 'Buy';
+
+  @override
+  String get instrumentUnavailableRightNow => 'Unavailable right now';
+
+  @override
+  String instrumentCouldnTRefreshQuotes(Object _error) {
+    return 'Couldn\'t refresh quotes: $_error';
+  }
+
+  @override
+  String get instrumentQuote => 'Quote';
+
+  @override
+  String get instrumentBid => 'Bid';
+
+  @override
+  String get instrumentAsk => 'Ask';
+
+  @override
+  String get instrumentIntraday1MinDashed =>
+      'Intraday (1-min) · Dashed line is previous close';
+
+  @override
+  String get instrumentKeyStats => 'Key Stats';
+
+  @override
+  String get instrumentPrevClose => 'Prev Close';
+
+  @override
+  String get instrumentDayHigh => 'Day High';
+
+  @override
+  String get instrumentDayLow => 'Day Low';
+
+  @override
+  String get moodMarketSentiment => 'Market Sentiment';
+
+  @override
+  String get moodDemoDataUpdatesEvery => 'Demo data · Updates every 3s';
+
+  @override
+  String get moodDerivedFromSimulatedPrice =>
+      'Derived from simulated price changes, momentum, and volatility';
+
+  @override
+  String get moodAdvancersDecliners => 'Advancers / Decliners';
+
+  @override
+  String moodUp(Object up) {
+    return '$up up';
+  }
+
+  @override
+  String moodDown(Object down) {
+    return '$down down';
+  }
+
+  @override
+  String moodFlat(Object flat) {
+    return '$flat flat';
+  }
+
+  @override
+  String moodUp2(Object up) {
+    return 'Up $up';
+  }
+
+  @override
+  String moodFlat2(Object flat) {
+    return 'Flat $flat';
+  }
+
+  @override
+  String moodDown2(Object down) {
+    return 'Down $down';
+  }
 }

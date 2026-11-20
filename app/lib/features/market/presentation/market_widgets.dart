@@ -8,6 +8,7 @@ import '../../../core/api/api_client.dart';
 import '../../../core/format.dart';
 import '../data/market_api.dart';
 import '../domain/instruments.dart';
+import '../../../l10n/l10n.dart';
 
 /// 行情轮询间隔（api-spec.md 5.5：3–5 秒）。
 const quotePollInterval = Duration(seconds: 3);
@@ -162,7 +163,7 @@ class MarketDataNote extends StatelessWidget {
   Widget build(BuildContext context) => Padding(
     padding: const EdgeInsets.symmetric(vertical: 12),
     child: Text(
-      '演示数据：虚拟行情（随机模拟，非真实报价）${ts == null ? '' : ' · 更新于 ${fmtTime(ts)}'}\n行情数据仅供参考，不构成投资建议。',
+      ts == null ? t.marketDataNote : t.marketDataNoteUpdated(fmtTime(ts)),
       key: const Key('market.note'),
       textAlign: TextAlign.center,
       style: const TextStyle(fontSize: 12, color: AppColors.faint, height: 1.5),
