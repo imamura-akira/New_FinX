@@ -85,6 +85,23 @@ Base URL：`/api/v1`　认证：`Authorization: Bearer <sessionToken>`（除 /au
 **Order**：`{orderId, orderNo, symbol, side, orderType, quantity, amount, status, filledQty, avgPrice, totalAmount, fees, rejectReason, submittedAt, updatedAt, doneAt}`；`quantity` / `amount` 为委托值（二者其一为 null），`filledQty`、`avgPrice`、`totalAmount`、`fees` 为 DW 返回（未成交为 null），`rejectReason` 为可展示的中文原因（不透出 DW 原文）。
 **订单状态枚举**（DW Order Status）：`NEW / PARTIAL_FILL / FILLED / REJECTED / CANCELED / PENDING_CANCEL`；我方新增 `SUBMITTING`（已记录、提交结果待确认）。App 文案：NEW = 排队中 / 已报，PARTIAL_FILL = 部分成交，FILLED = 已成交，REJECTED = 已拒绝，CANCELED = 已撤单，PENDING_CANCEL = 撤单中，SUBMITTING = 提交中。
 
+## 5.7 模拟交易 / 模拟盘（F15，演示与练习用途）
+
+> 全部在我方后端实现，**不调用 DW**；数据存独立表（paper_*），与真实账户、DW 资金数字完全分开。需要登录，不要求已开立 DW 账户。
+> 撮合依据虚拟行情（F11）：市价买入按卖一价、卖出按买一价即时成交；限价单价格到达才成交（买：卖一价 ≤ 限价；卖：买一价 ≥ 限价，均按当时报价成交），挂单期间冻结资金 / 股数，当日有效（美东日切后自动撤销）。所有响应带 `simulated: true`。
+
+| 方法 路径 | 请求 | 响应 data | 说明 |
+|---|---|---|---|
+| GET /paper/account | — | `{simulated, initialCash, cash, reservedCash, buyingPower, positionsValue, totalValue, totalPL, totalPLPct, resetAt, updatedAt}` | 首次访问自动创建（初始资金 `PAPER_INITIAL_CASH`，默认 100000）。buyingPower = cash − reservedCash（限价买单冻结）；totalPL = totalValue − initialCash |
+| POST /paper/account/reset | — | 同上 | 一键重置：恢复初始资金，清空模拟持仓与订单 |
+| POST /paper/orders | `{symbol, side, orderType: "MARKET"\|"LIMIT", amount?, quantity?, limitPrice?, timeInForce?: "DAY"}` | `{orderId, status}` | 市价单：amount 与 quantity 二选一；限价单：必须按 quantity，`limitPrice` > 0（$1 以上最多两位小数，$1 以下最多四位），有效期只支持 DAY。超出可用资金 / 可卖数量 / 单笔最低 → 42201（附 limits）；无演示行情的代码 → 42200 |
+| GET /paper/orders | `?status=OPEN\|CLOSED&cursor=` | `[PaperOrder]` | 同 /orders 分页规则；查询前先撮合 |
+| GET /paper/orders/{id} | — | `PaperOrder` | 不存在或非本人 40901 |
+| POST /paper/orders/{id}/cancel | — | `{orderId, status: "CANCELED"}` | 仅未成交（NEW）可撤，撤单后释放冻结 |
+| GET /paper/positions | — | `{simulated, updatedAt, equityValue, positions:[Position]}` | 结构同 GET /positions；市价、市值、盈亏按虚拟行情计算（模拟值） |
+
+**PaperOrder**：Order 的全部字段 + `limitPrice`、`timeInForce`、`simulated: true`；状态取值 `NEW / FILLED / CANCELED / REJECTED`，`fees` 恒为 0。
+
 ## 6. 文件与通知（F10，P-15/P-17）
 
 | 方法 路径 | 响应 data | 说明 |
@@ -140,3 +157,4 @@ Base URL：`/api/v1`　认证：`Authorization: Bearer <sessionToken>`（除 /au
 | 2026-11-20 | `GET /account` 新增可选字段 `dw{userId, accountId, accountNo, kycStatus, syncedAt}`：**仅演示环境**（`OTP_DEV_LOG=true`，config 禁止 production 开启）返回，供 App P-08"DW 沙盒凭证"区与 DW 当场对照；生产不返回 | 新增，向后兼容 |
 | 2026-11-20 | 开户校验加固（`PUT /application/draft` 分步校验与 `POST /application/submit`）：美国地址 `residentialAddress.state` 须为 USPS 州代码或全称（沙盒 E032）；SSN 拦截 123-45-6789 与全同数字；美国 / NANP 电话区号与交换码不以 0、1 开头、全同数字拦截。均返回 42200 字段错误（英文文案），接口形状不变 | 校验收紧，向后兼容 |
 | 2026-11-20 | 新增 5.6 交易（F14）：`POST /orders`、`GET /orders`、`GET /orders/{id}`、`POST /orders/{id}/cancel`、`GET /positions`，以及 `Order`、`Position`、`OrderStatus` 结构；只支持市价单（按金额或按股数）。用户已同意按向后兼容新增处理，不升 v2 | 新增，向后兼容 |
+| 2026-11-20 | 新增 5.7 模拟交易 / 模拟盘（F15）：`/paper/account`、`/paper/account/reset`、`/paper/orders`、`/paper/orders/{id}`、`/paper/orders/{id}/cancel`、`/paper/positions`；结构与实盘 Order / Position 对齐并带 `simulated: true`；不调用 DW | 新增，向后兼容 |

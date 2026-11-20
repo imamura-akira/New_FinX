@@ -111,6 +111,7 @@ seasoning_days: 30          # Q-DW-8e（展示用；可提现以 DW 返回为准
 limits: { min_deposit: 10, max_deposit: 50000, daily_deposit: 50000,
           min_withdrawal: 1, max_withdrawal: 50000, min_wire: 100, max_banks: 2,
           min_order: 1 }  # 示例值；min_order 为 F14 单笔最低下单金额（LIMIT_MIN_ORDER，以券商为准）
+paper_initial_cash: 100000   # F15 模拟盘初始虚拟资金（PAPER_INITIAL_CASH，演示与练习用途）
 trade_prevent_queuing: false # F14：DW preventQueuing，休市时是否拒单而非排队（待沙盒实测，TRADE_PREVENT_QUEUING）
 ```
 

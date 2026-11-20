@@ -26,6 +26,8 @@ tags:
     description: 出入金（F8/F9，P-13/P-14/P-33/P-18）
   - name: trading
     description: 交易（F14，P-19 / P-11 / P-12；v1 新增，向后兼容）
+  - name: paper
+    description: 模拟交易 / 模拟盘（F15，演示与练习用途；不调用 DW）
   - name: documents
     description: 文件（F10，P-15）
   - name: notifications
@@ -960,6 +962,179 @@ paths:
         "409": { $ref: "#/components/responses/Conflict" }
         "502": { $ref: "#/components/responses/DWError" }
 
+  # ───────────── 5.7 模拟交易 / 模拟盘（F15） ─────────────
+  /paper/account:
+    get:
+      tags: [paper]
+      operationId: getPaperAccount
+      summary: 模拟账户（首次访问自动创建）
+      responses:
+        "200":
+          description: 模拟账户
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - type: object
+                    properties:
+                      data: { $ref: "#/components/schemas/PaperAccount" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+  /paper/account/reset:
+    post:
+      tags: [paper]
+      operationId: resetPaperAccount
+      summary: 一键重置模拟账户（恢复初始资金，清空持仓与订单）
+      responses:
+        "200":
+          description: 重置后的模拟账户
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - type: object
+                    properties:
+                      data: { $ref: "#/components/schemas/PaperAccount" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+  /paper/orders:
+    post:
+      tags: [paper]
+      operationId: createPaperOrder
+      summary: 模拟下单（市价 / 限价，按虚拟行情撮合）
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [symbol, side, orderType]
+              properties:
+                symbol: { type: string }
+                side: { type: string, enum: [BUY, SELL] }
+                orderType: { type: string, enum: [MARKET, LIMIT] }
+                amount: { $ref: "#/components/schemas/Money" }
+                quantity: { type: number, description: 股数，最多 6 位小数；限价单必填 }
+                limitPrice: { type: number, description: 限价单必填，> 0 }
+                timeInForce: { type: string, enum: [DAY] }
+      responses:
+        "200":
+          description: 已受理（市价单即时成交）
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        required: [orderId, status]
+                        properties:
+                          orderId: { type: string }
+                          status: { type: string, enum: [NEW, FILLED, CANCELED, REJECTED] }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+    get:
+      tags: [paper]
+      operationId: listPaperOrders
+      summary: 模拟订单列表
+      parameters:
+        - name: status
+          in: query
+          schema: { type: string, enum: [OPEN, CLOSED] }
+        - $ref: "#/components/parameters/Cursor"
+      responses:
+        "200":
+          description: 模拟订单
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items: { $ref: "#/components/schemas/PaperOrder" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /paper/orders/{id}:
+    get:
+      tags: [paper]
+      operationId: getPaperOrder
+      summary: 模拟订单详情
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: 模拟订单
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - type: object
+                    properties:
+                      data: { $ref: "#/components/schemas/PaperOrder" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "409": { $ref: "#/components/responses/Conflict" }
+
+  /paper/orders/{id}/cancel:
+    post:
+      tags: [paper]
+      operationId: cancelPaperOrder
+      summary: 撤销未成交的模拟订单
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: 已撤单
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          orderId: { type: string }
+                          status: { type: string, enum: [CANCELED] }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "409": { $ref: "#/components/responses/Conflict" }
+
+  /paper/positions:
+    get:
+      tags: [paper]
+      operationId: listPaperPositions
+      summary: 模拟持仓（按虚拟行情估值）
+      responses:
+        "200":
+          description: 模拟持仓
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        required: [simulated, positions]
+                        properties:
+                          simulated: { type: boolean }
+                          updatedAt: { type: string, format: date-time }
+                          equityValue: { type: number }
+                          positions:
+                            type: array
+                            items: { $ref: "#/components/schemas/Position" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
   # ───────────── 6. 文件与通知 ─────────────
   /documents:
     get:
@@ -1326,6 +1501,46 @@ components:
         marketValue: { type: number, description: DW marketValue }
         unrealizedPL: { type: number, description: DW unrealizedPL }
         unrealizedDayPL: { type: number, description: DW unrealizedDayPL }
+
+    PaperAccount:
+      type: object
+      required: [simulated, initialCash, cash, reservedCash, buyingPower, positionsValue, totalValue, totalPL]
+      properties:
+        simulated: { type: boolean, description: 恒为 true }
+        initialCash: { type: number }
+        cash: { type: number, description: 现金（含限价买单冻结部分） }
+        reservedCash: { type: number, description: 限价买单冻结金额 }
+        buyingPower: { type: number, description: 可用资金 = cash − reservedCash }
+        positionsValue: { type: number, description: 模拟持仓市值（虚拟行情） }
+        totalValue: { type: number }
+        totalPL: { type: number, description: totalValue − initialCash }
+        totalPLPct: { type: number, description: 百分数 }
+        resetAt: { type: string, format: date-time, nullable: true }
+        updatedAt: { type: string, format: date-time }
+
+    PaperOrder:
+      type: object
+      required: [orderId, symbol, side, orderType, status, submittedAt, updatedAt, simulated]
+      properties:
+        orderId: { type: string }
+        orderNo: { type: string, nullable: true }
+        symbol: { type: string }
+        side: { type: string, enum: [BUY, SELL] }
+        orderType: { type: string, enum: [MARKET, LIMIT] }
+        quantity: { type: number, nullable: true }
+        amount: { type: number, nullable: true }
+        limitPrice: { type: number, nullable: true }
+        timeInForce: { type: string, enum: [DAY] }
+        status: { type: string, enum: [NEW, FILLED, CANCELED, REJECTED] }
+        filledQty: { type: number, nullable: true }
+        avgPrice: { type: number, nullable: true }
+        totalAmount: { type: number, nullable: true }
+        fees: { type: number }
+        rejectReason: { type: string, nullable: true, description: 撤销 / 过期原因 }
+        submittedAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+        doneAt: { type: string, format: date-time, nullable: true }
+        simulated: { type: boolean }
 
   responses:
     OkEmpty:
