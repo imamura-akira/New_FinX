@@ -149,7 +149,7 @@ class StateHead extends StatelessWidget {
           Text(
             message,
             textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 14, color: AppColors.muted, height: 1.5),
+            style: TextStyle(fontSize: 14, color: AppColors.muted, height: 1.5),
           ),
         ],
       ),
@@ -211,7 +211,7 @@ class _Stepper extends StatelessWidget {
                           color: items[i].$3 == _StepState.todo ? AppColors.muted : AppColors.text,
                         ),
                       ),
-                      if (items[i].$2 != null) Text(items[i].$2!, style: const TextStyle(fontSize: 12, color: AppColors.muted)),
+                      if (items[i].$2 != null) Text(items[i].$2!, style: TextStyle(fontSize: 12, color: AppColors.muted)),
                     ],
                   ),
                 ),
@@ -231,19 +231,19 @@ class _Stepper extends StatelessWidget {
       _StepState.todo => AppColors.line,
     };
     final child = switch (st) {
-      _StepState.done => const Icon(Icons.check_rounded, size: 14, color: Colors.white),
-      _StepState.fail => const Icon(Icons.close_rounded, size: 14, color: Colors.white),
-      _StepState.action => const Text(
+      _StepState.done => Icon(Icons.check_rounded, size: 14, color: AppColors.onAccent),
+      _StepState.fail => Icon(Icons.close_rounded, size: 14, color: AppColors.onAccent),
+      _StepState.action => Text(
         '!',
-        style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w700),
+        style: TextStyle(color: AppColors.onAccent, fontSize: 12, fontWeight: FontWeight.w700),
       ),
       _StepState.todo => Text(
         '${i + 1}',
-        style: const TextStyle(color: AppColors.faint, fontSize: 12, fontWeight: FontWeight.w700),
+        style: TextStyle(color: AppColors.faint, fontSize: 12, fontWeight: FontWeight.w700),
       ),
       _StepState.active => Text(
         '${i + 1}',
-        style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w700),
+        style: TextStyle(color: AppColors.onAccent, fontSize: 12, fontWeight: FontWeight.w700),
       ),
     };
     return Container(
@@ -375,14 +375,14 @@ class _ApplicationStatusPageState extends State<ApplicationStatusPage> with Prog
                 icon: Icons.account_balance_outlined,
                 title: 'Link a bank account (ACH)',
                 subtitle: 'U.S. bank account in your own name. No fee.',
-                trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.faint),
+                trailing: Icon(Icons.chevron_right_rounded, color: AppColors.faint),
                 onTap: () => context.push('/funding/banks/link'),
               ),
               ListRow(
                 icon: Icons.public_rounded,
                 title: 'Wire transfer',
                 subtitle: 'For large amounts or international banks',
-                trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.faint),
+                trailing: Icon(Icons.chevron_right_rounded, color: AppColors.faint),
                 onTap: () => context.push('/funding/wire'),
               ),
             ],
@@ -433,7 +433,7 @@ class _ApplicationStatusPageState extends State<ApplicationStatusPage> with Prog
       );
     }
     content.add(
-      const Padding(
+      Padding(
         padding: EdgeInsets.only(top: 8),
         child: Text(
           'Identity verification is performed by our partner broker DriveWealth.',
@@ -462,7 +462,7 @@ class _ApplicationStatusPageState extends State<ApplicationStatusPage> with Prog
         const SizedBox(height: 10),
         Row(
           children: [
-            const Text('Account number', style: TextStyle(fontSize: 14, color: AppColors.muted)),
+            Text('Account number', style: TextStyle(fontSize: 14, color: AppColors.muted)),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
@@ -476,7 +476,7 @@ class _ApplicationStatusPageState extends State<ApplicationStatusPage> with Prog
               IconButton(
                 key: const Key('p06.copy'),
                 visualDensity: VisualDensity.compact,
-                icon: const Icon(Icons.copy_rounded, size: 16, color: AppColors.muted),
+                icon: Icon(Icons.copy_rounded, size: 16, color: AppColors.muted),
                 onPressed: () => copyText(context, p.accountNo!, done: 'Account number copied'),
               ),
           ],
@@ -502,7 +502,7 @@ class _ApplicationStatusPageState extends State<ApplicationStatusPage> with Prog
         Text(
           sub,
           textAlign: TextAlign.center,
-          style: const TextStyle(fontSize: 12, color: AppColors.muted),
+          style: TextStyle(fontSize: 12, color: AppColors.muted),
         ),
       ],
     ),
@@ -529,13 +529,13 @@ class _ApplicationStatusPageState extends State<ApplicationStatusPage> with Prog
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
-                Text(sub, style: const TextStyle(fontSize: 12, color: AppColors.muted)),
+                Text(sub, style: TextStyle(fontSize: 12, color: AppColors.muted)),
                 const SizedBox(height: 6),
                 const StatusBadge(sandboxPendingLabel, kind: BadgeKind.warn),
               ],
             ),
           ),
-          const Icon(Icons.chevron_right_rounded, color: AppColors.faint),
+          Icon(Icons.chevron_right_rounded, color: AppColors.faint),
         ],
       ),
     ),

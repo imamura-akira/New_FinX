@@ -173,7 +173,7 @@ class _PredictPageState extends State<PredictPage> {
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 24),
                     child: Center(
-                      child: Text(t.predictNoMarkets, style: const TextStyle(color: predictSub)),
+                      child: Text(t.predictNoMarkets, style: TextStyle(color: AppColors.sub)),
                     ),
                   )
                 else
@@ -185,7 +185,7 @@ class _PredictPageState extends State<PredictPage> {
                   t.predictDisclaimer,
                   key: const Key('predict.disclaimer'),
                   textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 11, color: predictFaint),
+                  style: TextStyle(fontSize: 11, color: AppColors.hint),
                 ),
               ),
             ],
@@ -200,7 +200,7 @@ class _PredictPageState extends State<PredictPage> {
       Expanded(
         child: Text(
           t.predictTitle,
-          style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: predictInk),
+          style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: AppColors.ink),
         ),
       ),
       GestureDetector(
@@ -213,7 +213,7 @@ class _PredictPageState extends State<PredictPage> {
           padding: const EdgeInsets.only(right: 10),
           child: Text(
             t.predictMine,
-            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.primary),
+            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.primary),
           ),
         ),
       ),
@@ -223,16 +223,16 @@ class _PredictPageState extends State<PredictPage> {
         decoration: BoxDecoration(
           color: AppColors.surface,
           borderRadius: BorderRadius.circular(999),
-          border: Border.all(color: const Color(0xFFE4E0F5), width: 1.5),
+          border: Border.all(color: AppColors.border, width: 1.5),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.star_rounded, size: 16, color: Color(0xFFF5B301)),
+            Icon(Icons.star_rounded, size: 16, color: BrandColors.star),
             const SizedBox(width: 5),
             Text(
               _points == null ? '—' : t.predictPoints(fmtPoints(_points!)),
-              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: AppColors.primary),
+              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: AppColors.primary),
             ),
           ],
         ),
@@ -256,7 +256,7 @@ class _PredictPageState extends State<PredictPage> {
                 children: [
                   Text(
                     predictCategoryLabel(c),
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: c == _cat ? predictInk : predictFaint),
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: c == _cat ? AppColors.ink : AppColors.hint),
                   ),
                   const SizedBox(height: 4),
                   Container(
@@ -278,16 +278,16 @@ class _PredictPageState extends State<PredictPage> {
       key: const Key('predict.demoBadge'),
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 4),
-      decoration: BoxDecoration(color: const Color(0xFFFBF3DF), borderRadius: BorderRadius.circular(999)),
+      decoration: BoxDecoration(color: AppColors.goldWeak, borderRadius: BorderRadius.circular(999)),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.warning_amber_rounded, size: 13, color: Color(0xFFB57E0C)),
+          Icon(Icons.warning_amber_rounded, size: 13, color: AppColors.goldText),
           const SizedBox(width: 5),
           Flexible(
             child: Text(
               t.predictDemoBadge,
-              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: Color(0xFFB57E0C)),
+              style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppColors.goldText),
             ),
           ),
         ],
@@ -302,7 +302,7 @@ class _PredictPageState extends State<PredictPage> {
         Expanded(
           child: Text(
             title,
-            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: predictInk),
+            style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: AppColors.ink),
           ),
         ),
         if (live) ...[
@@ -310,7 +310,7 @@ class _PredictPageState extends State<PredictPage> {
           const SizedBox(width: 5),
           Text(
             t.predictLive,
-            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.primary),
+            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.primary),
           ),
         ],
         if (trailing != null)
@@ -318,7 +318,7 @@ class _PredictPageState extends State<PredictPage> {
             onTap: onTrailing,
             child: Text(
               '$trailing >',
-              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.primary),
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.primary),
             ),
           ),
       ],
@@ -328,7 +328,7 @@ class _PredictPageState extends State<PredictPage> {
   BoxDecoration get _card => BoxDecoration(
     color: AppColors.surface,
     borderRadius: BorderRadius.circular(20),
-    boxShadow: const [BoxShadow(color: Color(0x121B1830), blurRadius: 22, offset: Offset(0, 8))],
+    boxShadow: [BoxShadow(color: AppColors.cardShadow2, blurRadius: 22, offset: Offset(0, 8))],
   );
 
   /// Up or Down 主卡（BTC 当前 15 分钟窗口）。
@@ -347,7 +347,7 @@ class _PredictPageState extends State<PredictPage> {
               Expanded(
                 child: Text(
                   t.predictUpOrDownSymbol('BTC'),
-                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: predictSub),
+                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: AppColors.sub),
                 ),
               ),
               CountdownPill(until: m.closesAt, offset: _offset, onExpired: _loadMarkets),
@@ -368,17 +368,17 @@ class _PredictPageState extends State<PredictPage> {
                       child: Text(
                         price == null ? '—' : fmtUsd(price),
                         key: const Key('predict.hero.price'),
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.w800,
-                          color: predictInk,
+                          color: AppColors.ink,
                           fontFeatures: [FontFeature.tabularFigures()],
                         ),
                       ),
                     ),
                     Text(
                       t.predictTarget(fmtUsd(m.targetPrice ?? 0)),
-                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: predictSub),
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.sub),
                     ),
                   ],
                 ),
@@ -409,9 +409,9 @@ class _PredictPageState extends State<PredictPage> {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 13),
         decoration: BoxDecoration(
-          color: up ? predictUpBg : predictDownBg,
+          color: up ? AppColors.upWeak : AppColors.dangerWeak,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: up ? predictUpBorder : predictDownBorder, width: 1.5),
+          border: Border.all(color: up ? AppColors.upBorder : AppColors.downBorder, width: 1.5),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -449,7 +449,7 @@ class _PredictPageState extends State<PredictPage> {
                 Expanded(
                   child: Text(
                     t.predictUpOrDown,
-                    style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: predictSub),
+                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.sub),
                   ),
                 ),
                 CountdownPill(until: m.closesAt, offset: _offset, compact: true, onExpired: _loadMarkets),
@@ -466,7 +466,7 @@ class _PredictPageState extends State<PredictPage> {
                     maxLines: 1,
                     overflow: TextOverflow.fade,
                     softWrap: false,
-                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: predictInk),
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: AppColors.ink),
                   ),
                 ),
                 Icon(upLeads ? Icons.arrow_drop_up_rounded : Icons.arrow_drop_down_rounded, color: color, size: 20),
@@ -500,7 +500,7 @@ class _PredictPageState extends State<PredictPage> {
               Expanded(
                 child: Text(
                   m.subtitle.text,
-                  style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: predictFaint),
+                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.hint),
                 ),
               ),
               if (week) ...[
@@ -508,19 +508,19 @@ class _PredictPageState extends State<PredictPage> {
                 const SizedBox(width: 4),
                 Text(
                   t.predictLiveSettle(fmtMonthDay(m.closesAt)),
-                  style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.down),
+                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.down),
                 ),
               ] else
                 Text(
                   t.predictCloses(fmtMonthDay(m.closesAt)),
-                  style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: predictFaint),
+                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.hint),
                 ),
             ],
           ),
           const SizedBox(height: 6),
           Text(
             m.title.text,
-            style: const TextStyle(fontSize: 15.5, fontWeight: FontWeight.w800, height: 1.45, color: predictInk),
+            style: TextStyle(fontSize: 15.5, fontWeight: FontWeight.w800, height: 1.45, color: AppColors.ink),
           ),
           const SizedBox(height: 8),
           _outcomeRow(m, m.yes, hot: m.yes.percent >= m.no.percent),
@@ -543,7 +543,7 @@ class _PredictPageState extends State<PredictPage> {
             Container(
               width: 30,
               height: 30,
-              decoration: BoxDecoration(color: yes ? predictUpBg : predictDownBg, borderRadius: BorderRadius.circular(10)),
+              decoration: BoxDecoration(color: yes ? AppColors.upWeak : AppColors.dangerWeak, borderRadius: BorderRadius.circular(10)),
               child: Icon(yes ? Icons.check_rounded : Icons.close_rounded, size: 18, color: yes ? AppColors.up : AppColors.down),
             ),
             const SizedBox(width: 10),
@@ -553,7 +553,7 @@ class _PredictPageState extends State<PredictPage> {
                 children: [
                   Text(
                     o.label.text,
-                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: predictInk),
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: AppColors.ink),
                   ),
                   const SizedBox(height: 5),
                   ProbabilityBar(fraction: o.percent / 100, color: yes ? AppColors.up : AppColors.down),
@@ -566,13 +566,13 @@ class _PredictPageState extends State<PredictPage> {
               padding: const EdgeInsets.symmetric(vertical: 8),
               alignment: Alignment.center,
               decoration: BoxDecoration(
-                color: hot ? AppColors.primaryWeak : const Color(0xFFF4F2FB),
+                color: hot ? AppColors.primaryWeak : AppColors.chip,
                 borderRadius: BorderRadius.circular(11),
               ),
               child: RollingPercent(
                 o.percent,
                 key: Key('predict.event.${m.id}.${o.key}.pct'),
-                style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w800, color: hot ? AppColors.primary : predictInk),
+                style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w800, color: hot ? AppColors.primary : AppColors.ink),
               ),
             ),
           ],

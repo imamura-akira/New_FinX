@@ -126,7 +126,7 @@ class _MarketPageState extends State<MarketPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(symbol, style: const TextStyle(fontSize: 12, color: AppColors.muted)),
+            Text(symbol, style: TextStyle(fontSize: 12, color: AppColors.muted)),
             const SizedBox(height: 4),
             // 四张等分后单卡较窄：价格与涨跌幅按需缩小，不换行
             FittedBox(

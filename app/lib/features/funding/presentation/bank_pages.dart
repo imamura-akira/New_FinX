@@ -296,7 +296,7 @@ class _WireInstructionsPageState extends State<WireInstructionsPage> {
                       Expanded(child: KvRow(e.value, _d!.fields[e.key]!)),
                       IconButton(
                         visualDensity: VisualDensity.compact,
-                        icon: const Icon(Icons.copy_rounded, size: 16, color: AppColors.muted),
+                        icon: Icon(Icons.copy_rounded, size: 16, color: AppColors.muted),
                         onPressed: () {
                           Clipboard.setData(ClipboardData(text: _d!.fields[e.key]!));
                           showToast(context, t.bankCopied(e.value));

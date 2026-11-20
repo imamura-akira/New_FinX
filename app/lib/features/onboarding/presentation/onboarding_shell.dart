@@ -153,13 +153,13 @@ class OnboardingScaffold extends StatelessWidget {
                     Text(
                       'STEP ${i + 1} OF ${steps.length}',
                       key: const Key('onboarding.stepTag'),
-                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, letterSpacing: 2.2, color: AppColors.muted),
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, letterSpacing: 2.2, color: AppColors.muted),
                     ),
                     const SizedBox(height: 10),
                     if (head != null) ...[
                       Text(head.$1, style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800, height: 1.2, letterSpacing: -.3)),
                       const SizedBox(height: 8),
-                      Text(head.$2, style: const TextStyle(fontSize: 15, color: AppColors.muted, height: 1.55)),
+                      Text(head.$2, style: TextStyle(fontSize: 15, color: AppColors.muted, height: 1.55)),
                       const SizedBox(height: 18),
                     ],
                   ],
@@ -169,7 +169,7 @@ class OnboardingScaffold extends StatelessWidget {
               ),
             ),
             Container(
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 color: AppColors.surface,
                 border: Border(top: BorderSide(color: AppColors.line)),
               ),
@@ -201,7 +201,7 @@ class OnboardingScaffold extends StatelessWidget {
                     ],
                   ),
                   if (trustNote)
-                    const Padding(
+                    Padding(
                       padding: EdgeInsets.only(top: 8),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,

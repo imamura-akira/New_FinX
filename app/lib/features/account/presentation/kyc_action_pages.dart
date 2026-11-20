@@ -132,7 +132,7 @@ class _KycDocRequiredPageState extends State<KycDocRequiredPage> with ProgressLo
         StateHead(icon: Icons.badge_outlined, title: 'Upload an ID to finish verification', message: reason),
         const Center(child: StatusBadge(sandboxPendingLabel, kind: BadgeKind.warn)),
         const SizedBox(height: 12),
-        const AppCard(
+        AppCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -205,7 +205,7 @@ class _KycDeniedPageState extends State<KycDeniedPage> with ProgressLoader {
               ),
               const SizedBox(height: 6),
               Text(p.applicationRef ?? '—', key: const Key('p36.ref'), style: const TextStyle(fontSize: 17, letterSpacing: .5)),
-              const Divider(height: 24, color: AppColors.line),
+              Divider(height: 24, color: AppColors.line),
               KvRow('Decided at', fmtDateTime(p.kycUpdatedAt)),
             ],
           ),

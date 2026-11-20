@@ -75,7 +75,7 @@ class _OTextState extends State<OText> {
             ? null
             : OutlineInputBorder(
                 borderRadius: BorderRadius.circular(AppShape.inputRadius),
-                borderSide: const BorderSide(color: AppColors.danger, width: 1.5),
+                borderSide: BorderSide(color: AppColors.danger, width: 1.5),
               ),
       ),
     );
@@ -113,13 +113,13 @@ Widget yesNoCard({
       if (help != null)
         Padding(
           padding: const EdgeInsets.only(top: 8),
-          child: Text(help, style: const TextStyle(fontSize: 12, color: AppColors.muted)),
+          child: Text(help, style: TextStyle(fontSize: 12, color: AppColors.muted)),
         ),
       YesNo(value: value, onChanged: onChanged, keyPrefix: keyPrefix),
       if (error != null)
         Padding(
           padding: const EdgeInsets.only(top: 6),
-          child: Text(error, style: const TextStyle(color: AppColors.danger, fontSize: 12)),
+          child: Text(error, style: TextStyle(color: AppColors.danger, fontSize: 12)),
         ),
       if (value == true && whenYes.isNotEmpty) ...[const SizedBox(height: 12), ...whenYes],
     ],
@@ -163,20 +163,20 @@ class _OnboardingStepPageState extends State<OnboardingStepPage> {
               margin: const EdgeInsets.only(bottom: 12),
               padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(gradient: AppGradients.hero, borderRadius: BorderRadius.circular(AppShape.radiusLarge)),
-              child: const Column(
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('INDIVIDUAL BROKERAGE ACCOUNT', style: TextStyle(fontSize: 13, color: Color(0xB8FFFFFF))),
+                  Text('INDIVIDUAL BROKERAGE ACCOUNT', style: TextStyle(fontSize: 13, color: AppColors.onAccent.withValues(alpha: .72))),
                   SizedBox(height: 4),
                   Text(
                     "Let's open your account",
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: Colors.white),
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: AppColors.onAccent),
                   ),
                   SizedBox(height: 8),
                   Text(
                     'Opened and held by our partner broker DriveWealth. Most U.S. taxpayers verify with a tax ID, no ID photos needed; '
                     'international applicants upload one. Verification time TBC by DW.',
-                    style: TextStyle(fontSize: 13, color: Color(0xB8FFFFFF)),
+                    style: TextStyle(fontSize: 13, color: AppColors.onAccent.withValues(alpha: .72)),
                   ),
                 ],
               ),
@@ -226,7 +226,7 @@ class _OnboardingStepPageState extends State<OnboardingStepPage> {
                 onChanged: (v) => c.set('lastName', v),
               ),
             ),
-            const Padding(
+            Padding(
               padding: EdgeInsets.only(bottom: 12),
               child: Text(
                 'Use standard ASCII characters only, exactly as on your government ID.',
@@ -539,7 +539,7 @@ class _OnboardingStepPageState extends State<OnboardingStepPage> {
               error: e['riskTolerance'],
               onChanged: (v) => c.set('riskTolerance', v),
             ),
-            const Text(
+            Text(
               'All fields above are required by DriveWealth to open your account.',
               style: TextStyle(fontSize: 12, color: AppColors.faint),
             ),
@@ -636,11 +636,11 @@ class _OnboardingStepPageState extends State<OnboardingStepPage> {
           primaryLabel: c.isUsTaxPayer ? 'Continue: Disclosures' : 'Continue: Upload ID',
           onPrimary: () => continueFrom(context, 'g'),
           content: [
-            const Padding(
+            Padding(
               padding: EdgeInsets.only(bottom: 12),
               child: Text("The account you'll open", style: TextStyle(fontSize: 13, color: AppColors.muted)),
             ),
-            const AppCard(
+            AppCard(
               borderColor: AppColors.primaryWeak,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -666,7 +666,7 @@ class _OnboardingStepPageState extends State<OnboardingStepPage> {
               ),
             ),
             const SizedBox(height: 4),
-            const Text('Not yet available', style: TextStyle(fontSize: 13, color: AppColors.muted)),
+            Text('Not yet available', style: TextStyle(fontSize: 13, color: AppColors.muted)),
             const SizedBox(height: 8),
             for (final (t, sub) in const [
               ('Margin account (MARGIN)', 'Not yet available · TBC by DW'),
@@ -684,14 +684,14 @@ class _OnboardingStepPageState extends State<OnboardingStepPage> {
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.radio_button_unchecked, size: 20, color: AppColors.faint),
+                      Icon(Icons.radio_button_unchecked, size: 20, color: AppColors.faint),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(t, style: const TextStyle(fontWeight: FontWeight.w600)),
-                            Text(sub, style: const TextStyle(fontSize: 12, color: AppColors.muted)),
+                            Text(sub, style: TextStyle(fontSize: 12, color: AppColors.muted)),
                           ],
                         ),
                       ),

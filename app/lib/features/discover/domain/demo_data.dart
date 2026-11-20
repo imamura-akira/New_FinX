@@ -1,4 +1,6 @@
 import 'package:material_ui/material_ui.dart';
+
+import '../../../app/theme.dart';
 import '../../../l10n/l10n.dart';
 
 /// F13 演示数据（纯客户端模拟，不调用后端）。机构名称与持仓均为虚构，来源 prototype/js/data.js。
@@ -129,16 +131,5 @@ List<(IconData, String, String)> get fifiFeatures => <(IconData, String, String)
 /// F16 P-27 圣诞新手礼（等级 1 解锁；演示示例，正式奖品以上线公告为准）。顺序对应 rewards_page.dart 的奖品图。
 List<(String, int)> get xmasRewards => <(String, int)>[(t.demoFinxSportsBottle, 150), (t.demoFifiHolidayBeanie, 200), (t.demoWirelessHeadphones, 600), (t.demoFifiCrossbodyBag, 250)];
 
-/// 头像底色（按名称稳定取色，原型 nameAvatar）。
-const _avatarColors = [
-  Color(0xFFA34D5B),
-  Color(0xFF6B4FA5),
-  Color(0xFF7FA05A),
-  Color(0xFF8C9A4E),
-  Color(0xFF4A9EA3),
-  Color(0xFF4E9A79),
-  Color(0xFF5B6FB0),
-  Color(0xFFB0785B),
-];
-
-Color avatarColor(String name) => _avatarColors[name.runes.fold<int>(0, (a, b) => a + b) % _avatarColors.length];
+/// 头像底色（按名称稳定取色，原型 nameAvatar；色值见 theme.dart AvatarColors）。
+Color avatarColor(String name) => AvatarColors.all[name.runes.fold<int>(0, (a, b) => a + b) % AvatarColors.all.length];

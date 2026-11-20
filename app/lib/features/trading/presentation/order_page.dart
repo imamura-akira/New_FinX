@@ -351,7 +351,7 @@ class _OrderPageState extends State<OrderPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(widget.symbol, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
-                Text(_name, style: const TextStyle(fontSize: 12, color: AppColors.muted)),
+                Text(_name, style: TextStyle(fontSize: 12, color: AppColors.muted)),
               ],
             ),
           ),
@@ -491,7 +491,7 @@ class _OrderPageState extends State<OrderPage> {
       AppCard(
         child: Column(
           children: [
-            Text('${_buy ? t.orderSideBuy : t.orderSideSell} ${widget.symbol}', style: const TextStyle(fontSize: 13, color: AppColors.muted)),
+            Text('${_buy ? t.orderSideBuy : t.orderSideSell} ${widget.symbol}', style: TextStyle(fontSize: 13, color: AppColors.muted)),
             Text(
               _orderSizeText,
               key: const Key('p19.confirm.size'),
@@ -573,7 +573,7 @@ class _OrderPageState extends State<OrderPage> {
       Text(
         message,
         textAlign: TextAlign.center,
-        style: const TextStyle(fontSize: 14, color: AppColors.muted, height: 1.5),
+        style: TextStyle(fontSize: 14, color: AppColors.muted, height: 1.5),
       ),
       const SizedBox(height: 16),
       AppCard(

@@ -4106,6 +4106,30 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'先逛逛行情'**
   String get welcomeBrowseMarkets;
+
+  /// No description provided for @appearanceTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'外观'**
+  String get appearanceTitle;
+
+  /// No description provided for @appearanceSystem.
+  ///
+  /// In zh, this message translates to:
+  /// **'跟随系统'**
+  String get appearanceSystem;
+
+  /// No description provided for @appearanceLight.
+  ///
+  /// In zh, this message translates to:
+  /// **'浅色'**
+  String get appearanceLight;
+
+  /// No description provided for @appearanceDark.
+  ///
+  /// In zh, this message translates to:
+  /// **'深色'**
+  String get appearanceDark;
 }
 
 class _AppLocalizationsDelegate

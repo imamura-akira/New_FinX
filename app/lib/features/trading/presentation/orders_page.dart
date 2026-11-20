@@ -143,7 +143,7 @@ class _OrdersPageState extends State<OrdersPage> {
                     for (final o in list) _card(o),
                   Text(
                     widget.paper ? t.ordersPaperOrdersAreFilled : t.ordersOrderStatusFilledQuantity,
-                    style: const TextStyle(fontSize: 12, color: AppColors.faint),
+                    style: TextStyle(fontSize: 12, color: AppColors.faint),
                   ),
                 ],
               ),
@@ -170,7 +170,7 @@ class _OrdersPageState extends State<OrdersPage> {
                     TextSpan(
                       children: [
                         TextSpan(text: o.symbol, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
-                        if (name != null) TextSpan(text: '  $name', style: const TextStyle(fontSize: 12, color: AppColors.muted)),
+                        if (name != null) TextSpan(text: '  $name', style: TextStyle(fontSize: 12, color: AppColors.muted)),
                       ],
                     ),
                     overflow: TextOverflow.ellipsis,

@@ -3,6 +3,8 @@ import 'dart:math' as math;
 import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../app/theme.dart';
+
 /// 成功时刻庆祝特效（design/theme.md 第 7 节"动效"）：紫罗兰渐变色系彩带 / 圆点从顶部撒下，混入少量白色爪印，
 /// 约 2 秒；覆盖在页面最上层但不拦截点击（IgnorePointer），播放完自动移除。
 ///
@@ -49,7 +51,6 @@ enum CelebrationLevel {
 }
 
 /// FinX 渐变色系（theme.md：#5A57EE → #A944D8 → #D63AA8）及其浅色。
-const _palette = [Color(0xFF5A57EE), Color(0xFF7D5CF0), Color(0xFFA944D8), Color(0xFFC13AC8), Color(0xFFD63AA8), Color(0xFFB9B2FF)];
 
 class _Piece {
   _Piece(math.Random r, {required this.paw})
@@ -62,7 +63,7 @@ class _Piece {
       spin = (r.nextDouble() - .5) * 10,
       size = paw ? 18 + r.nextDouble() * 8 : 6 + r.nextDouble() * 6,
       ribbon = !paw && r.nextBool(),
-      color = paw ? Colors.white : _palette[r.nextInt(_palette.length)];
+      color = paw ? CelebrationColors.paw : CelebrationColors.palette[r.nextInt(CelebrationColors.palette.length)];
 
   final bool paw;
   final double x, delay, fall, drift, sway, swayFreq, spin, size;
@@ -145,7 +146,7 @@ class _ConfettiPainter extends CustomPainter {
     final outline = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.2
-      ..color = const Color(0xFF7D5CF0).withValues(alpha: shadowAlpha * 3);
+      ..color = CelebrationColors.pawOutline.withValues(alpha: shadowAlpha * 3);
     final pad = Rect.fromCenter(center: Offset(0, s * .18), width: s * .62, height: s * .5);
     final toes = [Offset(-s * .36, -s * .12), Offset(-s * .13, -s * .34), Offset(s * .13, -s * .34), Offset(s * .36, -s * .12)];
     canvas.drawOval(pad, fill);

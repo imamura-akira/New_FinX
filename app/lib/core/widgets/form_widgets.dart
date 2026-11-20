@@ -18,17 +18,17 @@ class FieldShell extends StatelessWidget {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (label.isNotEmpty) ...[Text(label, style: const TextStyle(fontSize: 13, color: AppColors.muted)), const SizedBox(height: 6)],
+        if (label.isNotEmpty) ...[Text(label, style: TextStyle(fontSize: 13, color: AppColors.muted)), const SizedBox(height: 6)],
         child,
         if (error != null)
           Padding(
             padding: const EdgeInsets.only(top: 5),
-            child: Text(error!, style: const TextStyle(color: AppColors.danger, fontSize: 12)),
+            child: Text(error!, style: TextStyle(color: AppColors.danger, fontSize: 12)),
           )
         else if (hint != null)
           Padding(
             padding: const EdgeInsets.only(top: 5),
-            child: Text(hint!, style: const TextStyle(color: AppColors.faint, fontSize: 12)),
+            child: Text(hint!, style: TextStyle(color: AppColors.faint, fontSize: 12)),
           ),
       ],
     ),
@@ -103,7 +103,7 @@ class SelectField extends StatelessWidget {
                   style: TextStyle(fontSize: 16, color: text == null ? AppColors.faint : AppColors.text),
                 ),
               ),
-              const Icon(Icons.expand_more_rounded, color: AppColors.faint),
+              Icon(Icons.expand_more_rounded, color: AppColors.faint),
             ],
           ),
         ),
@@ -161,7 +161,7 @@ class _OptionSheetState extends State<_OptionSheet> {
                 child: ListView.separated(
                   shrinkWrap: true,
                   itemCount: list.length,
-                  separatorBuilder: (_, _) => const Divider(height: 1, color: AppColors.line, indent: 16, endIndent: 16),
+                  separatorBuilder: (_, _) => Divider(height: 1, color: AppColors.line, indent: 16, endIndent: 16),
                   itemBuilder: (_, i) {
                     final (v, l) = list[i];
                     final on = v == widget.selected;
@@ -174,7 +174,7 @@ class _OptionSheetState extends State<_OptionSheet> {
                           color: on ? AppColors.primary2 : AppColors.text,
                         ),
                       ),
-                      trailing: on ? const Icon(Icons.check_rounded, color: AppColors.primary) : null,
+                      trailing: on ? Icon(Icons.check_rounded, color: AppColors.primary) : null,
                       onTap: () => Navigator.of(context).pop(v),
                     );
                   },
@@ -235,7 +235,7 @@ class DateField extends StatelessWidget {
                   style: TextStyle(fontSize: 16, color: value?.isNotEmpty == true ? AppColors.text : AppColors.faint),
                 ),
               ),
-              const Icon(Icons.calendar_today_outlined, size: 18, color: AppColors.faint),
+              Icon(Icons.calendar_today_outlined, size: 18, color: AppColors.faint),
             ],
           ),
         ),
@@ -324,7 +324,7 @@ class CheckRow extends StatelessWidget {
       if (error != null)
         Padding(
           padding: const EdgeInsets.only(left: 8, bottom: 6),
-          child: Text(error!, style: const TextStyle(color: AppColors.danger, fontSize: 12)),
+          child: Text(error!, style: TextStyle(color: AppColors.danger, fontSize: 12)),
         ),
     ],
   );
@@ -394,7 +394,7 @@ class KvRow extends StatelessWidget {
         // 键与值都可换行，避免长英文键名溢出
         Flexible(
           flex: 5,
-          child: Text(k, style: const TextStyle(fontSize: 14, color: AppColors.muted)),
+          child: Text(k, style: TextStyle(fontSize: 14, color: AppColors.muted)),
         ),
         const SizedBox(width: 12),
         Expanded(
@@ -464,7 +464,7 @@ class ListRow extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(title, style: const TextStyle(fontSize: 15)),
-                if (subtitle != null) Text(subtitle!, style: const TextStyle(fontSize: 12, color: AppColors.muted)),
+                if (subtitle != null) Text(subtitle!, style: TextStyle(fontSize: 12, color: AppColors.muted)),
               ],
             ),
           ),
@@ -487,7 +487,7 @@ class ListGroup extends StatelessWidget {
     clipBehavior: Clip.antiAlias,
     child: Column(
       children: [
-        for (var i = 0; i < children.length; i++) ...[if (i > 0) const Divider(height: 1, color: AppColors.line), children[i]],
+        for (var i = 0; i < children.length; i++) ...[if (i > 0) Divider(height: 1, color: AppColors.line), children[i]],
       ],
     ),
   );

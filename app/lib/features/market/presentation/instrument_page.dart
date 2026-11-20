@@ -136,7 +136,7 @@ class _InstrumentPageState extends State<InstrumentPage> {
         Text(d.name, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
         Text(
           '${d.symbol} · ${d.exchange} · ${d.type == 'ETF' ? 'ETF' : t.instrumentStock}',
-          style: const TextStyle(fontSize: 12, color: AppColors.muted),
+          style: TextStyle(fontSize: 12, color: AppColors.muted),
         ),
         const SizedBox(height: 10),
         Row(
@@ -158,7 +158,7 @@ class _InstrumentPageState extends State<InstrumentPage> {
             ),
           ],
         ),
-        Text(t.instrumentUpdated(d.simulated ? t.instrumentSimulated : t.instrumentRealtime, fmtTime(_at)), style: const TextStyle(fontSize: 12, color: AppColors.muted)),
+        Text(t.instrumentUpdated(d.simulated ? t.instrumentSimulated : t.instrumentRealtime, fmtTime(_at)), style: TextStyle(fontSize: 12, color: AppColors.muted)),
         SectionTitle(t.instrumentQuote),
         Row(
           children: [
@@ -201,7 +201,7 @@ class _InstrumentPageState extends State<InstrumentPage> {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontSize: 12, color: AppColors.muted)),
+        Text(label, style: TextStyle(fontSize: 12, color: AppColors.muted)),
         const SizedBox(height: 4),
         Text(
           v == null ? '—' : fmtPx(v),

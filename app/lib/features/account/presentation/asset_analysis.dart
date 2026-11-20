@@ -14,12 +14,6 @@ import '../../../l10n/l10n.dart';
 // 数据全部来自后端：分布与占比后端计算（DW 持仓 + 现金 / 模拟账户），趋势为后端每日资产快照，有几天画几天。
 // 两张卡各自加载，接口失败时整卡隐藏，不影响页面其他区块。
 
-const _ink = Color(0xFF1B1830);
-const _sub = Color(0xFF7A7490);
-const _faint = Color(0xFFA7A1BC);
-const _line = Color(0xFFF4F2FA);
-const _pill = Color(0xFFF1EFFA);
-const _grid = Color(0xFFF1EFF8);
 
 /// 类别颜色（theme.md ALLOC_COLORS：股票 #D63AA8 / ETF #F0A13C / 现金 #6C5BF5）。
 Color assetColor(AssetClass c) => switch (c) {
@@ -148,7 +142,7 @@ class _CardShell extends StatelessWidget {
     decoration: BoxDecoration(
       color: AppColors.surface,
       borderRadius: BorderRadius.circular(18),
-      boxShadow: const [BoxShadow(color: Color(0x0F1B1830), blurRadius: 18, offset: Offset(0, 6))],
+      boxShadow: [BoxShadow(color: AppColors.cardShadow, blurRadius: 18, offset: Offset(0, 6))],
       border: paper ? Border.all(color: PaperColors.border, width: 1.5) : null,
     ),
     child: Column(
@@ -158,7 +152,7 @@ class _CardShell extends StatelessWidget {
           children: [
             Text(
               title,
-              style: const TextStyle(fontSize: 15.5, fontWeight: FontWeight.w800, color: _ink),
+              style: TextStyle(fontSize: 15.5, fontWeight: FontWeight.w800, color: AppColors.ink),
             ),
             if (paper) ...[const SizedBox(width: 8), const PaperBadge()],
             const SizedBox(width: 8),
@@ -168,7 +162,7 @@ class _CardShell extends StatelessWidget {
                 maxLines: 1,
                 textAlign: TextAlign.right,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: _faint),
+                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.hint),
               ),
             ),
           ],
@@ -212,7 +206,7 @@ class AllocationCard extends StatelessWidget {
                 children: [
                   Text(
                     t.allocTotalAssets,
-                    style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w600, color: _sub),
+                    style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w600, color: AppColors.sub),
                   ),
                   SizedBox(
                     width: 84,
@@ -221,7 +215,7 @@ class AllocationCard extends StatelessWidget {
                       child: Text(
                         fmtUsdWhole(data.total),
                         key: const Key('p07.alloc.total'),
-                        style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: _ink),
+                        style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: AppColors.ink),
                       ),
                     ),
                   ),
@@ -235,7 +229,7 @@ class AllocationCard extends StatelessWidget {
           child: Column(
             children: [
               for (final (k, i) in data.items.indexed) ...[
-                if (k > 0) const Divider(height: 1, thickness: 1, color: _line),
+                if (k > 0) Divider(height: 1, thickness: 1, color: AppColors.divider),
                 _legendRow(i),
               ],
             ],
@@ -264,7 +258,7 @@ class AllocationCard extends StatelessWidget {
             const SizedBox(width: 9),
             Text(
               i.kind.label,
-              style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w700, color: _ink),
+              style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w700, color: AppColors.ink),
             ),
           ],
         ),
@@ -279,10 +273,10 @@ class AllocationCard extends StatelessWidget {
                 child: Text(
                   fmtUsd(i.amount),
                   key: Key('p07.alloc.${i.kind.code}.amount'),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13.5,
                     fontWeight: FontWeight.w800,
-                    color: _ink,
+                    color: AppColors.ink,
                     fontFeatures: [FontFeature.tabularFigures()],
                   ),
                 ),
@@ -291,7 +285,7 @@ class AllocationCard extends StatelessWidget {
               Text(
                 '${i.pct.toStringAsFixed(1)}%',
                 key: Key('p07.alloc.${i.kind.code}.pct'),
-                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: _sub),
+                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.sub),
               ),
             ],
           ),
@@ -315,7 +309,7 @@ class DonutPainter extends CustomPainter {
       ..strokeWidth = 15 * s
       ..color = c;
     if (segments.isEmpty) {
-      canvas.drawArc(rect, 0, math.pi * 2, false, stroke(_grid));
+      canvas.drawArc(rect, 0, math.pi * 2, false, stroke(AppColors.track));
       return;
     }
     var start = -math.pi / 2;
@@ -360,10 +354,10 @@ class TrendCard extends StatelessWidget {
                   onTap: () => onRange(r),
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-                    decoration: BoxDecoration(color: r == range ? AppColors.primary : _pill, borderRadius: BorderRadius.circular(999)),
+                    decoration: BoxDecoration(color: r == range ? AppColors.primary : AppColors.pill, borderRadius: BorderRadius.circular(999)),
                     child: Text(
                       r.label,
-                      style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: r == range ? Colors.white : _sub),
+                      style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: r == range ? AppColors.onAccent : AppColors.sub),
                     ),
                   ),
                 ),
@@ -375,11 +369,11 @@ class TrendCard extends StatelessWidget {
               key: const Key('p07.trend.empty'),
               height: 110,
               alignment: Alignment.center,
-              decoration: BoxDecoration(color: const Color(0xFFFAF9FE), borderRadius: BorderRadius.circular(12)),
+              decoration: BoxDecoration(color: AppColors.panel, borderRadius: BorderRadius.circular(12)),
               child: Text(
                 t.allocBuildingYourHistoryThe,
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: _faint),
+                style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: AppColors.hint),
               ),
             )
           else ...[
@@ -401,7 +395,7 @@ class TrendCard extends StatelessWidget {
                       fit: BoxFit.scaleDown,
                       child: Text(
                         _mmdd(points[i].date),
-                        style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: _faint),
+                        style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: AppColors.hint),
                       ),
                     ),
                   ),
@@ -437,7 +431,7 @@ class TrendPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final grid = Paint()
-      ..color = _grid
+      ..color = AppColors.track
       ..strokeWidth = 1;
     for (final y in [18.0, 52.0, 86.0]) {
       final yy = y / 110 * size.height;

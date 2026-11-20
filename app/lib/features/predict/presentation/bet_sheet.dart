@@ -7,7 +7,6 @@ import '../../../core/widgets/widgets.dart';
 import '../../../l10n/l10n.dart';
 import '../data/predict_api.dart';
 import '../domain/predict_rules.dart';
-import 'predict_widgets.dart';
 
 /// 下注面板：输入积分 → 显示"若正确可得 X 分" → 确认。返回下注结果（取消为 null）。
 Future<({int points, int potentialPayout})?> showBetSheet(
@@ -82,14 +81,14 @@ class _BetSheetState extends State<_BetSheet> {
         children: [
           Text(
             widget.market.isUpDown ? t.predictUpOrDownSymbol(widget.market.symbol ?? '') : widget.market.title.text,
-            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: predictInk),
+            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.ink),
           ),
           const SizedBox(height: 8),
           Row(
             children: [
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(color: up ? predictUpBg : predictDownBg, borderRadius: BorderRadius.circular(999)),
+                decoration: BoxDecoration(color: up ? AppColors.upWeak : AppColors.dangerWeak, borderRadius: BorderRadius.circular(999)),
                 child: Text(
                   t.predictYourPick(_label),
                   key: const Key('bet.pick'),
@@ -97,7 +96,7 @@ class _BetSheetState extends State<_BetSheet> {
                 ),
               ),
               const SizedBox(width: 8),
-              Text(t.predictProbNow(_o.percent), style: const TextStyle(fontSize: 12, color: predictSub)),
+              Text(t.predictProbNow(_o.percent), style: TextStyle(fontSize: 12, color: AppColors.sub)),
             ],
           ),
           const SizedBox(height: 14),
@@ -129,15 +128,15 @@ class _BetSheetState extends State<_BetSheet> {
             ],
           ),
           const SizedBox(height: 12),
-          Text(t.predictAvailable(fmtPoints(widget.balance)), style: const TextStyle(fontSize: 12, color: predictSub)),
+          Text(t.predictAvailable(fmtPoints(widget.balance)), style: TextStyle(fontSize: 12, color: AppColors.sub)),
           const SizedBox(height: 6),
           Text(
             t.predictPotential(fmtPoints(stake >= predictMinStake ? predictPayout(stake, p) : 0)),
             key: const Key('bet.potential'),
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.primary),
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.primary),
           ),
           const SizedBox(height: 6),
-          Text(t.predictPricingNote, style: const TextStyle(fontSize: 11, color: predictFaint, height: 1.5)),
+          Text(t.predictPricingNote, style: TextStyle(fontSize: 11, color: AppColors.hint, height: 1.5)),
           const SizedBox(height: 14),
           AppButton(t.predictConfirm, key: const Key('bet.confirm'), loading: _busy, onPressed: _busy ? null : _confirm),
         ],

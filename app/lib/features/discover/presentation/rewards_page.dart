@@ -11,57 +11,6 @@ import '../../../l10n/l10n.dart';
 // 颜色与奖品图形取自同目录 mock_reference.html）。整页为"即将上线"展示态，纯客户端模拟数据。
 // 节后可切回常规版（见 prd F16）。
 
-/// 奖励页专用色（design/theme.md 第 8 节）。
-abstract final class RewardColors {
-  static const ink = Color(0xFF1B1830);
-  static const sub = Color(0xFF7A7490);
-  static const heroInk = Color(0xFF241F4E);
-  static const heroText = Color(0xFF5F5880);
-  static const heroBorder = Color(0xFFE7E0F7);
-  static const gold = Color(0xFFE9C878);
-  static const goldDark = Color(0xFFC9A14E);
-  static const badgeBorder = Color(0xFFD4B46A);
-  static const badgeText = Color(0xFF9A7524);
-  static const navy = Color(0xFF2E2752);
-  static const lilac = Color(0xFFA08CF0);
-  static const snow = Color(0xFFC9B9F2);
-  static const chipBorder = Color(0xFFE4E0F5);
-  static const pill = Color(0xFFF1EFFA);
-  static const lockBg = Color(0xFFF3F0FC);
-  static const note = Color(0xFFA7A1BC);
-  static const xpBorder = Color(0xFFD9D4F7);
-
-  /// 英雄区浅紫渐变：135deg #F2EDFC → #F7F2FC 55% → #F6EBF7
-  static const hero = LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: [Color(0xFFF2EDFC), Color(0xFFF7F2FC), Color(0xFFF6EBF7)],
-    stops: [0, .55, 1],
-  );
-
-  /// 等级胶囊选中：135deg #7D4DF0 → #C13AC8
-  static const chipOn = LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: [Color(0xFF7D4DF0), Color(0xFFC13AC8)],
-  );
-
-  /// 金色"即将推出"胶囊：135deg #F6E7BF → #E9C878
-  static const goldPill = LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: [Color(0xFFF6E7BF), gold],
-  );
-
-  /// 奖品卡渐变细描边：紫 → 金 → 玫红（半透明）
-  static const cardBorder = LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: [Color(0x597D4DF0), Color(0x66E9C878), Color(0x4DD63AA8)],
-    stops: [0, .6, 1],
-  );
-}
-
 String get rewardSoon => t.mastersComingSoon2;
 
 class RewardsPage extends StatefulWidget {
@@ -184,7 +133,7 @@ class _Header extends StatelessWidget {
           borderRadius: BorderRadius.circular(999),
           border: Border.all(color: RewardColors.xpBorder, width: 1.5),
         ),
-        child: const Row(
+        child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(Icons.lock_rounded, size: 15, color: RewardColors.goldDark),
@@ -221,14 +170,14 @@ class _Hero extends StatelessWidget {
       gradient: RewardColors.hero,
       borderRadius: BorderRadius.circular(24),
       border: Border.all(color: RewardColors.heroBorder),
-      boxShadow: const [BoxShadow(color: Color(0x296C5BF5), blurRadius: 36, offset: Offset(0, 16))],
+      boxShadow: [BoxShadow(color: RewardColors.heroShadow, blurRadius: 36, offset: Offset(0, 16))],
     ),
     clipBehavior: Clip.antiAlias,
     child: Stack(
       children: [
         // 柔光
-        Positioned(left: -50, top: -70, child: _glow(200, const Color(0x80D9CEF8))),
-        Positioned(right: 60, bottom: -60, child: _glow(180, const Color(0x80F3CBE8))),
+        Positioned(left: -50, top: -70, child: _glow(200, RewardColors.glowLilac)),
+        Positioned(right: 60, bottom: -60, child: _glow(180, RewardColors.glowPink)),
         // 浅紫雪点与金星
         for (final (x, y, r, o) in _snow)
           Positioned(
@@ -240,7 +189,7 @@ class _Hero extends StatelessWidget {
               decoration: BoxDecoration(color: RewardColors.snow.withValues(alpha: o), shape: BoxShape.circle),
             ),
           ),
-        const Positioned(left: 160, top: 180, child: Text('✦', style: TextStyle(fontSize: 10, color: RewardColors.goldDark))),
+        Positioned(left: 160, top: 180, child: Text('✦', style: TextStyle(fontSize: 10, color: RewardColors.goldDark))),
         // 吉祥物（圣诞毛衣 Fifi，透明背景）
         Positioned(
           right: 2,
@@ -258,7 +207,7 @@ class _Hero extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
                 decoration: BoxDecoration(
-                  color: const Color(0x24E9C878),
+                  color: RewardColors.gold.withValues(alpha: .14),
                   borderRadius: BorderRadius.circular(999),
                   border: Border.all(color: RewardColors.badgeBorder),
                 ),
@@ -302,11 +251,11 @@ class _Hero extends StatelessWidget {
                 decoration: BoxDecoration(
                   gradient: RewardColors.goldPill,
                   borderRadius: BorderRadius.circular(999),
-                  boxShadow: const [BoxShadow(color: Color(0x59E9C878), blurRadius: 16, offset: Offset(0, 6))],
+                  boxShadow: [BoxShadow(color: RewardColors.goldShadow, blurRadius: 16, offset: Offset(0, 6))],
                 ),
                 child: Text(
                   '🎁 $rewardSoon',
-                  style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w700, color: RewardColors.navy),
+                  style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w700, color: RewardColors.goldInk),
                 ),
               ),
             ],
@@ -330,7 +279,7 @@ class _Hero extends StatelessWidget {
 class _LightsPainter extends CustomPainter {
   const _LightsPainter();
 
-  static const _bulbs = [
+  static List<(double, double, Color)> get _bulbs => [
     (40.0, 22.0, RewardColors.gold),
     (105.0, 28.0, RewardColors.lilac),
     (170.0, 20.0, RewardColors.gold),
@@ -354,7 +303,7 @@ class _LightsPainter extends CustomPainter {
       Paint()
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1.6
-        ..color = const Color(0x4D6C5BF5),
+        ..color = AppColors.primary.withValues(alpha: .3),
     );
     for (final (x, y, c) in _bulbs) {
       canvas.drawCircle(p(x, y), 7, Paint()..color = c.withValues(alpha: .25));
@@ -383,7 +332,7 @@ class _LevelChip extends StatelessWidget {
         color: selected ? null : AppColors.surface,
         borderRadius: BorderRadius.circular(999),
         border: selected ? null : Border.all(color: RewardColors.chipBorder, width: 1.5),
-        boxShadow: selected ? const [BoxShadow(color: Color(0x527D4DF0), blurRadius: 18, offset: Offset(0, 8))] : null,
+        boxShadow: selected ? [BoxShadow(color: RewardColors.purpleShadow, blurRadius: 18, offset: Offset(0, 8))] : null,
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -394,12 +343,12 @@ class _LevelChip extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.fade,
               softWrap: false,
-              style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700, color: selected ? Colors.white : RewardColors.sub),
+              style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700, color: selected ? AppColors.onAccent : RewardColors.sub),
             ),
           ),
           if (!selected) ...[
             const SizedBox(width: 3),
-            const Icon(Icons.lock_rounded, size: 11, color: RewardColors.goldDark),
+            Icon(Icons.lock_rounded, size: 11, color: RewardColors.goldDark),
           ],
         ],
       ),
@@ -425,7 +374,7 @@ class _PrizeCard extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: RewardColors.cardBorder,
         borderRadius: BorderRadius.circular(20),
-        boxShadow: const [BoxShadow(color: Color(0x121B1830), blurRadius: 24, offset: Offset(0, 10))],
+        boxShadow: [BoxShadow(color: RewardColors.cardShadow, blurRadius: 24, offset: Offset(0, 10))],
       ),
       child: Container(
         decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(19)),
@@ -440,10 +389,10 @@ class _PrizeCard extends StatelessWidget {
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(14),
-                      gradient: const RadialGradient(
-                        center: Alignment(0, -.08),
+                      gradient: RadialGradient(
+                        center: const Alignment(0, -.08),
                         radius: .7,
-                        colors: [Color(0xFFF1EDFF), Color(0xFFFAF8FF), Color(0x00FAF8FF)],
+                        colors: RewardColors.prizeGlow,
                         stops: [0, .7, 1],
                       ),
                     ),
@@ -455,17 +404,17 @@ class _PrizeCard extends StatelessWidget {
                   name,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700, color: RewardColors.ink),
+                  style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700, color: RewardColors.ink),
                 ),
                 const SizedBox(height: 4),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text('★', style: TextStyle(fontSize: 13.5, color: RewardColors.goldDark)),
+                    Text('★', style: TextStyle(fontSize: 13.5, color: RewardColors.goldDark)),
                     const SizedBox(width: 5),
                     Text(
                       '$xp XP',
-                      style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w800, color: AppColors.primary),
+                      style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w800, color: AppColors.primary),
                     ),
                   ],
                 ),
@@ -486,8 +435,8 @@ class _PrizeCard extends StatelessWidget {
               child: Container(
                 width: 24,
                 height: 24,
-                decoration: const BoxDecoration(color: RewardColors.lockBg, shape: BoxShape.circle),
-                child: const Icon(Icons.lock_rounded, size: 12, color: RewardColors.goldDark),
+                decoration: BoxDecoration(color: RewardColors.lockBg, shape: BoxShape.circle),
+                child: Icon(Icons.lock_rounded, size: 12, color: RewardColors.goldDark),
               ),
             ),
           ],
@@ -502,10 +451,10 @@ class _PrizePainter extends CustomPainter {
   const _PrizePainter(this.art);
   final _PrizeArt art;
 
-  static const _g1 = [Color(0xFF7D4DF0), Color(0xFFC13AC8)];
-  static const _g2 = [AppColors.primary, Color(0xFFA944D8)];
-  static const _g3 = [AppColors.primary, Color(0xFFC13AC8)];
-  static const _g4 = [Color(0xFF8F5BF5), Color(0xFFD63AA8)];
+  static List<Color> get _g1 => RewardColors.art1;
+  static List<Color> get _g2 => [AppColors.primary, RewardColors.artPurple];
+  static List<Color> get _g3 => [AppColors.primary, RewardColors.artMagenta];
+  static List<Color> get _g4 => RewardColors.art4;
 
   Size get _viewBox => switch (art) {
     _PrizeArt.bottle => const Size(80, 100),
@@ -556,7 +505,7 @@ class _PrizePainter extends CustomPainter {
   }
 
   void _bottle(Canvas c) {
-    c.drawRRect(RRect.fromLTRBR(30, 2, 50, 11, const Radius.circular(4.5)), _fill(RewardColors.navy));
+    c.drawRRect(RRect.fromLTRBR(30, 2, 50, 11, const Radius.circular(4.5)), _fill(RewardColors.artNavy));
     c.drawPath(
       Path()
         ..moveTo(50, 11)
@@ -566,7 +515,7 @@ class _PrizePainter extends CustomPainter {
         ..style = PaintingStyle.stroke
         ..strokeWidth = 5
         ..strokeCap = StrokeCap.round
-        ..color = RewardColors.navy,
+        ..color = RewardColors.artNavy,
     );
     c.drawRRect(RRect.fromLTRBR(26, 11, 54, 21, const Radius.circular(4)), _fill(AppColors.primary));
     const body = Rect.fromLTRB(20, 20, 60, 96);
@@ -580,7 +529,7 @@ class _PrizePainter extends CustomPainter {
       ),
       _grad(body, _g1),
     );
-    c.drawRect(const Rect.fromLTWH(20, 48, 40, 22), _fill(Colors.white.withValues(alpha: .92)));
+    c.drawRect(const Rect.fromLTWH(20, 48, 40, 22), _fill(RewardColors.artHighlight.withValues(alpha: .92)));
     _text(c, 'FinX', 40, 63, 11, AppColors.primary);
   }
 
@@ -603,7 +552,7 @@ class _PrizePainter extends CustomPainter {
         ..lineTo(78, 52)
         ..arcToPoint(const Offset(50, 22), radius: const Radius.elliptical(28, 24), clockwise: false)
         ..close(),
-      _fill(const Color(0xFF4A3ED1).withValues(alpha: .35)),
+      _fill(RewardColors.artShade.withValues(alpha: .35)),
     );
     c.drawPath(
       Path()
@@ -613,7 +562,7 @@ class _PrizePainter extends CustomPainter {
         ..lineTo(22, 62)
         ..quadraticBezierTo(10, 62, 12, 52)
         ..close(),
-      _fill(RewardColors.navy),
+      _fill(RewardColors.artNavy),
     );
     c.drawCircle(const Offset(50, 16), 4, _fill(RewardColors.lilac));
     _text(c, '✦', 50, 42, 13, RewardColors.gold);
@@ -633,7 +582,7 @@ class _PrizePainter extends CustomPainter {
         ..strokeCap = StrokeCap.round,
     );
     c.drawRRect(RRect.fromLTRBR(12, 52, 30, 80, const Radius.circular(8)), _fill(AppColors.primary));
-    c.drawRRect(RRect.fromLTRBR(70, 52, 88, 80, const Radius.circular(8)), _fill(const Color(0xFFC13AC8)));
+    c.drawRRect(RRect.fromLTRBR(70, 52, 88, 80, const Radius.circular(8)), _fill(RewardColors.artMagenta));
   }
 
   void _bag(Canvas c) {
@@ -641,7 +590,7 @@ class _PrizePainter extends CustomPainter {
       const Offset(24, 34),
       const Offset(76, 20),
       Paint()
-        ..color = RewardColors.navy
+        ..color = RewardColors.artNavy
         ..strokeWidth = 6
         ..strokeCap = StrokeCap.round,
     );
@@ -651,7 +600,7 @@ class _PrizePainter extends CustomPainter {
     c.translate(-44, -50);
     const body = Rect.fromLTWH(18, 30, 52, 40);
     c.drawRRect(RRect.fromRectAndRadius(body, const Radius.circular(12)), _grad(body, _g4));
-    c.drawRRect(RRect.fromLTRBR(30, 40, 56, 48, const Radius.circular(4)), _fill(Colors.white.withValues(alpha: .85)));
+    c.drawRRect(RRect.fromLTRBR(30, 40, 56, 48, const Radius.circular(4)), _fill(RewardColors.artHighlight.withValues(alpha: .85)));
     c.restore();
   }
 
@@ -681,7 +630,7 @@ class _ReminderButton extends StatelessWidget {
           color: on ? AppColors.primaryWeak : null,
           borderRadius: BorderRadius.circular(999),
           border: on ? Border.all(color: RewardColors.xpBorder, width: 1.5) : null,
-          boxShadow: on ? null : const [BoxShadow(color: Color(0x597D4DF0), blurRadius: 26, offset: Offset(0, 12))],
+          boxShadow: on ? null : [BoxShadow(color: RewardColors.ctaShadow, blurRadius: 26, offset: Offset(0, 12))],
         ),
         child: Text(
           on ? t.rewardsReminderOn : t.rewardsRemindMeAtLaunch,
@@ -689,7 +638,7 @@ class _ReminderButton extends StatelessWidget {
             fontSize: 16,
             fontWeight: FontWeight.w800,
             letterSpacing: 1,
-            color: on ? AppColors.primary : Colors.white,
+            color: on ? AppColors.primary : AppColors.onAccent,
           ),
         ),
       ),

@@ -666,5 +666,9 @@
   "welcomeSlogan1": "Invest in U.S. stocks & ETFs",
   "welcomeSlogan2": "Open, fund, and trade — all in one place.",
   "welcomeLogIn": "Log In",
-  "welcomeBrowseMarkets": "Browse Markets"
+  "welcomeBrowseMarkets": "Browse Markets",
+  "appearanceTitle": "Appearance",
+  "appearanceSystem": "Use System Setting",
+  "appearanceLight": "Light",
+  "appearanceDark": "Dark"
 }

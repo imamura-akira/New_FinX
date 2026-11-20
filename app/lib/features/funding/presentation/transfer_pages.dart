@@ -62,7 +62,7 @@ class _ResultView extends StatelessWidget {
         child: Container(
           width: 76,
           height: 76,
-          decoration: const BoxDecoration(color: AppColors.primaryWeak, shape: BoxShape.circle),
+          decoration: BoxDecoration(color: AppColors.primaryWeak, shape: BoxShape.circle),
           child: Icon(result.pending ? Icons.schedule_rounded : Icons.check_rounded, size: 36, color: AppColors.primary),
         ),
       ),
@@ -78,7 +78,7 @@ class _ResultView extends StatelessWidget {
       Text(
         message,
         textAlign: TextAlign.center,
-        style: const TextStyle(fontSize: 14, color: AppColors.muted, height: 1.5),
+        style: TextStyle(fontSize: 14, color: AppColors.muted, height: 1.5),
       ),
       const SizedBox(height: 16),
       AppCard(
@@ -233,14 +233,14 @@ class _DepositPageState extends State<DepositPage> {
                 icon: Icons.account_balance_outlined,
                 title: t.xferBankTransferAch,
                 subtitle: banks.isEmpty ? t.xferLinkAUsBank : t.xferUsBankAccountS(banks.length),
-                trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.faint),
+                trailing: Icon(Icons.chevron_right_rounded, color: AppColors.faint),
                 onTap: _pickAch,
               ),
               ListRow(
                 icon: Icons.public_rounded,
                 title: t.xferWireTransfer,
                 subtitle: t.xferSendFromABank,
-                trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.faint),
+                trailing: Icon(Icons.chevron_right_rounded, color: AppColors.faint),
                 onTap: () => context.push('/funding/wire'),
               ),
             ],
@@ -627,7 +627,7 @@ class _TransfersPageState extends State<TransfersPage> {
                               tr.isDeposit ? t.transferTitleDeposit(tr.method) : t.transferTitleWithdrawal(tr.method),
                               style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
                             ),
-                            Text(fmtDateTime(tr.submittedAt), style: const TextStyle(fontSize: 12, color: AppColors.muted)),
+                            Text(fmtDateTime(tr.submittedAt), style: TextStyle(fontSize: 12, color: AppColors.muted)),
                           ],
                         ),
                       ),

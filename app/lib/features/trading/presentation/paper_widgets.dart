@@ -9,13 +9,6 @@ import '../data/trading_api.dart';
 import '../domain/trading_mode.dart';
 import '../../../l10n/l10n.dart';
 
-/// 模拟盘品牌色：琥珀色系，与实盘的紫色明显区分（design/theme.md 第 7 节"模拟盘标识"）。
-abstract final class PaperColors {
-  static const fg = Color(0xFFB45309);
-  static const bg = Color(0xFFFFF4E0);
-  static const border = Color(0xFFF5C46B);
-}
-
 /// 模拟盘横幅：模拟模式下的每个页面顶部常驻（F15"明显的模拟盘标识"）。
 class PaperBanner extends StatelessWidget {
   const PaperBanner({super.key, this.text});
@@ -33,10 +26,10 @@ class PaperBanner extends StatelessWidget {
     ),
     child: Row(
       children: [
-        const Icon(Icons.science_outlined, size: 18, color: PaperColors.fg),
+        Icon(Icons.science_outlined, size: 18, color: PaperColors.fg),
         const SizedBox(width: 8),
         Expanded(
-          child: Text(text ?? t.paperPaperTradingVirtualFunds, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: PaperColors.fg)),
+          child: Text(text ?? t.paperPaperTradingVirtualFunds, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: PaperColors.fg)),
         ),
       ],
     ),
@@ -52,7 +45,7 @@ class PaperBadge extends StatelessWidget {
     key: const Key('paper.badge'),
     padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
     decoration: BoxDecoration(color: PaperColors.fg, borderRadius: BorderRadius.circular(8)),
-    child: Text(t.drawerPaper, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Colors.white)),
+    child: Text(t.drawerPaper, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.onAccent)),
   );
 }
 
@@ -117,7 +110,7 @@ class PaperAccountCard extends StatelessWidget {
               TextButton.icon(
                 key: const Key('paper.reset'),
                 onPressed: onReset,
-                icon: const Icon(Icons.restart_alt_rounded, size: 18, color: PaperColors.fg),
+                icon: Icon(Icons.restart_alt_rounded, size: 18, color: PaperColors.fg),
                 label: Text(t.paperReset, style: TextStyle(color: PaperColors.fg)),
               ),
             ],
@@ -130,7 +123,7 @@ class PaperAccountCard extends StatelessWidget {
             key: const Key('paper.pl'),
             style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: plColor),
           ),
-          const Divider(height: 22, color: PaperColors.border),
+          Divider(height: 22, color: PaperColors.border),
           KvRow(t.paperAvailableFunds, v(a.buyingPower), valueKey: const Key('paper.buyingPower')),
           KvRow(t.drawerPositionsValue, v(a.positionsValue), valueKey: const Key('paper.positionsValue')),
           if (a.reservedCash > 0) KvRow(t.paperOnHoldForOrders, v(a.reservedCash)),

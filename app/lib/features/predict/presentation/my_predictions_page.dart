@@ -9,7 +9,6 @@ import '../../../core/widgets/widgets.dart';
 import '../../../l10n/l10n.dart';
 import '../data/predict_api.dart';
 import '../domain/predict_rules.dart';
-import 'predict_widgets.dart';
 
 /// "我的预测"：战绩（命中率、累计盈亏分、已结算）、待领取积分一键领取、进行中 / 已结算下注列表。
 class MyPredictionsPage extends StatefulWidget {
@@ -99,7 +98,7 @@ class _MyPredictionsPageState extends State<MyPredictionsPage> {
                       child: Text(
                         t.predictClaimable(fmtPoints(_stats.claimable)),
                         key: const Key('mine.claimable'),
-                        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.primary),
+                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.primary),
                       ),
                     ),
                     AppButton(
@@ -130,7 +129,7 @@ class _MyPredictionsPageState extends State<MyPredictionsPage> {
                   child: Text(
                     t.predictNoBets,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(color: predictSub),
+                    style: TextStyle(color: AppColors.sub),
                   ),
                 ),
               )
@@ -148,10 +147,10 @@ class _MyPredictionsPageState extends State<MyPredictionsPage> {
         Text(
           value,
           key: key,
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: predictInk),
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.ink),
         ),
         const SizedBox(height: 2),
-        Text(label, style: const TextStyle(fontSize: 12, color: predictSub)),
+        Text(label, style: TextStyle(fontSize: 12, color: AppColors.sub)),
       ],
     ),
   );
@@ -165,7 +164,7 @@ class _MyPredictionsPageState extends State<MyPredictionsPage> {
     final statusColor = switch (b.status) {
       'WON' => AppColors.up,
       'LOST' => AppColors.down,
-      _ => predictSub,
+      _ => AppColors.sub,
     };
     return Padding(
       key: Key('mine.bet.${b.id}'),
@@ -180,7 +179,7 @@ class _MyPredictionsPageState extends State<MyPredictionsPage> {
                   title,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: predictInk),
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.ink),
                 ),
               ),
               const SizedBox(width: 8),
@@ -193,10 +192,10 @@ class _MyPredictionsPageState extends State<MyPredictionsPage> {
           const SizedBox(height: 4),
           Text(
             '${t.predictYourPick(side)} · ${b.status == 'OPEN' ? t.predictStakeLine(fmtPoints(b.stake), fmtPoints(b.potentialPayout)) : t.predictPaidLine(fmtPoints(b.stake), fmtPoints(b.payout))}',
-            style: const TextStyle(fontSize: 12, color: predictSub),
+            style: TextStyle(fontSize: 12, color: AppColors.sub),
           ),
           if (m?.settlePrice != null)
-            Text(t.predictSettlesAt(fmtUsd(m!.settlePrice!)), style: const TextStyle(fontSize: 11, color: predictFaint)),
+            Text(t.predictSettlesAt(fmtUsd(m!.settlePrice!)), style: TextStyle(fontSize: 11, color: AppColors.hint)),
         ],
       ),
     );

@@ -208,7 +208,7 @@ class _LoginPageState extends State<LoginPage> {
           if (_errors['terms'] != null)
             Padding(
               padding: const EdgeInsets.only(left: 12),
-              child: Text(_errors['terms']!, style: const TextStyle(color: AppColors.danger, fontSize: 12)),
+              child: Text(_errors['terms']!, style: TextStyle(color: AppColors.danger, fontSize: 12)),
             ),
         ],
       ],

@@ -173,7 +173,7 @@ class _HomePageState extends State<HomePage> {
                       child: Text(
                         t.homeAccountDataFromDrivewealth(fmtTime(money.updatedAt)),
                         key: const Key('home.updatedAt'),
-                        style: const TextStyle(fontSize: 12, color: AppColors.faint),
+                        style: TextStyle(fontSize: 12, color: AppColors.faint),
                       ),
                     ),
                   if (opened && (money.pendingDeposits > 0 || money.withheldForSeasoning > 0 || money.unsettled > 0))
@@ -218,7 +218,7 @@ class _HomePageState extends State<HomePage> {
                           icon: Icons.pie_chart_outline_rounded,
                           title: t.homePositions,
                           subtitle: t.homeQuantityMarketValueCost,
-                          trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.faint),
+                          trailing: Icon(Icons.chevron_right_rounded, color: AppColors.faint),
                           onTap: () => context.push('/positions'),
                         ),
                         ListRow(
@@ -226,7 +226,7 @@ class _HomePageState extends State<HomePage> {
                           icon: Icons.receipt_long_outlined,
                           title: t.homeOrders,
                           subtitle: t.homeCheckOrderStatusAnd,
-                          trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.faint),
+                          trailing: Icon(Icons.chevron_right_rounded, color: AppColors.faint),
                           onTap: () => context.push('/orders'),
                         ),
                       ],
@@ -271,7 +271,7 @@ class _HomePageState extends State<HomePage> {
           icon: Icons.pie_chart_outline_rounded,
           title: t.homePaperPositions,
           subtitle: t.homePaperPositionsAndP,
-          trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.faint),
+          trailing: Icon(Icons.chevron_right_rounded, color: AppColors.faint),
           onTap: () async {
             await context.push('/positions?paper=1');
             _loadPaper();
@@ -282,7 +282,7 @@ class _HomePageState extends State<HomePage> {
           icon: Icons.receipt_long_outlined,
           title: t.homePaperOrders,
           subtitle: t.homeMarketOrdersFillInstantly,
-          trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.faint),
+          trailing: Icon(Icons.chevron_right_rounded, color: AppColors.faint),
           onTap: () async {
             await context.push('/orders?paper=1');
             _loadPaper();
@@ -301,18 +301,18 @@ class _HomePageState extends State<HomePage> {
       padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
       decoration: BoxDecoration(gradient: AppGradients.hero, borderRadius: BorderRadius.circular(AppShape.radiusLarge)),
       child: DefaultTextStyle(
-        style: const TextStyle(color: Colors.white),
+        style: TextStyle(color: AppColors.onAccent),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                Text(t.homeLiveTotalAssetsUsd, style: TextStyle(fontSize: 13, color: Color(0xD9FFFFFF))),
+                Text(t.homeLiveTotalAssetsUsd, style: TextStyle(fontSize: 13, color: AppColors.onAccent.withValues(alpha: .85))),
                 const SizedBox(width: 4),
                 InkWell(
                   key: const Key('home.hide'),
                   onTap: () => setState(() => _hide = !_hide),
-                  child: Icon(_hide ? Icons.visibility_off_outlined : Icons.visibility_outlined, size: 16, color: Colors.white),
+                  child: Icon(_hide ? Icons.visibility_off_outlined : Icons.visibility_outlined, size: 16, color: AppColors.onAccent),
                 ),
               ],
             ),
@@ -352,7 +352,7 @@ class _HomePageState extends State<HomePage> {
   Widget _split(String k, String v, Key key) => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      Text(k, style: const TextStyle(fontSize: 12, color: Color(0xBFFFFFFF))),
+      Text(k, style: TextStyle(fontSize: 12, color: AppColors.onAccent.withValues(alpha: .75))),
       const SizedBox(height: 2),
       Text(
         v,
@@ -383,12 +383,12 @@ class _HomePageState extends State<HomePage> {
                     key: const Key('home.cue.title'),
                     style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
                   ),
-                  Text(cue.sub, style: const TextStyle(fontSize: 12, color: AppColors.muted)),
+                  Text(cue.sub, style: TextStyle(fontSize: 12, color: AppColors.muted)),
                   if (cue.sandboxPending) ...[const SizedBox(height: 6), StatusBadge(t.homePendingSandboxVerification, kind: BadgeKind.warn)],
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right_rounded, color: AppColors.faint),
+            Icon(Icons.chevron_right_rounded, color: AppColors.faint),
           ],
         ),
       ),
@@ -396,9 +396,9 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-Widget _iconTile(IconData icon, {Color color = AppColors.primary}) => Container(
+Widget _iconTile(IconData icon, {Color? color}) => Container(
   width: 38,
   height: 38,
   decoration: BoxDecoration(color: AppColors.surface2, borderRadius: BorderRadius.circular(11)),
-  child: Icon(icon, size: 20, color: color),
+  child: Icon(icon, size: 20, color: color ?? AppColors.primary),
 );

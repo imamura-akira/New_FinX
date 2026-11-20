@@ -101,7 +101,7 @@ class _IdUploadPageState extends State<IdUploadPage> {
           if (_err[side] != null)
             Padding(
               padding: const EdgeInsets.only(top: 5),
-              child: Text(_err[side]!, style: const TextStyle(color: AppColors.danger, fontSize: 12)),
+              child: Text(_err[side]!, style: TextStyle(color: AppColors.danger, fontSize: 12)),
             ),
         ],
       ),
@@ -163,7 +163,7 @@ class _IdUploadPageState extends State<IdUploadPage> {
                   padding: const EdgeInsets.symmetric(vertical: 4),
                   child: Row(
                     children: [
-                      const Icon(Icons.check_rounded, size: 16, color: AppColors.up),
+                      Icon(Icons.check_rounded, size: 16, color: AppColors.up),
                       const SizedBox(width: 8),
                       Expanded(child: Text(t, style: const TextStyle(fontSize: 13))),
                     ],
@@ -172,7 +172,7 @@ class _IdUploadPageState extends State<IdUploadPage> {
             ],
           ),
         ),
-        const Text(
+        Text(
           'Whether a selfie / liveness check is required is TBC by DriveWealth.',
           style: TextStyle(fontSize: 12, color: AppColors.faint),
         ),
@@ -221,7 +221,7 @@ class DisclosuresPage extends StatelessWidget {
   }
 
   Widget _docRow(BuildContext context, OnboardingController c, String id, String title, bool isDw) => Container(
-    decoration: const BoxDecoration(
+    decoration: BoxDecoration(
       border: Border(top: BorderSide(color: AppColors.line)),
     ),
     child: Row(
@@ -276,7 +276,7 @@ class DisclosuresPage extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 8),
-              const Text(
+              Text(
                 'Your brokerage account is opened and held by DriveWealth, LLC. Please read these documents before opening. Full documents: $dwDisclosureUrl',
                 style: TextStyle(fontSize: 12, color: AppColors.muted),
               ),
@@ -284,7 +284,7 @@ class DisclosuresPage extends StatelessWidget {
               for (final (id, t) in dwDisclosures) _docRow(context, c, id, t, true),
               Container(
                 padding: const EdgeInsets.symmetric(vertical: 10),
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   border: Border(top: BorderSide(color: AppColors.line)),
                 ),
                 child: Column(
@@ -310,12 +310,12 @@ class DisclosuresPage extends StatelessWidget {
                       onChanged: (v) => c.setRule14b(v ? 'YES' : 'NO'),
                     ),
                     const SizedBox(height: 4),
-                    const Text('Choosing No does not affect your application.', style: TextStyle(fontSize: 12, color: AppColors.faint)),
+                    Text('Choosing No does not affect your application.', style: TextStyle(fontSize: 12, color: AppColors.faint)),
                   ],
                 ),
               ),
               Container(
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   border: Border(top: BorderSide(color: AppColors.line)),
                 ),
                 child: CheckRow(
@@ -335,7 +335,7 @@ class DisclosuresPage extends StatelessWidget {
                   ),
                 ),
               ),
-              const Text(
+              Text(
                 'Document names and fields per official DriveWealth materials.',
                 style: TextStyle(fontSize: 12, color: AppColors.faint),
               ),
@@ -425,7 +425,7 @@ class ReviewPage extends StatelessWidget {
             for (final f in c.errors.entries.where((x) => x.key != '_' && stepOfField(x.key) == step))
               Padding(
                 padding: const EdgeInsets.only(top: 4),
-                child: Text(f.value, style: const TextStyle(color: AppColors.danger, fontSize: 12)),
+                child: Text(f.value, style: TextStyle(color: AppColors.danger, fontSize: 12)),
               ),
           ],
         ),

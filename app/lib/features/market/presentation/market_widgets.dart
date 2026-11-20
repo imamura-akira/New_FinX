@@ -96,7 +96,7 @@ class ChgPill extends StatelessWidget {
     decoration: BoxDecoration(color: chgColor(pct), borderRadius: BorderRadius.circular(8)),
     child: Text(
       fmtSigned(pct, suffix: '%'),
-      style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w700, fontFeatures: [FontFeature.tabularFigures()]),
+      style: TextStyle(color: AppColors.onAccent, fontSize: 13, fontWeight: FontWeight.w700, fontFeatures: [FontFeature.tabularFigures()]),
     ),
   );
 }
@@ -134,7 +134,7 @@ class QuoteRow extends StatelessWidget {
                       info?.name ?? '',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontSize: 12, color: AppColors.muted),
+                      style: TextStyle(fontSize: 12, color: AppColors.muted),
                     ),
                   ],
                 ),
@@ -166,7 +166,7 @@ class MarketDataNote extends StatelessWidget {
       ts == null ? t.marketDataNote : t.marketDataNoteUpdated(fmtTime(ts)),
       key: const Key('market.note'),
       textAlign: TextAlign.center,
-      style: const TextStyle(fontSize: 12, color: AppColors.faint, height: 1.5),
+      style: TextStyle(fontSize: 12, color: AppColors.faint, height: 1.5),
     ),
   );
 }

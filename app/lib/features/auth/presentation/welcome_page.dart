@@ -27,17 +27,6 @@ abstract final class LaunchIntro {
   static void resetForTest() => _consumed = false;
 }
 
-/// 欢迎页专属强调色（橙色；App 内部主题仍为紫色系，design/theme.md 第 9 节）。
-abstract final class WelcomeColors {
-  static const orangeLight = Color(0xFFFEA81E);
-  static const orangeDeep = Color(0xFFF58500);
-  static const orange = Color(0xFFFE9502);
-  static const sub = Color(0xFF7A7490);
-  static const faint = Color(0xFFA7A1BC);
-  static const ink = Color(0xFF1B1830);
-  static const border = Color(0xFFE4E0F5);
-}
-
 /// 趋势线路径（design/reward-design/welcome_reference.html 的 SVG，viewBox 342×150）。
 const trendPoints = <Offset>[
   Offset(6, 128),
@@ -165,7 +154,7 @@ class _WelcomePageState extends State<WelcomePage> with TickerProviderStateMixin
                           '${t.welcomeSlogan1}\n${t.welcomeSlogan2}',
                           key: const Key('welcome.slogan'),
                           textAlign: TextAlign.center,
-                          style: const TextStyle(fontSize: 14.5, height: 1.7, fontWeight: FontWeight.w600, color: WelcomeColors.sub),
+                          style: TextStyle(fontSize: 14.5, height: 1.7, fontWeight: FontWeight.w600, color: WelcomeColors.sub),
                         ),
                       ),
                       Expanded(
@@ -203,14 +192,14 @@ class _WelcomePageState extends State<WelcomePage> with TickerProviderStateMixin
                               onTap: () => context.go('/market'), // 未登录可浏览；资产 Tab 回到欢迎页
                               child: Text(
                                 t.welcomeBrowseMarkets,
-                                style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700, color: AppColors.primary),
+                                style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700, color: AppColors.primary),
                               ),
                             ),
                             const SizedBox(height: 14),
                             Text(
                               t.welcomeBrokerageServicesAreProvided,
                               textAlign: TextAlign.center,
-                              style: const TextStyle(fontSize: 12, color: WelcomeColors.faint),
+                              style: TextStyle(fontSize: 12, color: WelcomeColors.faint),
                             ),
                           ],
                         ),
@@ -238,11 +227,12 @@ class _Mark extends StatelessWidget {
       key: const Key('welcome.logo'),
       clipBehavior: Clip.none,
       children: [
+        // 浅色：下方模糊投影；深色：黑描边字标外加一圈浅色光晕，保证深底上可见（F21）
         Transform.translate(
-          offset: const Offset(0, 16),
+          offset: AppColors.isDark ? Offset.zero : const Offset(0, 16),
           child: ImageFiltered(
-            imageFilter: ui.ImageFilter.blur(sigmaX: 13, sigmaY: 13),
-            child: const ColorFiltered(colorFilter: ColorFilter.mode(Color(0x2E1B1830), BlendMode.srcIn), child: img),
+            imageFilter: AppColors.isDark ? ui.ImageFilter.blur(sigmaX: 7, sigmaY: 7) : ui.ImageFilter.blur(sigmaX: 13, sigmaY: 13),
+            child: ColorFiltered(colorFilter: ColorFilter.mode(WelcomeColors.markHalo, BlendMode.srcIn), child: img),
           ),
         ),
         img,
@@ -263,17 +253,17 @@ class _RegisterButton extends StatelessWidget {
       height: 56,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
+        gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [WelcomeColors.orangeLight, WelcomeColors.orangeDeep],
         ),
         borderRadius: BorderRadius.circular(999),
-        boxShadow: const [BoxShadow(color: Color(0x61FE9502), blurRadius: 24, offset: Offset(0, 10))],
+        boxShadow: [BoxShadow(color: WelcomeColors.buttonShadow, blurRadius: 24, offset: Offset(0, 10))],
       ),
       child: Text(
         t.welcomeSignUp,
-        style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: isEnglish ? .5 : 2),
+        style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: AppColors.onAccent, letterSpacing: isEnglish ? .5 : 2),
       ),
     ),
   );

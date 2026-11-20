@@ -2334,4 +2334,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get welcomeBrowseMarkets => 'Browse Markets';
+
+  @override
+  String get appearanceTitle => 'Appearance';
+
+  @override
+  String get appearanceSystem => 'Use System Setting';
+
+  @override
+  String get appearanceLight => 'Light';
+
+  @override
+  String get appearanceDark => 'Dark';
 }

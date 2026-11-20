@@ -29,7 +29,7 @@ class DemoDataNote extends StatelessWidget {
       text,
       key: const Key('demo.note'),
       textAlign: TextAlign.center,
-      style: const TextStyle(fontSize: 12, color: AppColors.faint, height: 1.5),
+      style: TextStyle(fontSize: 12, color: AppColors.faint, height: 1.5),
     ),
   );
 }
@@ -48,7 +48,7 @@ class InstAvatar extends StatelessWidget {
     decoration: BoxDecoration(color: avatarColor(name), shape: BoxShape.circle),
     child: Text(
       name.characters.first,
-      style: TextStyle(color: Colors.white, fontSize: size * .4, fontWeight: FontWeight.w700),
+      style: TextStyle(color: AppColors.onAccent, fontSize: size * .4, fontWeight: FontWeight.w700),
     ),
   );
 }
@@ -73,13 +73,13 @@ class _Banner extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (kicker != null) Text(kicker!, style: const TextStyle(fontSize: 12, color: Color(0xB3FFFFFF))),
+              if (kicker != null) Text(kicker!, style: TextStyle(fontSize: 12, color: AppColors.onAccent.withValues(alpha: .7))),
               Text(
                 title,
-                style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: Colors.white),
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: AppColors.onAccent),
               ),
               const SizedBox(height: 6),
-              Text(sub, style: const TextStyle(fontSize: 13, color: Color(0xD9FFFFFF), height: 1.5)),
+              Text(sub, style: TextStyle(fontSize: 13, color: AppColors.onAccent.withValues(alpha: .85), height: 1.5)),
             ],
           ),
         ),
@@ -96,11 +96,11 @@ Widget _xpBadge(String text) => Padding(
     child: Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Icon(Icons.lock_outline_rounded, size: 12, color: AppColors.muted),
+        Icon(Icons.lock_outline_rounded, size: 12, color: AppColors.muted),
         const SizedBox(width: 3),
         Text(
           text,
-          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.muted),
+          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.muted),
         ),
       ],
     ),
@@ -268,7 +268,7 @@ class _MastersPageState extends State<MastersPage> {
             onTap: () => context.push('/market/$sym'),
             child: Container(
               padding: const EdgeInsets.symmetric(vertical: 10),
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 border: Border(top: BorderSide(color: AppColors.line)),
               ),
               child: Row(
@@ -293,7 +293,7 @@ class _MastersPageState extends State<MastersPage> {
                         ),
                         Text(
                           t.mastersLastPrice(_feed!.quotes[sym] == null ? '—' : fmtPx(_feed!.quotes[sym]!.last)),
-                          style: const TextStyle(fontSize: 12, color: AppColors.muted),
+                          style: TextStyle(fontSize: 12, color: AppColors.muted),
                         ),
                       ],
                     ),
@@ -309,12 +309,12 @@ class _MastersPageState extends State<MastersPage> {
                         children: [
                           TextSpan(
                             text: '$inc',
-                            style: const TextStyle(color: AppColors.up),
+                            style: TextStyle(color: AppColors.up),
                           ),
                           TextSpan(text: ' : $flat : '),
                           TextSpan(
                             text: '$dec',
-                            style: const TextStyle(color: AppColors.down),
+                            style: TextStyle(color: AppColors.down),
                           ),
                         ],
                       ),
@@ -390,7 +390,7 @@ class _InstitutionListPageState extends State<InstitutionListPage> {
                   onTap: () => context.push('/masters/${x.id}'),
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 10),
-                    decoration: const BoxDecoration(
+                    decoration: BoxDecoration(
                       border: Border(top: BorderSide(color: AppColors.line)),
                     ),
                     child: Row(
@@ -410,7 +410,7 @@ class _InstitutionListPageState extends State<InstitutionListPage> {
                                       x.firm,
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(fontSize: 11, color: AppColors.muted),
+                                      style: TextStyle(fontSize: 11, color: AppColors.muted),
                                     ),
                                   ],
                                 ),
@@ -494,7 +494,7 @@ class _InstitutionDetailPageState extends State<InstitutionDetailPage> {
                   key: const Key('p24.name'),
                   style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
                 ),
-                Text(x.firm, style: const TextStyle(fontSize: 12, color: AppColors.muted)),
+                Text(x.firm, style: TextStyle(fontSize: 12, color: AppColors.muted)),
                 const SizedBox(height: 14),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -519,7 +519,7 @@ class _InstitutionDetailPageState extends State<InstitutionDetailPage> {
 
   Widget _stat(String label, Widget value) => Column(
     children: [
-      Text(label, style: const TextStyle(fontSize: 12, color: AppColors.muted)),
+      Text(label, style: TextStyle(fontSize: 12, color: AppColors.muted)),
       const SizedBox(height: 2),
       value,
     ],
@@ -612,7 +612,7 @@ class _LockedCard extends StatelessWidget {
       decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(AppShape.radius), boxShadow: AppShape.shadow),
       child: Stack(
         children: [
-          const Positioned(right: 0, top: 0, child: Icon(Icons.lock_outline_rounded, size: 14, color: AppColors.faint)),
+          Positioned(right: 0, top: 0, child: Icon(Icons.lock_outline_rounded, size: 14, color: AppColors.faint)),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.center,
@@ -634,7 +634,7 @@ class _LockedCard extends StatelessWidget {
                 sub,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontSize: 12, color: AppColors.muted),
+                style: TextStyle(fontSize: 12, color: AppColors.muted),
               ),
             ],
           ),

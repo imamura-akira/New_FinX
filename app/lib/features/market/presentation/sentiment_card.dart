@@ -13,12 +13,6 @@ import '../../../l10n/l10n.dart';
 // F11 扩展：P-09 市场情绪卡（design/reward-design/market_mock.png 定稿；版式参考 market_reference.html）。
 // 数据来自 GET /market/sentiment（虚拟行情合成，演示数据），与报价同频每 3 秒刷新。
 
-const _ink = Color(0xFF1B1830);
-const _sub = Color(0xFF7A7490);
-const _faint = Color(0xFFA7A1BC);
-const _track = Color(0xFFF1EFF8);
-const _flat = Color(0xFFC9C4DC);
-const _needle = Color(0xFF2E2752);
 
 /// 市场情绪轮询（页面可见期间每 3 秒）。失败时保留上次数据，首次失败则不显示卡片。
 class SentimentFeed extends ChangeNotifier {
@@ -68,7 +62,7 @@ class MarketSentimentCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(18),
-        boxShadow: const [BoxShadow(color: Color(0x0F1B1830), blurRadius: 18, offset: Offset(0, 6))],
+        boxShadow: [BoxShadow(color: AppColors.cardShadow, blurRadius: 18, offset: Offset(0, 6))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -78,15 +72,15 @@ class MarketSentimentCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   t.moodMarketSentiment,
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: _ink),
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.ink),
                 ),
               ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
-                decoration: BoxDecoration(color: const Color(0xFFF4F2FB), borderRadius: BorderRadius.circular(999)),
+                decoration: BoxDecoration(color: AppColors.chip, borderRadius: BorderRadius.circular(999)),
                 child: Text(
                   t.moodDemoDataUpdatesEvery,
-                  style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w600, color: _faint),
+                  style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w600, color: AppColors.hint),
                 ),
               ),
             ],
@@ -113,11 +107,11 @@ class MarketSentimentCard extends StatelessWidget {
                     Text(
                       '${data.fearGreed}',
                       key: const Key('market.fg.value'),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 30,
                         height: 1,
                         fontWeight: FontWeight.w800,
-                        color: _ink,
+                        color: AppColors.ink,
                         fontFeatures: [FontFeature.tabularFigures()],
                       ),
                     ),
@@ -134,7 +128,7 @@ class MarketSentimentCard extends StatelessWidget {
                     const SizedBox(height: 8),
                     Text(
                       t.moodDerivedFromSimulatedPrice,
-                      style: TextStyle(fontSize: 11.5, height: 1.6, color: _sub),
+                      style: TextStyle(fontSize: 11.5, height: 1.6, color: AppColors.sub),
                     ),
                   ],
                 ),
@@ -142,34 +136,34 @@ class MarketSentimentCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 14),
-          const Divider(height: 1, thickness: 1, color: _track),
+          Divider(height: 1, thickness: 1, color: AppColors.track),
           const SizedBox(height: 13),
           Row(
             children: [
               Expanded(
                 child: Text(
                   t.moodAdvancersDecliners,
-                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: _sub),
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.sub),
                 ),
               ),
               Text.rich(
                 key: const Key('market.breadth.text'),
                 TextSpan(
-                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: _sub),
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.sub),
                   children: [
                     TextSpan(
                       text: t.moodUp(b.up),
-                      style: const TextStyle(fontWeight: FontWeight.w800, color: AppColors.up),
+                      style: TextStyle(fontWeight: FontWeight.w800, color: AppColors.up),
                     ),
                     const TextSpan(text: ' · '),
                     TextSpan(
                       text: t.moodDown(b.down),
-                      style: const TextStyle(fontWeight: FontWeight.w800, color: AppColors.down),
+                      style: TextStyle(fontWeight: FontWeight.w800, color: AppColors.down),
                     ),
                     const TextSpan(text: ' · '),
                     TextSpan(
                       text: t.moodFlat(b.flat),
-                      style: const TextStyle(fontWeight: FontWeight.w800, color: _ink),
+                      style: TextStyle(fontWeight: FontWeight.w800, color: AppColors.ink),
                     ),
                   ],
                 ),
@@ -185,7 +179,7 @@ class MarketSentimentCard extends StatelessWidget {
                 children: [
                   for (final (k, (flex, color, name)) in [
                     (fu, AppColors.up, 'up'),
-                    (ff, _flat, 'flat'),
+                    (ff, AppColors.flat, 'flat'),
                     (fd, AppColors.down, 'down'),
                   ].indexed)
                     if (flex > 0)
@@ -206,7 +200,7 @@ class MarketSentimentCard extends StatelessWidget {
             children: [
               _legend(AppColors.up, t.moodUp2(b.up)),
               const SizedBox(width: 14),
-              _legend(_flat, t.moodFlat2(b.flat)),
+              _legend(AppColors.flat, t.moodFlat2(b.flat)),
               const SizedBox(width: 14),
               _legend(AppColors.down, t.moodDown2(b.down)),
             ],
@@ -230,7 +224,7 @@ class MarketSentimentCard extends StatelessWidget {
       const SizedBox(width: 4),
       Text(
         text,
-        style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600, color: _sub),
+        style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600, color: AppColors.sub),
       ),
     ],
   );
@@ -259,15 +253,15 @@ class FearGreedGaugePainter extends CustomPainter {
       ..strokeWidth = 15
       ..strokeCap = StrokeCap.round
       ..color = c;
-    canvas.drawArc(arcRect, math.pi, math.pi, false, stroke(_track));
+    canvas.drawArc(arcRect, math.pi, math.pi, false, stroke(AppColors.track));
     canvas.drawArc(
       arcRect,
       math.pi,
       math.pi,
       false,
-      stroke(Colors.white)
-        ..shader = const LinearGradient(
-          colors: [Color(0xEBE5484D), Color(0xEBF0A13C), Color(0xEBE9C878), Color(0xEB16A34A)],
+      stroke(AppColors.surface)
+        ..shader = LinearGradient(
+          colors: SentimentColors.gauge,
           stops: [0, .3, .62, 1],
         ).createShader(const Rect.fromLTRB(18, 0, 182, 0)),
     );
@@ -280,13 +274,13 @@ class FearGreedGaugePainter extends CustomPainter {
       Offset.zero,
       const Offset(0, -66),
       Paint()
-        ..color = _needle
+        ..color = AppColors.needle
         ..strokeWidth = 4
         ..strokeCap = StrokeCap.round,
     );
     canvas.restore();
-    canvas.drawCircle(center, 7, Paint()..color = _needle);
-    canvas.drawCircle(center, 3, Paint()..color = Colors.white);
+    canvas.drawCircle(center, 7, Paint()..color = AppColors.needle);
+    canvas.drawCircle(center, 3, Paint()..color = AppColors.surface);
     canvas.restore();
   }
 
@@ -294,7 +288,7 @@ class FearGreedGaugePainter extends CustomPainter {
     final tp = TextPainter(
       text: TextSpan(
         text: s,
-        style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: _faint),
+        style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: AppColors.hint),
       ),
       textDirection: TextDirection.ltr,
     )..layout();

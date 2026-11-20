@@ -9,15 +9,6 @@ import '../domain/predict_rules.dart';
 
 // F19 预测板块的动态组件。系统开启"减弱动态效果"时：数字与比例条直接跳到新值，Live 红点不闪动。
 
-const predictInk = Color(0xFF1B1830);
-const predictSub = Color(0xFF7A7490);
-const predictFaint = Color(0xFFA7A1BC);
-const predictUpBg = Color(0xFFE8F7EE);
-const predictUpBorder = Color(0xFFBFE8CD);
-const predictDownBg = Color(0xFFFDEDEE);
-const predictDownBorder = Color(0xFFF5C6C9);
-const predictTrack = Color(0xFFF1EFF8);
-const predictPill = Color(0xFFF1EFFA);
 
 bool reduceMotion(BuildContext context) => MediaQuery.maybeOf(context)?.disableAnimations ?? false;
 
@@ -50,7 +41,7 @@ class ProbabilityBar extends StatelessWidget {
     borderRadius: BorderRadius.circular(height),
     child: Container(
       height: height,
-      color: predictTrack,
+      color: AppColors.track,
       alignment: Alignment.centerLeft,
       child: TweenAnimationBuilder<double>(
         tween: Tween(end: fraction.clamp(0, 1)),
@@ -67,9 +58,9 @@ class ProbabilityBar extends StatelessWidget {
 
 /// "Live" 红点：1 秒周期呼吸闪动。
 class LiveDot extends StatefulWidget {
-  const LiveDot({super.key, this.size = 7, this.color = AppColors.down});
+  const LiveDot({super.key, this.size = 7, this.color});
   final double size;
-  final Color color;
+  final Color? color; // 默认跌色（红）
 
   @override
   State<LiveDot> createState() => _LiveDotState();
@@ -102,7 +93,7 @@ class _LiveDotState extends State<LiveDot> with SingleTickerProviderStateMixin {
     child: Container(
       width: widget.size,
       height: widget.size,
-      decoration: BoxDecoration(color: widget.color, shape: BoxShape.circle),
+      decoration: BoxDecoration(color: widget.color ?? AppColors.down, shape: BoxShape.circle),
     ),
   );
 }
@@ -169,7 +160,7 @@ class CountdownPill extends StatelessWidget {
     final style = TextStyle(
       fontSize: compact ? 11 : 12.5,
       fontWeight: FontWeight.w800,
-      color: compact ? predictSub : AppColors.primary,
+      color: compact ? AppColors.sub : AppColors.primary,
       fontFeatures: const [FontFeature.tabularFigures()],
     );
     final row = Row(
@@ -183,7 +174,7 @@ class CountdownPill extends StatelessWidget {
     if (compact) return row;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 4),
-      decoration: BoxDecoration(color: predictPill, borderRadius: BorderRadius.circular(999)),
+      decoration: BoxDecoration(color: AppColors.pill, borderRadius: BorderRadius.circular(999)),
       child: row,
     );
   }
@@ -230,7 +221,7 @@ class _ChartPainter extends CustomPainter {
     if (target != null) {
       final y = at(0, target!).dy;
       final dash = Paint()
-        ..color = const Color(0xFFC9C4DC)
+        ..color = AppColors.flat
         ..strokeWidth = 1.5;
       for (var x = 0.0; x < size.width; x += 10) {
         canvas.drawLine(Offset(x, y), Offset(math.min(x + 5, size.width), y), dash);
@@ -239,12 +230,12 @@ class _ChartPainter extends CustomPainter {
         final tp = TextPainter(
           text: TextSpan(
             text: fmtUsd(target!),
-            style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.w800, color: AppColors.primary),
+            style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w800, color: AppColors.primary),
           ),
           textDirection: TextDirection.ltr,
         )..layout();
         final r = RRect.fromRectAndRadius(Rect.fromLTWH(size.width - tp.width - 14, y - 10, tp.width + 14, 20), const Radius.circular(10));
-        canvas.drawRRect(r, Paint()..color = const Color(0xFFEFECFE));
+        canvas.drawRRect(r, Paint()..color = AppColors.primaryWeak);
         tp.paint(canvas, Offset(r.left + 7, y - tp.height / 2));
       }
     }
@@ -297,10 +288,10 @@ class CoinBadge extends StatelessWidget {
     width: size,
     height: size,
     alignment: Alignment.center,
-    decoration: BoxDecoration(color: symbol == 'BTC' ? const Color(0xFFF7931A) : predictInk, shape: BoxShape.circle),
+    decoration: BoxDecoration(color: symbol == 'BTC' ? BrandColors.bitcoin : AppColors.coin, shape: BoxShape.circle),
     child: Text(
       symbol == 'BTC' ? '₿' : symbol.substring(0, 1),
-      style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: size * .5),
+      style: TextStyle(color: AppColors.onAccent, fontWeight: FontWeight.w800, fontSize: size * .5),
     ),
   );
 }

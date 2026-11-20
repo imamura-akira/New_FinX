@@ -2211,4 +2211,16 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get welcomeBrowseMarkets => '先逛逛行情';
+
+  @override
+  String get appearanceTitle => '外观';
+
+  @override
+  String get appearanceSystem => '跟随系统';
+
+  @override
+  String get appearanceLight => '浅色';
+
+  @override
+  String get appearanceDark => '深色';
 }

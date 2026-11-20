@@ -1,19 +1,20 @@
 import 'package:material_ui/material_ui.dart';
 
+import '../../../app/theme.dart';
 import '../../../l10n/l10n.dart';
 
 /// 市场情绪（F11 扩展，P-09）：恐慌贪婪指数档位映射。与后端 marketsim.FearGreedLabel 一致：
 /// 0–24 极度恐慌，25–44 恐慌，45–55 中性，56–75 贪婪，76–100 极度贪婪。
 enum FearGreedLevel {
-  extremeFear(Color(0xFFC2373C), Color(0xFFFDEDEE)),
-  fear(Color(0xFFC2640A), Color(0xFFFFF1E3)),
-  neutral(Color(0xFF6B7191), Color(0xFFF1EFFA)),
-  greed(Color(0xFFB57E0C), Color(0xFFFBF3DF)),
-  extremeGreed(Color(0xFF15803D), Color(0xFFE7F6EC));
+  extremeFear,
+  fear,
+  neutral,
+  greed,
+  extremeGreed;
 
-  const FearGreedLevel(this.text, this.bg);
-  final Color text;
-  final Color bg;
+  /// 档位文字色 / 底色（theme.dart SentimentColors，含深色版）。
+  Color get text => SentimentColors.text(index);
+  Color get bg => SentimentColors.bg(index);
 
   String get label => switch (this) {
     FearGreedLevel.extremeFear => t.fgExtremeFear,

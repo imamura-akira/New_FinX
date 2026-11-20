@@ -108,7 +108,7 @@ class _PositionsPageState extends State<PositionsPage> {
                     widget.paper
                         ? t.positionsPaperPositionsAreValued
                         : (d?.updatedAt == null ? t.positionsFromDw : t.positionsFromDwUpdated(fmtDateTime(d!.updatedAt))),
-                    style: const TextStyle(fontSize: 12, color: AppColors.faint),
+                    style: TextStyle(fontSize: 12, color: AppColors.faint),
                   ),
                 ],
               ),
@@ -122,7 +122,7 @@ class _PositionsPageState extends State<PositionsPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(widget.paper ? t.positionsPaperPositionsValue : t.drawerPositionsValue, style: const TextStyle(fontSize: 12, color: AppColors.muted)),
+          Text(widget.paper ? t.positionsPaperPositionsValue : t.drawerPositionsValue, style: TextStyle(fontSize: 12, color: AppColors.muted)),
           Text(
             d.equityValue == null ? '—' : fmtUsd(d.equityValue!),
             key: const Key('p12.equity'),
@@ -156,7 +156,7 @@ class _PositionsPageState extends State<PositionsPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(p.symbol, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
-                      Text(instrumentOf(p.symbol)?.name ?? '', style: const TextStyle(fontSize: 12, color: AppColors.muted)),
+                      Text(instrumentOf(p.symbol)?.name ?? '', style: TextStyle(fontSize: 12, color: AppColors.muted)),
                     ],
                   ),
                 ),
@@ -173,7 +173,7 @@ class _PositionsPageState extends State<PositionsPage> {
                 ),
               ],
             ),
-            const Divider(height: 18, color: AppColors.line),
+            Divider(height: 18, color: AppColors.line),
             KvRow(t.positionsSharesHeld, t.ordersShares(fmtQty(p.quantity)), valueKey: Key('p12.qty.${p.symbol}')),
             if ((p.quantity - p.sellableQty).abs() > 1e-9) KvRow(t.positionsSellable, t.ordersShares(fmtQty(p.sellableQty))),
             KvRow(t.positionsCostBasis, fmtUsd(p.costBasis), valueKey: Key('p12.cost.${p.symbol}')),

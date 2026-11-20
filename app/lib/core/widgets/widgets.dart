@@ -33,10 +33,10 @@ class AppButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (bg, fg, border) = switch (kind) {
-      ButtonKind.primary => (AppColors.primary, Colors.white, Colors.transparent),
+      ButtonKind.primary => (AppColors.primary, AppColors.onAccent, Colors.transparent),
       ButtonKind.secondary => (AppColors.primaryWeak, AppColors.primary2, Colors.transparent),
       ButtonKind.ghost => (AppColors.surface, AppColors.text, AppColors.line),
-      ButtonKind.danger => (AppColors.danger, Colors.white, Colors.transparent),
+      ButtonKind.danger => (AppColors.danger, AppColors.onAccent, Colors.transparent),
     };
     final enabled = onPressed != null && !loading;
     final child = loading
@@ -81,17 +81,17 @@ class AppButton extends StatelessWidget {
 
 /// 链接样式按钮（原型 .link-btn）。
 class LinkButton extends StatelessWidget {
-  const LinkButton(this.label, {super.key, required this.onPressed, this.color = AppColors.primary, this.fontSize = 14});
+  const LinkButton(this.label, {super.key, required this.onPressed, this.color, this.fontSize = 14});
   final String label;
   final VoidCallback? onPressed;
-  final Color color;
+  final Color? color; // 默认主题紫
   final double fontSize;
 
   @override
   Widget build(BuildContext context) => TextButton(
     onPressed: onPressed,
     style: TextButton.styleFrom(
-      foregroundColor: color,
+      foregroundColor: color ?? AppColors.primary,
       textStyle: TextStyle(fontSize: fontSize, fontWeight: FontWeight.w500),
       minimumSize: const Size(0, 36),
     ),
@@ -149,7 +149,7 @@ class AppField extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: const TextStyle(fontSize: 13, color: AppColors.muted)),
+          Text(label, style: TextStyle(fontSize: 13, color: AppColors.muted)),
           const SizedBox(height: 6),
           suffix == null
               ? input
@@ -163,12 +163,12 @@ class AppField extends StatelessWidget {
           if (error != null)
             Padding(
               padding: const EdgeInsets.only(top: 5),
-              child: Text(error!, style: const TextStyle(color: AppColors.danger, fontSize: 12)),
+              child: Text(error!, style: TextStyle(color: AppColors.danger, fontSize: 12)),
             )
           else if (helper != null)
             Padding(
               padding: const EdgeInsets.only(top: 5),
-              child: Text(helper!, style: const TextStyle(color: AppColors.faint, fontSize: 12)),
+              child: Text(helper!, style: TextStyle(color: AppColors.faint, fontSize: 12)),
             ),
         ],
       ),
@@ -177,7 +177,7 @@ class AppField extends StatelessWidget {
 
   static final _errBorder = OutlineInputBorder(
     borderRadius: BorderRadius.circular(AppShape.inputRadius),
-    borderSide: const BorderSide(color: AppColors.danger, width: 1.5),
+    borderSide: BorderSide(color: AppColors.danger, width: 1.5),
   );
 }
 
@@ -292,7 +292,7 @@ class StateView extends StatelessWidget {
           Container(
             width: 84,
             height: 84,
-            decoration: const BoxDecoration(color: AppColors.primaryWeak, shape: BoxShape.circle),
+            decoration: BoxDecoration(color: AppColors.primaryWeak, shape: BoxShape.circle),
             child: Icon(icon, size: 36, color: AppColors.primary),
           ),
           const SizedBox(height: 18),
@@ -303,7 +303,7 @@ class StateView extends StatelessWidget {
             child: Text(
               message,
               textAlign: TextAlign.center,
-              style: const TextStyle(color: AppColors.muted, fontSize: 14),
+              style: TextStyle(color: AppColors.muted, fontSize: 14),
             ),
           ),
           const SizedBox(height: 24),
@@ -324,7 +324,7 @@ class FooterBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-    decoration: const BoxDecoration(
+    decoration: BoxDecoration(
       color: AppColors.surface,
       border: Border(top: BorderSide(color: AppColors.line)),
     ),

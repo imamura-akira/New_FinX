@@ -2,6 +2,7 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../app/appearance.dart';
 import '../../../app/config.dart';
 import '../../../app/scope.dart';
 import '../../../app/theme.dart';
@@ -35,7 +36,7 @@ class NameAvatar extends StatelessWidget {
     decoration: const BoxDecoration(gradient: AppGradients.gradSoft, shape: BoxShape.circle),
     child: Text(
       email.isEmpty ? '?' : email[0].toUpperCase(),
-      style: TextStyle(color: Colors.white, fontSize: size * .42, fontWeight: FontWeight.w700),
+      style: TextStyle(color: AppColors.onAccent, fontSize: size * .42, fontWeight: FontWeight.w700),
     ),
   );
 }
@@ -73,7 +74,7 @@ class AccountDrawer extends StatelessWidget {
                 child: Text(
                   email,
                   key: const Key('drawer.email'),
-                  style: const TextStyle(fontSize: 13, color: AppColors.muted),
+                  style: TextStyle(fontSize: 13, color: AppColors.muted),
                 ),
               ),
               const SizedBox(height: 6),
@@ -127,8 +128,16 @@ class AccountDrawer extends StatelessWidget {
                   icon: Icons.translate_rounded,
                   title: t.langTitle,
                   subtitle: _languageLabel(LocaleController.instance.value),
-                  trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.faint),
+                  trailing: Icon(Icons.chevron_right_rounded, color: AppColors.faint),
                   onTap: () => _pickLanguage(context),
+                ),
+                ListRow(
+                  key: const Key('drawer.appearance'),
+                  icon: Icons.dark_mode_outlined,
+                  title: t.appearanceTitle,
+                  subtitle: _appearanceLabel(AppearanceController.instance.value),
+                  trailing: Icon(Icons.chevron_right_rounded, color: AppColors.faint),
+                  onTap: () => _pickAppearance(context),
                 ),
                 ListRow(icon: Icons.settings_outlined, title: t.drawerSettings, onTap: () => _notInDemo(context)),
                 ListRow(icon: Icons.help_outline_rounded, title: t.drawerHelpCenter, onTap: () => _notInDemo(context)),
@@ -136,7 +145,7 @@ class AccountDrawer extends StatelessWidget {
               ]),
               // 演示验真：仅 DEMO_MODE=true 构建渲染；正式构建完全不出现
               if (AppScope.of(context).config.demoMode) DwSandboxPanel(overview: overview),
-              const Center(
+              Center(
                 child: Text('${AppConfig.appName} Demo-1', style: TextStyle(fontSize: 12, color: AppColors.faint)),
               ),
             ],
@@ -170,7 +179,7 @@ class AccountDrawer extends StatelessWidget {
               Row(
                 children: [
                   Flexible(
-                    child: Text(c.title, style: const TextStyle(fontSize: 13, color: AppColors.muted)),
+                    child: Text(c.title, style: TextStyle(fontSize: 13, color: AppColors.muted)),
                   ),
                   if (c.sandboxPending) ...[const SizedBox(width: 6), StatusBadge(t.homePendingSandboxVerification, kind: BadgeKind.warn)],
                 ],
@@ -225,7 +234,7 @@ class AccountDrawer extends StatelessWidget {
               ),
               IconButton(
                 visualDensity: VisualDensity.compact,
-                icon: const Icon(Icons.copy_rounded, size: 16, color: AppColors.muted),
+                icon: Icon(Icons.copy_rounded, size: 16, color: AppColors.muted),
                 onPressed: () {
                   Clipboard.setData(ClipboardData(text: acct.accountNo));
                   showToast(context, t.drawerAccountNumberCopied);
@@ -235,9 +244,9 @@ class AccountDrawer extends StatelessWidget {
           ),
           Text(
             t.drawerAccountType(acct.accountType, acct.tradingType, acct.managementType),
-            style: const TextStyle(fontSize: 12, color: AppColors.faint),
+            style: TextStyle(fontSize: 12, color: AppColors.faint),
           ),
-          const Divider(height: 20, color: AppColors.line),
+          Divider(height: 20, color: AppColors.line),
           KvRow(t.drawerPositionsValue, overview.equityValue == null ? '—' : fmtUsd(overview.equityValue!), valueKey: const Key('drawer.equity')),
           KvRow(t.homeBuyingPower, fmtUsd(money.buyingPower), valueKey: const Key('drawer.buyingPower')),
           KvRow(t.assetCash, fmtUsd(money.cash), valueKey: const Key('drawer.cash')),
@@ -263,7 +272,7 @@ class AccountDrawer extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(4, 8, 4, 8),
         child: Text(
           label,
-          style: const TextStyle(fontSize: 13, color: AppColors.muted, fontWeight: FontWeight.w600),
+          style: TextStyle(fontSize: 13, color: AppColors.muted, fontWeight: FontWeight.w600),
         ),
       ),
       ListGroup(children: rows),
@@ -297,7 +306,7 @@ class AccountDrawer extends StatelessWidget {
               ListTile(
                 key: Key('language.${code ?? 'system'}'),
                 title: Text(_languageLabel(code)),
-                trailing: code == current ? const Icon(Icons.check_rounded, color: AppColors.primary) : null,
+                trailing: code == current ? Icon(Icons.check_rounded, color: AppColors.primary) : null,
                 onTap: () => Navigator.of(ctx).pop((code,)),
               ),
             const SizedBox(height: 8),
@@ -307,6 +316,43 @@ class AccountDrawer extends StatelessWidget {
     );
     if (picked == null || picked.$1 == current) return;
     await LocaleController.instance.select(picked.$1);
+  }
+
+  static String _appearanceLabel(ThemeMode m) => switch (m) {
+    ThemeMode.light => t.appearanceLight,
+    ThemeMode.dark => t.appearanceDark,
+    ThemeMode.system => t.appearanceSystem,
+  };
+
+  /// F21：外观选择（跟随系统 / 浅色 / 深色），持久化；切换后整棵树按新色板重建。
+  Future<void> _pickAppearance(BuildContext context) async {
+    final current = AppearanceController.instance.value;
+    final picked = await showModalBottomSheet<ThemeMode>(
+      context: context,
+      useRootNavigator: true, // 显示在底部 Tab 之上
+      showDragHandle: true,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+              child: Text(t.appearanceTitle, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+            ),
+            for (final m in const [ThemeMode.system, ThemeMode.light, ThemeMode.dark])
+              ListTile(
+                key: Key('appearance.${m.name}'),
+                title: Text(_appearanceLabel(m)),
+                trailing: m == current ? Icon(Icons.check_rounded, color: AppColors.primary) : null,
+                onTap: () => Navigator.of(ctx).pop(m),
+              ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+    if (picked == null || picked == current) return;
+    await AppearanceController.instance.select(picked);
   }
 
   Future<void> _logout(BuildContext context) async {
@@ -368,7 +414,7 @@ class _DwSandboxPanelState extends State<DwSandboxPanel> {
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               child: Row(
                 children: [
-                  const Icon(Icons.verified_outlined, size: 18, color: AppColors.primary),
+                  Icon(Icons.verified_outlined, size: 18, color: AppColors.primary),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(t.drawerDwSandboxIds, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
@@ -403,7 +449,7 @@ class _DwSandboxPanelState extends State<DwSandboxPanel> {
                                 children: [
                                   SizedBox(
                                     width: 78,
-                                    child: Text(k, style: const TextStyle(fontSize: 12, color: AppColors.muted)),
+                                    child: Text(k, style: TextStyle(fontSize: 12, color: AppColors.muted)),
                                   ),
                                   Expanded(
                                     child: Text(
@@ -411,7 +457,7 @@ class _DwSandboxPanelState extends State<DwSandboxPanel> {
                                       style: const TextStyle(fontSize: 12, fontFamily: 'Menlo', fontFamilyFallback: ['Courier']),
                                     ),
                                   ),
-                                  const Padding(
+                                  Padding(
                                     padding: EdgeInsets.only(left: 6, right: 6),
                                     child: Icon(Icons.copy_rounded, size: 14, color: AppColors.faint),
                                   ),
