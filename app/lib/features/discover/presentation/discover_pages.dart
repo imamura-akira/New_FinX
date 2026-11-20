@@ -559,7 +559,7 @@ class _FifiPageState extends State<FifiPage> {
           physics: const NeverScrollableScrollPhysics(),
           mainAxisSpacing: 10,
           crossAxisSpacing: 10,
-          childAspectRatio: 1.45,
+          childAspectRatio: 1.25, // F18：英文副标题两行也放得下
           children: [
             for (final (k, (icon, title, desc)) in fifiFeatures.indexed)
               _LockedCard(

@@ -378,6 +378,7 @@ class TrendCard extends StatelessWidget {
               decoration: BoxDecoration(color: const Color(0xFFFAF9FE), borderRadius: BorderRadius.circular(12)),
               child: Text(
                 t.allocBuildingYourHistoryThe,
+                textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: _faint),
               ),
             )

@@ -33,6 +33,18 @@ class FinxApp extends StatefulWidget {
 
 class _FinxAppState extends State<FinxApp> {
   late final GoRouter _router = buildRouter(widget.session);
+  String? _shownLocale;
+
+  /// F18：语言切换后把整棵树标记为重建（保留所有页面状态与当前路由），
+  /// 让不依赖 Localizations 的组件（const 子树、路由缓存的外壳等）也换成新语言的文案。
+  void _rebuildAll() => WidgetsBinding.instance.addPostFrameCallback((_) {
+    void visit(Element e) {
+      e.markNeedsBuild();
+      e.visitChildren(visit);
+    }
+
+    if (mounted) (context as Element).visitChildren(visit);
+  });
 
   @override
   void dispose() {
@@ -65,8 +77,9 @@ class _FinxAppState extends State<FinxApp> {
         builder: (context, child) {
           final l = AppLocalizations.of(context);
           setCurrentLocalizations(l);
-          // 语言变化时重建整棵页面树（保留当前路由），让所有文案（含 const 子树）切换
-          return KeyedSubtree(key: ValueKey(l.localeName), child: child ?? const SizedBox.shrink());
+          if (_shownLocale != null && _shownLocale != l.localeName) _rebuildAll();
+          _shownLocale = l.localeName;
+          return child ?? const SizedBox.shrink();
         },
       ),
     ),

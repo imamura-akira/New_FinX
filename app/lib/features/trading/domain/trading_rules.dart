@@ -28,7 +28,7 @@ String fmtQty(double v) {
   return s;
 }
 
-const minOrderText = r'单笔最低 $1.00（示例值，以券商为准）';
+String get minOrderText => t.tradeMinOrder;
 
 /// 按金额下单校验。买入不超过 [buyingPower]；卖出不超过 [sellableValue]（可卖数量 × DW 市价）。
 String? validateOrderAmount(String raw, {required bool buy, double? buyingPower, double? sellableValue}) {

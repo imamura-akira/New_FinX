@@ -283,6 +283,7 @@ class AccountDrawer extends StatelessWidget {
     final current = LocaleController.instance.value;
     final picked = await showModalBottomSheet<(String?,)>(
       context: context,
+      useRootNavigator: true, // 显示在底部 Tab 之上
       showDragHandle: true,
       builder: (ctx) => SafeArea(
         child: Column(

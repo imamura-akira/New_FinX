@@ -2082,4 +2082,8 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get serverReasonTransfer =>
       'The broker reported a reason for this failure. Please contact support for details.';
+
+  @override
+  String get tradeMinOrder =>
+      'Minimum order \$1.00 (sample value; the broker\'s minimum applies)';
 }

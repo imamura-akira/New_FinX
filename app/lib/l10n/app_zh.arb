@@ -1125,5 +1125,6 @@
   "rewardsRemindMeAtLaunch": "🔔 开启上线提醒",
   "serverReasonRejected": "券商已拒绝该订单",
   "serverReasonCanceled": "订单已撤销",
-  "serverReasonTransfer": "券商返回了失败原因，请联系客服了解详情"
+  "serverReasonTransfer": "券商返回了失败原因，请联系客服了解详情",
+  "tradeMinOrder": "单笔最低 $1.00（示例值，以券商为准）"
 }

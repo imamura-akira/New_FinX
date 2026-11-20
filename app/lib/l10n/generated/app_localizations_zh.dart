@@ -1964,4 +1964,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get serverReasonTransfer => '券商返回了失败原因，请联系客服了解详情';
+
+  @override
+  String get tradeMinOrder => '单笔最低 \$1.00（示例值，以券商为准）';
 }

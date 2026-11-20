@@ -3692,6 +3692,12 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'券商返回了失败原因，请联系客服了解详情'**
   String get serverReasonTransfer;
+
+  /// No description provided for @tradeMinOrder.
+  ///
+  /// In zh, this message translates to:
+  /// **'单笔最低 \$1.00（示例值，以券商为准）'**
+  String get tradeMinOrder;
 }
 
 class _AppLocalizationsDelegate
