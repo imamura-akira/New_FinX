@@ -55,6 +55,7 @@ Future<(FakeBackend, SessionController, MemoryTokenStore)> pumpApp(
   final be = backend ?? FakeBackend();
   // 行情默认模拟（虚拟行情，价格随请求次数变化）；测试可自行覆盖
   be.handlers.putIfAbsent('GET /market/quotes', () => fakeQuotes());
+  be.handlers.putIfAbsent('GET /market/sentiment', () => fakeSentiment());
   Watchlist.instance.reset();
   Celebration.resetForTest();
   LaunchIntro.resetForTest();
@@ -95,6 +96,7 @@ http.Response Function(http.Request) fakeQuotes() {
       'SPY': 592.00,
       'QQQ': 508.70,
       'DIA': 440.90,
+      'IWM': 226.90,
       'GLD': 241.20,
       'TLT': 92.60,
     };
@@ -111,5 +113,20 @@ http.Response Function(http.Request) fakeQuotes() {
           },
     ];
     return FakeBackend.ok({'simulated': true, 'ts': '2026-11-19T15:00:00Z', 'quotes': quotes});
+  };
+}
+
+/// 模拟 GET /market/sentiment：每次请求按序返回 values 中的指数（用完停在最后一个），涨跌家数固定。
+http.Response Function(http.Request) fakeSentiment({List<int> values = const [62], int up = 18, int down = 9, int flat = 3}) {
+  var n = 0;
+  return (req) {
+    final v = values[n < values.length ? n : values.length - 1];
+    n++;
+    return FakeBackend.ok({
+      'simulated': true,
+      'ts': '2026-11-19T15:00:00Z',
+      'fearGreed': {'value': v, 'label': 'GREED'},
+      'breadth': {'up': up, 'down': down, 'flat': flat, 'total': up + down + flat, 'flatThresholdPct': 0.1},
+    });
   };
 }

@@ -810,6 +810,58 @@ paths:
                                 l: { type: number }
                                 c: { type: number }
         "422": { $ref: "#/components/responses/ValidationError" }
+  /market/sentiment:
+    get:
+      tags: [market]
+      operationId: getMarketSentiment
+      summary: 市场情绪（P-09；恐慌贪婪指数 + 涨跌家数，演示数据）
+      description: |
+        F11 扩展（新增接口，向后兼容）。全部基于虚拟行情：恐慌贪婪指数由涨跌家数、平均涨跌幅、动量与波动四个分量合成并指数平滑（缓慢变化）；
+        涨跌家数统计全部虚拟标的，|涨跌幅| < flatThresholdPct 计为平盘。App 每 3 秒轮询。
+        恐慌贪婪指数正式数据源待定（自行计算或采购，不得抓取第三方指数）。
+      security: []
+      responses:
+        "200":
+          description: 市场情绪
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        required: [simulated, ts, fearGreed, breadth]
+                        properties:
+                          simulated: { type: boolean, description: 恒为 true（演示数据） }
+                          ts: { type: string, format: date-time }
+                          fearGreed:
+                            type: object
+                            required: [value, label]
+                            properties:
+                              value: { type: integer, minimum: 0, maximum: 100 }
+                              label:
+                                type: string
+                                enum: [EXTREME_FEAR, FEAR, NEUTRAL, GREED, EXTREME_GREED]
+                                description: 0–24 极度恐慌，25–44 恐慌，45–55 中性，56–75 贪婪，76–100 极度贪婪
+                              components:
+                                type: object
+                                description: 各分量得分（0–100），仅供说明
+                                properties:
+                                  breadth: { type: number }
+                                  change: { type: number }
+                                  momentum: { type: number }
+                                  volatility: { type: number }
+                          breadth:
+                            type: object
+                            required: [up, down, flat, total]
+                            properties:
+                              up: { type: integer }
+                              down: { type: integer }
+                              flat: { type: integer }
+                              total: { type: integer }
+                              flatThresholdPct: { type: number, description: 平盘阈值（百分数，0.1 表示 ±0.10%） }
 
   # ───────────── 5.6 交易（F14） ─────────────
   /orders:

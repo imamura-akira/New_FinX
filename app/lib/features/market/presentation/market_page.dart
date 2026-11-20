@@ -8,10 +8,14 @@ import '../../../core/widgets/widgets.dart';
 import '../data/market_api.dart';
 import '../domain/instruments.dart';
 import 'market_widgets.dart';
+import 'sentiment_card.dart';
 
 /// P-09 市场（Tab 2，仅展示）。数据来自后端虚拟行情（F11）。
-/// Demo-1 范围：指数卡片、涨幅榜 / 跌幅榜、ETF 排行（分类筛选）。涨跌分布、内部人增减持、
-/// 今日热点与成交额没有数据源，不展示（不造假数据）。
+/// Demo-1 范围：指数卡片（SPY / QQQ / DIA / IWM）、市场情绪（恐慌贪婪指数 + 涨跌家数，由虚拟行情合成，F11 扩展）、
+/// 涨幅榜 / 跌幅榜、ETF 排行（分类筛选）。内部人增减持、今日热点与成交额没有数据源，不展示（不造假数据）。
+/// P-09 指数卡（四张等分，均为虚拟行情）。IWM：罗素 2000（F11 扩展）。
+const indexSymbols = ['SPY', 'QQQ', 'DIA', 'IWM'];
+
 class MarketPage extends StatefulWidget {
   const MarketPage({super.key});
 
@@ -21,6 +25,7 @@ class MarketPage extends StatefulWidget {
 
 class _MarketPageState extends State<MarketPage> {
   QuoteFeed? _feed;
+  SentimentFeed? _mood;
   String _seg = 'STOCK';
   String _etfCat = '全部';
 
@@ -28,11 +33,13 @@ class _MarketPageState extends State<MarketPage> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     _feed ??= QuoteFeed(MarketApi(AppScope.of(context).api))..start();
+    _mood ??= SentimentFeed(MarketApi(AppScope.of(context).api))..start();
   }
 
   @override
   void dispose() {
     _feed?.dispose();
+    _mood?.dispose();
     super.dispose();
   }
 
@@ -47,7 +54,7 @@ class _MarketPageState extends State<MarketPage> {
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(title: const Text('市场')),
     body: ListenableBuilder(
-      listenable: _feed!,
+      listenable: Listenable.merge([_feed!, _mood!]),
       builder: (context, _) {
         final f = _feed!;
         final children = <Widget>[
@@ -65,12 +72,13 @@ class _MarketPageState extends State<MarketPage> {
             children.addAll([
               Row(
                 children: [
-                  for (final (k, s) in ['SPY', 'QQQ', 'DIA'].indexed) ...[
+                  for (final (k, s) in indexSymbols.indexed) ...[
                     if (k > 0) const SizedBox(width: 8),
                     Expanded(child: _indexCard(s, f)),
                   ],
                 ],
               ),
+              if (_mood!.data case final m?) ...[const SizedBox(height: 14), MarketSentimentCard(data: m)],
               const SectionTitle('涨幅榜'),
               _list([for (final i in _sorted('STOCK').take(5)) i.symbol], f),
               const SectionTitle('跌幅榜'),
@@ -110,20 +118,29 @@ class _MarketPageState extends State<MarketPage> {
       key: Key('market.index.$symbol'),
       onTap: () => context.push('/market/$symbol'),
       child: AppCard(
-        padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+        padding: const EdgeInsets.fromLTRB(10, 12, 8, 12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(symbol, style: const TextStyle(fontSize: 12, color: AppColors.muted)),
             const SizedBox(height: 4),
-            Text(
-              q == null ? '—' : fmtPx(q.last),
-              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700, fontFeatures: [FontFeature.tabularFigures()]),
+            // 四张等分后单卡较窄：价格与涨跌幅按需缩小，不换行
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                q == null ? '—' : fmtPx(q.last),
+                style: const TextStyle(fontSize: 16.5, fontWeight: FontWeight.w800, fontFeatures: [FontFeature.tabularFigures()]),
+              ),
             ),
             if (q != null)
-              Text(
-                fmtSigned(q.chgPct, suffix: '%'),
-                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: chgColor(q.chgPct)),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  fmtSigned(q.chgPct, suffix: '%'),
+                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: chgColor(q.chgPct)),
+                ),
               ),
           ],
         ),

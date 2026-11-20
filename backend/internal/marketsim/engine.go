@@ -95,6 +95,8 @@ type Engine struct {
 	order  []string
 	states map[string]*state
 	now    func() time.Time
+
+	fearGreed float64 // 恐慌贪婪指数（平滑后，sentiment.go）
 }
 
 // New 创建引擎并用固定种子初始化（含预生成的分时）。
@@ -154,6 +156,7 @@ func (e *Engine) reset(insts []Instrument) {
 		e.states[in.Symbol] = st
 		e.order = append(e.order, in.Symbol)
 	}
+	e.updateSentiment(true)
 }
 
 func (s *state) setBidAsk() {
@@ -195,6 +198,7 @@ func (e *Engine) Step() {
 			}
 		}
 	}
+	e.updateSentiment(false)
 }
 
 // Quotes 返回指定代码的报价（未知代码忽略）；symbols 为空时返回全部（按标的池顺序）。

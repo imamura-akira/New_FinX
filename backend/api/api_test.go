@@ -16,7 +16,7 @@ var wantOps = []string{
 	"get /funding/bank-accounts", "post /funding/bank-accounts", "delete /funding/bank-accounts/{id}",
 	"get /funding/deposit-instructions", "post /funding/deposits", "post /funding/withdrawals", "get /funding/transfers",
 	"get /documents", "get /notifications", "post /notifications/read",
-	"get /market/quotes", "get /market/instruments/{symbol}",
+	"get /market/quotes", "get /market/instruments/{symbol}", "get /market/sentiment",
 	"post /orders", "get /orders", "get /orders/{id}", "post /orders/{id}/cancel", "get /positions",
 	"get /paper/account", "post /paper/account/reset", "post /paper/orders", "get /paper/orders",
 	"get /paper/orders/{id}", "post /paper/orders/{id}/cancel", "get /paper/positions",
@@ -24,7 +24,7 @@ var wantOps = []string{
 
 // 无需登录的接口（api-spec.md：除 /auth/* 外均需 Bearer；logout 需要会话）。
 var publicOps = map[string]bool{"post /auth/otp/request": true, "post /auth/otp/verify": true, "post /auth/oauth": true,
-	"get /market/quotes": true, "get /market/instruments/{symbol}": true} // 虚拟行情公开（api-spec.md 第 10 节）
+	"get /market/quotes": true, "get /market/instruments/{symbol}": true, "get /market/sentiment": true} // 虚拟行情公开（api-spec.md 第 10 节）
 
 type doc struct {
 	OpenAPI    string                            `yaml:"openapi"`

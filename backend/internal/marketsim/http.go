@@ -60,6 +60,25 @@ func (e *Engine) Start(ctx context.Context) {
 func (e *Engine) Routes(mux *http.ServeMux, prefix string) {
 	mux.HandleFunc("GET "+prefix+"/market/quotes", e.handleQuotes)
 	mux.HandleFunc("GET "+prefix+"/market/instruments/{symbol}", e.handleInstrument)
+	mux.HandleFunc("GET "+prefix+"/market/sentiment", e.handleSentiment)
+}
+
+// handleSentiment：P-09 市场情绪卡（恐慌贪婪指数 + 涨跌家数），演示数据。
+func (e *Engine) handleSentiment(w http.ResponseWriter, r *http.Request) {
+	s := e.Sentiment()
+	ts := s.Updated
+	if ts.IsZero() {
+		ts = e.now().UTC()
+	}
+	httpx.OK(w, map[string]any{
+		"simulated": true,
+		"ts":        ts,
+		"fearGreed": map[string]any{"value": s.FearGreed, "label": s.Label, "components": s.Components},
+		"breadth": map[string]any{
+			"up": s.Breadth.Up, "down": s.Breadth.Down, "flat": s.Breadth.Flat, "total": s.Breadth.Total,
+			"flatThresholdPct": FlatThresholdPct,
+		},
+	})
 }
 
 type quoteView struct {

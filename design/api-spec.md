@@ -68,6 +68,7 @@ Base URL：`/api/v1`　认证：`Authorization: Bearer <sessionToken>`（除 /au
 |---|---|---|---|
 | GET /market/quotes | `?symbols=AAPL,SPY` | `{simulated, ts, quotes:[{symbol, last, chg, chgPct, bid, ask}]}` | 批量报价；P-07 自选、P-09 列表用 |
 | GET /market/instruments/{symbol} | — | `{simulated, symbol, name, last, chg, chgPct, dayHigh, dayLow, prevClose, candles:[{t,o,h,l,c}]}` | P-10 个股页；candles 为模拟分时/日 K |
+| GET /market/sentiment | — | `{simulated: true, ts, fearGreed:{value, label, components:{breadth, change, momentum, volatility}}, breadth:{up, down, flat, total, flatThresholdPct}}` | P-09 市场情绪卡（2026-11-20 F11 扩展，无需登录，App 每 3 秒轮询）。`value` 0–100 整数；`label` 档位：0–24 `EXTREME_FEAR` 极度恐慌、25–44 `FEAR` 恐慌、45–55 `NEUTRAL` 中性、56–75 `GREED` 贪婪、76–100 `EXTREME_GREED` 极度贪婪。由虚拟行情合成：涨跌家数 30% + 平均涨跌幅 30% + 动量 20% + 波动 20%，指数平滑缓慢变化。`breadth` 统计全部虚拟标的，\|涨跌幅\| < `flatThresholdPct`（0.10%）计为平盘。**恐慌贪婪指数正式数据源待定（自行计算或采购，不得抓取第三方指数）** |
 
 ## 5.6 交易（F14，P-19 / P-11 / P-12）
 
@@ -159,3 +160,4 @@ Base URL：`/api/v1`　认证：`Authorization: Bearer <sessionToken>`（除 /au
 | 2026-11-20 | 新增 5.6 交易（F14）：`POST /orders`、`GET /orders`、`GET /orders/{id}`、`POST /orders/{id}/cancel`、`GET /positions`，以及 `Order`、`Position`、`OrderStatus` 结构；只支持市价单（按金额或按股数）。用户已同意按向后兼容新增处理，不升 v2 | 新增，向后兼容 |
 | 2026-11-20 | 新增 5.7 模拟交易 / 模拟盘（F15）：`/paper/account`、`/paper/account/reset`、`/paper/orders`、`/paper/orders/{id}`、`/paper/orders/{id}/cancel`、`/paper/positions`；结构与实盘 Order / Position 对齐并带 `simulated: true`；不调用 DW | 新增，向后兼容 |
 | 2026-11-20 | 5.6 交易扩展限价单：`POST /orders` 的 `orderType` 新增 `LIMIT`，新增请求字段 `limitPrice`、`timeInForce`（只支持 DAY）；`Order` 新增 `limitPrice`、`timeInForce`。市价单行为不变 | 新增，向后兼容 |
+| 2026-11-20 | 5.5 市场数据扩展（F11）：新增 `GET /market/sentiment`（恐慌贪婪指数 + 涨跌家数，`simulated: true`，无需登录）；P-09 指数卡新增 IWM（罗素 2000，复用 `/market/quotes`，标的池已含）。恐慌贪婪指数正式数据源待定（自行计算或采购，不得抓取第三方指数） | 新增，向后兼容 |

@@ -1,4 +1,5 @@
 import '../../../core/api/api_client.dart';
+import '../domain/sentiment.dart';
 
 double _d(Object? v) => v is num ? v.toDouble() : double.tryParse('${v ?? ''}') ?? 0;
 
@@ -77,6 +78,25 @@ class InstrumentDetail {
   final List<Candle> candles;
 }
 
+/// GET /market/sentiment（P-09 市场情绪卡，演示数据）。
+class MarketSentiment {
+  const MarketSentiment({required this.simulated, required this.ts, required this.fearGreed, required this.breadth});
+  factory MarketSentiment.fromJson(Map<String, dynamic> j) {
+    final fg = (j['fearGreed'] as Map?)?.cast<String, dynamic>() ?? const {};
+    final b = (j['breadth'] as Map?)?.cast<String, dynamic>() ?? const {};
+    return MarketSentiment(
+      simulated: j['simulated'] == true,
+      ts: DateTime.tryParse('${j['ts']}'),
+      fearGreed: _d(fg['value']).round().clamp(0, 100),
+      breadth: Breadth(up: _d(b['up']).round(), down: _d(b['down']).round(), flat: _d(b['flat']).round()),
+    );
+  }
+  final bool simulated;
+  final DateTime? ts;
+  final int fearGreed;
+  final Breadth breadth;
+}
+
 /// 行情接口（api-spec.md 5.5；第一阶段为后端虚拟行情，响应带 simulated:true）。
 class MarketApi {
   MarketApi(this._api);
@@ -98,4 +118,7 @@ class MarketApi {
 
   Future<InstrumentDetail> instrument(String symbol) async =>
       InstrumentDetail.fromJson(await _api.get('/market/instruments/${Uri.encodeComponent(symbol)}') as Map<String, dynamic>);
+
+  Future<MarketSentiment> sentiment() async =>
+      MarketSentiment.fromJson(await _api.get('/market/sentiment') as Map<String, dynamic>);
 }
