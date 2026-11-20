@@ -15,7 +15,7 @@ import '../../market/domain/instruments.dart';
 import '../../market/presentation/market_widgets.dart';
 
 /// P-07 资产首页（Demo-1：资产卡取 DW 真实资金汇总 F12；未开户 / 开户中显示开户提示卡）。
-/// 自选股报价来自虚拟行情（F11），每 3 秒刷新；持仓、订单、智能组合等不在 Demo-1 范围。
+/// 自选股报价来自虚拟行情（F11），每 3 秒刷新；已开户时显示持仓 P-12 / 订单 P-11 入口（F14）；智能组合不在本期范围。
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -150,6 +150,29 @@ class _HomePageState extends State<HomePage> {
                 if (cue != null) _cueCard(context, cue),
                 if (!opened && !(ov.loading && ov.progress == null)) // 首次加载完成前不显示，避免闪现
                   AppButton('先看看行情', key: const Key('home.market'), kind: ButtonKind.ghost, onPressed: () => context.go('/market')),
+                if (opened) ...[
+                  const SectionTitle('交易'),
+                  ListGroup(
+                    children: [
+                      ListRow(
+                        key: const Key('home.positions'),
+                        icon: Icons.pie_chart_outline_rounded,
+                        title: '持仓',
+                        subtitle: '数量、市值、成本与盈亏（券商返回）',
+                        trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.faint),
+                        onTap: () => context.push('/positions'),
+                      ),
+                      ListRow(
+                        key: const Key('home.orders'),
+                        icon: Icons.receipt_long_outlined,
+                        title: '订单',
+                        subtitle: '查看订单状态，撤销未成交订单',
+                        trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.faint),
+                        onTap: () => context.push('/orders'),
+                      ),
+                    ],
+                  ),
+                ],
                 SectionTitle('自选股', trailing: LinkButton('去市场', fontSize: 13, onPressed: () => context.go('/market'))),
                 if (_watch.symbols.isEmpty)
                   const AppCard(

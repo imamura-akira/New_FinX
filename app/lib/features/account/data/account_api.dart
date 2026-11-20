@@ -154,4 +154,10 @@ class AccountApi {
   Future<AccountInfo> account() async => AccountInfo.fromJson(await _api.get('/account') as Map<String, dynamic>);
 
   Future<AccountMoney> money() async => AccountMoney.fromJson(await _api.get('/account/money') as Map<String, dynamic>);
+
+  /// 持仓市值（GET /positions 的 equityValue，DW 返回值；F14）。
+  Future<double?> equityValue() async {
+    final v = (await _api.get('/positions') as Map<String, dynamic>)['equityValue'];
+    return v is num ? v.toDouble() : null;
+  }
 }

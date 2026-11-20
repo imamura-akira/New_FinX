@@ -12,6 +12,9 @@ class AccountOverview extends ChangeNotifier {
   ApplicationProgress? progress;
   AccountInfo? account;
   AccountMoney? money;
+
+  /// 持仓市值（DW summary/positions 的 equityValue，F14）；取不到时为 null（不影响资金展示）。
+  double? equityValue;
   String? error;
   bool loading = false;
 
@@ -21,6 +24,7 @@ class AccountOverview extends ChangeNotifier {
       progress = null;
       account = null;
       money = null;
+      equityValue = null;
       error = null;
       notifyListeners();
       return;
@@ -33,9 +37,15 @@ class AccountOverview extends ChangeNotifier {
       if (progress!.accountOpened) {
         account = await _api.account();
         money = await _api.money();
+        try {
+          equityValue = await _api.equityValue();
+        } on ApiException {
+          equityValue = null; // 持仓接口失败不影响资金展示
+        }
       } else {
         account = null;
         money = null;
+        equityValue = null;
       }
     } on ApiException catch (e) {
       error = e.isSessionInvalid ? null : e.message; // 会话失效由 ApiClient.onSessionInvalid 统一处理

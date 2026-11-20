@@ -16,6 +16,9 @@ import '../features/market/presentation/market_page.dart';
 import '../features/onboarding/presentation/final_pages.dart';
 import '../features/onboarding/presentation/onboarding_shell.dart';
 import '../features/onboarding/presentation/step_pages.dart';
+import '../features/trading/presentation/order_page.dart';
+import '../features/trading/presentation/orders_page.dart';
+import '../features/trading/presentation/positions_page.dart';
 import 'main_tabs.dart';
 
 /// 路由（pages.md 第 2 节导航结构）。会话状态驱动重定向：
@@ -100,6 +103,14 @@ GoRouter buildRouter(SessionController session) {
         path: '${Routes.market}/:symbol',
         builder: (_, state) => InstrumentPage(symbol: state.pathParameters['symbol']!.toUpperCase()),
       ),
+      // F14 交易：P-19 下单（P-10 买入 / 卖出进入）、P-11 订单、P-12 持仓
+      GoRoute(
+        path: '/trade/:symbol',
+        builder: (_, state) =>
+            OrderPage(symbol: state.pathParameters['symbol']!.toUpperCase(), side: state.uri.queryParameters['side'] ?? 'BUY'),
+      ),
+      GoRoute(path: '/orders', builder: (_, _) => const OrdersPage()),
+      GoRoute(path: '/positions', builder: (_, _) => const PositionsPage()),
       GoRoute(path: Routes.expired, builder: (_, _) => const SessionExpiredPage()),
       // P-03a–g、P-04、P-05、P-30：同一个 OnboardingController（ShellRoute 内创建）
       ShellRoute(

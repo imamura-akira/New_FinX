@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../app/scope.dart';
@@ -12,8 +13,8 @@ import '../data/market_api.dart';
 import '../domain/instruments.dart';
 import 'market_widgets.dart';
 
-/// P-10 个股详情（仅展示，Demo-1 不下单）。报价区展示买一 / 卖一（PDF-5 NBBO 的数量与交易所
-/// 标识在接入真实行情后补齐）；图表为虚拟行情的 1 分钟分时。
+/// P-10 个股详情。报价区展示买一 / 卖一（PDF-5 NBBO 的数量与交易所标识在接入真实行情后补齐）；
+/// 图表为虚拟行情的 1 分钟分时。底部买入 / 卖出进入 P-19（F14）。
 class InstrumentPage extends StatefulWidget {
   const InstrumentPage({super.key, required this.symbol});
   final String symbol;
@@ -91,13 +92,21 @@ class _InstrumentPageState extends State<InstrumentPage> {
         body: Column(
           children: [
             Expanded(child: _body()),
-            const FooterBar(
+            FooterBar(
               children: [
                 Expanded(
-                  child: Text(
-                    '演示版本仅提供行情展示，暂不支持交易',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 13, color: AppColors.muted),
+                  child: AppButton(
+                    '卖出',
+                    key: const Key('p10.sell'),
+                    kind: ButtonKind.secondary,
+                    onPressed: _d == null ? null : () => context.push('/trade/${widget.symbol}?side=SELL'),
+                  ),
+                ),
+                Expanded(
+                  child: AppButton(
+                    '买入',
+                    key: const Key('p10.buy'),
+                    onPressed: _d == null ? null : () => context.push('/trade/${widget.symbol}?side=BUY'),
                   ),
                 ),
               ],

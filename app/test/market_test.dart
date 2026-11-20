@@ -85,7 +85,8 @@ void main() {
     expect(tester.widget<Text>(find.byKey(const Key('p10.last'))).data, '132.10');
     expect(find.byKey(const Key('p10.chart')), findsOneWidget);
     expect(find.text('129.37'), findsOneWidget, reason: '买一价来自批量报价接口');
-    expect(find.text('演示版本仅提供行情展示，暂不支持交易'), findsOneWidget);
+    expect(find.byKey(const Key('p10.buy')), findsOneWidget, reason: 'F14：个股页提供买入 / 卖出入口');
+    expect(find.byKey(const Key('p10.sell')), findsOneWidget);
 
     expect(Watchlist.instance.contains('NVDA'), isTrue);
     await tester.tap(find.byKey(const Key('p10.watch')));

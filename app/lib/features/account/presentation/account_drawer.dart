@@ -229,7 +229,7 @@ class AccountDrawer extends StatelessWidget {
             style: const TextStyle(fontSize: 12, color: AppColors.faint),
           ),
           const Divider(height: 20, color: AppColors.line),
-          const KvRow('市值', r'$0.00'), // Demo-1 无交易，持仓市值为 0
+          KvRow('持仓市值', overview.equityValue == null ? '—' : fmtUsd(overview.equityValue!), valueKey: const Key('drawer.equity')),
           KvRow('购买力', fmtUsd(money.buyingPower), valueKey: const Key('drawer.buyingPower')),
           KvRow('现金', fmtUsd(money.cash), valueKey: const Key('drawer.cash')),
           const SizedBox(height: 10),
