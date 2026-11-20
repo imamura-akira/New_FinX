@@ -47,7 +47,8 @@
 | fifi_paw.png | Fifi 举爪 + 爪形图表 logo | P-26 Fifi 预告卡；可用于空状态 |
 | fifi_avatar.png | Fifi 圆形头像（透明底） | 账户抽屉、Fifi 相关入口 |
 | cat_xmas.png（app/assets/brand/，来源 design/reward-design/） | 圣诞毛衣 + 圣诞帽 Fifi，眨眼举爪，已抠图透明背景（427×601） | P-27 奖励页英雄区（F16 圣诞季限定） |
-| app_icon_1024.png（design/brand/） | **App 图标母版**：白底 1024×1024，渐变爪印+涨幅柱 | iOS AppIcon 全尺寸由此生成；来源图 app_icon_source.png |
+| ak_icon_1024.png（design/brand/） | **App 图标母版（2026-11-20 起）**：白底 1024×1024（无透明通道），深紫圆形 "AK" 徽标 | iOS AppIcon 全尺寸（15 个）由此生成；App 显示名称 AK Stocks |
+| app_icon_1024.png（design/brand/） | 原 FinX Stocks 图标母版（渐变爪印 + 涨幅柱，来源 app_icon_source.png），**保留备查**，不再用于 AppIcon | 已停用 |
 
 规则：素材为我方品牌资产，可在任何页面使用；新素材先入 `assets/` 并登记到本表。
 样板中出现的真实投资人照片（股票大师页）**不进入**原型与正式 App，继续用字母头像；
@@ -140,3 +141,4 @@
 | 2026-11-20 | v1.5：第 7 节新增"模拟盘标识"（琥珀色横幅、角标、模拟账户卡，F15） |
 | 2026-11-20 | v1.4：第 7 节新增 P-01 冷启动品牌入场（字标滑入 + Fifi 弹跳落位与摆动，1.6 秒）与脚本合成提示音（跟随静音开关）；庆祝特效补登 P-19 下单成功（轻量版） |
 | 2026-11-20 | v1.6：第 4 节登记 cat_xmas.png（圣诞毛衣 Fifi）；新增第 8 节 P-27 奖励页圣诞季版式（浅紫英雄区配色、等级胶囊、奖品卡、提醒按钮与脚本合成"叮"提示音，F16） |
+| 2026-11-20 | v1.7：品牌更新——App 图标改用 design/brand/ak_icon_1024.png（"AK" 徽标）为母版重新生成 iOS AppIcon 全部尺寸；App 显示名称（CFBundleDisplayName）由 FinX Stocks 改为 AK Stocks，中英文环境均显示 AK Stocks、不翻译；原 FinX Stocks 图标母版 app_icon_1024.png 保留备查。启动图与 App 内品牌素材（FinX 字标、Fifi）本次不变 |
