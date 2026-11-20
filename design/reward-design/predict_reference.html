@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<style>
+  :root{--bg:#F6F5FC;--primary:#6C5BF5;--ink:#1B1830;--sub:#7A7490;--up:#16A34A;--dn:#E5484D;
+    --grad:linear-gradient(100deg,#5A57EE,#A944D8 55%,#D63AA8);}
+  *{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,"PingFang SC",sans-serif;}
+  body{width:390px;background:var(--bg);color:var(--ink);}
+  .p{padding:12px 16px 90px;}
+  .hd{display:flex;align-items:center;justify-content:space-between;padding:4px 0 12px;}
+  .hd b{font-size:22px;font-weight:800;}
+  .pts{display:flex;align-items:center;gap:6px;background:#fff;border:1.5px solid #E4E0F5;border-radius:999px;padding:7px 13px;font-size:13px;font-weight:800;color:var(--primary);}
+  /* 分类 */
+  .cats{display:flex;gap:18px;font-size:14px;font-weight:700;color:#A7A1BC;padding:2px 2px 14px;overflow:hidden;}
+  .cats .on{color:var(--ink);position:relative;}
+  .cats .on::after{content:"";position:absolute;left:0;right:0;bottom:-6px;height:3px;border-radius:2px;background:var(--grad);}
+  /* 主卡 Up or Down */
+  .hero{background:#fff;border-radius:20px;padding:16px;box-shadow:0 8px 22px rgba(27,24,48,.07);margin-bottom:14px;}
+  .hero .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+  .hero .top .l{font-size:13px;font-weight:800;color:var(--sub);}
+  .cnt{display:flex;align-items:center;gap:5px;font-size:12.5px;font-weight:800;color:var(--primary);background:#F1EFFA;border-radius:999px;padding:4px 11px;}
+  .coin{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .coin .ic{width:40px;height:40px;border-radius:50%;background:#F7931A;color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;}
+  .coin .pv{font-size:24px;font-weight:800;letter-spacing:.3px;}
+  .coin .tg{font-size:12px;color:var(--sub);font-weight:600;margin-top:2px;}
+  .chart{margin:6px 0 12px;}
+  .btns{display:flex;gap:10px;}
+  .bb{flex:1;display:flex;align-items:center;justify-content:center;gap:7px;border-radius:14px;padding:13px 0;font-size:15px;font-weight:800;}
+  .bup{background:#E8F7EE;color:var(--up);border:1.5px solid #BFE8CD;}
+  .bdn{background:#FDEDEE;color:var(--dn);border:1.5px solid #F5C6C9;}
+  /* 15分钟市场 */
+  .sec{display:flex;align-items:baseline;justify-content:space-between;margin:4px 0 10px;}
+  .sec b{font-size:17px;font-weight:800;}
+  .sec span{font-size:12px;color:var(--primary);font-weight:700;}
+  .minis{display:flex;gap:10px;margin-bottom:18px;}
+  .mini{flex:1;background:#fff;border-radius:16px;padding:13px 14px;box-shadow:0 5px 16px rgba(27,24,48,.06);}
+  .mini .r1{display:flex;justify-content:space-between;font-size:11px;color:var(--sub);font-weight:700;margin-bottom:8px;}
+  .mini .r2{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:800;white-space:nowrap;}
+  .mini .cc{width:22px;height:22px;border-radius:50%;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;}
+  .mini .pr{margin-left:auto;font-size:12.5px;font-weight:800;}
+  .mini svg{width:100%;margin-top:8px;}
+  /* Live 事件卡 */
+  .ev{background:#fff;border-radius:18px;padding:15px 16px;box-shadow:0 6px 18px rgba(27,24,48,.06);margin-bottom:12px;}
+  .ev .cat{display:flex;justify-content:space-between;font-size:11px;color:#A7A1BC;font-weight:700;margin-bottom:6px;}
+  .ev .cat .lv{color:var(--dn);display:flex;align-items:center;gap:4px;}
+  .ev .q{font-size:15.5px;font-weight:800;line-height:1.45;margin-bottom:12px;}
+  .oc{display:flex;align-items:center;gap:10px;padding:7px 0;}
+  .oc .oi{width:30px;height:30px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:14px;flex:none;}
+  .oc .on_{flex:1;}
+  .oc .on_ b{font-size:14px;font-weight:800;display:block;}
+  .oc .bar{height:5px;border-radius:3px;background:#F1EFF8;margin-top:5px;overflow:hidden;}
+  .oc .bar i{display:block;height:100%;border-radius:3px;}
+  .oc .pp{flex:none;min-width:64px;text-align:center;border-radius:11px;padding:8px 0;font-size:13.5px;font-weight:800;background:#F4F2FB;color:var(--ink);}
+  .oc .pp.hot{background:#EFECFE;color:var(--primary);}
+  .note{text-align:center;font-size:11px;color:#A7A1BC;margin-top:8px;}
+  .tabbar{width:390px;background:#fff;border-top:1px solid #EEEAF8;display:flex;padding:10px 0 16px;margin-top:8px;}
+  .tab{flex:1;text-align:center;font-size:10.5px;color:#B5AFC9;font-weight:600;}
+  .tab.on{color:var(--primary);}
+  .badge-demo{display:inline-flex;align-items:center;gap:5px;background:#FBF3DF;color:#B57E0C;border-radius:999px;padding:4px 11px;font-size:11px;font-weight:800;margin-bottom:12px;}
+</style>
+</head>
+<body>
+<div class="p">
+  <div class="hd"><b>预测</b><div class="pts">&#11088; 12,400 分</div></div>
+  <div class="cats"><span class="on">全部</span><span>加密</span><span>美股</span><span>宏观</span><span>体育</span><span>热点</span></div>
+  <div class="badge-demo">&#9888; 积分预测 · 演示模式,非真实资金</div>
+
+  <!-- Up or Down 主卡 -->
+  <div class="hero">
+    <div class="top"><span class="l">涨 或 跌 · BTC</span><span class="cnt">&#9201; 11:26</span></div>
+    <div class="coin">
+      <div class="ic">&#8383;</div>
+      <div><div class="pv">$61,555.57</div><div class="tg">目标 $61,515.78 · 15 分钟后结算</div></div>
+    </div>
+    <svg class="chart" viewBox="0 0 358 96">
+      <defs><linearGradient id="cg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#16A34A" stop-opacity=".18"/><stop offset="1" stop-color="#16A34A" stop-opacity="0"/></linearGradient></defs>
+      <line x1="0" y1="64" x2="358" y2="64" stroke="#C9C4DC" stroke-width="1.5" stroke-dasharray="5 5"/>
+      <rect x="268" y="54" width="86" height="20" rx="10" fill="#EFECFE"/>
+      <text x="311" y="68" font-size="11" font-weight="800" fill="#6C5BF5" text-anchor="middle">$61,515.78</text>
+      <path d="M4 22 C 60 24 110 30 160 40 C 210 50 240 46 300 38 L 300 96 L 4 96 Z" fill="url(#cg)"/>
+      <path d="M4 22 C 60 24 110 30 160 40 C 210 50 240 46 300 38" fill="none" stroke="#16A34A" stroke-width="2.5" stroke-linecap="round"/>
+      <circle cx="300" cy="38" r="4.5" fill="#16A34A"/><circle cx="300" cy="38" r="8.5" fill="#16A34A" opacity=".18"/>
+    </svg>
+    <div class="btns">
+      <div class="bb bup">&#9650; 上涨 · 54%</div>
+      <div class="bb bdn">&#9660; 下跌 · 46%</div>
+    </div>
+  </div>
+
+  <!-- 15 分钟市场 -->
+  <div class="sec"><b>15 分钟市场</b><span>全部 &gt;</span></div>
+  <div class="minis">
+    <div class="mini">
+      <div class="r1"><span>涨 或 跌</span><span>&#9201; 11:26</span></div>
+      <div class="r2"><span class="cc" style="background:#F7931A;">&#8383;</span>BTC · 15m<span class="pr" style="color:var(--up);">&#9650; 54%</span></div>
+      <svg viewBox="0 0 140 30"><path d="M3 24 C 40 22 80 18 134 8" fill="none" stroke="#16A34A" stroke-width="2.2" stroke-linecap="round"/><circle cx="134" cy="8" r="3.5" fill="#16A34A"/></svg>
+    </div>
+    <div class="mini">
+      <div class="r1"><span>涨 或 跌</span><span>&#9201; 03:12</span></div>
+      <div class="r2"><span class="cc" style="background:#1B1830;">S</span>SOL · 15m<span class="pr" style="color:var(--dn);">&#9660; 41%</span></div>
+      <svg viewBox="0 0 140 30"><path d="M3 10 C 44 14 90 20 134 24" fill="none" stroke="#E5484D" stroke-width="2.2" stroke-linecap="round"/><circle cx="134" cy="24" r="3.5" fill="#E5484D"/></svg>
+    </div>
+  </div>
+
+  <!-- Live 事件市场 -->
+  <div class="sec"><b>热门市场</b><span>Live</span></div>
+
+  <div class="ev">
+    <div class="cat"><span>宏观 · 美联储</span><span>12月18日 截止</span></div>
+    <div class="q">美联储 12 月会议会降息 25 个基点吗?</div>
+    <div class="oc">
+      <div class="oi" style="background:#E8F7EE;">&#9989;</div>
+      <div class="on_"><b>会降息</b><div class="bar"><i style="width:68%;background:var(--up);"></i></div></div>
+      <div class="pp hot">68%</div>
+    </div>
+    <div class="oc">
+      <div class="oi" style="background:#FDEDEE;">&#10060;</div>
+      <div class="on_"><b>不会降息</b><div class="bar"><i style="width:32%;background:var(--dn);"></i></div></div>
+      <div class="pp">32%</div>
+    </div>
+  </div>
+
+  <div class="ev">
+    <div class="cat"><span>美股 · 科技</span><span class="lv">&#9679; Live · 本周五结算</span></div>
+    <div class="q">NVDA 本周收盘价会站上 $150 吗?</div>
+    <div class="oc">
+      <div class="oi" style="background:#E8F7EE;">&#128200;</div>
+      <div class="on_"><b>会</b><div class="bar"><i style="width:57%;background:var(--up);"></i></div></div>
+      <div class="pp hot">57%</div>
+    </div>
+    <div class="oc">
+      <div class="oi" style="background:#FDEDEE;">&#128201;</div>
+      <div class="on_"><b>不会</b><div class="bar"><i style="width:43%;background:var(--dn);"></i></div></div>
+      <div class="pp">43%</div>
+    </div>
+  </div>
+
+  <div class="ev">
+    <div class="cat"><span>加密</span><span>12月31日 截止</span></div>
+    <div class="q">BTC 年底前会创历史新高吗?</div>
+    <div class="oc">
+      <div class="oi" style="background:#E8F7EE;">&#127881;</div>
+      <div class="on_"><b>会</b><div class="bar"><i style="width:24%;background:var(--up);"></i></div></div>
+      <div class="pp">24%</div>
+    </div>
+    <div class="oc">
+      <div class="oi" style="background:#FDEDEE;">&#128064;</div>
+      <div class="on_"><b>不会</b><div class="bar"><i style="width:76%;background:var(--dn);"></i></div></div>
+      <div class="pp hot">76%</div>
+    </div>
+  </div>
+
+  <div class="note">预测为用户观点聚合,仅供参考,不构成投资建议</div>
+</div>
+
+<div class="tabbar">
+  <div class="tab">资产</div><div class="tab">市场</div><div class="tab on">预测</div><div class="tab">股票大师</div><div class="tab">Fifi</div><div class="tab">奖励</div>
+</div>
+</body>
+</html>
