@@ -107,6 +107,23 @@ Base URL：`/api/v1`　认证：`Authorization: Bearer <sessionToken>`（除 /au
 
 **PaperOrder**：Order 的全部字段 + `limitPrice`、`timeInForce`、`simulated: true`；状态取值 `NEW / FILLED / CANCELED / REJECTED`，`fees` 恒为 0。
 
+## 5.9 预测板块（F19，积分演示版）
+
+> 全程使用**预测积分**（每用户初始 10,000 分），不涉及真实资金、券商账户与模拟盘账户，数据独立存储（predict_* 表，迁移 000009）；响应带 `simulated: true`。真金 / 去中心化版本为独立研究项，需独立合规评估。
+
+| 方法 路径 | 请求 | 响应 data | 说明 |
+|---|---|---|---|
+| GET /predict/account | — | `{simulated, points, initialPoints, stats}` | 首次访问自动创建积分账户；stats 见下 |
+| GET /predict/markets | `?category=ALL\|CRYPTO\|STOCKS\|MACRO\|SPORTS\|TRENDING` | `{simulated, serverTime, updown:[PredictMarket], events:[PredictMarket]}` | updown：BTC / SOL 当前 15 分钟窗口（UTC 15 分钟对齐，目标价 = 窗口创建时的虚拟行情价）；events：未截止事件市场（后端种子数据 7 个） |
+| GET /predict/markets/{id} | — | `PredictMarket` | 不存在 40901 |
+| POST /predict/bets | `{marketId, outcome: "YES"\|"NO", stake}` | `{simulated, bet, points, market}` | stake 为整数 10–5,000 且 ≤ 积分余额（不足 42201）；市场截止后 40901；涨跌市场 YES = 上涨、NO = 下跌。**赔付简化模型**：按下注时所选方向的概率 p（该方向池 ÷ 两边池，含种子流动性，夹在 2%–98%）定赔率，若正确可得 floor(stake ÷ p) 分（含本金）；下注后池子增加，比例随双边下注量实时变化。**AMM / 订单簿定价留二期** |
+| GET /predict/bets | — | `{simulated, bets:[PredictBet], stats}` | 最近 200 笔，含市场摘要 |
+| POST /predict/claim | — | `{simulated, claimed, points}` | 领取全部已结算派彩（命中派彩、作废退回本金） |
+
+- **PredictMarket**：`{id, kind: UPDOWN|EVENT, category, symbol, title:{zh,en}, subtitle:{zh,en}, outcomes:[{key, label:{zh,en}, percent, pool}], opensAt, closesAt, targetPrice, settlePrice, status: OPEN|CLOSED|SETTLED, result: YES|NO|VOID|null}`；**PredictBet**：`{id, marketId, outcome, stake, probability, potentialPayout, status: OPEN|WON|LOST|VOID, payout, claimed, createdAt, settledAt, market}`；**stats**：`{settled, wins, hitRate, netPoints, claimable, openBets, openStake}`（命中率不含作废；累计盈亏 = 已结算派彩 − 本金）。
+- **结算**：涨跌市场到期由后端按虚拟行情自动结算（收盘价 > 目标价为上涨，< 为下跌，相等作废）；到期超过 2 分钟才结算（如服务停机）则作废退回本金，避免用事后价格结算。事件市场由管理命令 `cmd/predictctl settle <id> YES|NO|VOID` 结算。
+- BTC / SOL 为虚拟行情新增的模拟加密标的（`GET /market/quotes` 可查），只用于积分预测，实盘与模拟盘下单均不报价。
+
 ## 6. 文件与通知（F10，P-15/P-17）
 
 | 方法 路径 | 响应 data | 说明 |
@@ -166,3 +183,4 @@ Base URL：`/api/v1`　认证：`Authorization: Bearer <sessionToken>`（除 /au
 | 2026-11-20 | 5.6 交易扩展限价单：`POST /orders` 的 `orderType` 新增 `LIMIT`，新增请求字段 `limitPrice`、`timeInForce`（只支持 DAY）；`Order` 新增 `limitPrice`、`timeInForce`。市价单行为不变 | 新增，向后兼容 |
 | 2026-11-20 | 5.5 市场数据扩展（F11）：新增 `GET /market/sentiment`（恐慌贪婪指数 + 涨跌家数，`simulated: true`，无需登录）；P-09 指数卡新增 IWM（罗素 2000，复用 `/market/quotes`，标的池已含）。恐慌贪婪指数正式数据源待定（自行计算或采购，不得抓取第三方指数） | 新增，向后兼容 |
 | 2026-11-20 | F17 资产分布与资产趋势：新增 `GET /account/allocation`、`GET /account/history?range=`、`GET /paper/account/allocation`、`GET /paper/account/history`（每日资产快照，迁移 000008 asset_snapshots）；新增结构 `Allocation`、`AssetHistory` | 新增，向后兼容 |
+| 2026-11-20 | 新增 5.9 预测板块（F19，积分演示版）：`/predict/account`、`/predict/markets`、`/predict/markets/{id}`、`/predict/bets`（POST / GET）、`/predict/claim`；新增结构 PredictMarket、PredictBet、PredictStats；虚拟行情新增模拟加密标的 BTC、SOL | 新增，向后兼容 |

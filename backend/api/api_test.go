@@ -20,6 +20,7 @@ var wantOps = []string{
 	"post /orders", "get /orders", "get /orders/{id}", "post /orders/{id}/cancel", "get /positions",
 	"get /paper/account", "post /paper/account/reset", "get /paper/account/allocation", "get /paper/account/history", "post /paper/orders", "get /paper/orders",
 	"get /paper/orders/{id}", "post /paper/orders/{id}/cancel", "get /paper/positions",
+	"get /predict/account", "get /predict/markets", "get /predict/markets/{id}", "post /predict/bets", "get /predict/bets", "post /predict/claim",
 }
 
 // 无需登录的接口（api-spec.md：除 /auth/* 外均需 Bearer；logout 需要会话）。

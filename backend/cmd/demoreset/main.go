@@ -159,8 +159,10 @@ var resetSteps = []struct{ table, sql string }{
 	{"application_documents", `DELETE FROM application_documents WHERE application_id IN (SELECT id FROM applications WHERE user_id = $1)`},
 	{"applications", `DELETE FROM applications WHERE user_id = $1`},
 	{"sessions", `DELETE FROM sessions WHERE user_id = $1`},
-	{"asset_snapshots", `DELETE FROM asset_snapshots WHERE user_id = $1`}, // F17 每日资产快照（实盘与模拟盘）
-	{"paper_accounts", `DELETE FROM paper_accounts WHERE user_id = $1`},   // F15 模拟盘（订单、持仓随之级联删除）
+	{"asset_snapshots", `DELETE FROM asset_snapshots WHERE user_id = $1`},   // F17 每日资产快照（实盘与模拟盘）
+	{"predict_bets", `DELETE FROM predict_bets WHERE user_id = $1`},         // F19 预测下注
+	{"predict_accounts", `DELETE FROM predict_accounts WHERE user_id = $1`}, // F19 预测积分账户
+	{"paper_accounts", `DELETE FROM paper_accounts WHERE user_id = $1`},     // F15 模拟盘（订单、持仓随之级联删除）
 	{"users_app", `DELETE FROM users_app WHERE id = $1`},
 }
 

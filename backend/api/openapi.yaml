@@ -1380,6 +1380,170 @@ paths:
         "200": { $ref: "#/components/responses/OkEmpty" }
         "401": { $ref: "#/components/responses/Unauthorized" }
 
+  # ───────────── 5.9 预测板块（F19，积分演示版） ─────────────
+  /predict/account:
+    get:
+      tags: [predict]
+      operationId: getPredictAccount
+      summary: 预测积分账户与战绩（首次访问自动创建，初始 10,000 分）
+      description: 积分演示版：不涉及真实资金、券商账户与模拟盘账户（独立存储 predict_*）。
+      responses:
+        "200":
+          description: 积分账户
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        required: [simulated, points, initialPoints, stats]
+                        properties:
+                          simulated: { type: boolean }
+                          points: { type: integer }
+                          initialPoints: { type: integer }
+                          stats: { $ref: "#/components/schemas/PredictStats" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+  /predict/markets:
+    get:
+      tags: [predict]
+      operationId: listPredictMarkets
+      summary: 进行中的预测市场（15 分钟涨跌 + 事件）
+      description: |
+        updown：BTC / SOL 当前 15 分钟窗口（目标价 = 窗口创建时的虚拟行情价，到期按虚拟行情自动结算，结算过迟作废退回）；
+        events：未截止的事件市场（后端种子数据，管理命令 cmd/predictctl 结算）。概率 = 该方向池 ÷ 两边池（含种子流动性）。
+      parameters:
+        - name: category
+          in: query
+          required: false
+          schema: { type: string, enum: [ALL, CRYPTO, STOCKS, MACRO, SPORTS, TRENDING] }
+      responses:
+        "200":
+          description: 市场列表
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        required: [simulated, serverTime, updown, events]
+                        properties:
+                          simulated: { type: boolean }
+                          serverTime: { type: string, format: date-time, description: 服务器时间（App 校准倒计时） }
+                          updown: { type: array, items: { $ref: "#/components/schemas/PredictMarket" } }
+                          events: { type: array, items: { $ref: "#/components/schemas/PredictMarket" } }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+  /predict/markets/{id}:
+    get:
+      tags: [predict]
+      operationId: getPredictMarket
+      summary: 单个预测市场
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: 市场
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - type: object
+                    properties:
+                      data: { $ref: "#/components/schemas/PredictMarket" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "409": { $ref: "#/components/responses/Conflict" }
+  /predict/bets:
+    post:
+      tags: [predict]
+      operationId: placePredictBet
+      summary: 下注（预测积分）
+      description: |
+        赔付简化模型：按下注时的比例定赔率，若正确可得 floor(stake ÷ p) 分（p 为所选方向概率，夹在 2%–98%）；下注后池子增加，比例随之变化。
+        AMM / 订单簿定价留二期。stake 为整数 10–5,000 且不超过积分余额；市场截止后不可下注（40901）；积分不足 42201。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [marketId, outcome, stake]
+              properties:
+                marketId: { type: string }
+                outcome: { type: string, enum: [YES, NO], description: 涨跌市场 YES = 上涨，NO = 下跌 }
+                stake: { type: integer, minimum: 10, maximum: 5000 }
+      responses:
+        "200":
+          description: 下注结果
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        required: [simulated, bet, points, market]
+                        properties:
+                          simulated: { type: boolean }
+                          bet: { $ref: "#/components/schemas/PredictBet" }
+                          points: { type: integer }
+                          market: { $ref: "#/components/schemas/PredictMarket" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+    get:
+      tags: [predict]
+      operationId: listPredictBets
+      summary: 我的预测（最近 200 笔，含战绩）
+      responses:
+        "200":
+          description: 下注列表
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        required: [simulated, bets, stats]
+                        properties:
+                          simulated: { type: boolean }
+                          bets: { type: array, items: { $ref: "#/components/schemas/PredictBet" } }
+                          stats: { $ref: "#/components/schemas/PredictStats" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+  /predict/claim:
+    post:
+      tags: [predict]
+      operationId: claimPredictPayouts
+      summary: 领取全部已结算派彩（命中派彩、作废退回的本金）
+      responses:
+        "200":
+          description: 领取结果
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        required: [simulated, claimed, points]
+                        properties:
+                          simulated: { type: boolean }
+                          claimed: { type: integer }
+                          points: { type: integer }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
 components:
   securitySchemes:
     bearerAuth:
@@ -1663,6 +1827,67 @@ components:
         unrealizedPL: { type: number, description: DW unrealizedPL }
         unrealizedDayPL: { type: number, description: DW unrealizedDayPL }
 
+    PredictText:
+      type: object
+      required: [zh, en]
+      properties:
+        zh: { type: string }
+        en: { type: string }
+    PredictMarket:
+      type: object
+      description: 预测市场（F19 积分演示版）
+      required: [id, kind, category, title, subtitle, outcomes, opensAt, closesAt, status]
+      properties:
+        id: { type: string }
+        kind: { type: string, enum: [UPDOWN, EVENT] }
+        category: { type: string, enum: [CRYPTO, STOCKS, MACRO, SPORTS, TRENDING] }
+        symbol: { type: string, nullable: true, description: 涨跌市场标的（BTC / SOL，虚拟行情） }
+        title: { $ref: "#/components/schemas/PredictText" }
+        subtitle: { $ref: "#/components/schemas/PredictText" }
+        outcomes:
+          type: array
+          description: 固定 2 条：YES、NO
+          items:
+            type: object
+            required: [key, label, percent, pool]
+            properties:
+              key: { type: string, enum: [YES, NO] }
+              label: { $ref: "#/components/schemas/PredictText" }
+              percent: { type: integer, description: 概率百分比，两边合计 100 }
+              pool: { type: integer, description: 该方向池（含种子流动性） }
+        opensAt: { type: string, format: date-time }
+        closesAt: { type: string, format: date-time }
+        targetPrice: { type: number, nullable: true }
+        settlePrice: { type: number, nullable: true }
+        status: { type: string, enum: [OPEN, CLOSED, SETTLED] }
+        result: { type: string, nullable: true, enum: [YES, NO, VOID] }
+    PredictBet:
+      type: object
+      required: [id, marketId, outcome, stake, probability, potentialPayout, status, payout, claimed, createdAt]
+      properties:
+        id: { type: string }
+        marketId: { type: string }
+        outcome: { type: string, enum: [YES, NO] }
+        stake: { type: integer }
+        probability: { type: number, description: 下注时所选方向的概率（0–1） }
+        potentialPayout: { type: integer, description: 若正确可得（含本金） }
+        status: { type: string, enum: [OPEN, WON, LOST, VOID] }
+        payout: { type: integer }
+        claimed: { type: boolean }
+        createdAt: { type: string, format: date-time }
+        settledAt: { type: string, format: date-time, nullable: true }
+        market: { allOf: [{ $ref: "#/components/schemas/PredictMarket" }], nullable: true }
+    PredictStats:
+      type: object
+      required: [settled, wins, hitRate, netPoints, claimable, openBets, openStake]
+      properties:
+        settled: { type: integer, description: 已结算笔数（不含作废） }
+        wins: { type: integer }
+        hitRate: { type: number, description: 命中率（百分数，一位小数） }
+        netPoints: { type: integer, description: 累计盈亏分（已结算：派彩 − 本金） }
+        claimable: { type: integer }
+        openBets: { type: integer }
+        openStake: { type: integer }
     Allocation:
       type: object
       description: 资产分布（F17）

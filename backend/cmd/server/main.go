@@ -31,6 +31,7 @@ import (
 	"github.com/imamura-akira/New_FinX/backend/internal/marketsim"
 	"github.com/imamura-akira/New_FinX/backend/internal/papertrade"
 	"github.com/imamura-akira/New_FinX/backend/internal/portfolio"
+	"github.com/imamura-akira/New_FinX/backend/internal/predict"
 	"github.com/imamura-akira/New_FinX/backend/internal/store"
 	"github.com/imamura-akira/New_FinX/backend/internal/trading"
 )
@@ -161,7 +162,7 @@ func run(migrateCmd string, logger *slog.Logger) error {
 				Repo: papertrade.PGRepo{DB: st.DB},
 				Quote: func(sym string) (papertrade.Quote, bool) {
 					q := market.Quotes([]string{sym})
-					if len(q) == 0 {
+					if len(q) == 0 || isCrypto(sym) { // 加密标的只用于 F19 积分预测，不可交易
 						return papertrade.Quote{}, false
 					}
 					return papertrade.Quote{Bid: q[0].Bid, Ask: q[0].Ask, Last: q[0].Last}, true
@@ -184,7 +185,7 @@ func run(migrateCmd string, logger *slog.Logger) error {
 			if market != nil {
 				price = func(sym string) (float64, bool) {
 					q := market.Quotes([]string{sym})
-					if len(q) == 0 {
+					if len(q) == 0 || isCrypto(sym) {
 						return 0, false
 					}
 					if q[0].Ask > 0 {
@@ -221,6 +222,22 @@ func run(migrateCmd string, logger *slog.Logger) error {
 		}
 		pfSvc := portfolio.New(pfDeps)
 		go pfSvc.Run(ctx, 5*time.Minute)
+		// F19 预测板块（积分演示版）：只依赖数据库与虚拟行情，与券商资金、模拟盘完全隔离
+		var predictSvc *predict.Service
+		if market != nil {
+			predictSvc = predict.New(predict.Deps{
+				Repo: predict.PGRepo{DB: st.DB},
+				Price: func(sym string) (float64, bool) {
+					q := market.Quotes([]string{sym})
+					if len(q) == 0 {
+						return 0, false
+					}
+					return q[0].Last, true
+				},
+				Logger: logger,
+			})
+			go predictSvc.Run(ctx, 5*time.Second)
+		}
 		if dw != nil {
 			rec := events.NewReconciler(events.PGRepo{DB: st.DB}, dw, acctSvc, cfg.KYCPollInterval, logger)
 			orch := application.NewOrchestrator(appRepo, dw, cipher, cfg.UserSubmitMode, logger)
@@ -248,6 +265,9 @@ func run(migrateCmd string, logger *slog.Logger) error {
 				paperSvc.Routes(mux, apiPrefix, authSvc.RequireAuth)
 			}
 			pfSvc.Routes(mux, apiPrefix, authSvc.RequireAuth)
+			if predictSvc != nil {
+				predictSvc.Routes(mux, apiPrefix, authSvc.RequireAuth)
+			}
 		})
 	} else {
 		logger.Warn("API routes disabled: DATABASE_URL, PII_ENCRYPTION_KEY and JWT_SECRET are all required")
@@ -282,4 +302,10 @@ func run(migrateCmd string, logger *slog.Logger) error {
 	defer cancel()
 	logger.Info("shutting down")
 	return srv.Shutdown(shutdownCtx)
+}
+
+// isCrypto：F19 模拟加密标的（BTC / SOL）只用于积分预测，实盘与模拟盘下单均不报价。
+func isCrypto(sym string) bool {
+	t, ok := marketsim.InstrumentType(sym)
+	return ok && t == "CRYPTO"
 }

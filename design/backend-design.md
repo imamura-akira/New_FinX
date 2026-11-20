@@ -108,6 +108,13 @@ KYC_APPROVED 事件 → 自动 POST /accounts → 存 account_no → 通知
 - 收盘任务：每 5 分钟检查，美东 16:10 之后当日未完成时，为全部已开户用户（accounts.dw_account_id 非空且未关闭）与全部模拟账户记录 CLOSE 快照；部分失败下一轮重试。每个实盘用户 2 次 DW 调用。
 - 边界：快照只用于趋势展示，不参与任何资金计算；`cmd/demoreset` 重置用户时一并删除其快照。
 
+## 6.7 预测板块（predict，F19 积分演示版）
+
+- 包 `internal/predict`：积分账户（初始 10,000）、市场（UPDOWN / EVENT）、下注；表 predict_accounts / predict_markets / predict_bets（迁移 000009，含 7 个种子事件市场）。与 funding、trading、papertrade 无任何依赖或共享表。
+- 定价：p = 所选方向池 ÷ 两边池（含种子流动性；涨跌市场每窗口两边各 500），派彩 floor(stake ÷ p)，p 夹在 [2%, 98%]。下注事务内锁定积分账户行与市场行（`FOR UPDATE`），并发下注不会透支。不生成模拟的"他人下注"，比例只随真实下注变化。
+- 后台任务每 5 秒：结算到期涨跌市场（虚拟行情价；过期 > 2 分钟作废），并确保 BTC / SOL 当前窗口存在；`GET /predict/markets` 也会兜底创建当前窗口。
+- 管理命令 `cmd/predictctl list | settle <id> YES|NO|VOID`（只限 APP_ENV=sandbox）；`cmd/demoreset` 重置用户时删除其预测积分与下注。
+
 ## 7. 配置开关（config，对应 ui-signoff.md 第 2 节）
 
 ```yaml

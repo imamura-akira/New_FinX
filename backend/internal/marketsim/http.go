@@ -36,6 +36,9 @@ var DefaultInstruments = []Instrument{
 	{"XLE", "Energy Select Sector SPDR", "NYSE Arca", "ETF", 91.80, 91.00},
 	{"EEM", "iShares MSCI Emerging Markets ETF", "NYSE Arca", "ETF", 42.90, 43.40},
 	{"VXX", "iPath S&P 500 VIX ST Futures ETN", "CBOE", "ETF", 49.60, 48.00},
+	// F19 预测板块：模拟加密标的（24 小时随机游走，仅用于积分预测演示，不可交易）
+	{"BTC", "Bitcoin", "CRYPTO", "CRYPTO", 61500.00, 61555.57},
+	{"SOL", "Solana", "CRYPTO", "CRYPTO", 146.20, 145.80},
 }
 
 // InstrumentType 返回标的池中代码的类型（STOCK / ETF）；不在标的池中时 ok=false（F17 资产分布归类用）。

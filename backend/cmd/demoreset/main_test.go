@@ -56,7 +56,7 @@ func TestResetStepsOrder(t *testing.T) {
 	}
 	for _, pair := range [][2]string{
 		{"orders", "accounts"}, {"orders", "users_app"}, {"transfers", "bank_accounts"}, {"bank_accounts", "accounts"}, {"accounts", "dw_users"},
-		{"kyc_issues", "dw_users"}, {"dw_users", "applications"}, {"applications", "users_app"}, {"sessions", "users_app"}, {"paper_accounts", "users_app"}, {"asset_snapshots", "users_app"},
+		{"kyc_issues", "dw_users"}, {"dw_users", "applications"}, {"applications", "users_app"}, {"sessions", "users_app"}, {"paper_accounts", "users_app"}, {"asset_snapshots", "users_app"}, {"predict_bets", "users_app"}, {"predict_accounts", "users_app"},
 	} {
 		if idx[pair[0]] >= idx[pair[1]] {
 			t.Errorf("%s 应在 %s 之前删除", pair[0], pair[1])
