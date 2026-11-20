@@ -7,6 +7,7 @@ import '../../../app/theme.dart';
 import '../../../core/api/api_client.dart';
 import '../../../core/widgets/widgets.dart';
 import '../data/auth_api.dart';
+import '../../../l10n/l10n.dart';
 
 enum LoginMode { login, register }
 
@@ -43,7 +44,7 @@ class _LoginPageState extends State<LoginPage> {
 
   AuthApi get _auth => AuthApi(AppScope.of(context).api);
 
-  String? _validateEmail() => _emailRE.hasMatch(_email.text.trim()) ? null : '请输入有效的邮箱地址';
+  String? _validateEmail() => _emailRE.hasMatch(_email.text.trim()) ? null : t.loginPleaseEnterAValid;
 
   Future<void> _sendCode() async {
     final e = _validateEmail();
@@ -60,7 +61,7 @@ class _LoginPageState extends State<LoginPage> {
       if (!mounted) return;
       _startCountdown(sent.resendAfter);
       setState(() => _sent = true);
-      showToast(context, '验证码已发送');
+      showToast(context, t.loginVerificationCodeSent);
     } on ApiException catch (err) {
       if (!mounted) return;
       if (err.code == ApiCodes.rateLimited && err.data is Map) {
@@ -87,8 +88,8 @@ class _LoginPageState extends State<LoginPage> {
     final errs = <String, String>{};
     final emailErr = _validateEmail();
     if (emailErr != null) errs['email'] = emailErr;
-    if (!RegExp(r'^\d{6}$').hasMatch(_code.text.trim())) errs['code'] = '请输入 6 位验证码';
-    if (_mode == LoginMode.register && !_terms) errs['terms'] = '请先同意平台条款';
+    if (!RegExp(r'^\d{6}$').hasMatch(_code.text.trim())) errs['code'] = t.loginPleaseEnterThe6;
+    if (_mode == LoginMode.register && !_terms) errs['terms'] = t.loginPleaseAgreeToThe;
     setState(() => _errors = errs);
     if (errs.isNotEmpty) return;
 
@@ -107,11 +108,11 @@ class _LoginPageState extends State<LoginPage> {
 
   void _social(String provider) {
     if (_mode == LoginMode.register && !_terms) {
-      setState(() => _errors = {'terms': '请先同意平台条款'});
+      setState(() => _errors = {'terms': t.loginPleaseAgreeToThe});
       return;
     }
     // 阶段 1.5（api-spec.md：/auth/oauth 当前返回 50003）
-    showToast(context, '$provider 登录将在后续版本开通，请先使用邮箱验证码登录');
+    showToast(context, t.loginSignInWithIs(provider));
   }
 
   @override
@@ -119,10 +120,10 @@ class _LoginPageState extends State<LoginPage> {
     final demo = AppScope.of(context).config.demoMode;
     final isLogin = _mode == LoginMode.login;
     return PageScaffold(
-      title: isLogin ? '登录' : '注册',
+      title: isLogin ? t.welcomeSignIn : t.welcomeSignUp,
       content: [
         Seg2<LoginMode>(
-          items: const [(LoginMode.login, '登录'), (LoginMode.register, '注册')],
+          items: [(LoginMode.login, t.welcomeSignIn), (LoginMode.register, t.welcomeSignUp)],
           value: _mode,
           onChanged: (m) => setState(() {
             _mode = m;
@@ -130,7 +131,7 @@ class _LoginPageState extends State<LoginPage> {
           }),
         ),
         AppField(
-          label: '邮箱',
+          label: t.loginEmail,
           fieldKey: const Key('login.email'),
           controller: _email,
           hint: 'name@example.com',
@@ -138,16 +139,16 @@ class _LoginPageState extends State<LoginPage> {
           error: _errors['email'],
         ),
         AppField(
-          label: '验证码',
+          label: t.loginVerificationCode,
           fieldKey: const Key('login.code'),
           controller: _code,
-          hint: '6 位验证码',
+          hint: t.login6DigitCode,
           keyboardType: TextInputType.number,
           maxLength: 6,
           error: _errors['code'],
-          helper: _sent && demo ? '演示环境验证码：000000' : null,
+          helper: _sent && demo ? t.loginDemoVerificationCode000000 : null,
           suffix: AppButton(
-            _countdown > 0 ? '${_countdown}s 后重发' : (_sent ? '重新获取' : '获取验证码'),
+            _countdown > 0 ? t.loginResendInS(_countdown) : (_sent ? t.loginResendCode : t.loginGetCode),
             key: const Key('login.send'),
             kind: ButtonKind.ghost,
             small: true,
@@ -156,23 +157,23 @@ class _LoginPageState extends State<LoginPage> {
           ),
         ),
         const SizedBox(height: 4),
-        const Row(
+        Row(
           children: [
             Expanded(child: Divider(color: AppColors.line)),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 10),
-              child: Text('或', style: TextStyle(fontSize: 12, color: AppColors.muted)),
+              child: Text(t.loginOr, style: TextStyle(fontSize: 12, color: AppColors.muted)),
             ),
             Expanded(child: Divider(color: AppColors.line)),
           ],
         ),
         const SizedBox(height: 12),
-        AppButton('使用 Google 登录', kind: ButtonKind.ghost, onPressed: () => _social('Google')),
+        AppButton(t.loginContinueWithGoogle, kind: ButtonKind.ghost, onPressed: () => _social('Google')),
         const SizedBox(height: 8),
-        AppButton('通过 Apple 登录', kind: ButtonKind.ghost, onPressed: () => _social('Apple')),
+        AppButton(t.loginContinueWithApple, kind: ButtonKind.ghost, onPressed: () => _social('Apple')),
         const SizedBox(height: 6),
-        const Text(
-          'Google / Apple 登录将在后续版本开通。提供 Google 登录时同时提供 Apple 登录。',
+        Text(
+          t.loginSignInWithGoogle,
           textAlign: TextAlign.center,
           style: TextStyle(fontSize: 12, color: AppColors.faint),
         ),
@@ -185,15 +186,15 @@ class _LoginPageState extends State<LoginPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Checkbox(value: _terms, onChanged: (v) => setState(() => _terms = v ?? false)),
-                const Expanded(
+                Expanded(
                   child: Padding(
                     padding: EdgeInsets.only(top: 12),
                     child: Text.rich(
                       TextSpan(
                         children: [
-                          TextSpan(text: '我已阅读并同意平台《用户服务协议》与《隐私政策》\n', style: TextStyle(fontSize: 14)),
+                          TextSpan(text: t.loginIHaveReadAnd, style: TextStyle(fontSize: 14)),
                           TextSpan(
-                            text: '此为平台自有条款，券商（DriveWealth）披露将在开户时单独展示。',
+                            text: t.loginTheseAreThePlatform,
                             style: TextStyle(fontSize: 12, color: AppColors.faint),
                           ),
                         ],
@@ -213,7 +214,7 @@ class _LoginPageState extends State<LoginPage> {
       ],
       footer: [
         Expanded(
-          child: AppButton(isLogin ? '登录' : '注册并登录', key: const Key('login.submit'), loading: _submitting, onPressed: _submit),
+          child: AppButton(isLogin ? t.welcomeSignIn : t.loginSignUpSignIn, key: const Key('login.submit'), loading: _submitting, onPressed: _submit),
         ),
       ],
     );

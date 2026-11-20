@@ -89,18 +89,18 @@ class ApiClient {
     try {
       res = await http.Response.fromStream(await _http.send(req).timeout(timeout));
     } on TimeoutException {
-      throw ApiException(code: ApiCodes.network, message: '网络超时，请稍后重试');
+      throw ApiException(code: ApiCodes.network, message: t.errTimeout);
     } on SocketException {
-      throw ApiException(code: ApiCodes.network, message: '网络连接失败，请检查网络后重试');
+      throw ApiException(code: ApiCodes.network, message: t.errNetwork);
     } on http.ClientException {
-      throw ApiException(code: ApiCodes.network, message: '网络连接失败，请检查网络后重试');
+      throw ApiException(code: ApiCodes.network, message: t.errNetwork);
     }
 
     Map<String, dynamic> env;
     try {
       env = jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
     } catch (_) {
-      throw ApiException(code: ApiCodes.network, httpStatus: res.statusCode, message: '服务暂时不可用，请稍后重试');
+      throw ApiException(code: ApiCodes.network, httpStatus: res.statusCode, message: t.errBadResponse);
     }
     final code = (env['code'] as num?)?.toInt() ?? ApiCodes.internal;
     if (code == 0) return env['data'];
@@ -115,7 +115,7 @@ class ApiClient {
     final err = ApiException(
       code: code,
       httpStatus: res.statusCode,
-      message: (env['message'] as String?) ?? '请求失败，请稍后重试',
+      message: (env['message'] as String?) ?? t.errRequestFailed,
       data: data,
       fields: fields,
     );

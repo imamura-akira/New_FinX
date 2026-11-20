@@ -6,6 +6,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../../app/theme.dart';
 import '../../../core/sound/ui_sound.dart';
 import '../../../core/widgets/widgets.dart';
+import '../../../l10n/l10n.dart';
 
 /// 冷启动品牌入场（design/theme.md 第 7 节）：只在冷启动后第一个出现的是 P-01 时播放一次。
 /// 冷启动直接进入资产页（已登录）则视为已消耗，之后退出登录回到 P-01 也不再播放。
@@ -130,8 +131,8 @@ class _WelcomePageState extends State<WelcomePage> with SingleTickerProviderStat
                 logo,
                 const SizedBox(height: 8),
                 rest(
-                  const Text(
-                    '美股与 ETF 投资，开户、入金、交易一站完成。',
+                  Text(
+                    t.welcomeInvestInUsStocks,
                     textAlign: TextAlign.center,
                     style: TextStyle(color: AppColors.muted, fontSize: 14),
                   ),
@@ -142,19 +143,19 @@ class _WelcomePageState extends State<WelcomePage> with SingleTickerProviderStat
                 rest(
                   Column(
                     children: [
-                      AppButton('注册', key: const Key('welcome.register'), onPressed: () => context.push('/login?mode=register')),
+                      AppButton(t.welcomeSignUp, key: const Key('welcome.register'), onPressed: () => context.push('/login?mode=register')),
                       const SizedBox(height: 8),
                       AppButton(
-                        '登录',
+                        t.welcomeSignIn,
                         key: const Key('welcome.login'),
                         kind: ButtonKind.ghost,
                         onPressed: () => context.push('/login?mode=login'),
                       ),
                       const SizedBox(height: 12),
                       // 未登录可浏览；资产 Tab 回到欢迎页
-                      LinkButton('先逛逛行情', key: const Key('welcome.market'), onPressed: () => context.go('/market')),
+                      LinkButton(t.welcomeBrowseMarketsFirst, key: const Key('welcome.market'), onPressed: () => context.go('/market')),
                       const SizedBox(height: 24),
-                      const Text('证券服务由合作券商提供。投资有风险。', style: TextStyle(fontSize: 12, color: AppColors.faint)),
+                      Text(t.welcomeBrokerageServicesAreProvided, style: TextStyle(fontSize: 12, color: AppColors.faint)),
                     ],
                   ),
                 ),

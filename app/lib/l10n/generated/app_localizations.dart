@@ -337,6 +337,174 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'请检查此项'**
   String get errFieldInvalid;
+
+  /// No description provided for @commonBack.
+  ///
+  /// In zh, this message translates to:
+  /// **'返回'**
+  String get commonBack;
+
+  /// No description provided for @expiredPleaseSignInAgain.
+  ///
+  /// In zh, this message translates to:
+  /// **'请重新登录'**
+  String get expiredPleaseSignInAgain;
+
+  /// No description provided for @expiredYourSessionHasExpired.
+  ///
+  /// In zh, this message translates to:
+  /// **'登录已过期或尚未登录。返回 App 登录后即可继续您的申请。'**
+  String get expiredYourSessionHasExpired;
+
+  /// No description provided for @expiredBackToSignIn.
+  ///
+  /// In zh, this message translates to:
+  /// **'返回登录'**
+  String get expiredBackToSignIn;
+
+  /// No description provided for @welcomeInvestInUsStocks.
+  ///
+  /// In zh, this message translates to:
+  /// **'美股与 ETF 投资，开户、入金、交易一站完成。'**
+  String get welcomeInvestInUsStocks;
+
+  /// No description provided for @welcomeSignUp.
+  ///
+  /// In zh, this message translates to:
+  /// **'注册'**
+  String get welcomeSignUp;
+
+  /// No description provided for @welcomeSignIn.
+  ///
+  /// In zh, this message translates to:
+  /// **'登录'**
+  String get welcomeSignIn;
+
+  /// No description provided for @welcomeBrowseMarketsFirst.
+  ///
+  /// In zh, this message translates to:
+  /// **'先逛逛行情'**
+  String get welcomeBrowseMarketsFirst;
+
+  /// No description provided for @welcomeBrokerageServicesAreProvided.
+  ///
+  /// In zh, this message translates to:
+  /// **'证券服务由合作券商提供。投资有风险。'**
+  String get welcomeBrokerageServicesAreProvided;
+
+  /// No description provided for @loginPleaseEnterAValid.
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入有效的邮箱地址'**
+  String get loginPleaseEnterAValid;
+
+  /// No description provided for @loginVerificationCodeSent.
+  ///
+  /// In zh, this message translates to:
+  /// **'验证码已发送'**
+  String get loginVerificationCodeSent;
+
+  /// No description provided for @loginPleaseEnterThe6.
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入 6 位验证码'**
+  String get loginPleaseEnterThe6;
+
+  /// No description provided for @loginPleaseAgreeToThe.
+  ///
+  /// In zh, this message translates to:
+  /// **'请先同意平台条款'**
+  String get loginPleaseAgreeToThe;
+
+  /// No description provided for @loginSignInWithIs.
+  ///
+  /// In zh, this message translates to:
+  /// **'{provider} 登录将在后续版本开通，请先使用邮箱验证码登录'**
+  String loginSignInWithIs(Object provider);
+
+  /// No description provided for @loginEmail.
+  ///
+  /// In zh, this message translates to:
+  /// **'邮箱'**
+  String get loginEmail;
+
+  /// No description provided for @loginVerificationCode.
+  ///
+  /// In zh, this message translates to:
+  /// **'验证码'**
+  String get loginVerificationCode;
+
+  /// No description provided for @login6DigitCode.
+  ///
+  /// In zh, this message translates to:
+  /// **'6 位验证码'**
+  String get login6DigitCode;
+
+  /// No description provided for @loginDemoVerificationCode000000.
+  ///
+  /// In zh, this message translates to:
+  /// **'演示环境验证码：000000'**
+  String get loginDemoVerificationCode000000;
+
+  /// No description provided for @loginResendInS.
+  ///
+  /// In zh, this message translates to:
+  /// **'{_countdown}s 后重发'**
+  String loginResendInS(Object _countdown);
+
+  /// No description provided for @loginResendCode.
+  ///
+  /// In zh, this message translates to:
+  /// **'重新获取'**
+  String get loginResendCode;
+
+  /// No description provided for @loginGetCode.
+  ///
+  /// In zh, this message translates to:
+  /// **'获取验证码'**
+  String get loginGetCode;
+
+  /// No description provided for @loginOr.
+  ///
+  /// In zh, this message translates to:
+  /// **'或'**
+  String get loginOr;
+
+  /// No description provided for @loginContinueWithGoogle.
+  ///
+  /// In zh, this message translates to:
+  /// **'使用 Google 登录'**
+  String get loginContinueWithGoogle;
+
+  /// No description provided for @loginContinueWithApple.
+  ///
+  /// In zh, this message translates to:
+  /// **'通过 Apple 登录'**
+  String get loginContinueWithApple;
+
+  /// No description provided for @loginSignInWithGoogle.
+  ///
+  /// In zh, this message translates to:
+  /// **'Google / Apple 登录将在后续版本开通。提供 Google 登录时同时提供 Apple 登录。'**
+  String get loginSignInWithGoogle;
+
+  /// No description provided for @loginIHaveReadAnd.
+  ///
+  /// In zh, this message translates to:
+  /// **'我已阅读并同意平台《用户服务协议》与《隐私政策》\n'**
+  String get loginIHaveReadAnd;
+
+  /// No description provided for @loginTheseAreThePlatform.
+  ///
+  /// In zh, this message translates to:
+  /// **'此为平台自有条款，券商（DriveWealth）披露将在开户时单独展示。'**
+  String get loginTheseAreThePlatform;
+
+  /// No description provided for @loginSignUpSignIn.
+  ///
+  /// In zh, this message translates to:
+  /// **'注册并登录'**
+  String get loginSignUpSignIn;
 }
 
 class _AppLocalizationsDelegate

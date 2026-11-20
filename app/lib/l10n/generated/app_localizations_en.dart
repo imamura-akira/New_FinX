@@ -150,4 +150,99 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get errFieldInvalid => 'Please check this field.';
+
+  @override
+  String get commonBack => 'Back';
+
+  @override
+  String get expiredPleaseSignInAgain => 'Please sign in again';
+
+  @override
+  String get expiredYourSessionHasExpired =>
+      'Your session has expired or you\'re not signed in. Return to the app and sign in to continue your application.';
+
+  @override
+  String get expiredBackToSignIn => 'Back to Sign In';
+
+  @override
+  String get welcomeInvestInUsStocks =>
+      'Invest in US stocks and ETFs — open an account, fund it, and trade, all in one place.';
+
+  @override
+  String get welcomeSignUp => 'Sign Up';
+
+  @override
+  String get welcomeSignIn => 'Sign In';
+
+  @override
+  String get welcomeBrowseMarketsFirst => 'Browse Markets First';
+
+  @override
+  String get welcomeBrokerageServicesAreProvided =>
+      'Brokerage services are provided by our partner broker. Investing involves risk.';
+
+  @override
+  String get loginPleaseEnterAValid => 'Please enter a valid email address.';
+
+  @override
+  String get loginVerificationCodeSent => 'Verification code sent';
+
+  @override
+  String get loginPleaseEnterThe6 => 'Please enter the 6-digit code.';
+
+  @override
+  String get loginPleaseAgreeToThe => 'Please agree to the Terms first.';
+
+  @override
+  String loginSignInWithIs(Object provider) {
+    return 'Sign in with $provider is coming in a future release. Please sign in with an email code for now.';
+  }
+
+  @override
+  String get loginEmail => 'Email';
+
+  @override
+  String get loginVerificationCode => 'Verification Code';
+
+  @override
+  String get login6DigitCode => '6-digit code';
+
+  @override
+  String get loginDemoVerificationCode000000 =>
+      'Demo verification code: 000000';
+
+  @override
+  String loginResendInS(Object _countdown) {
+    return 'Resend in ${_countdown}s';
+  }
+
+  @override
+  String get loginResendCode => 'Resend Code';
+
+  @override
+  String get loginGetCode => 'Get Code';
+
+  @override
+  String get loginOr => 'or';
+
+  @override
+  String get loginContinueWithGoogle => 'Continue with Google';
+
+  @override
+  String get loginContinueWithApple => 'Continue with Apple';
+
+  @override
+  String get loginSignInWithGoogle =>
+      'Sign in with Google and Apple is coming in a future release. Whenever Google sign-in is offered, Apple sign-in will be offered too.';
+
+  @override
+  String get loginIHaveReadAnd =>
+      'I have read and agree to the platform\'s Terms of Service and Privacy Policy\n';
+
+  @override
+  String get loginTheseAreThePlatform =>
+      'These are the platform\'s own terms. DriveWealth\'s brokerage disclosures will be shown separately when you open an account.';
+
+  @override
+  String get loginSignUpSignIn => 'Sign Up & Sign In';
 }

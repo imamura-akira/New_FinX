@@ -128,4 +128,93 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get errFieldInvalid => '请检查此项';
+
+  @override
+  String get commonBack => '返回';
+
+  @override
+  String get expiredPleaseSignInAgain => '请重新登录';
+
+  @override
+  String get expiredYourSessionHasExpired => '登录已过期或尚未登录。返回 App 登录后即可继续您的申请。';
+
+  @override
+  String get expiredBackToSignIn => '返回登录';
+
+  @override
+  String get welcomeInvestInUsStocks => '美股与 ETF 投资，开户、入金、交易一站完成。';
+
+  @override
+  String get welcomeSignUp => '注册';
+
+  @override
+  String get welcomeSignIn => '登录';
+
+  @override
+  String get welcomeBrowseMarketsFirst => '先逛逛行情';
+
+  @override
+  String get welcomeBrokerageServicesAreProvided => '证券服务由合作券商提供。投资有风险。';
+
+  @override
+  String get loginPleaseEnterAValid => '请输入有效的邮箱地址';
+
+  @override
+  String get loginVerificationCodeSent => '验证码已发送';
+
+  @override
+  String get loginPleaseEnterThe6 => '请输入 6 位验证码';
+
+  @override
+  String get loginPleaseAgreeToThe => '请先同意平台条款';
+
+  @override
+  String loginSignInWithIs(Object provider) {
+    return '$provider 登录将在后续版本开通，请先使用邮箱验证码登录';
+  }
+
+  @override
+  String get loginEmail => '邮箱';
+
+  @override
+  String get loginVerificationCode => '验证码';
+
+  @override
+  String get login6DigitCode => '6 位验证码';
+
+  @override
+  String get loginDemoVerificationCode000000 => '演示环境验证码：000000';
+
+  @override
+  String loginResendInS(Object _countdown) {
+    return '${_countdown}s 后重发';
+  }
+
+  @override
+  String get loginResendCode => '重新获取';
+
+  @override
+  String get loginGetCode => '获取验证码';
+
+  @override
+  String get loginOr => '或';
+
+  @override
+  String get loginContinueWithGoogle => '使用 Google 登录';
+
+  @override
+  String get loginContinueWithApple => '通过 Apple 登录';
+
+  @override
+  String get loginSignInWithGoogle =>
+      'Google / Apple 登录将在后续版本开通。提供 Google 登录时同时提供 Apple 登录。';
+
+  @override
+  String get loginIHaveReadAnd => '我已阅读并同意平台《用户服务协议》与《隐私政策》\n';
+
+  @override
+  String get loginTheseAreThePlatform => '此为平台自有条款，券商（DriveWealth）披露将在开户时单独展示。';
+
+  @override
+  String get loginSignUpSignIn => '注册并登录';
 }
