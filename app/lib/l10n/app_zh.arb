@@ -1005,5 +1005,125 @@
         "type": "Object"
       }
     }
-  }
+  },
+  "featureComingSoon": "{title}即将上线",
+  "@featureComingSoon": {
+    "placeholders": {
+      "title": {
+        "type": "Object"
+      }
+    }
+  },
+  "mastersLastPrice": "最新价 {price}",
+  "@mastersLastPrice": {
+    "placeholders": {
+      "price": {
+        "type": "Object"
+      }
+    }
+  },
+  "demoNorthshoreCapital": "北岸资本",
+  "demoNorthshoreCapitalSample": "Northshore Capital (示例)",
+  "demoLongbridgeFund": "长桥基金",
+  "demoLongbridgeFundSample": "Longbridge Fund (示例)",
+  "demoFarhillInvestments": "远山投资",
+  "demoFarhillInvestmentsSample": "Farhill Investments (示例)",
+  "demoMorningBayAm": "晨湾资管",
+  "demoMorningBayAmSample": "Morning Bay AM (示例)",
+  "demoBluestonePartners": "青石合伙",
+  "demoBluestonePartnersSample": "Bluestone Partners (示例)",
+  "demoCoastlineValue": "海岸价值",
+  "demoCoastlineValueSample": "Coastline Value (示例)",
+  "demoPinewoodGlobal": "松林全球",
+  "demoPinewoodGlobalSample": "Pinewood Global (示例)",
+  "demoGalaxyQuant": "星河量化",
+  "demoGalaxyQuantSample": "Galaxy Quant (示例)",
+  "demoMostIncreased": "增持最多",
+  "demoContrarianBuys": "逆势增持",
+  "demoMostHeld": "持股最多",
+  "demoNewPositions": "新进持股",
+  "demoPortfolioCheckup": "持仓体检",
+  "demoAnalyzeYourHoldingsAnd": "分析持仓结构与未实现盈亏",
+  "demoHoldOrSell": "持有或卖出",
+  "demoCompareTrendsRiskAnd": "对比趋势、风险与仓位",
+  "demoStockResearch": "个股研究",
+  "demoPricesFundamentalsAndNews": "汇总价格、基本面与新闻",
+  "demoRiskAlerts": "风险提醒",
+  "demoSpotVolatilityConcentrationAnd": "识别波动、集中度与回撤",
+  "demoQuantSignals": "量化信号",
+  "demoMomentumReversalVolumeAnd": "动量、反转、成交量等因子",
+  "demoInvesting101": "投资课堂",
+  "demoUnderstandInvestingInPlain": "用简单的语言理解投资逻辑",
+  "demoFinxSportsBottle": "FinX 运动水壶",
+  "demoFifiHolidayBeanie": "Fifi 圣诞绒帽",
+  "demoWirelessHeadphones": "无线耳机",
+  "demoFifiCrossbodyBag": "Fifi 斜挎包",
+  "mastersComingSoon": "即将上线",
+  "mastersSeeWhatTheBig": "看看大机构在买什么",
+  "mastersBasedOnPublic13f": "基于公开的 13F 持仓申报，按季度更新",
+  "mastersTopReturns": "收益最高",
+  "mastersRecentlyUpdated": "最近更新",
+  "mastersMore": "更多",
+  "mastersStockIdeas": "个股机会",
+  "mastersQ32026": "2026 年第三季度",
+  "mastersDataComesFromPublic": "数据来源于机构公开申报（演示数据），存在披露滞后，不代表机构当前持仓，不构成投资建议。",
+  "mastersDemoDataInstitutionNames": "演示数据：机构名称、收益与持仓均为虚构，仅供展示",
+  "masters1YrReturn": "年收益",
+  "mastersSymbol": "代码",
+  "mastersIncreaseAsOfShares": "增持占总股本",
+  "mastersIncreasedUnchangedDecreased": "增 / 平 / 减 家数",
+  "mastersAllInstitutions": "全部机构",
+  "mastersNameFirm": "名称 / 公司",
+  "mastersReturn": "收益",
+  "mastersAumGrowth": "资产增速",
+  "mastersUpdated": "更新",
+  "mastersDemoDataAllInstitution": "演示数据：机构名称均为虚构示例",
+  "mastersInstitutionDetails": "机构详情",
+  "mastersInstitutionNotFound": "未找到该机构",
+  "mastersPleaseGoBackAnd": "请返回列表重新选择",
+  "mastersTop5HoldingsSample": "前五大持仓（示例）",
+  "mastersDemoDataInstitutionsAnd": "演示数据：机构与持仓均为虚构；个股价格为虚拟行情",
+  "mastersAiAssistant": "AI 助手",
+  "mastersNotIncludedInThe": "首期不做，待合规评估。以下为保留的页面规格，仅供评估，不会在首期上线。",
+  "mastersFifiQuantAssistant": "Fifi 量化助手",
+  "mastersComingSoon2": "即将推出",
+  "mastersFifiIsLearningTo": "Fifi 正在学习分析图表、风险和持仓，敬请期待。",
+  "mastersBeforeLaunchWeNeed": "上线前需评估是否构成投资建议。",
+  "mastersLaunchReminderOn": "已订阅上线提醒",
+  "mastersRemindMeAtLaunch": "上线提醒我",
+  "mastersReminderCanceled": "已取消提醒",
+  "mastersDemoDataFeaturesShown": "演示数据：功能为规划展示，暂未上线",
+  "rewardsLevel": "等级 {lv} {rewardSoon}",
+  "@rewardsLevel": {
+    "placeholders": {
+      "lv": {
+        "type": "Object"
+      },
+      "rewardSoon": {
+        "type": "Object"
+      }
+    }
+  },
+  "rewardsHolidayStarterGifts": "圣诞新手礼",
+  "rewardsUnlocksAtLevel1": "等级 1 解锁",
+  "rewardsRewardsShownAreDemo": "奖励内容为演示示例，正式奖品与兑换规则以上线公告为准",
+  "rewardsFifiRewards": "Fifi 奖励",
+  "rewardsHolidayFifi": "圣诞 Fifi",
+  "rewardsHolidayNewYearLimited": "圣诞 · 新年限定",
+  "rewardsFifiHolidayShop": "Fifi 圣诞商店\n",
+  "rewardsOpeningSoon": "即将开启",
+  "rewardsCompleteTasksToEarn": "完成任务赚取 XP，解锁节日服饰、房间与新年梦想好礼。",
+  "rewardsLevel2": "等级 {level}",
+  "@rewardsLevel2": {
+    "placeholders": {
+      "level": {
+        "type": "Object"
+      }
+    }
+  },
+  "rewardsReminderOn": "✓ 已开启提醒",
+  "rewardsRemindMeAtLaunch": "🔔 开启上线提醒",
+  "serverReasonRejected": "券商已拒绝该订单",
+  "serverReasonCanceled": "订单已撤销",
+  "serverReasonTransfer": "券商返回了失败原因，请联系客服了解详情"
 }

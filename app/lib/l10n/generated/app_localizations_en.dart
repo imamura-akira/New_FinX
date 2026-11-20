@@ -1787,4 +1787,299 @@ class AppLocalizationsEn extends AppLocalizations {
   String xferReason(Object failureReason) {
     return 'Reason: $failureReason';
   }
+
+  @override
+  String featureComingSoon(Object title) {
+    return '$title is coming soon';
+  }
+
+  @override
+  String mastersLastPrice(Object price) {
+    return 'Last $price';
+  }
+
+  @override
+  String get demoNorthshoreCapital => 'Northshore Capital';
+
+  @override
+  String get demoNorthshoreCapitalSample => 'Northshore Capital (Sample)';
+
+  @override
+  String get demoLongbridgeFund => 'Longbridge Fund';
+
+  @override
+  String get demoLongbridgeFundSample => 'Longbridge Fund (Sample)';
+
+  @override
+  String get demoFarhillInvestments => 'Farhill Investments';
+
+  @override
+  String get demoFarhillInvestmentsSample => 'Farhill Investments (Sample)';
+
+  @override
+  String get demoMorningBayAm => 'Morning Bay AM';
+
+  @override
+  String get demoMorningBayAmSample => 'Morning Bay AM (Sample)';
+
+  @override
+  String get demoBluestonePartners => 'Bluestone Partners';
+
+  @override
+  String get demoBluestonePartnersSample => 'Bluestone Partners (Sample)';
+
+  @override
+  String get demoCoastlineValue => 'Coastline Value';
+
+  @override
+  String get demoCoastlineValueSample => 'Coastline Value (Sample)';
+
+  @override
+  String get demoPinewoodGlobal => 'Pinewood Global';
+
+  @override
+  String get demoPinewoodGlobalSample => 'Pinewood Global (Sample)';
+
+  @override
+  String get demoGalaxyQuant => 'Galaxy Quant';
+
+  @override
+  String get demoGalaxyQuantSample => 'Galaxy Quant (Sample)';
+
+  @override
+  String get demoMostIncreased => 'Most Increased';
+
+  @override
+  String get demoContrarianBuys => 'Contrarian Buys';
+
+  @override
+  String get demoMostHeld => 'Most Held';
+
+  @override
+  String get demoNewPositions => 'New Positions';
+
+  @override
+  String get demoPortfolioCheckup => 'Portfolio Checkup';
+
+  @override
+  String get demoAnalyzeYourHoldingsAnd =>
+      'Analyze your holdings and unrealized P&L';
+
+  @override
+  String get demoHoldOrSell => 'Hold or Sell';
+
+  @override
+  String get demoCompareTrendsRiskAnd =>
+      'Compare trends, risk, and position size';
+
+  @override
+  String get demoStockResearch => 'Stock Research';
+
+  @override
+  String get demoPricesFundamentalsAndNews =>
+      'Prices, fundamentals, and news in one place';
+
+  @override
+  String get demoRiskAlerts => 'Risk Alerts';
+
+  @override
+  String get demoSpotVolatilityConcentrationAnd =>
+      'Spot volatility, concentration, and drawdowns';
+
+  @override
+  String get demoQuantSignals => 'Quant Signals';
+
+  @override
+  String get demoMomentumReversalVolumeAnd =>
+      'Momentum, reversal, volume, and other factors';
+
+  @override
+  String get demoInvesting101 => 'Investing 101';
+
+  @override
+  String get demoUnderstandInvestingInPlain =>
+      'Understand investing in plain language';
+
+  @override
+  String get demoFinxSportsBottle => 'FinX Sports Bottle';
+
+  @override
+  String get demoFifiHolidayBeanie => 'Fifi Holiday Beanie';
+
+  @override
+  String get demoWirelessHeadphones => 'Wireless Headphones';
+
+  @override
+  String get demoFifiCrossbodyBag => 'Fifi Crossbody Bag';
+
+  @override
+  String get mastersComingSoon => 'Coming soon';
+
+  @override
+  String get mastersSeeWhatTheBig => 'See what the big institutions are buying';
+
+  @override
+  String get mastersBasedOnPublic13f =>
+      'Based on public 13F filings, updated quarterly';
+
+  @override
+  String get mastersTopReturns => 'Top Returns';
+
+  @override
+  String get mastersRecentlyUpdated => 'Recently Updated';
+
+  @override
+  String get mastersMore => 'More';
+
+  @override
+  String get mastersStockIdeas => 'Stock Ideas';
+
+  @override
+  String get mastersQ32026 => 'Q3 2026';
+
+  @override
+  String get mastersDataComesFromPublic =>
+      'Data comes from public institutional filings (demo data). Filings are reported with a lag and may not reflect current holdings. This is not investment advice.';
+
+  @override
+  String get mastersDemoDataInstitutionNames =>
+      'Demo data: institution names, returns, and holdings are fictional and for display only';
+
+  @override
+  String get masters1YrReturn => '1-Yr Return';
+
+  @override
+  String get mastersSymbol => 'Symbol';
+
+  @override
+  String get mastersIncreaseAsOfShares => 'Increase as % of Shares Outstanding';
+
+  @override
+  String get mastersIncreasedUnchangedDecreased =>
+      'Increased / Unchanged / Decreased';
+
+  @override
+  String get mastersAllInstitutions => 'All Institutions';
+
+  @override
+  String get mastersNameFirm => 'Name / Firm';
+
+  @override
+  String get mastersReturn => 'Return';
+
+  @override
+  String get mastersAumGrowth => 'AUM Growth';
+
+  @override
+  String get mastersUpdated => 'Updated';
+
+  @override
+  String get mastersDemoDataAllInstitution =>
+      'Demo data: all institution names are fictional examples';
+
+  @override
+  String get mastersInstitutionDetails => 'Institution Details';
+
+  @override
+  String get mastersInstitutionNotFound => 'Institution not found';
+
+  @override
+  String get mastersPleaseGoBackAnd => 'Please go back and choose again';
+
+  @override
+  String get mastersTop5HoldingsSample => 'Top 5 Holdings (Sample)';
+
+  @override
+  String get mastersDemoDataInstitutionsAnd =>
+      'Demo data: institutions and holdings are fictional; stock prices are simulated quotes';
+
+  @override
+  String get mastersAiAssistant => 'AI Assistant';
+
+  @override
+  String get mastersNotIncludedInThe =>
+      'Not included in the first release; pending compliance review. The page spec below is kept for evaluation only and won\'t launch in the first release.';
+
+  @override
+  String get mastersFifiQuantAssistant => 'Fifi Quant Assistant';
+
+  @override
+  String get mastersComingSoon2 => 'Coming Soon';
+
+  @override
+  String get mastersFifiIsLearningTo =>
+      'Fifi is learning to analyze charts, risk, and holdings. Stay tuned.';
+
+  @override
+  String get mastersBeforeLaunchWeNeed =>
+      'Before launch, we need to assess whether this would constitute investment advice.';
+
+  @override
+  String get mastersLaunchReminderOn => 'Launch reminder on';
+
+  @override
+  String get mastersRemindMeAtLaunch => 'Remind Me at Launch';
+
+  @override
+  String get mastersReminderCanceled => 'Reminder canceled';
+
+  @override
+  String get mastersDemoDataFeaturesShown =>
+      'Demo data: features shown are planned and not yet available';
+
+  @override
+  String rewardsLevel(Object lv, Object rewardSoon) {
+    return 'Level $lv $rewardSoon';
+  }
+
+  @override
+  String get rewardsHolidayStarterGifts => 'Holiday Starter Gifts';
+
+  @override
+  String get rewardsUnlocksAtLevel1 => 'Unlocks at Level 1';
+
+  @override
+  String get rewardsRewardsShownAreDemo =>
+      'Rewards shown are demo examples. Actual prizes and redemption rules will be announced at launch.';
+
+  @override
+  String get rewardsFifiRewards => 'Fifi Rewards';
+
+  @override
+  String get rewardsHolidayFifi => 'Holiday Fifi';
+
+  @override
+  String get rewardsHolidayNewYearLimited => 'Holiday · New Year Limited';
+
+  @override
+  String get rewardsFifiHolidayShop => 'Fifi Holiday Shop\n';
+
+  @override
+  String get rewardsOpeningSoon => 'Opening Soon';
+
+  @override
+  String get rewardsCompleteTasksToEarn =>
+      'Complete tasks to earn XP and unlock holiday outfits, rooms, and New Year wish-list gifts.';
+
+  @override
+  String rewardsLevel2(Object level) {
+    return 'Level $level';
+  }
+
+  @override
+  String get rewardsReminderOn => '✓ Reminder On';
+
+  @override
+  String get rewardsRemindMeAtLaunch => '🔔 Remind Me at Launch';
+
+  @override
+  String get serverReasonRejected =>
+      'The broker rejected this order. Please contact support for details.';
+
+  @override
+  String get serverReasonCanceled => 'This order was canceled.';
+
+  @override
+  String get serverReasonTransfer =>
+      'The broker reported a reason for this failure. Please contact support for details.';
 }

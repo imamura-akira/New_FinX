@@ -694,7 +694,7 @@ class _TransfersPageState extends State<TransfersPage> {
                 if (tr.buyingPowerAvailableAt == null || tr.withdrawableAt == null)
                   Text(t.xferText(buyingPowerFallback, seasoningFallback), style: TextStyle(fontSize: 12, color: AppColors.faint)),
               ],
-              if (tr.failureReason != null) Notice(t.xferReason(tr.failureReason!), kind: NoticeKind.danger),
+              if (tr.failureReason != null) Notice(t.xferReason(localizeServerText(tr.failureReason!, t.serverReasonTransfer)), kind: NoticeKind.danger),
             ],
           ),
         ),

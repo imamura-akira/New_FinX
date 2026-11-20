@@ -8,11 +8,12 @@ import '../../../core/widgets/widgets.dart';
 import '../../market/data/market_api.dart';
 import '../../market/presentation/market_widgets.dart';
 import '../domain/demo_data.dart';
+import '../../../l10n/l10n.dart';
 
 // F13：股票大师（P-23 / P-24）、Fifi（P-26）。奖励（P-27）见 rewards_page.dart（F16）。纯客户端模拟数据，不调用新接口；
 // 个股最新价取自虚拟行情（F11）。版式参照 prototype/js/pages/discover.js 与 design/screens/。
 
-const comingSoon = '即将上线';
+String get comingSoon => t.mastersComingSoon;
 
 String pct(double v, {int dp = 2, bool sign = true}) => '${sign && v > 0 ? '+' : ''}${(v * 100).toStringAsFixed(dp)}%';
 
@@ -139,20 +140,20 @@ class _MastersPageState extends State<MastersPage> {
   Widget build(BuildContext context) {
     final list = [...institutions]..sort((a, b) => _group == 'recent' ? b.updated.compareTo(a.updated) : b.ret.compareTo(a.ret));
     return Scaffold(
-      appBar: AppBar(title: const Text('股票大师')),
+      appBar: AppBar(title: Text(t.tabMasters)),
       body: ListenableBuilder(
         listenable: _feed!,
         builder: (context, _) => ListView(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
           children: [
-            const _Banner(gradient: AppGradients.soon, title: '看看大机构在买什么', sub: '基于公开的 13F 持仓申报，按季度更新'),
+            _Banner(gradient: AppGradients.soon, title: t.mastersSeeWhatTheBig, sub: t.mastersBasedOnPublic13f),
             Row(
               children: [
-                ChipToggle(label: '收益最高', selected: _group == 'hot', onTap: () => setState(() => _group = 'hot')),
+                ChipToggle(label: t.mastersTopReturns, selected: _group == 'hot', onTap: () => setState(() => _group = 'hot')),
                 const SizedBox(width: 8),
-                ChipToggle(label: '最近更新', selected: _group == 'recent', onTap: () => setState(() => _group = 'recent')),
+                ChipToggle(label: t.mastersRecentlyUpdated, selected: _group == 'recent', onTap: () => setState(() => _group = 'recent')),
                 const Spacer(),
-                LinkButton('更多', key: const Key('p23.more'), fontSize: 13, onPressed: () => context.push('/masters/all')),
+                LinkButton(t.mastersMore, key: const Key('p23.more'), fontSize: 13, onPressed: () => context.push('/masters/all')),
               ],
             ),
             const SizedBox(height: 12),
@@ -166,8 +167,8 @@ class _MastersPageState extends State<MastersPage> {
               children: [for (final x in list.take(6)) _instCard(x)],
             ),
             SectionTitle(
-              '个股机会',
-              trailing: const Text('2026 年第三季度', style: TextStyle(fontSize: 13, color: AppColors.muted)),
+              t.mastersStockIdeas,
+              trailing: Text(t.mastersQ32026, style: TextStyle(fontSize: 13, color: AppColors.muted)),
             ),
             Wrap(
               spacing: 8,
@@ -187,8 +188,8 @@ class _MastersPageState extends State<MastersPage> {
             ),
             const SizedBox(height: 12),
             _opportunityTable(),
-            const Notice('数据来源于机构公开申报（演示数据），存在披露滞后，不代表机构当前持仓，不构成投资建议。'),
-            const DemoDataNote('演示数据：机构名称、收益与持仓均为虚构，仅供展示'),
+            Notice(t.mastersDataComesFromPublic),
+            DemoDataNote(t.mastersDemoDataInstitutionNames),
           ],
         ),
       ),
@@ -212,7 +213,7 @@ class _MastersPageState extends State<MastersPage> {
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
           ),
-          const Text('年收益', style: TextStyle(fontSize: 11, color: AppColors.muted)),
+          Text(t.masters1YrReturn, style: TextStyle(fontSize: 11, color: AppColors.muted)),
           const Spacer(),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
@@ -234,18 +235,18 @@ class _MastersPageState extends State<MastersPage> {
     padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
     child: Column(
       children: [
-        const Padding(
+        Padding(
           padding: EdgeInsets.symmetric(vertical: 6),
           child: Row(
             children: [
               Expanded(
                 flex: 4,
-                child: Text('代码', style: TextStyle(fontSize: 12, color: AppColors.muted)),
+                child: Text(t.mastersSymbol, style: TextStyle(fontSize: 12, color: AppColors.muted)),
               ),
               Expanded(
                 flex: 4,
                 child: Text(
-                  '增持占总股本',
+                  t.mastersIncreaseAsOfShares,
                   textAlign: TextAlign.right,
                   style: TextStyle(fontSize: 12, color: AppColors.muted),
                 ),
@@ -253,7 +254,7 @@ class _MastersPageState extends State<MastersPage> {
               Expanded(
                 flex: 4,
                 child: Text(
-                  '增 / 平 / 减 家数',
+                  t.mastersIncreasedUnchangedDecreased,
                   textAlign: TextAlign.right,
                   style: TextStyle(fontSize: 12, color: AppColors.muted),
                 ),
@@ -291,7 +292,7 @@ class _MastersPageState extends State<MastersPage> {
                           ],
                         ),
                         Text(
-                          '最新价 ${_feed!.quotes[sym] == null ? '—' : fmtPx(_feed!.quotes[sym]!.last)}',
+                          t.mastersLastPrice(_feed!.quotes[sym] == null ? '—' : fmtPx(_feed!.quotes[sym]!.last)),
                           style: const TextStyle(fontSize: 12, color: AppColors.muted),
                         ),
                       ],
@@ -363,7 +364,7 @@ class _InstitutionListPageState extends State<InstitutionListPage> {
       ),
     );
     return PageScaffold(
-      title: '全部机构',
+      title: t.mastersAllInstitutions,
       content: [
         AppCard(
           padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
@@ -373,13 +374,13 @@ class _InstitutionListPageState extends State<InstitutionListPage> {
                 padding: const EdgeInsets.symmetric(vertical: 6),
                 child: Row(
                   children: [
-                    const Expanded(
+                    Expanded(
                       flex: 5,
-                      child: Text('名称 / 公司', style: TextStyle(fontSize: 12, color: AppColors.muted)),
+                      child: Text(t.mastersNameFirm, style: TextStyle(fontSize: 12, color: AppColors.muted)),
                     ),
-                    Expanded(flex: 3, child: head('ret', '收益')),
-                    Expanded(flex: 3, child: head('aum', '资产增速')),
-                    Expanded(flex: 2, child: head('updated', '更新')),
+                    Expanded(flex: 3, child: head('ret', t.mastersReturn)),
+                    Expanded(flex: 3, child: head('aum', t.mastersAumGrowth)),
+                    Expanded(flex: 2, child: head('updated', t.mastersUpdated)),
                   ],
                 ),
               ),
@@ -430,7 +431,7 @@ class _InstitutionListPageState extends State<InstitutionListPage> {
             ],
           ),
         ),
-        const DemoDataNote('演示数据：机构名称均为虚构示例'),
+        DemoDataNote(t.mastersDemoDataAllInstitution),
       ],
     );
   }
@@ -470,11 +471,11 @@ class _InstitutionDetailPageState extends State<InstitutionDetailPage> {
   Widget build(BuildContext context) {
     final x = institutionOf(widget.id);
     if (x == null) {
-      return const PageScaffold(
-        title: '机构详情',
+      return PageScaffold(
+        title: t.mastersInstitutionDetails,
         content: [
           SizedBox(height: 40),
-          StateView(icon: Icons.search_off_rounded, title: '未找到该机构', message: '请返回列表重新选择'),
+          StateView(icon: Icons.search_off_rounded, title: t.mastersInstitutionNotFound, message: t.mastersPleaseGoBackAnd),
         ],
       );
     }
@@ -498,19 +499,19 @@ class _InstitutionDetailPageState extends State<InstitutionDetailPage> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    _stat('年收益', _pctText(x.ret, size: 16)),
-                    _stat('资产增速', _pctText(x.aum, size: 16)),
-                    _stat('更新', Text(x.updated, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600))),
+                    _stat(t.masters1YrReturn, _pctText(x.ret, size: 16)),
+                    _stat(t.mastersAumGrowth, _pctText(x.aum, size: 16)),
+                    _stat(t.mastersUpdated, Text(x.updated, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600))),
                   ],
                 ),
               ],
             ),
           ),
-          const SectionTitle('前五大持仓（示例）'),
+          SectionTitle(t.mastersTop5HoldingsSample),
           ListGroup(
             children: [for (final s in x.holdings) QuoteRow(symbol: s, quote: _feed!.quotes[s], moved: _feed!.moved[s] ?? 0)],
           ),
-          const DemoDataNote('演示数据：机构与持仓均为虚构；个股价格为虚拟行情'),
+          DemoDataNote(t.mastersDemoDataInstitutionsAnd),
         ],
       ),
     );
@@ -540,16 +541,16 @@ class _FifiPageState extends State<FifiPage> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('AI 助手'), actions: [_xpBadge('XP')]),
+    appBar: AppBar(title: Text(t.mastersAiAssistant), actions: [_xpBadge('XP')]),
     body: ListView(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
       children: [
-        const Notice('首期不做，待合规评估。以下为保留的页面规格，仅供评估，不会在首期上线。', kind: NoticeKind.warn),
-        const _Banner(
+        Notice(t.mastersNotIncludedInThe, kind: NoticeKind.warn),
+        _Banner(
           gradient: AppGradients.soon,
-          kicker: 'Fifi 量化助手',
-          title: '即将推出',
-          sub: 'Fifi 正在学习分析图表、风险和持仓，敬请期待。',
+          kicker: t.mastersFifiQuantAssistant,
+          title: t.mastersComingSoon2,
+          sub: t.mastersFifiIsLearningTo,
           image: BrandAssets.fifiPaw,
         ),
         GridView.count(
@@ -566,23 +567,23 @@ class _FifiPageState extends State<FifiPage> {
                 icon: icon,
                 title: '${k + 1}. $title',
                 sub: desc,
-                onTap: () => showToast(context, '$title$comingSoon'),
+                onTap: () => showToast(context, t.featureComingSoon(title)),
               ),
           ],
         ),
         const SizedBox(height: 12),
-        const Notice('上线前需评估是否构成投资建议。', kind: NoticeKind.warn),
+        Notice(t.mastersBeforeLaunchWeNeed, kind: NoticeKind.warn),
         AppButton(
-          _subscribed ? '已订阅上线提醒' : '上线提醒我',
+          _subscribed ? t.mastersLaunchReminderOn : t.mastersRemindMeAtLaunch,
           key: const Key('p26.sub'),
           kind: _subscribed ? ButtonKind.ghost : ButtonKind.secondary,
           icon: const Icon(Icons.notifications_none_rounded, size: 18),
           onPressed: () {
             setState(() => _subscribed = !_subscribed);
-            showToast(context, _subscribed ? '已订阅上线提醒' : '已取消提醒');
+            showToast(context, _subscribed ? t.mastersLaunchReminderOn : t.mastersReminderCanceled);
           },
         ),
-        const DemoDataNote('演示数据：功能为规划展示，暂未上线'),
+        DemoDataNote(t.mastersDemoDataFeaturesShown),
       ],
     ),
   );

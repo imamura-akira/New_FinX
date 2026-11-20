@@ -136,6 +136,9 @@ String localizeFieldReason(String reason) {
   return isEnglish && _hanRe.hasMatch(reason) ? t.errFieldInvalid : reason;
 }
 
+/// 后端返回的自由文本（订单拒绝原因、出入金失败原因等，后端为中文）：英文模式下改用 [fallback]，中文模式原样显示。
+String localizeServerText(String text, String fallback) => isEnglish && _hanRe.hasMatch(text) ? fallback : text;
+
 // ---------------------------------------------------------------------------
 // 日期：中文 2026-11-19 14:05；英文（美式）11/19/2026 2:05 PM。金额两种语言一致（$1,234.56）。
 

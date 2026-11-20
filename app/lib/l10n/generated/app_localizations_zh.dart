@@ -1688,4 +1688,280 @@ class AppLocalizationsZh extends AppLocalizations {
   String xferReason(Object failureReason) {
     return '原因：$failureReason';
   }
+
+  @override
+  String featureComingSoon(Object title) {
+    return '$title即将上线';
+  }
+
+  @override
+  String mastersLastPrice(Object price) {
+    return '最新价 $price';
+  }
+
+  @override
+  String get demoNorthshoreCapital => '北岸资本';
+
+  @override
+  String get demoNorthshoreCapitalSample => 'Northshore Capital (示例)';
+
+  @override
+  String get demoLongbridgeFund => '长桥基金';
+
+  @override
+  String get demoLongbridgeFundSample => 'Longbridge Fund (示例)';
+
+  @override
+  String get demoFarhillInvestments => '远山投资';
+
+  @override
+  String get demoFarhillInvestmentsSample => 'Farhill Investments (示例)';
+
+  @override
+  String get demoMorningBayAm => '晨湾资管';
+
+  @override
+  String get demoMorningBayAmSample => 'Morning Bay AM (示例)';
+
+  @override
+  String get demoBluestonePartners => '青石合伙';
+
+  @override
+  String get demoBluestonePartnersSample => 'Bluestone Partners (示例)';
+
+  @override
+  String get demoCoastlineValue => '海岸价值';
+
+  @override
+  String get demoCoastlineValueSample => 'Coastline Value (示例)';
+
+  @override
+  String get demoPinewoodGlobal => '松林全球';
+
+  @override
+  String get demoPinewoodGlobalSample => 'Pinewood Global (示例)';
+
+  @override
+  String get demoGalaxyQuant => '星河量化';
+
+  @override
+  String get demoGalaxyQuantSample => 'Galaxy Quant (示例)';
+
+  @override
+  String get demoMostIncreased => '增持最多';
+
+  @override
+  String get demoContrarianBuys => '逆势增持';
+
+  @override
+  String get demoMostHeld => '持股最多';
+
+  @override
+  String get demoNewPositions => '新进持股';
+
+  @override
+  String get demoPortfolioCheckup => '持仓体检';
+
+  @override
+  String get demoAnalyzeYourHoldingsAnd => '分析持仓结构与未实现盈亏';
+
+  @override
+  String get demoHoldOrSell => '持有或卖出';
+
+  @override
+  String get demoCompareTrendsRiskAnd => '对比趋势、风险与仓位';
+
+  @override
+  String get demoStockResearch => '个股研究';
+
+  @override
+  String get demoPricesFundamentalsAndNews => '汇总价格、基本面与新闻';
+
+  @override
+  String get demoRiskAlerts => '风险提醒';
+
+  @override
+  String get demoSpotVolatilityConcentrationAnd => '识别波动、集中度与回撤';
+
+  @override
+  String get demoQuantSignals => '量化信号';
+
+  @override
+  String get demoMomentumReversalVolumeAnd => '动量、反转、成交量等因子';
+
+  @override
+  String get demoInvesting101 => '投资课堂';
+
+  @override
+  String get demoUnderstandInvestingInPlain => '用简单的语言理解投资逻辑';
+
+  @override
+  String get demoFinxSportsBottle => 'FinX 运动水壶';
+
+  @override
+  String get demoFifiHolidayBeanie => 'Fifi 圣诞绒帽';
+
+  @override
+  String get demoWirelessHeadphones => '无线耳机';
+
+  @override
+  String get demoFifiCrossbodyBag => 'Fifi 斜挎包';
+
+  @override
+  String get mastersComingSoon => '即将上线';
+
+  @override
+  String get mastersSeeWhatTheBig => '看看大机构在买什么';
+
+  @override
+  String get mastersBasedOnPublic13f => '基于公开的 13F 持仓申报，按季度更新';
+
+  @override
+  String get mastersTopReturns => '收益最高';
+
+  @override
+  String get mastersRecentlyUpdated => '最近更新';
+
+  @override
+  String get mastersMore => '更多';
+
+  @override
+  String get mastersStockIdeas => '个股机会';
+
+  @override
+  String get mastersQ32026 => '2026 年第三季度';
+
+  @override
+  String get mastersDataComesFromPublic =>
+      '数据来源于机构公开申报（演示数据），存在披露滞后，不代表机构当前持仓，不构成投资建议。';
+
+  @override
+  String get mastersDemoDataInstitutionNames => '演示数据：机构名称、收益与持仓均为虚构，仅供展示';
+
+  @override
+  String get masters1YrReturn => '年收益';
+
+  @override
+  String get mastersSymbol => '代码';
+
+  @override
+  String get mastersIncreaseAsOfShares => '增持占总股本';
+
+  @override
+  String get mastersIncreasedUnchangedDecreased => '增 / 平 / 减 家数';
+
+  @override
+  String get mastersAllInstitutions => '全部机构';
+
+  @override
+  String get mastersNameFirm => '名称 / 公司';
+
+  @override
+  String get mastersReturn => '收益';
+
+  @override
+  String get mastersAumGrowth => '资产增速';
+
+  @override
+  String get mastersUpdated => '更新';
+
+  @override
+  String get mastersDemoDataAllInstitution => '演示数据：机构名称均为虚构示例';
+
+  @override
+  String get mastersInstitutionDetails => '机构详情';
+
+  @override
+  String get mastersInstitutionNotFound => '未找到该机构';
+
+  @override
+  String get mastersPleaseGoBackAnd => '请返回列表重新选择';
+
+  @override
+  String get mastersTop5HoldingsSample => '前五大持仓（示例）';
+
+  @override
+  String get mastersDemoDataInstitutionsAnd => '演示数据：机构与持仓均为虚构；个股价格为虚拟行情';
+
+  @override
+  String get mastersAiAssistant => 'AI 助手';
+
+  @override
+  String get mastersNotIncludedInThe => '首期不做，待合规评估。以下为保留的页面规格，仅供评估，不会在首期上线。';
+
+  @override
+  String get mastersFifiQuantAssistant => 'Fifi 量化助手';
+
+  @override
+  String get mastersComingSoon2 => '即将推出';
+
+  @override
+  String get mastersFifiIsLearningTo => 'Fifi 正在学习分析图表、风险和持仓，敬请期待。';
+
+  @override
+  String get mastersBeforeLaunchWeNeed => '上线前需评估是否构成投资建议。';
+
+  @override
+  String get mastersLaunchReminderOn => '已订阅上线提醒';
+
+  @override
+  String get mastersRemindMeAtLaunch => '上线提醒我';
+
+  @override
+  String get mastersReminderCanceled => '已取消提醒';
+
+  @override
+  String get mastersDemoDataFeaturesShown => '演示数据：功能为规划展示，暂未上线';
+
+  @override
+  String rewardsLevel(Object lv, Object rewardSoon) {
+    return '等级 $lv $rewardSoon';
+  }
+
+  @override
+  String get rewardsHolidayStarterGifts => '圣诞新手礼';
+
+  @override
+  String get rewardsUnlocksAtLevel1 => '等级 1 解锁';
+
+  @override
+  String get rewardsRewardsShownAreDemo => '奖励内容为演示示例，正式奖品与兑换规则以上线公告为准';
+
+  @override
+  String get rewardsFifiRewards => 'Fifi 奖励';
+
+  @override
+  String get rewardsHolidayFifi => '圣诞 Fifi';
+
+  @override
+  String get rewardsHolidayNewYearLimited => '圣诞 · 新年限定';
+
+  @override
+  String get rewardsFifiHolidayShop => 'Fifi 圣诞商店\n';
+
+  @override
+  String get rewardsOpeningSoon => '即将开启';
+
+  @override
+  String get rewardsCompleteTasksToEarn => '完成任务赚取 XP，解锁节日服饰、房间与新年梦想好礼。';
+
+  @override
+  String rewardsLevel2(Object level) {
+    return '等级 $level';
+  }
+
+  @override
+  String get rewardsReminderOn => '✓ 已开启提醒';
+
+  @override
+  String get rewardsRemindMeAtLaunch => '🔔 开启上线提醒';
+
+  @override
+  String get serverReasonRejected => '券商已拒绝该订单';
+
+  @override
+  String get serverReasonCanceled => '订单已撤销';
+
+  @override
+  String get serverReasonTransfer => '券商返回了失败原因，请联系客服了解详情';
 }

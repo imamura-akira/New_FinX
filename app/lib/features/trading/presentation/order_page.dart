@@ -545,7 +545,7 @@ class _OrderPageState extends State<OrderPage> {
     final message = switch (status) {
       _ when r.pending => t.orderTheBrokerHasnT,
       'FILLED' => paper ? t.orderSimulatedFillAtDemo : t.orderFillPriceAndQuantity,
-      'REJECTED' => o?.rejectReason ?? t.orderTheBrokerRejectedThis,
+      'REJECTED' => o?.rejectReason == null ? t.orderTheBrokerRejectedThis : localizeServerText(o!.rejectReason!, t.orderTheBrokerRejectedThis),
       _ when resting && paper => t.orderFillsAutomaticallyWhenThe,
       _ when resting => t.orderMayFillOnlyWhen,
       _ => t.orderYourOrderHasBeen,

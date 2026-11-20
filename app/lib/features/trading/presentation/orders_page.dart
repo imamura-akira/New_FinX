@@ -193,7 +193,7 @@ class _OrdersPageState extends State<OrdersPage> {
           KvRow(t.ordersSubmitted, fmtDateTime(o.submittedAt)),
           if (o.doneAt != null) KvRow(t.ordersCompleted, fmtDateTime(o.doneAt)),
           if (o.orderNo != null) KvRow(t.ordersOrderNo, o.orderNo!),
-          if (o.rejectReason != null) Notice(o.rejectReason!, kind: o.status == 'CANCELED' ? NoticeKind.info : NoticeKind.danger),
+          if (o.rejectReason != null) Notice(localizeServerText(o.rejectReason!, o.status == 'CANCELED' ? t.serverReasonCanceled : t.serverReasonRejected), kind: o.status == 'CANCELED' ? NoticeKind.info : NoticeKind.danger),
           if (o.status == 'SUBMITTING') Notice(t.ordersTheBrokerHasnT),
           if (isOrderCancellable(o.status))
             Padding(

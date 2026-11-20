@@ -3158,6 +3158,540 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'原因：{failureReason}'**
   String xferReason(Object failureReason);
+
+  /// No description provided for @featureComingSoon.
+  ///
+  /// In zh, this message translates to:
+  /// **'{title}即将上线'**
+  String featureComingSoon(Object title);
+
+  /// No description provided for @mastersLastPrice.
+  ///
+  /// In zh, this message translates to:
+  /// **'最新价 {price}'**
+  String mastersLastPrice(Object price);
+
+  /// No description provided for @demoNorthshoreCapital.
+  ///
+  /// In zh, this message translates to:
+  /// **'北岸资本'**
+  String get demoNorthshoreCapital;
+
+  /// No description provided for @demoNorthshoreCapitalSample.
+  ///
+  /// In zh, this message translates to:
+  /// **'Northshore Capital (示例)'**
+  String get demoNorthshoreCapitalSample;
+
+  /// No description provided for @demoLongbridgeFund.
+  ///
+  /// In zh, this message translates to:
+  /// **'长桥基金'**
+  String get demoLongbridgeFund;
+
+  /// No description provided for @demoLongbridgeFundSample.
+  ///
+  /// In zh, this message translates to:
+  /// **'Longbridge Fund (示例)'**
+  String get demoLongbridgeFundSample;
+
+  /// No description provided for @demoFarhillInvestments.
+  ///
+  /// In zh, this message translates to:
+  /// **'远山投资'**
+  String get demoFarhillInvestments;
+
+  /// No description provided for @demoFarhillInvestmentsSample.
+  ///
+  /// In zh, this message translates to:
+  /// **'Farhill Investments (示例)'**
+  String get demoFarhillInvestmentsSample;
+
+  /// No description provided for @demoMorningBayAm.
+  ///
+  /// In zh, this message translates to:
+  /// **'晨湾资管'**
+  String get demoMorningBayAm;
+
+  /// No description provided for @demoMorningBayAmSample.
+  ///
+  /// In zh, this message translates to:
+  /// **'Morning Bay AM (示例)'**
+  String get demoMorningBayAmSample;
+
+  /// No description provided for @demoBluestonePartners.
+  ///
+  /// In zh, this message translates to:
+  /// **'青石合伙'**
+  String get demoBluestonePartners;
+
+  /// No description provided for @demoBluestonePartnersSample.
+  ///
+  /// In zh, this message translates to:
+  /// **'Bluestone Partners (示例)'**
+  String get demoBluestonePartnersSample;
+
+  /// No description provided for @demoCoastlineValue.
+  ///
+  /// In zh, this message translates to:
+  /// **'海岸价值'**
+  String get demoCoastlineValue;
+
+  /// No description provided for @demoCoastlineValueSample.
+  ///
+  /// In zh, this message translates to:
+  /// **'Coastline Value (示例)'**
+  String get demoCoastlineValueSample;
+
+  /// No description provided for @demoPinewoodGlobal.
+  ///
+  /// In zh, this message translates to:
+  /// **'松林全球'**
+  String get demoPinewoodGlobal;
+
+  /// No description provided for @demoPinewoodGlobalSample.
+  ///
+  /// In zh, this message translates to:
+  /// **'Pinewood Global (示例)'**
+  String get demoPinewoodGlobalSample;
+
+  /// No description provided for @demoGalaxyQuant.
+  ///
+  /// In zh, this message translates to:
+  /// **'星河量化'**
+  String get demoGalaxyQuant;
+
+  /// No description provided for @demoGalaxyQuantSample.
+  ///
+  /// In zh, this message translates to:
+  /// **'Galaxy Quant (示例)'**
+  String get demoGalaxyQuantSample;
+
+  /// No description provided for @demoMostIncreased.
+  ///
+  /// In zh, this message translates to:
+  /// **'增持最多'**
+  String get demoMostIncreased;
+
+  /// No description provided for @demoContrarianBuys.
+  ///
+  /// In zh, this message translates to:
+  /// **'逆势增持'**
+  String get demoContrarianBuys;
+
+  /// No description provided for @demoMostHeld.
+  ///
+  /// In zh, this message translates to:
+  /// **'持股最多'**
+  String get demoMostHeld;
+
+  /// No description provided for @demoNewPositions.
+  ///
+  /// In zh, this message translates to:
+  /// **'新进持股'**
+  String get demoNewPositions;
+
+  /// No description provided for @demoPortfolioCheckup.
+  ///
+  /// In zh, this message translates to:
+  /// **'持仓体检'**
+  String get demoPortfolioCheckup;
+
+  /// No description provided for @demoAnalyzeYourHoldingsAnd.
+  ///
+  /// In zh, this message translates to:
+  /// **'分析持仓结构与未实现盈亏'**
+  String get demoAnalyzeYourHoldingsAnd;
+
+  /// No description provided for @demoHoldOrSell.
+  ///
+  /// In zh, this message translates to:
+  /// **'持有或卖出'**
+  String get demoHoldOrSell;
+
+  /// No description provided for @demoCompareTrendsRiskAnd.
+  ///
+  /// In zh, this message translates to:
+  /// **'对比趋势、风险与仓位'**
+  String get demoCompareTrendsRiskAnd;
+
+  /// No description provided for @demoStockResearch.
+  ///
+  /// In zh, this message translates to:
+  /// **'个股研究'**
+  String get demoStockResearch;
+
+  /// No description provided for @demoPricesFundamentalsAndNews.
+  ///
+  /// In zh, this message translates to:
+  /// **'汇总价格、基本面与新闻'**
+  String get demoPricesFundamentalsAndNews;
+
+  /// No description provided for @demoRiskAlerts.
+  ///
+  /// In zh, this message translates to:
+  /// **'风险提醒'**
+  String get demoRiskAlerts;
+
+  /// No description provided for @demoSpotVolatilityConcentrationAnd.
+  ///
+  /// In zh, this message translates to:
+  /// **'识别波动、集中度与回撤'**
+  String get demoSpotVolatilityConcentrationAnd;
+
+  /// No description provided for @demoQuantSignals.
+  ///
+  /// In zh, this message translates to:
+  /// **'量化信号'**
+  String get demoQuantSignals;
+
+  /// No description provided for @demoMomentumReversalVolumeAnd.
+  ///
+  /// In zh, this message translates to:
+  /// **'动量、反转、成交量等因子'**
+  String get demoMomentumReversalVolumeAnd;
+
+  /// No description provided for @demoInvesting101.
+  ///
+  /// In zh, this message translates to:
+  /// **'投资课堂'**
+  String get demoInvesting101;
+
+  /// No description provided for @demoUnderstandInvestingInPlain.
+  ///
+  /// In zh, this message translates to:
+  /// **'用简单的语言理解投资逻辑'**
+  String get demoUnderstandInvestingInPlain;
+
+  /// No description provided for @demoFinxSportsBottle.
+  ///
+  /// In zh, this message translates to:
+  /// **'FinX 运动水壶'**
+  String get demoFinxSportsBottle;
+
+  /// No description provided for @demoFifiHolidayBeanie.
+  ///
+  /// In zh, this message translates to:
+  /// **'Fifi 圣诞绒帽'**
+  String get demoFifiHolidayBeanie;
+
+  /// No description provided for @demoWirelessHeadphones.
+  ///
+  /// In zh, this message translates to:
+  /// **'无线耳机'**
+  String get demoWirelessHeadphones;
+
+  /// No description provided for @demoFifiCrossbodyBag.
+  ///
+  /// In zh, this message translates to:
+  /// **'Fifi 斜挎包'**
+  String get demoFifiCrossbodyBag;
+
+  /// No description provided for @mastersComingSoon.
+  ///
+  /// In zh, this message translates to:
+  /// **'即将上线'**
+  String get mastersComingSoon;
+
+  /// No description provided for @mastersSeeWhatTheBig.
+  ///
+  /// In zh, this message translates to:
+  /// **'看看大机构在买什么'**
+  String get mastersSeeWhatTheBig;
+
+  /// No description provided for @mastersBasedOnPublic13f.
+  ///
+  /// In zh, this message translates to:
+  /// **'基于公开的 13F 持仓申报，按季度更新'**
+  String get mastersBasedOnPublic13f;
+
+  /// No description provided for @mastersTopReturns.
+  ///
+  /// In zh, this message translates to:
+  /// **'收益最高'**
+  String get mastersTopReturns;
+
+  /// No description provided for @mastersRecentlyUpdated.
+  ///
+  /// In zh, this message translates to:
+  /// **'最近更新'**
+  String get mastersRecentlyUpdated;
+
+  /// No description provided for @mastersMore.
+  ///
+  /// In zh, this message translates to:
+  /// **'更多'**
+  String get mastersMore;
+
+  /// No description provided for @mastersStockIdeas.
+  ///
+  /// In zh, this message translates to:
+  /// **'个股机会'**
+  String get mastersStockIdeas;
+
+  /// No description provided for @mastersQ32026.
+  ///
+  /// In zh, this message translates to:
+  /// **'2026 年第三季度'**
+  String get mastersQ32026;
+
+  /// No description provided for @mastersDataComesFromPublic.
+  ///
+  /// In zh, this message translates to:
+  /// **'数据来源于机构公开申报（演示数据），存在披露滞后，不代表机构当前持仓，不构成投资建议。'**
+  String get mastersDataComesFromPublic;
+
+  /// No description provided for @mastersDemoDataInstitutionNames.
+  ///
+  /// In zh, this message translates to:
+  /// **'演示数据：机构名称、收益与持仓均为虚构，仅供展示'**
+  String get mastersDemoDataInstitutionNames;
+
+  /// No description provided for @masters1YrReturn.
+  ///
+  /// In zh, this message translates to:
+  /// **'年收益'**
+  String get masters1YrReturn;
+
+  /// No description provided for @mastersSymbol.
+  ///
+  /// In zh, this message translates to:
+  /// **'代码'**
+  String get mastersSymbol;
+
+  /// No description provided for @mastersIncreaseAsOfShares.
+  ///
+  /// In zh, this message translates to:
+  /// **'增持占总股本'**
+  String get mastersIncreaseAsOfShares;
+
+  /// No description provided for @mastersIncreasedUnchangedDecreased.
+  ///
+  /// In zh, this message translates to:
+  /// **'增 / 平 / 减 家数'**
+  String get mastersIncreasedUnchangedDecreased;
+
+  /// No description provided for @mastersAllInstitutions.
+  ///
+  /// In zh, this message translates to:
+  /// **'全部机构'**
+  String get mastersAllInstitutions;
+
+  /// No description provided for @mastersNameFirm.
+  ///
+  /// In zh, this message translates to:
+  /// **'名称 / 公司'**
+  String get mastersNameFirm;
+
+  /// No description provided for @mastersReturn.
+  ///
+  /// In zh, this message translates to:
+  /// **'收益'**
+  String get mastersReturn;
+
+  /// No description provided for @mastersAumGrowth.
+  ///
+  /// In zh, this message translates to:
+  /// **'资产增速'**
+  String get mastersAumGrowth;
+
+  /// No description provided for @mastersUpdated.
+  ///
+  /// In zh, this message translates to:
+  /// **'更新'**
+  String get mastersUpdated;
+
+  /// No description provided for @mastersDemoDataAllInstitution.
+  ///
+  /// In zh, this message translates to:
+  /// **'演示数据：机构名称均为虚构示例'**
+  String get mastersDemoDataAllInstitution;
+
+  /// No description provided for @mastersInstitutionDetails.
+  ///
+  /// In zh, this message translates to:
+  /// **'机构详情'**
+  String get mastersInstitutionDetails;
+
+  /// No description provided for @mastersInstitutionNotFound.
+  ///
+  /// In zh, this message translates to:
+  /// **'未找到该机构'**
+  String get mastersInstitutionNotFound;
+
+  /// No description provided for @mastersPleaseGoBackAnd.
+  ///
+  /// In zh, this message translates to:
+  /// **'请返回列表重新选择'**
+  String get mastersPleaseGoBackAnd;
+
+  /// No description provided for @mastersTop5HoldingsSample.
+  ///
+  /// In zh, this message translates to:
+  /// **'前五大持仓（示例）'**
+  String get mastersTop5HoldingsSample;
+
+  /// No description provided for @mastersDemoDataInstitutionsAnd.
+  ///
+  /// In zh, this message translates to:
+  /// **'演示数据：机构与持仓均为虚构；个股价格为虚拟行情'**
+  String get mastersDemoDataInstitutionsAnd;
+
+  /// No description provided for @mastersAiAssistant.
+  ///
+  /// In zh, this message translates to:
+  /// **'AI 助手'**
+  String get mastersAiAssistant;
+
+  /// No description provided for @mastersNotIncludedInThe.
+  ///
+  /// In zh, this message translates to:
+  /// **'首期不做，待合规评估。以下为保留的页面规格，仅供评估，不会在首期上线。'**
+  String get mastersNotIncludedInThe;
+
+  /// No description provided for @mastersFifiQuantAssistant.
+  ///
+  /// In zh, this message translates to:
+  /// **'Fifi 量化助手'**
+  String get mastersFifiQuantAssistant;
+
+  /// No description provided for @mastersComingSoon2.
+  ///
+  /// In zh, this message translates to:
+  /// **'即将推出'**
+  String get mastersComingSoon2;
+
+  /// No description provided for @mastersFifiIsLearningTo.
+  ///
+  /// In zh, this message translates to:
+  /// **'Fifi 正在学习分析图表、风险和持仓，敬请期待。'**
+  String get mastersFifiIsLearningTo;
+
+  /// No description provided for @mastersBeforeLaunchWeNeed.
+  ///
+  /// In zh, this message translates to:
+  /// **'上线前需评估是否构成投资建议。'**
+  String get mastersBeforeLaunchWeNeed;
+
+  /// No description provided for @mastersLaunchReminderOn.
+  ///
+  /// In zh, this message translates to:
+  /// **'已订阅上线提醒'**
+  String get mastersLaunchReminderOn;
+
+  /// No description provided for @mastersRemindMeAtLaunch.
+  ///
+  /// In zh, this message translates to:
+  /// **'上线提醒我'**
+  String get mastersRemindMeAtLaunch;
+
+  /// No description provided for @mastersReminderCanceled.
+  ///
+  /// In zh, this message translates to:
+  /// **'已取消提醒'**
+  String get mastersReminderCanceled;
+
+  /// No description provided for @mastersDemoDataFeaturesShown.
+  ///
+  /// In zh, this message translates to:
+  /// **'演示数据：功能为规划展示，暂未上线'**
+  String get mastersDemoDataFeaturesShown;
+
+  /// No description provided for @rewardsLevel.
+  ///
+  /// In zh, this message translates to:
+  /// **'等级 {lv} {rewardSoon}'**
+  String rewardsLevel(Object lv, Object rewardSoon);
+
+  /// No description provided for @rewardsHolidayStarterGifts.
+  ///
+  /// In zh, this message translates to:
+  /// **'圣诞新手礼'**
+  String get rewardsHolidayStarterGifts;
+
+  /// No description provided for @rewardsUnlocksAtLevel1.
+  ///
+  /// In zh, this message translates to:
+  /// **'等级 1 解锁'**
+  String get rewardsUnlocksAtLevel1;
+
+  /// No description provided for @rewardsRewardsShownAreDemo.
+  ///
+  /// In zh, this message translates to:
+  /// **'奖励内容为演示示例，正式奖品与兑换规则以上线公告为准'**
+  String get rewardsRewardsShownAreDemo;
+
+  /// No description provided for @rewardsFifiRewards.
+  ///
+  /// In zh, this message translates to:
+  /// **'Fifi 奖励'**
+  String get rewardsFifiRewards;
+
+  /// No description provided for @rewardsHolidayFifi.
+  ///
+  /// In zh, this message translates to:
+  /// **'圣诞 Fifi'**
+  String get rewardsHolidayFifi;
+
+  /// No description provided for @rewardsHolidayNewYearLimited.
+  ///
+  /// In zh, this message translates to:
+  /// **'圣诞 · 新年限定'**
+  String get rewardsHolidayNewYearLimited;
+
+  /// No description provided for @rewardsFifiHolidayShop.
+  ///
+  /// In zh, this message translates to:
+  /// **'Fifi 圣诞商店\n'**
+  String get rewardsFifiHolidayShop;
+
+  /// No description provided for @rewardsOpeningSoon.
+  ///
+  /// In zh, this message translates to:
+  /// **'即将开启'**
+  String get rewardsOpeningSoon;
+
+  /// No description provided for @rewardsCompleteTasksToEarn.
+  ///
+  /// In zh, this message translates to:
+  /// **'完成任务赚取 XP，解锁节日服饰、房间与新年梦想好礼。'**
+  String get rewardsCompleteTasksToEarn;
+
+  /// No description provided for @rewardsLevel2.
+  ///
+  /// In zh, this message translates to:
+  /// **'等级 {level}'**
+  String rewardsLevel2(Object level);
+
+  /// No description provided for @rewardsReminderOn.
+  ///
+  /// In zh, this message translates to:
+  /// **'✓ 已开启提醒'**
+  String get rewardsReminderOn;
+
+  /// No description provided for @rewardsRemindMeAtLaunch.
+  ///
+  /// In zh, this message translates to:
+  /// **'🔔 开启上线提醒'**
+  String get rewardsRemindMeAtLaunch;
+
+  /// No description provided for @serverReasonRejected.
+  ///
+  /// In zh, this message translates to:
+  /// **'券商已拒绝该订单'**
+  String get serverReasonRejected;
+
+  /// No description provided for @serverReasonCanceled.
+  ///
+  /// In zh, this message translates to:
+  /// **'订单已撤销'**
+  String get serverReasonCanceled;
+
+  /// No description provided for @serverReasonTransfer.
+  ///
+  /// In zh, this message translates to:
+  /// **'券商返回了失败原因，请联系客服了解详情'**
+  String get serverReasonTransfer;
 }
 
 class _AppLocalizationsDelegate

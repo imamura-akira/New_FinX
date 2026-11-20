@@ -5,6 +5,7 @@ import '../../../app/theme.dart';
 import '../../../core/sound/ui_sound.dart';
 import '../../../core/widgets/widgets.dart';
 import '../domain/demo_data.dart';
+import '../../../l10n/l10n.dart';
 
 // F16：P-27 奖励 Tab 圣诞季限定版式（design/reward-design/rewards_mock_v8.png 为定稿；
 // 颜色与奖品图形取自同目录 mock_reference.html）。整页为"即将上线"展示态，纯客户端模拟数据。
@@ -61,7 +62,7 @@ abstract final class RewardColors {
   );
 }
 
-const rewardSoon = '即将推出';
+String get rewardSoon => t.mastersComingSoon2;
 
 class RewardsPage extends StatefulWidget {
   const RewardsPage({super.key});
@@ -105,24 +106,24 @@ class _RewardsPageState extends State<RewardsPage> {
                     key: Key('p27.level.$lv'),
                     level: lv,
                     selected: lv == 1,
-                    onTap: lv == 1 ? null : () => showToast(context, '等级 $lv $rewardSoon'),
+                    onTap: lv == 1 ? null : () => showToast(context, t.rewardsLevel(lv, rewardSoon)),
                   ),
                 ),
               ],
             ],
           ),
           const SizedBox(height: 22),
-          const Row(
+          Row(
             children: [
               Icon(Icons.ac_unit_rounded, size: 17, color: AppColors.primary),
               SizedBox(width: 10),
               Text(
-                '圣诞新手礼',
+                t.rewardsHolidayStarterGifts,
                 style: TextStyle(fontSize: 19, fontWeight: FontWeight.w800, letterSpacing: .3, color: RewardColors.ink),
               ),
               SizedBox(width: 10),
               Text(
-                '等级 1 解锁',
+                t.rewardsUnlocksAtLevel1,
                 style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: RewardColors.sub),
               ),
             ],
@@ -148,10 +149,10 @@ class _RewardsPageState extends State<RewardsPage> {
           ),
           const SizedBox(height: 24),
           _ReminderButton(on: _reminder, onTap: _toggleReminder),
-          const Padding(
+          Padding(
             padding: EdgeInsets.fromLTRB(0, 10, 0, 8),
             child: Text(
-              '奖励内容为演示示例，正式奖品与兑换规则以上线公告为准',
+              t.rewardsRewardsShownAreDemo,
               key: Key('p27.note'),
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 11, color: RewardColors.note),
@@ -169,9 +170,9 @@ class _Header extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Row(
     children: [
-      const Expanded(
+      Expanded(
         child: Text(
-          'Fifi 奖励',
+          t.rewardsFifiRewards,
           style: TextStyle(fontSize: 25, fontWeight: FontWeight.w800, letterSpacing: .5, color: RewardColors.ink),
         ),
       ),
@@ -245,7 +246,7 @@ class _Hero extends StatelessWidget {
           right: 2,
           bottom: -6,
           height: 236,
-          child: Image.asset(BrandAssets.catXmas, key: const Key('p27.cat'), fit: BoxFit.contain, semanticLabel: '圣诞 Fifi'),
+          child: Image.asset(BrandAssets.catXmas, key: const Key('p27.cat'), fit: BoxFit.contain, semanticLabel: t.rewardsHolidayFifi),
         ),
         // 顶部紫金彩灯串
         const Positioned(left: 0, right: 0, top: 0, height: 46, child: CustomPaint(painter: _LightsPainter())),
@@ -261,26 +262,26 @@ class _Hero extends StatelessWidget {
                   borderRadius: BorderRadius.circular(999),
                   border: Border.all(color: RewardColors.badgeBorder),
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     // 用图标而非 ❄ 字符：iOS 会把 ❄ 渲染成蓝色 emoji，与定稿金色不符
                     Icon(Icons.ac_unit_rounded, size: 12, color: RewardColors.badgeText),
                     SizedBox(width: 6),
                     Text(
-                      '圣诞 · 新年限定',
+                      t.rewardsHolidayNewYearLimited,
                       style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, letterSpacing: 2, color: RewardColors.badgeText),
                     ),
                   ],
                 ),
               ),
               const SizedBox(height: 12),
-              const Text.rich(
+              Text.rich(
                 TextSpan(
                   children: [
-                    TextSpan(text: 'Fifi 圣诞商店\n'),
+                    TextSpan(text: t.rewardsFifiHolidayShop),
                     TextSpan(
-                      text: '即将开启',
+                      text: t.rewardsOpeningSoon,
                       style: TextStyle(fontWeight: FontWeight.w600),
                     ),
                   ],
@@ -288,10 +289,10 @@ class _Hero extends StatelessWidget {
                 style: TextStyle(fontSize: 25, fontWeight: FontWeight.w800, height: 1.32, color: RewardColors.heroInk),
               ),
               const SizedBox(height: 10),
-              const SizedBox(
+              SizedBox(
                 width: 184,
                 child: Text(
-                  '完成任务赚取 XP，解锁节日服饰、房间与新年梦想好礼。',
+                  t.rewardsCompleteTasksToEarn,
                   style: TextStyle(fontSize: 13, height: 1.7, color: RewardColors.heroText),
                 ),
               ),
@@ -303,7 +304,7 @@ class _Hero extends StatelessWidget {
                   borderRadius: BorderRadius.circular(999),
                   boxShadow: const [BoxShadow(color: Color(0x59E9C878), blurRadius: 16, offset: Offset(0, 6))],
                 ),
-                child: const Text(
+                child: Text(
                   '🎁 $rewardSoon',
                   style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w700, color: RewardColors.navy),
                 ),
@@ -389,7 +390,7 @@ class _LevelChip extends StatelessWidget {
         children: [
           Flexible(
             child: Text(
-              '等级 $level',
+              t.rewardsLevel2(level),
               maxLines: 1,
               overflow: TextOverflow.fade,
               softWrap: false,
@@ -472,7 +473,7 @@ class _PrizeCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                   decoration: BoxDecoration(color: RewardColors.pill, borderRadius: BorderRadius.circular(999)),
-                  child: const Text(
+                  child: Text(
                     rewardSoon,
                     style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600, color: RewardColors.sub),
                   ),
@@ -683,7 +684,7 @@ class _ReminderButton extends StatelessWidget {
           boxShadow: on ? null : const [BoxShadow(color: Color(0x597D4DF0), blurRadius: 26, offset: Offset(0, 12))],
         ),
         child: Text(
-          on ? '✓ 已开启提醒' : '🔔 开启上线提醒',
+          on ? t.rewardsReminderOn : t.rewardsRemindMeAtLaunch,
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w800,
