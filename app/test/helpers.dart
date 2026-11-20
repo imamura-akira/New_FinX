@@ -9,7 +9,9 @@ import 'package:finx_app/features/market/domain/instruments.dart';
 import 'package:finx_app/features/trading/domain/trading_mode.dart';
 import 'package:finx_app/main.dart';
 import 'package:finx_app/l10n/l10n.dart';
-import 'package:material_ui/material_ui.dart' show Locale;
+import 'package:finx_app/app/appearance.dart';
+import 'package:finx_app/app/theme.dart';
+import 'package:material_ui/material_ui.dart' show Brightness, Locale, ThemeMode;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
@@ -54,8 +56,11 @@ Future<(FakeBackend, SessionController, MemoryTokenStore)> pumpApp(
   String? storedToken,
   bool demo = true,
   String? locale = 'zh', // F18：测试默认固定中文；null = 跟随系统（测试环境系统语言为英文）
+  ThemeMode appearance = ThemeMode.light, // F21：测试默认浅色；深色测试传 ThemeMode.dark
 }) async {
   LocaleController.instance.value = locale;
+  AppearanceController.instance.value = appearance;
+  AppColors.apply(appearance == ThemeMode.dark ? Brightness.dark : Brightness.light);
   debugSetLocale(Locale(locale ?? 'en'));
   final be = backend ?? FakeBackend();
   // 行情默认模拟（虚拟行情，价格随请求次数变化）；测试可自行覆盖

@@ -3,11 +3,13 @@ import 'dart:io';
 
 import 'package:finx_app/core/api/api_client.dart';
 import 'package:finx_app/core/format.dart';
+import 'package:finx_app/features/onboarding/presentation/step_pages.dart';
 import 'package:finx_app/l10n/l10n.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
+import 'fixtures.dart';
 import 'helpers.dart';
 
 // F18：中英双语——ARB 完整性、无遗漏硬编码中文、错误码映射、日期格式、关键页面中英各渲染一次。
@@ -70,174 +72,7 @@ void _expectNoChinese(WidgetTester tester, String where) {
   expect(bad, isEmpty, reason: '$where 英文模式下仍有中文：$bad');
 }
 
-// ---------------------------------------------------------------------------
-// 夹具：已开户用户 + 交易 / 资金 / 行情数据
 
-Map<String, dynamic> _order(String id, String status, {String type = 'MARKET'}) => {
-  'orderId': id,
-  'orderNo': 'FEAB0000$id',
-  'symbol': 'AAPL',
-  'side': 'BUY',
-  'orderType': type,
-  'quantity': type == 'LIMIT' ? 2 : null,
-  'amount': type == 'LIMIT' ? null : 100,
-  'limitPrice': type == 'LIMIT' ? 200 : null,
-  'timeInForce': type == 'LIMIT' ? 'DAY' : null,
-  'status': status,
-  'filledQty': status == 'FILLED' ? 0.44 : null,
-  'avgPrice': status == 'FILLED' ? 226.13 : null,
-  'totalAmount': status == 'FILLED' ? 99.5 : null,
-  'fees': 0,
-  'rejectReason': status == 'REJECTED' ? '购买力不足，券商已拒绝该订单' : null,
-  'submittedAt': '2026-11-23T15:00:00Z',
-  'updatedAt': '2026-11-23T15:00:01Z',
-  'doneAt': status == 'FILLED' ? '2026-11-23T15:00:01Z' : null,
-};
-
-FakeBackend _backend({bool opened = true}) => FakeBackend()
-  ..on(
-    'GET /me',
-    (_) => FakeBackend.ok({
-      'email': 'demo@example.com',
-      'loginProvider': 'EMAIL',
-      'applicationId': opened ? 'app-1' : null,
-      'accountStatus': opened ? 'APPROVED' : 'NONE',
-    }),
-  )
-  ..on(
-    'GET /application/status',
-    (_) => FakeBackend.ok({
-      'kycStatus': 'KYC_APPROVED',
-      'issues': [],
-      'requiredDocs': [],
-      'accountStatus': 'OPEN',
-      'accountNo': 'TEST000001',
-      'applicationRef': 'FX-1',
-      'submittedAt': '2026-10-01T12:00:00Z',
-      'submitState': 'SUBMITTED',
-    }),
-  )
-  ..on(
-    'GET /account',
-    (_) => FakeBackend.ok({
-      'accountId': 'a',
-      'accountNo': 'TEST000001',
-      'status': 'OPEN',
-      'accountType': 'LIVE',
-      'tradingType': 'CASH',
-      'managementType': 'SELF',
-    }),
-  )
-  ..on(
-    'GET /account/money',
-    (_) => FakeBackend.ok({
-      'cash': 1635.80,
-      'settledCash': 1635.80,
-      'buyingPower': 1635.80,
-      'cashAvailableForWithdrawal': 1000,
-      'unsettled': 10,
-      'pendingDeposits': 5,
-      'withheldForSeasoning': 635.8,
-      'updatedAt': '2026-11-20T15:00:00Z',
-    }),
-  )
-  ..on(
-    'GET /account/allocation',
-    (_) => FakeBackend.ok({
-      'simulated': false,
-      'total': 6543.21,
-      'items': [
-        {'type': 'STOCK', 'amount': 2944.45, 'pct': 45.0},
-        {'type': 'ETF', 'amount': 1962.96, 'pct': 30.0},
-        {'type': 'CASH', 'amount': 1635.80, 'pct': 25.0},
-      ],
-      'updatedAt': '2026-11-20T15:00:00Z',
-    }),
-  )
-  ..on(
-    'GET /account/history',
-    (_) => FakeBackend.ok({
-      'simulated': false,
-      'range': '7D',
-      'points': [
-        {'date': '2026-11-19', 'total': 6500, 'cash': 6500, 'stock': 0, 'etf': 0},
-        {'date': '2026-11-20', 'total': 6543.21, 'cash': 6543.21, 'stock': 0, 'etf': 0},
-      ],
-    }),
-  )
-  ..on(
-    'GET /positions',
-    (_) => FakeBackend.ok({
-      'updatedAt': '2026-11-23T15:00:00Z',
-      'equityValue': 1260,
-      'positions': [
-        {
-          'symbol': 'AAPL',
-          'quantity': 10.5,
-          'sellableQty': 8.25,
-          'avgPrice': 100,
-          'costBasis': 1050,
-          'marketPrice': 120,
-          'marketValue': 1260,
-          'unrealizedPL': 210,
-          'unrealizedDayPL': -5.5,
-        },
-      ],
-    }),
-  )
-  ..on('GET /orders', (_) => FakeBackend.ok([_order('1', 'NEW', type: 'LIMIT'), _order('2', 'FILLED'), _order('3', 'REJECTED')]))
-  ..on(
-    'GET /funding/bank-accounts',
-    (_) => FakeBackend.ok([
-      {
-        'id': 'bank-1',
-        'bankName': '',
-        'nickname': 'Payroll',
-        'mask': '6789',
-        'type': 'CHECKING',
-        'ownerName': 'Demo Tester',
-        'status': 'APPROVED',
-        'createdAt': '2026-11-19T12:00:00Z',
-      },
-    ]),
-  )
-  ..on(
-    'GET /funding/transfers',
-    (_) => FakeBackend.ok([
-      {
-        'transferId': 'tr-1',
-        'type': 'DEPOSIT',
-        'method': 'ACH',
-        'amount': 1000,
-        'status': 'FAILED',
-        'failureReason': '银行退回：余额不足',
-        'submittedAt': '2026-11-19T12:00:00Z',
-        'doneAt': '2026-11-19T12:00:05Z',
-        'bankAccountId': 'bank-1',
-        'buyingPowerAvailableAt': null,
-        'withdrawableAt': null,
-      },
-    ]),
-  )
-  ..on(
-    'GET /market/instruments/AAPL',
-    (_) => FakeBackend.ok({
-      'simulated': true,
-      'symbol': 'AAPL',
-      'name': 'Apple Inc.',
-      'exchange': 'NASDAQ',
-      'type': 'STOCK',
-      'last': 226.1,
-      'chg': 1.0,
-      'chgPct': 0.4,
-      'dayHigh': 227.0,
-      'dayLow': 225.0,
-      'prevClose': 225.1,
-      'candles': [
-        for (var i = 0; i < 5; i++) {'t': '2026-11-23T14:0$i:00Z', 'o': 226.0, 'h': 226.5, 'l': 225.5, 'c': 226.0 + i * 0.1},
-      ],
-    }),
-  );
 
 Future<void> _phone(WidgetTester tester) async {
   tester.view.physicalSize = const Size(1206, 2622);
@@ -250,24 +85,6 @@ Future<void> _go(WidgetTester tester, String loc) async {
   await frames(tester, 15);
 }
 
-/// 关键页面（已开户用户）：路由 → 该页面必定出现的中文 / 英文文案。
-const _pages = <(String, String, String)>[
-  ('/home', '购买力', 'Buying Power'),
-  ('/market', '市场情绪', 'Market Sentiment'),
-  ('/market/AAPL', '关键数据', 'Key Stats'),
-  ('/trade/AAPL', '订单类型', 'Order Type'),
-  ('/orders', '订单', 'Orders'),
-  ('/positions', '持仓', 'Positions'),
-  ('/funding/deposit', '选择入金方式', 'Choose a deposit method'),
-  ('/funding/withdraw', '可提现金额', 'Available to Withdraw'),
-  ('/funding/banks', '银行账户', 'Bank Accounts'),
-  ('/funding/banks/link', '绑定银行账户', 'Link Bank Account'),
-  ('/funding/history', '资金记录', 'Transfer History'),
-  ('/masters', '股票大师', 'Masters'),
-  ('/masters/all', '全部机构', 'All Institutions'),
-  ('/fifi', 'AI 助手', 'AI Assistant'),
-  ('/rewards', 'Fifi 奖励', 'Fifi Rewards'),
-];
 
 void main() {
   group('ARB 与源码', () {
@@ -342,8 +159,8 @@ void main() {
       testWidgets('[$lang] 已开户用户的主要页面', (tester) async {
         await _phone(tester);
         if (lang == 'en') _ignoreOverflow();
-        await pumpApp(tester, backend: _backend(), storedToken: 'tok', locale: lang);
-        for (final (route, zhText, enText) in _pages) {
+        await pumpApp(tester, backend: openedUserBackend(), storedToken: 'tok', locale: lang);
+        for (final (route, zhText, enText) in keyPages) {
           await _go(tester, route);
           final want = lang == 'zh' ? zhText : enText;
           expect(_visibleTexts(tester).any((s) => s.contains(want)), isTrue, reason: '$route 应显示"$want"');
@@ -370,7 +187,7 @@ void main() {
     testWidgets('[en] Tab 名为 Assets / Markets / Masters / Fifi / Rewards；模拟盘标识为英文', (tester) async {
       await _phone(tester);
       _ignoreOverflow();
-      await pumpApp(tester, backend: _backend(opened: false), storedToken: 'tok', locale: 'en');
+      await pumpApp(tester, backend: openedUserBackend(opened: false), storedToken: 'tok', locale: 'en');
       for (final l in ['Assets', 'Markets', 'Masters', 'Fifi', 'Rewards']) {
         expect(find.descendant(of: find.byType(NavigationBar), matching: find.text(l)), findsOneWidget);
       }
@@ -382,16 +199,20 @@ void main() {
 
     testWidgets('[en] 开户与 KYC 模块保持英文（P-03 起）', (tester) async {
       await _phone(tester);
-      await pumpApp(tester, backend: _backend(opened: false), storedToken: 'tok', locale: 'zh');
-      await _go(tester, '/onboarding/basic');
-      _expectNoChinese(tester, '开户模块（中文模式）');
+      await pumpApp(tester, backend: openedUserBackend(opened: false), storedToken: 'tok', locale: 'zh');
+      // 步骤路由为 a–g（原先误用 /onboarding/basic，渲染为空页，检查形同虚设）
+      for (final step in ['a', 'b', 'c', 'd', 'e', 'f', 'g']) {
+        await _go(tester, '/onboarding/$step');
+        expect(find.byType(OnboardingStepPage), findsOneWidget, reason: '开户步骤 $step 应渲染');
+        _expectNoChinese(tester, '开户模块（中文模式）步骤 $step');
+      }
     });
   });
 
   testWidgets('账户抽屉切换语言：立即生效并持久化选择；跟随系统按系统语言', (tester) async {
     await _phone(tester);
     _ignoreOverflow();
-    await pumpApp(tester, backend: _backend(), storedToken: 'tok', locale: 'zh');
+    await pumpApp(tester, backend: openedUserBackend(), storedToken: 'tok', locale: 'zh');
     expect(find.text('购买力'), findsWidgets);
     await tester.tap(find.byKey(const Key('home.avatar')));
     await tester.pumpAndSettle();
