@@ -9,6 +9,7 @@ import '../features/auth/presentation/welcome_page.dart';
 import '../features/common/session_expired_page.dart';
 import '../features/discover/presentation/discover_pages.dart';
 import '../features/discover/presentation/rewards_page.dart';
+import '../features/rewards/presentation/earn_xp_page.dart';
 import '../features/rewards/presentation/store_page.dart';
 import 'config.dart';
 import '../features/predict/presentation/my_predictions_page.dart';
@@ -110,6 +111,8 @@ GoRouter buildRouter(SessionController session) {
         path: '/masters/:id',
         builder: (_, state) => InstitutionDetailPage(id: state.pathParameters['id']!),
       ),
+      // F22-f 赚取 XP 任务页（商店"赚取 XP"、XP 胶囊进入）
+      GoRoute(path: '/rewards/earn', builder: (_, _) => const EarnXpPage()),
       // F22-b 搜索页（须在 /market/:symbol 之前匹配）
       GoRoute(path: '${Routes.market}/search', builder: (_, _) => const MarketSearchPage()),
       // P-10 个股详情（全屏，push 进入）
