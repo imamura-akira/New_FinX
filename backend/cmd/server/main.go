@@ -105,7 +105,45 @@ func run(migrateCmd string, logger *slog.Logger) error {
 		logger.Warn("DW credentials not configured; DW calls disabled")
 	}
 
-	// 业务接口 /api/v1：需要数据库、PII 密钥与 JWT 密钥
+	routes, err := buildRoutes(ctx, cfg, st, dw, logger)
+	if err != nil {
+		return err
+	}
+
+	var pinger func(context.Context) error
+	if st != nil {
+		pinger = st.Ping
+	}
+	srv := &http.Server{
+		Addr: cfg.HTTPAddr,
+		Handler: withAccessLog(logger, withCORS(cfg.CORSAllowedOrigins,
+			newMux(healthDeps{env: cfg.Env, version: version, dbPing: pinger, dwConfigured: dw != nil}, routes...))),
+		ReadHeaderTimeout: 10 * time.Second,
+	}
+
+	errCh := make(chan error, 1)
+	go func() {
+		logger.Info("http server listening", slog.String("addr", cfg.HTTPAddr), slog.String("env", cfg.Env), slog.String("kyc_mode", string(cfg.KYCMode)))
+		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			errCh <- err
+		}
+		close(errCh)
+	}()
+
+	select {
+	case err := <-errCh:
+		return err
+	case <-ctx.Done():
+	}
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	logger.Info("shutting down")
+	return srv.Shutdown(shutdownCtx)
+}
+
+// buildRoutes 构建业务服务并返回路由挂载函数（同时启动行情、预测、对账等后台任务，随 ctx 结束）。
+// 抽出为独立函数以便测试鉴权装配（审计 TEST-P1-1）。业务接口 /api/v1 需要数据库、PII 密钥与 JWT 密钥。
+func buildRoutes(ctx context.Context, cfg *config.Config, st *store.Store, dw *dwclient.Client, logger *slog.Logger) ([]func(*http.ServeMux), error) {
 	var routes []func(*http.ServeMux)
 
 	// F11 虚拟行情：不依赖数据库与 DW，始终可用（MARKET_DATA_MODE=REAL 时未挂载，接口返回 50003）
@@ -140,7 +178,7 @@ func run(migrateCmd string, logger *slog.Logger) error {
 		}
 		cipher, err := crypto.New(cfg.PIIKey)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		appRepo := application.PGRepo{DB: st.DB}
 		appSvc := application.New(appRepo, cipher, logger)
@@ -278,36 +316,7 @@ func run(migrateCmd string, logger *slog.Logger) error {
 	} else {
 		logger.Warn("API routes disabled: DATABASE_URL, PII_ENCRYPTION_KEY and JWT_SECRET are all required")
 	}
-
-	var pinger func(context.Context) error
-	if st != nil {
-		pinger = st.Ping
-	}
-	srv := &http.Server{
-		Addr: cfg.HTTPAddr,
-		Handler: withAccessLog(logger, withCORS(cfg.CORSAllowedOrigins,
-			newMux(healthDeps{env: cfg.Env, version: version, dbPing: pinger, dwConfigured: dw != nil}, routes...))),
-		ReadHeaderTimeout: 10 * time.Second,
-	}
-
-	errCh := make(chan error, 1)
-	go func() {
-		logger.Info("http server listening", slog.String("addr", cfg.HTTPAddr), slog.String("env", cfg.Env), slog.String("kyc_mode", string(cfg.KYCMode)))
-		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			errCh <- err
-		}
-		close(errCh)
-	}()
-
-	select {
-	case err := <-errCh:
-		return err
-	case <-ctx.Done():
-	}
-	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	logger.Info("shutting down")
-	return srv.Shutdown(shutdownCtx)
+	return routes, nil
 }
 
 // isCrypto：F19 模拟加密标的（BTC / SOL）只用于积分预测，实盘与模拟盘下单均不报价。

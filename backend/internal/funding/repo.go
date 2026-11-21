@@ -58,6 +58,10 @@ const (
 	StatusUnconfirmed = "UNCONFIRMED"
 )
 
+// terminalSQL：与 Terminal() 一致的 SQL 字面量（常量，非用户输入；TestTerminalSQLMatches 保证一致）。
+// 已失败 / 被拒 / 退回的出入金不计入防重复与每日入金限额（审计 TEST-P1-2：此前 SQL 漏了 RIA_REJECTED）。
+const terminalSQL = `('FAILED', 'REJECTED', 'RETURNED', 'RIA_REJECTED')`
+
 // Terminal：不再轮询的状态。SUCCESSFUL 的 ACH 入金仍可能被退回（RETURNED），因此在 returnWindow 内继续对账。
 func Terminal(status string) bool {
 	switch status {
@@ -155,7 +159,7 @@ func (p PGRepo) DeleteBank(ctx context.Context, bankID string, now time.Time) er
 func (p PGRepo) HasInFlight(ctx context.Context, bankID string) (bool, error) {
 	var n int
 	err := p.DB.QueryRowContext(ctx,
-		`SELECT count(*) FROM transfers WHERE bank_account_id = $1 AND status NOT IN ('SUCCESSFUL', 'FAILED', 'REJECTED', 'RETURNED', 'RIA_REJECTED')`, bankID).Scan(&n)
+		`SELECT count(*) FROM transfers WHERE bank_account_id = $1 AND status <> 'SUCCESSFUL' AND status NOT IN `+terminalSQL+``, bankID).Scan(&n)
 	return n > 0, err
 }
 
@@ -185,7 +189,7 @@ func (p PGRepo) RecentDuplicate(ctx context.Context, accountID, typ, amount stri
 		`SELECT count(*) FROM transfers
 		  WHERE account_id = $1 AND type = $2 AND amount = $3::numeric
 		    AND bank_account_id IS NOT DISTINCT FROM $4::uuid AND submitted_at >= $5
-		    AND status NOT IN ('FAILED', 'REJECTED', 'RETURNED')`, accountID, typ, amount, bankID, since).Scan(&n)
+		    AND status NOT IN `+terminalSQL+``, accountID, typ, amount, bankID, since).Scan(&n)
 	return n > 0, err
 }
 
@@ -193,7 +197,7 @@ func (p PGRepo) SumDeposits(ctx context.Context, accountID string, since time.Ti
 	var s string
 	err := p.DB.QueryRowContext(ctx,
 		`SELECT coalesce(sum(amount), 0)::text FROM transfers
-		  WHERE account_id = $1 AND type = 'DEPOSIT' AND submitted_at >= $2 AND status NOT IN ('FAILED', 'REJECTED', 'RETURNED')`,
+		  WHERE account_id = $1 AND type = 'DEPOSIT' AND submitted_at >= $2 AND status NOT IN `+terminalSQL+``,
 		accountID, since).Scan(&s)
 	return s, err
 }
@@ -234,7 +238,7 @@ func (p PGRepo) ListTransfers(ctx context.Context, accountID, typ string, before
 
 func (p PGRepo) DueTransfers(ctx context.Context, checkedBefore, successSince time.Time, limit int) ([]Transfer, error) {
 	rows, err := p.DB.QueryContext(ctx, `SELECT `+transferCols+transferFrom+`
-		  WHERE t.status NOT IN ('FAILED', 'REJECTED', 'RETURNED', 'RIA_REJECTED')
+		  WHERE t.status NOT IN `+terminalSQL+`
 		    AND NOT (t.status = 'SUCCESSFUL' AND coalesce(t.done_at, t.submitted_at) < $2)
 		    AND (t.checked_at IS NULL OR t.checked_at < $1)
 		  ORDER BY t.checked_at NULLS FIRST LIMIT $3`, checkedBefore, successSince, limit)

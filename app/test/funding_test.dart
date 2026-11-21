@@ -22,12 +22,20 @@ const _bank = {
   'createdAt': '2026-11-19T12:00:00Z',
 };
 
-FakeBackend _backend({List<Map<String, dynamic>> banks = const [], double withdrawable = 0}) {
+FakeBackend _backend({
+  List<Map<String, dynamic>> banks = const [],
+  double withdrawable = 0,
+}) {
   final bankList = [...banks];
   return FakeBackend()
     ..on(
       'GET /me',
-      (_) => FakeBackend.ok({'email': 'demo@example.com', 'loginProvider': 'EMAIL', 'applicationId': 'app-1', 'accountStatus': 'APPROVED'}),
+      (_) => FakeBackend.ok({
+        'email': 'demo@example.com',
+        'loginProvider': 'EMAIL',
+        'applicationId': 'app-1',
+        'accountStatus': 'APPROVED',
+      }),
     )
     ..on(
       'GET /application/status',
@@ -71,7 +79,10 @@ FakeBackend _backend({List<Map<String, dynamic>> banks = const [], double withdr
       bankList.add(_bank);
       return FakeBackend.ok({'id': 'bank-1', 'status': 'APPROVED'});
     })
-    ..on('POST /funding/deposits', (_) => FakeBackend.ok({'transferId': 'tr-1', 'status': 'PENDING'}))
+    ..on(
+      'POST /funding/deposits',
+      (_) => FakeBackend.ok({'transferId': 'tr-1', 'status': 'PENDING'}),
+    )
     ..on(
       'GET /funding/transfers',
       (_) => FakeBackend.ok([
@@ -105,7 +116,9 @@ Future<void> _openDrawerItem(WidgetTester tester, String key) async {
   await tester.scrollUntilVisible(
     f,
     200,
-    scrollable: find.descendant(of: find.byType(Drawer), matching: find.byType(Scrollable)).first,
+    scrollable: find
+        .descendant(of: find.byType(Drawer), matching: find.byType(Scrollable))
+        .first,
   );
   await tester.ensureVisible(f);
   await tester.pumpAndSettle();
@@ -137,7 +150,11 @@ void main() {
 
   testWidgets('P-13：未绑卡 → P-32 绑定 → 金额校验 → 确认 → 提交', (tester) async {
     await _phone(tester);
-    final (be, _, _) = await pumpApp(tester, backend: _backend(), storedToken: 'tok');
+    final (be, _, _) = await pumpApp(
+      tester,
+      backend: _backend(),
+      storedToken: 'tok',
+    );
     await _openDrawerItem(tester, 'drawer.deposit');
     expect(find.text('需先绑定本人名下的美国银行账户'), findsOneWidget);
 
@@ -153,7 +170,10 @@ void main() {
     expect(be.requests.where((r) => r.method == 'POST'), isEmpty);
 
     await tester.enterText(find.byKey(const Key('p32.routing')), '021000021');
-    await tester.enterText(find.byKey(const Key('p32.account')), '000123456789');
+    await tester.enterText(
+      find.byKey(const Key('p32.account')),
+      '000123456789',
+    );
     await tester.tap(find.byKey(const Key('p32.submit')));
     await tester.pumpAndSettle();
     final link = be.lastBody('POST /funding/bank-accounts');
@@ -172,17 +192,28 @@ void main() {
     await tester.enterText(find.byKey(const Key('p13.amount')), '1000');
     await tester.tap(find.byKey(const Key('p13.next')));
     await tester.pumpAndSettle();
-    expect(tester.widget<Text>(find.byKey(const Key('p13.confirm.amount'))).data, r'$1,000.00');
+    expect(
+      tester.widget<Text>(find.byKey(const Key('p13.confirm.amount'))).data,
+      r'$1,000.00',
+    );
     await tester.tap(find.byKey(const Key('p13.submit')));
     for (var i = 0; i < 5; i++) {
-      await tester.pump(const Duration(milliseconds: 100)); // 逐帧推进：pumpAndSettle 会把 2 秒庆祝动画跑完
+      await tester.pump(
+        const Duration(milliseconds: 100),
+      ); // 逐帧推进：pumpAndSettle 会把 2 秒庆祝动画跑完
     }
-    expect(be.lastBody('POST /funding/deposits'), {'bankAccountId': 'bank-1', 'amount': 1000});
+    expect(be.lastBody('POST /funding/deposits'), {
+      'bankAccountId': 'bank-1',
+      'amount': 1000,
+    });
     expect(find.text('入金已提交'), findsWidgets);
     expect(find.text('tr-1'), findsOneWidget);
     // 入金提交成功：轻量版庆祝
     expect(find.byType(ConfettiBurst), findsOneWidget);
-    expect(tester.widget<ConfettiBurst>(find.byType(ConfettiBurst)).level, CelebrationLevel.light);
+    expect(
+      tester.widget<ConfettiBurst>(find.byType(ConfettiBurst)).level,
+      CelebrationLevel.light,
+    );
     await tester.pumpAndSettle();
     expect(find.byType(ConfettiBurst), findsNothing);
   });
@@ -190,7 +221,10 @@ void main() {
   testWidgets('P-13：券商结果不明（50001 附 transferId）显示"已记录"，不报错', (tester) async {
     await _phone(tester);
     final be = _backend(banks: [_bank])
-      ..on('POST /funding/deposits', (_) => FakeBackend.err(502, 50001, '券商暂时无法处理', {'transferId': 'tr-9'}));
+      ..on(
+        'POST /funding/deposits',
+        (_) => FakeBackend.err(502, 50001, '券商暂时无法处理', {'transferId': 'tr-9'}),
+      );
     await pumpApp(tester, backend: be, storedToken: 'tok');
     await _openDrawerItem(tester, 'drawer.deposit');
     await tester.tap(find.byKey(const Key('p13.ach')));
@@ -206,34 +240,49 @@ void main() {
     expect(find.byType(ConfettiBurst), findsNothing, reason: '结果待确认时不庆祝');
   });
 
-  testWidgets('P-13：网络超时 → 提示"确认中"而非"稍后重试"；再次提交沿用同一幂等键；成功后下一笔换新键（审计 FUND-P0-1）', (tester) async {
-    await _phone(tester);
-    var n = 0;
-    final be = _backend(banks: [_bank])
-      ..on('POST /funding/deposits', (_) {
-        n++;
-        if (n == 1) throw http.ClientException('timeout'); // 首次：网络中断，结果不明
-        return FakeBackend.ok({'transferId': 'tr-7', 'status': 'PENDING'});
-      });
-    await pumpApp(tester, backend: be, storedToken: 'tok');
-    await _openDrawerItem(tester, 'drawer.deposit');
-    await tester.tap(find.byKey(const Key('p13.ach')));
-    await tester.pumpAndSettle();
-    await tester.enterText(find.byKey(const Key('p13.amount')), '20');
-    await tester.tap(find.byKey(const Key('p13.next')));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('p13.submit')));
-    await tester.pumpAndSettle();
-    expect(find.textContaining('提交结果确认中'), findsOneWidget);
-    expect(find.textContaining('稍后重试'), findsNothing);
-    await tester.tap(find.byKey(const Key('p13.submit')));
-    await tester.pumpAndSettle();
-    final keys = [for (final r in be.requests.where((r) => r.method == 'POST' && r.url.path.endsWith('/funding/deposits'))) r.headers['Idempotency-Key']];
-    expect(keys, hasLength(2));
-    expect(keys[0], matches(RegExp(r'^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$')));
-    expect(keys[1], keys[0], reason: '结果不明后的重试必须是同一笔申请');
-    expect(find.text('tr-7'), findsOneWidget);
-  });
+  testWidgets(
+    'P-13：网络超时 → 提示"确认中"而非"稍后重试"；再次提交沿用同一幂等键；成功后下一笔换新键（审计 FUND-P0-1）',
+    (tester) async {
+      await _phone(tester);
+      var n = 0;
+      final be = _backend(banks: [_bank])
+        ..on('POST /funding/deposits', (_) {
+          n++;
+          if (n == 1) throw http.ClientException('timeout'); // 首次：网络中断，结果不明
+          return FakeBackend.ok({'transferId': 'tr-7', 'status': 'PENDING'});
+        });
+      await pumpApp(tester, backend: be, storedToken: 'tok');
+      await _openDrawerItem(tester, 'drawer.deposit');
+      await tester.tap(find.byKey(const Key('p13.ach')));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byKey(const Key('p13.amount')), '20');
+      await tester.tap(find.byKey(const Key('p13.next')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('p13.submit')));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('提交结果确认中'), findsOneWidget);
+      expect(find.textContaining('稍后重试'), findsNothing);
+      await tester.tap(find.byKey(const Key('p13.submit')));
+      await tester.pumpAndSettle();
+      final keys = [
+        for (final r in be.requests.where(
+          (r) => r.method == 'POST' && r.url.path.endsWith('/funding/deposits'),
+        ))
+          r.headers['Idempotency-Key'],
+      ];
+      expect(keys, hasLength(2));
+      expect(
+        keys[0],
+        matches(
+          RegExp(
+            r'^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$',
+          ),
+        ),
+      );
+      expect(keys[1], keys[0], reason: '结果不明后的重试必须是同一笔申请');
+      expect(find.text('tr-7'), findsOneWidget);
+    },
+  );
 
   test('下单：实盘带 Idempotency-Key 且超时提示"确认中"；模拟盘不带（审计 FUND-P0-1）', () async {
     debugSetLocale(const Locale('zh'));
@@ -243,18 +292,48 @@ void main() {
         if (fail) throw http.ClientException('timeout');
         return FakeBackend.ok({'orderId': 'o-1', 'status': 'NEW'});
       })
-      ..on('POST /paper/orders', (_) => FakeBackend.ok({'orderId': 'p-1', 'status': 'FILLED'}));
-    final client = ApiClient(baseUrl: 'http://test/api/v1', httpClient: be.client);
+      ..on(
+        'POST /paper/orders',
+        (_) => FakeBackend.ok({'orderId': 'p-1', 'status': 'FILLED'}),
+      );
+    final client = ApiClient(
+      baseUrl: 'http://test/api/v1',
+      httpClient: be.client,
+    );
     final live = TradingApi(client);
     await expectLater(
-      live.place(symbol: 'AAPL', side: 'BUY', amount: 100, idempotencyKey: 'k-1'),
-      throwsA(isA<ApiException>().having((e) => e.message, 'message', contains('订单结果确认中'))),
+      live.place(
+        symbol: 'AAPL',
+        side: 'BUY',
+        amount: 100,
+        idempotencyKey: 'k-1',
+      ),
+      throwsA(
+        isA<ApiException>().having(
+          (e) => e.message,
+          'message',
+          contains('订单结果确认中'),
+        ),
+      ),
     );
     fail = false;
-    await live.place(symbol: 'AAPL', side: 'BUY', amount: 100, idempotencyKey: 'k-1');
-    final heads = [for (final r in be.requests.where((r) => r.url.path.endsWith('/api/v1/orders'))) r.headers['Idempotency-Key']];
+    await live.place(
+      symbol: 'AAPL',
+      side: 'BUY',
+      amount: 100,
+      idempotencyKey: 'k-1',
+    );
+    final heads = [
+      for (final r in be.requests.where(
+        (r) => r.url.path.endsWith('/api/v1/orders'),
+      ))
+        r.headers['Idempotency-Key'],
+    ];
     expect(heads, ['k-1', 'k-1']);
-    await TradingApi(client, paper: true).place(symbol: 'AAPL', side: 'BUY', amount: 100);
+    await TradingApi(
+      client,
+      paper: true,
+    ).place(symbol: 'AAPL', side: 'BUY', amount: 100);
     expect(be.requests.last.headers.containsKey('Idempotency-Key'), isFalse);
   });
 
@@ -275,12 +354,18 @@ void main() {
     final be = _backend(banks: [_bank], withdrawable: 0);
     await pumpApp(tester, backend: be, storedToken: 'tok');
     await _openDrawerItem(tester, 'drawer.withdraw');
-    expect(tester.widget<Text>(find.byKey(const Key('p14.withdrawable'))).data, r'$0.00');
+    expect(
+      tester.widget<Text>(find.byKey(const Key('p14.withdrawable'))).data,
+      r'$0.00',
+    );
     await tester.enterText(find.byKey(const Key('p14.amount')), '10');
     await tester.tap(find.byKey(const Key('p14.next')));
     await tester.pumpAndSettle();
     expect(find.text(r'超过可提现金额 $0.00'), findsOneWidget);
-    expect(be.requests.where((r) => r.url.path.endsWith('/funding/withdrawals')), isEmpty);
+    expect(
+      be.requests.where((r) => r.url.path.endsWith('/funding/withdrawals')),
+      isEmpty,
+    );
   });
 
   testWidgets('P-14：服务端以 DW 实时可提现拒绝（42201）', (tester) async {
@@ -299,7 +384,14 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('p14.submit')));
     await tester.pumpAndSettle();
-    expect(jsonDecode(be.requests.lastWhere((r) => r.url.path.endsWith('/funding/withdrawals')).body)['method'], 'ACH');
+    expect(
+      jsonDecode(
+        be.requests
+            .lastWhere((r) => r.url.path.endsWith('/funding/withdrawals'))
+            .body,
+      )['method'],
+      'ACH',
+    );
     expect(find.text(r'超过可提现金额 $0.00'), findsWidgets);
   });
 
@@ -315,12 +407,20 @@ void main() {
     expect(find.text('已完成'), findsOneWidget);
     await tester.tap(find.byKey(const Key('p18.row.tr-1')));
     await tester.pumpAndSettle();
-    expect(tester.widget<Text>(find.byKey(const Key('p18.bpDate'))).data, '2026-11-23');
-    expect(tester.widget<Text>(find.byKey(const Key('p18.wdDate'))).data, '2026-12-19');
+    expect(
+      tester.widget<Text>(find.byKey(const Key('p18.bpDate'))).data,
+      '2026-11-23',
+    );
+    expect(
+      tester.widget<Text>(find.byKey(const Key('p18.wdDate'))).data,
+      '2026-12-19',
+    );
     expect(find.text('Payroll ••6789'), findsOneWidget);
   });
 
-  testWidgets('P-18：券商结果待人工核对（UNCONFIRMED）显示"未确认"与说明，不显示为失败原因（审计 FUND-P1-4）', (tester) async {
+  testWidgets('P-18：券商结果待人工核对（UNCONFIRMED）显示"未确认"与说明，不显示为失败原因（审计 FUND-P1-4）', (
+    tester,
+  ) async {
     await _phone(tester);
     final be = _backend(banks: [_bank])
       ..on(
@@ -350,4 +450,84 @@ void main() {
     expect(find.textContaining('请勿重复提交'), findsOneWidget);
     expect(find.textContaining('E031'), findsNothing, reason: '内部核对原因不展示给用户');
   });
+
+  testWidgets('P-14：ACH 出金成功 → 结果页显示"出金已提交"、金额与 transferId，带幂等键（审计 3.3 覆盖空白）', (
+    tester,
+  ) async {
+    await _phone(tester);
+    final be = _backend(banks: [_bank], withdrawable: 500)
+      ..on(
+        'POST /funding/withdrawals',
+        (_) => FakeBackend.ok({'transferId': 'tr-w1', 'status': 'PENDING'}),
+      );
+    await pumpApp(tester, backend: be, storedToken: 'tok');
+    await _openDrawerItem(tester, 'drawer.withdraw');
+    await tester.enterText(find.byKey(const Key('p14.amount')), '120.50');
+    await tester.tap(find.byKey(const Key('p14.next')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('p14.submit')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('funding.result')), findsOneWidget);
+    expect(find.text('出金已提交'), findsWidgets);
+    expect(find.text('tr-w1'), findsOneWidget);
+    expect(find.textContaining(r'$120.50'), findsWidgets);
+    final req = be.requests.lastWhere(
+      (r) => r.url.path.endsWith('/funding/withdrawals'),
+    );
+    expect(jsonDecode(req.body), {
+      'method': 'ACH',
+      'bankAccountId': 'bank-1',
+      'amount': 120.5,
+    });
+    expect(req.headers['Idempotency-Key'], isNotNull);
+  });
+
+  for (final (code, body, want) in [
+    (
+      42200,
+      {
+        'fields': [
+          {'field': 'amount', 'reason': '金额格式不正确（最多两位小数）'},
+        ],
+      },
+      '金额格式不正确（最多两位小数）',
+    ),
+    (
+      42201,
+      {
+        'limits': {'remainingToday': '5.00'},
+      },
+      r'超过每日入金限额 $60000.00，今日还可入金 $5.00',
+    ),
+  ]) {
+    testWidgets('P-13：服务端 $code → 退回填写页并回填到金额输入框（审计 3.3 覆盖空白）', (tester) async {
+      await _phone(tester);
+      final be = _backend(banks: [_bank])
+        ..on(
+          'POST /funding/deposits',
+          (_) => FakeBackend.err(
+            422,
+            code,
+            code == 42201 ? want : '请检查标红的字段',
+            body,
+          ),
+        );
+      await pumpApp(tester, backend: be, storedToken: 'tok');
+      await _openDrawerItem(tester, 'drawer.deposit');
+      await tester.tap(find.byKey(const Key('p13.ach')));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byKey(const Key('p13.amount')), '20');
+      await tester.tap(find.byKey(const Key('p13.next')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('p13.submit')));
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const Key('p13.amount')),
+        findsOneWidget,
+        reason: '$code 应退回填写页',
+      );
+      expect(find.text(want), findsWidgets, reason: '$code 错误应显示在金额输入框');
+      expect(find.byKey(const Key('funding.result')), findsNothing);
+    });
+  }
 }

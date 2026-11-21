@@ -53,6 +53,13 @@ func TestPGTradingRepo(t *testing.T) {
 	if _, err := r.OrderByIdemKey(ctx, "00000000-0000-4000-8000-000000000000", o1.IdempotencyKey); !errors.Is(err, ErrNotFound) {
 		t.Fatalf("其他账户不应取到: %v", err)
 	}
+	// 审计 TEST-P1-1 / 3.3：所有者校验在 SQL 层——其他账户取不到 / 列不出本账户订单
+	if _, err := r.GetOrder(ctx, "00000000-0000-4000-8000-000000000000", id1); !errors.Is(err, ErrNotFound) {
+		t.Fatalf("其他账户不应取到订单: %v", err)
+	}
+	if list, err := r.ListOrders(ctx, "00000000-0000-4000-8000-000000000000", "", nil, 50); err != nil || len(list) != 0 {
+		t.Fatalf("其他账户不应列出订单: %d %v", len(list), err)
+	}
 	qty := json.Number("0.123456")
 	o2 := Order{AccountID: accID, Symbol: "TSLA", Side: "SELL", OrderType: "MARKET", Quantity: &qty, Status: StatusSubmitting, IdempotencyKey: key("2")}
 	id2, err := r.InsertOrder(ctx, o2)

@@ -24,15 +24,17 @@ import (
 
 // ---------- 内存仓储 ----------
 
+// memRepo：内存仓储，语义与 PGRepo 保持一致（审计 TEST-P1-2：删除保护、对账节流 / 退回窗口 / 条数上限、终态口径）。
 type memRepo struct {
 	mu        sync.Mutex
 	banks     []Bank
 	deleted   map[string]bool
 	transfers []Transfer
+	checked   map[string]time.Time // 对应 PG 的 checked_at
 	seq       int
 }
 
-func newMem() *memRepo { return &memRepo{deleted: map[string]bool{}} }
+func newMem() *memRepo { return &memRepo{deleted: map[string]bool{}, checked: map[string]time.Time{}} }
 
 func (m *memRepo) id(p string) string { m.seq++; return fmt.Sprintf("%s-%d", p, m.seq) }
 
@@ -114,11 +116,12 @@ func (m *memRepo) find(id string) *Transfer {
 	return nil
 }
 
-func (m *memRepo) SetSubmitted(_ context.Context, id, ref, st string, _ time.Time) error {
+func (m *memRepo) SetSubmitted(_ context.Context, id, ref, st string, now time.Time) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	t := m.find(id)
 	t.DWRef, t.Status = ref, st
+	m.checked[id] = now
 	return nil
 }
 
@@ -126,7 +129,7 @@ func (m *memRepo) DeleteTransfer(_ context.Context, id string) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	for i, t := range m.transfers {
-		if t.ID == id {
+		if t.ID == id && t.DWRef == "" { // 同 PG：WHERE dw_ref IS NULL
 			m.transfers = append(m.transfers[:i], m.transfers[i+1:]...)
 			break
 		}
@@ -174,12 +177,17 @@ func (m *memRepo) ListTransfers(_ context.Context, acc, typ string, before *time
 	return out, nil
 }
 
-func (m *memRepo) DueTransfers(context.Context, time.Time, time.Time, int) ([]Transfer, error) {
+func (m *memRepo) DueTransfers(_ context.Context, checkedBefore, successSince time.Time, limit int) ([]Transfer, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	var out []Transfer
 	for _, t := range m.transfers {
-		if !Terminal(t.Status) {
+		done := t.SubmittedAt
+		if t.DoneAt != nil {
+			done = *t.DoneAt
+		}
+		c, seen := m.checked[t.ID]
+		if !Terminal(t.Status) && !(t.Status == "SUCCESSFUL" && done.Before(successSince)) && (!seen || c.Before(checkedBefore)) && len(out) < limit {
 			t.DWAccountNo, t.DWAccountID = "TEST000001", "dwacc-1"
 			out = append(out, t)
 		}
@@ -187,18 +195,24 @@ func (m *memRepo) DueTransfers(context.Context, time.Time, time.Time, int) ([]Tr
 	return out, nil
 }
 
-func (m *memRepo) UpdateTransfer(_ context.Context, id, st string, reason *string, done *time.Time, _ time.Time) error {
+func (m *memRepo) UpdateTransfer(_ context.Context, id, st string, reason *string, done *time.Time, now time.Time) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	t := m.find(id)
 	t.Status, t.FailureReason = st, reason
+	m.checked[id] = now
 	if done != nil {
 		t.DoneAt = done
 	}
 	return nil
 }
 
-func (m *memRepo) TouchTransfer(context.Context, string, time.Time) error { return nil }
+func (m *memRepo) TouchTransfer(_ context.Context, id string, now time.Time) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.checked[id] = now
+	return nil
+}
 
 func (m *memRepo) TransferByIdemKey(_ context.Context, acc, key string) (*Transfer, error) {
 	m.mu.Lock()
@@ -726,6 +740,7 @@ func TestSyncUpdatesStatus(t *testing.T) {
 	// 沙盒实测结构：status 带 comment，seasoningDetails 给出购买力与可提现日期
 	f.dw.resp["GET /funding/deposits/"] = `{"id":"DEP-1","status":{"comment":"MMW Open. Moving to Successful","id":2,"message":"Successful"},` +
 		`"seasoningDetails":{"depositBuyingPowerHoldExpires":"2026-11-23T00:00:00Z","seasoningPeriodExpires":"2026-11-23T00:00:00Z","status":6,"statusMessage":"AWAITING_BUYING_POWER"}}`
+	f.svc.now = func() time.Time { return time.Now().Add(time.Minute) } // 同 PG：刚提交的记录 30 秒内不重复对账
 	f.svc.Sync(context.Background(), time.Minute)
 	tr := f.repo.transfers[0]
 	if tr.Status != "SUCCESSFUL" || tr.DoneAt == nil || tr.FailureReason != nil {
@@ -735,6 +750,7 @@ func TestSyncUpdatesStatus(t *testing.T) {
 		t.Fatalf("应记录 DW 返回的可用日期: %+v", tr)
 	}
 	f.dw.resp["GET /funding/deposits/"] = `{"id":"DEP-1","status":{"id":5,"message":"RETURNED"}}`
+	f.svc.now = func() time.Time { return time.Now().Add(2 * time.Minute) }
 	f.svc.Sync(context.Background(), time.Minute)
 	if tr := f.repo.transfers[0]; tr.Status != "RETURNED" || tr.FailureReason == nil || !strings.Contains(*tr.FailureReason, "退回") {
 		t.Fatalf("成功后被退回应更新并给出中文原因: %+v", tr)
@@ -1039,5 +1055,134 @@ func TestSubmitSurvivesClientDisconnect(t *testing.T) {
 	}
 	if tr := f.repo.transfers[0]; tr.DWRef != "DEP-1" {
 		t.Fatalf("应完成落库：%+v", tr)
+	}
+}
+
+// 审计 TEST-P1-2：SQL 中的终态列表必须与 Terminal() 一致（此前 SQL 漏了 RIA_REJECTED，导致被拒入金仍占每日额度）。
+func TestTerminalSQLMatches(t *testing.T) {
+	var inSQL []string
+	for _, p := range strings.Split(strings.Trim(terminalSQL, "()"), ",") {
+		inSQL = append(inSQL, strings.Trim(strings.TrimSpace(p), "'"))
+	}
+	for _, st := range inSQL {
+		if !Terminal(st) {
+			t.Errorf("terminalSQL 含 %s，但 Terminal() 不认为它是终态", st)
+		}
+	}
+	for _, st := range []string{"FAILED", "REJECTED", "RETURNED", "RIA_REJECTED", "SUCCESSFUL", "PENDING", "APPROVED", StatusSubmitting, StatusUnconfirmed} {
+		found := false
+		for _, x := range inSQL {
+			found = found || x == st
+		}
+		if Terminal(st) != found {
+			t.Errorf("%s：Terminal()=%v，terminalSQL 包含=%v", st, Terminal(st), found)
+		}
+	}
+}
+
+// 审计 TEST-P1-2：内存仓储与 PG 同语义——对账节流（checked_at）、条数上限、有 DW 编号不可删。
+func TestMemRepoMirrorsPG(t *testing.T) {
+	m := newMem()
+	ctx := context.Background()
+	now := time.Now()
+	for i := 0; i < 3; i++ {
+		if _, err := m.InsertTransfer(ctx, Transfer{AccountID: "a", Type: "DEPOSIT", Method: "ACH", Amount: "10.00", Status: "PENDING", IdempotencyKey: fmt.Sprint(i)}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if got, _ := m.DueTransfers(ctx, now, now.Add(-time.Hour), 2); len(got) != 2 {
+		t.Fatalf("limit 应生效：%d", len(got))
+	}
+	_ = m.TouchTransfer(ctx, m.transfers[0].ID, now)
+	if got, _ := m.DueTransfers(ctx, now.Add(-time.Second), now.Add(-time.Hour), 10); len(got) != 2 {
+		t.Fatalf("刚检查过的记录不应到期：%d", len(got))
+	}
+	_ = m.SetSubmitted(ctx, m.transfers[1].ID, "DEP-X", "PENDING", now.Add(-time.Hour))
+	_ = m.DeleteTransfer(ctx, m.transfers[1].ID)
+	if len(m.transfers) != 3 {
+		t.Fatal("有 DW 编号的记录不可删除（同 PG：dw_ref IS NULL）")
+	}
+}
+
+// 审计 3.3 覆盖空白（出金安全，CLAUDE.md 规则 5）：出金失败路径。
+func TestWithdrawalFailurePaths(t *testing.T) {
+	body := func(bank string, amount string) string {
+		return `{"method":"ACH","bankAccountId":"` + bank + `","amount":` + amount + `}`
+	}
+	cases := []struct {
+		name     string
+		amount   string
+		setup    func(f *fx)
+		wantCode int
+		keepRows int
+	}{
+		{"券商首次明确拒绝 → 42200，撤销记录", "100", func(f *fx) {
+			f.dw.fail["POST /funding/redemptions"] = []error{&dwclient.APIError{Status: 400, DWCode: "Y075"}}
+		}, 42200, 0},
+		{"超时 → 50001，保留记录待对账", "100", func(f *fx) {
+			f.dw.fail["POST /funding/redemptions"] = []error{fmt.Errorf("timeout")}
+		}, 50001, 1},
+		{"未找到开户姓名 → 40901，不提交券商", "100", func(f *fx) {
+			f.svc.LegalName = func(context.Context, string) (string, error) { return "", nil }
+		}, 40901, 0},
+		{"超过单笔上限 → 42201", "50001", nil, 42201, 0},
+		{"低于单笔下限 → 42201", "0.5", nil, 42201, 0},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			f := newFx(t)
+			bank := f.link(t)
+			f.dw.resp["GET /accounts/"] = strings.Replace(moneyJSON, "250.25", "100000", -1)
+			if tc.setup != nil {
+				tc.setup(f)
+			}
+			r := f.call("POST", "/api/v1/funding/withdrawals", body(bank, tc.amount))
+			if r.Code != tc.wantCode {
+				t.Fatalf("code = %d，期望 %d（%+v）", r.Code, tc.wantCode, r)
+			}
+			if len(f.repo.transfers) != tc.keepRows {
+				t.Fatalf("本地记录 %d 条，期望 %d", len(f.repo.transfers), tc.keepRows)
+			}
+			if tc.wantCode == 40901 || tc.wantCode == 42201 {
+				if n := f.dw.count("POST /funding/redemptions"); n != 0 {
+					t.Fatalf("校验失败不得提交券商：%d", n)
+				}
+			}
+		})
+	}
+	t.Run("60 秒内同额重复 → 40901", func(t *testing.T) {
+		f := newFx(t)
+		bank := f.link(t)
+		if r := f.call("POST", "/api/v1/funding/withdrawals", body(bank, "50")); r.Code != 0 {
+			t.Fatal(r)
+		}
+		if r := f.call("POST", "/api/v1/funding/withdrawals", body(bank, "50")); r.Code != 40901 {
+			t.Fatalf("应拦截重复出金：%+v", r)
+		}
+		if n := f.dw.count("POST /funding/redemptions"); n != 1 {
+			t.Fatalf("只应提交一次：%d", n)
+		}
+	})
+}
+
+// 审计 3.3：反查只关联"同额、同银行（列表带字段时）、时间吻合、未被关联"的唯一一笔。
+func TestLookupExcludesLinkedAndOtherBank(t *testing.T) {
+	f := newFx(t)
+	bank := f.link(t)
+	f.dw.fail["POST /funding/deposits"] = []error{fmt.Errorf("timeout")}
+	f.call("POST", "/api/v1/funding/deposits", `{"bankAccountId":"`+bank+`","amount":10}`)
+	// 另一条已关联 DEP-LINKED 的本地记录
+	f.repo.transfers = append(f.repo.transfers, Transfer{ID: "tr-x", AccountID: "acc-1", Type: "DEPOSIT", Amount: "10.00", Status: "PENDING", DWRef: "DEP-LINKED", IdempotencyKey: "x"})
+	submitted := f.repo.transfers[0].SubmittedAt
+	ts := submitted.Add(2 * time.Second).UTC().Format(time.RFC3339Nano)
+	f.dw.resp["GET /accounts/dwacc-1/funding/deposits"] = `[` +
+		`{"id":"DEP-LINKED","amount":10,"timestamp":"` + ts + `","status":{"message":"Approved"}},` +
+		`{"id":"DEP-OTHERBANK","amount":10,"bankAccountID":"bank_other","timestamp":"` + ts + `","status":{"message":"Approved"}},` +
+		`{"id":"DEP-MINE","amount":10,"bankAccountID":"bank_test1","timestamp":"` + ts + `","status":{"message":"Approved"}}]`
+	f.svc.now = func() time.Time { return submitted.Add(11 * time.Minute) }
+	f.dw.fail["POST /funding/deposits"] = []error{fmt.Errorf("timeout")}
+	f.svc.Sync(context.Background(), time.Minute)
+	if tr := f.repo.transfers[0]; tr.DWRef != "DEP-MINE" {
+		t.Fatalf("应只关联 DEP-MINE（排除已关联与他行）：%q", tr.DWRef)
 	}
 }

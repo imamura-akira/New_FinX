@@ -63,6 +63,14 @@ func TestPGFundingRepo(t *testing.T) {
 	if _, err := r.TransferByIdemKey(ctx, "00000000-0000-4000-8000-000000000000", tr.IdempotencyKey); !errors.Is(err, ErrNotFound) {
 		t.Fatalf("其他账户不应取到: %v", err)
 	}
+	// 审计 TEST-P1-1 / 3.3：所有者校验在 SQL 层——其他账户取不到本账户的银行卡与资金记录
+	other := "00000000-0000-4000-8000-000000000000"
+	if _, err := r.GetBank(ctx, other, bankID); !errors.Is(err, ErrNotFound) {
+		t.Fatalf("其他账户不应取到银行卡: %v", err)
+	}
+	if list, err := r.ListTransfers(ctx, other, "", nil, 50); err != nil || len(list) != 0 {
+		t.Fatalf("其他账户不应列出资金记录: %d %v", len(list), err)
+	}
 	if busy, _ := r.HasInFlight(ctx, bankID); !busy {
 		t.Fatal("提交中的入金应视为在途")
 	}
@@ -106,6 +114,22 @@ func TestPGFundingRepo(t *testing.T) {
 	}
 	if sum, _ := r.SumDeposits(ctx, accID, now.Add(-time.Hour)); sum != "0" {
 		t.Fatalf("被退回的入金不计入每日额度: %s", sum)
+	}
+	// 审计 TEST-P1-2：RIA_REJECTED 同为终态——不计入每日额度、不算重复提交、不算在途
+	if err := r.UpdateTransfer(ctx, tid, "RIA_REJECTED", &reason, &done, now); err != nil {
+		t.Fatal(err)
+	}
+	if sum, _ := r.SumDeposits(ctx, accID, now.Add(-time.Hour)); sum != "0" {
+		t.Fatalf("RIA_REJECTED 不计入每日额度: %s", sum)
+	}
+	if dup, _ := r.RecentDuplicate(ctx, accID, "DEPOSIT", "100.25", &bankID, now.Add(-time.Hour)); dup {
+		t.Fatal("RIA_REJECTED 不算重复提交")
+	}
+	if busy, _ := r.HasInFlight(ctx, bankID); busy {
+		t.Fatal("RIA_REJECTED 不算在途")
+	}
+	if err := r.UpdateTransfer(ctx, tid, "RETURNED", &reason, &done, now); err != nil {
+		t.Fatal(err)
 	}
 	if busy, _ := r.HasInFlight(ctx, bankID); busy {
 		t.Fatal("终态不算在途")

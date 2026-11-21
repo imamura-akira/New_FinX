@@ -21,10 +21,12 @@ import (
 
 // ---------- 内存仓储 ----------
 
+// memRepo：内存仓储，语义与 PGRepo 保持一致（审计 TEST-P1-2：对账节流 checked_at、条数上限）。
 type memRepo struct {
-	mu     sync.Mutex
-	orders []Order
-	seq    int
+	mu      sync.Mutex
+	orders  []Order
+	checked map[string]time.Time
+	seq     int
 }
 
 func (m *memRepo) find(id string) *Order {
@@ -69,6 +71,7 @@ func (m *memRepo) SetSubmitted(_ context.Context, id, dwID, dwNo string, now tim
 	defer m.mu.Unlock()
 	o := m.find(id)
 	o.DWOrderID, o.Status, o.UpdatedAt = dwID, StatusNew, now
+	m.mark(id, now)
 	if dwNo != "" {
 		o.OrderNo = &dwNo
 	}
@@ -148,6 +151,7 @@ func (m *memRepo) UpdateOrder(_ context.Context, id string, f Fill, now time.Tim
 	o := m.find(id)
 	o.Status, o.FilledQty, o.AvgPrice, o.TotalAmount, o.Fees = f.Status, ptrNum(f.FilledQty), ptrNum(f.AvgPrice), ptrNum(f.TotalAmount), ptrNum(f.Fees)
 	o.RejectReason, o.DWReason, o.UpdatedAt = f.RejectReason, f.DWReason, now
+	m.mark(id, now)
 	if f.OrderNo != "" {
 		no := f.OrderNo
 		o.OrderNo = &no
@@ -158,19 +162,33 @@ func (m *memRepo) UpdateOrder(_ context.Context, id string, f Fill, now time.Tim
 	return nil
 }
 
-func (m *memRepo) DueOrders(_ context.Context, _ time.Time, _ int) ([]Order, error) {
+func (m *memRepo) DueOrders(_ context.Context, checkedBefore time.Time, limit int) ([]Order, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	var out []Order
 	for _, o := range m.orders {
-		if IsOpen(o.Status) {
+		c, seen := m.checked[o.ID]
+		if IsOpen(o.Status) && (!seen || c.Before(checkedBefore)) && len(out) < limit {
 			out = append(out, o)
 		}
 	}
 	return out, nil
 }
 
-func (m *memRepo) TouchOrder(context.Context, string, time.Time) error { return nil }
+func (m *memRepo) TouchOrder(_ context.Context, id string, now time.Time) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.mark(id, now)
+	return nil
+}
+
+// mark：同 PG 的 checked_at（SetSubmitted / UpdateOrder / TouchOrder 都会更新）。
+func (m *memRepo) mark(id string, now time.Time) {
+	if m.checked == nil {
+		m.checked = map[string]time.Time{}
+	}
+	m.checked[id] = now
+}
 func (m *memRepo) Audit(context.Context, string, string, string, map[string]any) error {
 	return nil
 }
@@ -709,15 +727,21 @@ func TestSyncRefreshesOpenOrders(t *testing.T) {
 	f.dw.resp["GET /orders/DWO-1"] = []string{`{"id":"DWO-1","status":"NEW"}`}
 	f.call("POST", "/api/v1/orders", `{"symbol":"AAPL","side":"BUY","orderType":"MARKET","amount":100}`)
 	f.dw.resp["GET /orders/DWO-1"] = []string{`{"id":"DWO-1","status":"PARTIAL_FILL","cumulativeQuantity":0.2}`, orderFilledJSON}
+	// 同 PG：刚刷新过的订单 30 秒内不重复对账，因此每轮推进 1 分钟
+	tick := 0
+	f.svc.now = func() time.Time { return time.Now().Add(time.Duration(tick) * time.Minute) }
+	tick = 1
 	f.svc.Sync(context.Background(), time.Minute)
 	if o := f.repo.find("ord-1"); o.Status != StatusPartialFill || o.DoneAt != nil {
 		t.Fatalf("%s", o.Status)
 	}
+	tick = 2
 	f.svc.Sync(context.Background(), time.Minute)
 	if o := f.repo.find("ord-1"); o.Status != StatusFilled || o.DoneAt == nil {
 		t.Fatalf("%s", o.Status)
 	}
 	n := f.dw.count("GET /orders/")
+	tick = 3
 	f.svc.Sync(context.Background(), time.Minute)
 	if f.dw.count("GET /orders/") != n {
 		t.Fatal("已完结订单不再刷新")
