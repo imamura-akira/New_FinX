@@ -364,7 +364,8 @@ func (s *Service) submit(ctx context.Context, o Order) (string, error) {
 	err := s.DW.Do(dctx, http.MethodPost, pathOrders, orderBody(o.DWAccountNo, o.Symbol, o.Side, o.OrderType, qty, notional, price, o.TimeInForce, s.PreventQueuing), &res)
 	if err != nil {
 		var ae *dwclient.APIError
-		if errors.As(err, &ae) && ae.Status >= 400 && ae.Status < 500 && ae.Status != http.StatusTooManyRequests {
+		// 幂等键类错误（IK 开头）只说明缓存响应暂不可取，DW 可能已受理（2026-11-21 沙盒实测），按结果不明处理
+		if errors.As(err, &ae) && ae.Status >= 400 && ae.Status < 500 && ae.Status != http.StatusTooManyRequests && !strings.HasPrefix(ae.DWCode, "IK") {
 			_ = s.Repo.DeleteOrder(ctx, o.ID)
 			s.Logger.WarnContext(ctx, "dw order rejected", slog.String("order_id", o.ID), slog.Int("status", ae.Status), slog.String("dw_code", ae.DWCode))
 			msg := "券商未受理该笔订单，请核对后重试"

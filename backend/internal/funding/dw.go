@@ -21,6 +21,11 @@ const (
 	pathRedemptions = "/funding/redemptions"
 )
 
+// pathAccountDeposits：按账户列出入金（DW List Account Deposits，limit 最大 100，按创建时间倒序）。
+func pathAccountDeposits(dwAccountID string) string {
+	return "/accounts/" + dwAccountID + "/funding/deposits?limit=50"
+}
+
 func pathMoney(dwAccountID string) string { return "/accounts/" + dwAccountID + "/summary/money" }
 
 func pathInstructions(dwAccountID string) string {
@@ -136,6 +141,26 @@ func redemptionBody(accountNo string, cents int64, method, dwBankID, beneficiary
 	}
 	b["details"] = details
 	return b
+}
+
+// dwDepositItem：按账户列出入金的单项（列表用 timestamp 表示创建时间，详情用 created；bankAccountID 列表中可能缺省）。
+type dwDepositItem struct {
+	ID            string      `json:"id"`
+	Type          any         `json:"type"`
+	Amount        json.Number `json:"amount"`
+	BankAccountID string      `json:"bankAccountID"`
+	Timestamp     string      `json:"timestamp"`
+	Created       string      `json:"created"`
+	Status        any         `json:"status"`
+}
+
+func (d dwDepositItem) createdAt() (time.Time, bool) {
+	for _, s := range []string{d.Timestamp, d.Created} {
+		if t, err := time.Parse(time.RFC3339Nano, s); err == nil {
+			return t, true
+		}
+	}
+	return time.Time{}, false
 }
 
 type dwTransferRes struct {

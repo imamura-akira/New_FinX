@@ -175,7 +175,7 @@ func (m *memRepo) DueTransfers(context.Context, time.Time, time.Time, int) ([]Tr
 	var out []Transfer
 	for _, t := range m.transfers {
 		if !Terminal(t.Status) {
-			t.DWAccountNo = "TEST000001"
+			t.DWAccountNo, t.DWAccountID = "TEST000001", "dwacc-1"
 			out = append(out, t)
 		}
 	}
@@ -194,6 +194,17 @@ func (m *memRepo) UpdateTransfer(_ context.Context, id, st string, reason *strin
 }
 
 func (m *memRepo) TouchTransfer(context.Context, string, time.Time) error { return nil }
+
+func (m *memRepo) DWRefUsed(_ context.Context, ref string) (bool, error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	for _, t := range m.transfers {
+		if t.DWRef == ref {
+			return true, nil
+		}
+	}
+	return false, nil
+}
 
 func (m *memRepo) SetAvailability(_ context.Context, id string, bp, wd *time.Time) error {
 	m.mu.Lock()
@@ -236,10 +247,14 @@ func (f *fakeDW) Do(ctx context.Context, method, path string, body, out any) err
 			}
 		}
 	}
-	for k, js := range f.resp {
-		if strings.HasPrefix(key, k) && out != nil {
-			return json.Unmarshal([]byte(js), out)
+	best := "" // 最长前缀优先（如 GET /accounts/x/funding/deposits 优先于 GET /accounts/）
+	for k := range f.resp {
+		if strings.HasPrefix(key, k) && len(k) > len(best) {
+			best = k
 		}
+	}
+	if best != "" && out != nil {
+		return json.Unmarshal([]byte(f.resp[best]), out)
 	}
 	return nil
 }
@@ -547,6 +562,11 @@ func TestDepositDWFailures(t *testing.T) {
 	}
 	firstKey := f.dw.last("POST /funding/deposits").idem
 	f.svc.Sync(context.Background(), time.Minute)
+	if f.dw.count("POST /funding/deposits") != 1 {
+		t.Fatal("提交后 1 分钟内不应重放（首次提交可能仍在进行中）")
+	}
+	f.svc.now = func() time.Time { return time.Now().Add(2 * time.Minute) }
+	f.svc.Sync(context.Background(), time.Minute)
 	if f.dw.count("POST /funding/deposits") != 2 || f.dw.last("POST /funding/deposits").idem != firstKey {
 		t.Fatal("对账重放必须使用同一个 Idempotency-Key")
 	}
@@ -695,4 +715,107 @@ func TestSyncUpdatesStatus(t *testing.T) {
 	if tr := f.repo.transfers[0]; tr.Status != "RETURNED" || tr.FailureReason == nil || !strings.Contains(*tr.FailureReason, "退回") {
 		t.Fatalf("成功后被退回应更新并给出中文原因: %+v", tr)
 	}
+}
+
+// 2026-11-21 沙盒实测缺陷回归：首次提交超时期间对账并发重放得到 IK075，后端误判为拒绝并删除本地记录，
+// 而 DW 实际已创建入金。
+func TestDepositIdempotencyErrorIsUnknown(t *testing.T) {
+	ik := &dwclient.APIError{Status: 404, DWCode: "IK075", Message: "Could not retrieve cached response for this idempotency key."}
+	cases := []struct {
+		name     string
+		err      error
+		wantCode int
+		keep     bool
+	}{
+		{"IK075 结果不明：保留记录", ik, 50001, true},
+		{"其他幂等错误同样不明", &dwclient.APIError{Status: 409, DWCode: "IK070"}, 50001, true},
+		{"普通 4xx 仍为明确拒绝", &dwclient.APIError{Status: 400, DWCode: "E032"}, 42200, false},
+		{"429 限流不明", &dwclient.APIError{Status: 429}, 50001, true},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			f := newFx(t)
+			bank := f.link(t)
+			f.dw.fail["POST /funding/deposits"] = []error{tc.err}
+			r := f.call("POST", "/api/v1/funding/deposits", `{"bankAccountId":"`+bank+`","amount":10}`)
+			if r.Code != tc.wantCode {
+				t.Fatalf("code = %d，期望 %d", r.Code, tc.wantCode)
+			}
+			if got := len(f.repo.transfers) == 1 && f.repo.transfers[0].Status == StatusSubmitting; got != tc.keep {
+				t.Fatalf("保留 SUBMITTING 记录 = %v，期望 %v", got, tc.keep)
+			}
+		})
+	}
+}
+
+func TestSyncSubmittingDeposit(t *testing.T) {
+	const listJSON = `[` +
+		`{"id":"DEP-OLD","type":"ACH","amount":10,"timestamp":"2026-11-20T05:50:19.662Z","status":{"id":2,"message":"Successful"}},` +
+		`{"id":"DEP-NEW","type":"ACH","amount":10,"timestamp":"%s","status":{"id":14,"message":"Approved"}},` +
+		`{"id":"DEP-BIG","type":"ACH","amount":1000,"timestamp":"%s","status":{"id":14,"message":"Approved"}}]`
+	cases := []struct {
+		name      string
+		age       time.Duration
+		replayErr []error
+		list      func(submitted time.Time) string
+		wantPosts int
+		wantRef   string
+		wantState string
+	}{
+		{name: "1 分钟内不重放", age: 20 * time.Second, wantPosts: 1, wantState: StatusSubmitting},
+		{name: "满 1 分钟用原幂等键重放成功", age: 2 * time.Minute, wantPosts: 2, wantRef: "DEP-1", wantState: "PENDING"},
+		{name: "重放 IK075 未满 10 分钟：保留待下次", age: 5 * time.Minute, replayErr: []error{&dwclient.APIError{Status: 404, DWCode: "IK075"}},
+			wantPosts: 2, wantState: StatusSubmitting},
+		{name: "重放 IK075 满 10 分钟：按账户反查唯一匹配并关联", age: 11 * time.Minute, replayErr: []error{&dwclient.APIError{Status: 404, DWCode: "IK075"}},
+			list: func(at time.Time) string {
+				return fmt.Sprintf(listJSON, at.Add(13*time.Second).UTC().Format(time.RFC3339Nano), at.UTC().Format(time.RFC3339Nano))
+			},
+			wantPosts: 2, wantRef: "DEP-NEW", wantState: "APPROVED"},
+		{name: "反查多笔同额同时段：不关联，转人工", age: 11 * time.Minute, replayErr: []error{fmt.Errorf("timeout")},
+			list: func(at time.Time) string {
+				ts := at.Add(5 * time.Second).UTC().Format(time.RFC3339Nano)
+				return `[{"id":"A","amount":10,"timestamp":"` + ts + `"},{"id":"B","amount":10,"timestamp":"` + ts + `"}]`
+			},
+			wantPosts: 2, wantState: StatusSubmitting},
+		{name: "反查无匹配（时间不符）：保留", age: 11 * time.Minute, replayErr: []error{fmt.Errorf("timeout")},
+			list: func(at time.Time) string {
+				return `[{"id":"X","amount":10,"timestamp":"` + at.Add(-2*time.Hour).UTC().Format(time.RFC3339Nano) + `"}]`
+			},
+			wantPosts: 2, wantState: StatusSubmitting},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			f := newFx(t)
+			bank := f.link(t)
+			f.dw.fail["POST /funding/deposits"] = []error{fmt.Errorf("timeout")} // 首次提交结果不明
+			f.call("POST", "/api/v1/funding/deposits", `{"bankAccountId":"`+bank+`","amount":10}`)
+			submitted := f.repo.transfers[0].SubmittedAt
+			f.svc.now = func() time.Time { return submitted.Add(tc.age) }
+			f.dw.fail["POST /funding/deposits"] = tc.replayErr
+			if tc.list != nil {
+				f.dw.resp["GET /accounts/dwacc-1/funding/deposits"] = tc.list(submitted)
+			}
+			f.svc.Sync(context.Background(), time.Minute)
+			if n := f.dw.count("POST /funding/deposits"); n != tc.wantPosts {
+				t.Fatalf("POST 次数 = %d，期望 %d", n, tc.wantPosts)
+			}
+			if p := f.dw.last("POST /funding/deposits"); tc.wantPosts > 1 && p.idem != f.dw.calls[0+countBefore(f, "POST /funding/deposits")].idem {
+				t.Fatal("重放必须使用原幂等键")
+			}
+			tr := f.repo.transfers[0]
+			if tr.DWRef != tc.wantRef || tr.Status != tc.wantState {
+				t.Fatalf("关联结果 ref=%q status=%q，期望 ref=%q status=%q", tr.DWRef, tr.Status, tc.wantRef, tc.wantState)
+			}
+		})
+	}
+}
+
+// countBefore 返回第一次匹配调用的下标（用于取首次提交的幂等键）。
+func countBefore(f *fx, prefix string) int {
+	for i, c := range f.dw.calls {
+		if strings.HasPrefix(c.method+" "+c.path, prefix) {
+			return i
+		}
+	}
+	return 0
 }

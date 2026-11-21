@@ -504,11 +504,27 @@ func TestCreateOrderDWOutcomes(t *testing.T) {
 			t.Fatalf("状态 %s", o.Status)
 		}
 		f.svc.Sync(context.Background(), time.Minute)
+		if n := f.dw.count("POST /orders"); n != 1 {
+			t.Fatalf("提交后 1 分钟内不应重放（首次提交可能仍在进行中），POST 次数 %d", n)
+		}
+		f.svc.now = func() time.Time { return time.Now().Add(2 * time.Minute) }
+		f.svc.Sync(context.Background(), time.Minute)
 		if f.dw.last("POST /orders").idem != first {
 			t.Fatal("重放必须使用原 Idempotency-Key")
 		}
 		if o := f.repo.find("ord-1"); o.Status != StatusFilled || o.DWOrderID != "DWO-1" {
 			t.Fatalf("重放后状态 %s / %s", o.Status, o.DWOrderID)
+		}
+	})
+	t.Run("幂等键错误 IK075：结果不明，保留 SUBMITTING（2026-11-21 沙盒实测回归）", func(t *testing.T) {
+		f := newFx(t)
+		f.dw.fail["POST /orders"] = []error{&dwclient.APIError{Status: 404, DWCode: "IK075"}}
+		r := f.call("POST", "/api/v1/orders", `{"symbol":"AAPL","side":"BUY","orderType":"MARKET","amount":100}`)
+		if r.HTTP != 502 || r.Code != 50001 {
+			t.Fatalf("IK075 不应当作拒绝：%+v", r)
+		}
+		if o := f.repo.find("ord-1"); o == nil || o.Status != StatusSubmitting {
+			t.Fatal("IK075 后必须保留本地订单，待对账确认")
 		}
 	})
 	t.Run("响应缺少订单号：50002", func(t *testing.T) {

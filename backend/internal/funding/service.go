@@ -364,11 +364,16 @@ func (s *Service) submitDeposit(ctx context.Context, t Transfer) (string, error)
 	return s.afterSubmit(ctx, t, res, err, "deposit")
 }
 
-// afterSubmit：DW 明确拒绝（4xx）→ 撤销本地记录并返回可展示的错误；结果不明（网络/5xx）→ 保留 SUBMITTING 待对账重放。
+// idempotencyError：DW 幂等键类错误（错误码 IK 开头，DW Errors 文档 "Idempotency Errors"）。
+// 它只说明缓存的响应暂不可取，不能说明请求未被处理——沙盒实测（2026-11-21）首次提交超时后得到 IK075，
+// DW 实际已创建入金。因此按"结果不明"处理，不能当作拒绝删除本地记录。
+func idempotencyError(ae *dwclient.APIError) bool { return strings.HasPrefix(ae.DWCode, "IK") }
+
+// afterSubmit：DW 明确拒绝（4xx，幂等键类错误除外）→ 撤销本地记录并返回可展示的错误；结果不明（网络/5xx）→ 保留 SUBMITTING 待对账重放。
 func (s *Service) afterSubmit(ctx context.Context, t Transfer, res dwTransferRes, err error, op string) (string, error) {
 	if err != nil {
 		var ae *dwclient.APIError
-		if errors.As(err, &ae) && ae.Status >= 400 && ae.Status < 500 && ae.Status != http.StatusTooManyRequests {
+		if errors.As(err, &ae) && ae.Status >= 400 && ae.Status < 500 && ae.Status != http.StatusTooManyRequests && !idempotencyError(ae) {
 			_ = s.Repo.DeleteTransfer(ctx, t.ID)
 			s.Logger.WarnContext(ctx, "dw "+op+" rejected", slog.String("transfer_id", t.ID), slog.Int("status", ae.Status), slog.String("dw_code", ae.DWCode))
 			return "", httpx.Validation("券商未受理该笔申请，请核对金额与账户后重试")
