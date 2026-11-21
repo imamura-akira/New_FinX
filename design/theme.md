@@ -51,6 +51,12 @@
 | ak_mark_icon_1024.png（design/brand/） | **App 图标母版（2026-11-20 晚起）**：白底 1024×1024（无透明通道），AK 立体字标（白 / 橙 / 黑描边，与 P-01 欢迎页字标同款） | iOS AppIcon 全尺寸（15 个）由此生成；App 显示名称 AK Stocks |
 | ak_icon_1024.png（design/brand/） | 深蓝圆徽 "AK" 图标母版（v1.7 使用），**保留备查**，不再用于 AppIcon | 已停用 |
 | app_icon_1024.png（design/brand/） | 原 FinX Stocks 图标母版（渐变爪印 + 涨幅柱，来源 app_icon_source.png），**保留备查**，不再用于 AppIcon | 已停用 |
+| logo_dark.png / fifi_pill_dark.png（app/assets/brand/，由 logo.png / fifi_pill.png 经 tool/gen_welcome_dark_assets.py 生成） | 透明底版本（原图为 RGB 白底，深色下会出现白块）：字标为颜色转透明，胶囊图为外部背景泛洪去除 | P-01 深色模式（F22-g，字标下加浅色辉光） |
+| fifi_order.png（design/brand/ → app/assets/brand/，缩至 720px） | Fifi 举回执（透明背景） | F22-c 成交成功页 |
+| fifi_quant.png（design/brand/，原图 240×333） | Fifi 拿平板（透明背景）；**分辨率偏低，3x 屏略糊，建议补高清图** | F22-d P-26 英雄卡 |
+| store/st_hero_full.png、store/xp_hero.png（design/brand/store/ → app/assets/brand/store/，缩至 1110px 宽） | 商店 / 任务页英雄横幅，透明通道整卡 PNG（已回正），原图显示、不裁切、仅投影；中英文同图（图中文字为英文） | F22-e P-27、F22-f 任务页 |
+| store/st_jacket / st_vest / st_bag / st_phones（缩至 330px） | 商品高清图（棒球夹克、交易马甲、紫色挎包、量化耳机） | F22-e 商品卡 |
+| store/st_bundle_placeholder / st_garage_placeholder / st_home_placeholder / st_yacht_placeholder / st_jet_placeholder | **占位图，待替换**（低分辨率，图中自带锁标；深色下可见白边）。高清图到位后同名替换文件即可，seed 中 placeholder 改为 false 后 App 自动补锁标 | F22-e 套装、敬请期待 |
 
 规则：素材为我方品牌资产，可在任何页面使用；新素材先入 `assets/` 并登记到本表。
 样板中出现的真实投资人照片（股票大师页）**不进入**原型与正式 App，继续用字母头像；
@@ -192,6 +198,25 @@
 
 **实现约束**：页面不写死颜色（`Color(0x…)` / `Colors.white` 等只允许出现在 theme.dart）；新增颜色先加令牌（两套值）再使用。切换外观时整棵树重建并重绘（CustomPainter 也随之换色）。测试 `app/test/dark_mode_test.dart` 会扫描深色下页面中的浅色实色块。
 
+## 11. F22 改版令牌（2026-11-21，定稿 design/reward-design/v3/）
+
+均在 `app/lib/app/theme.dart`，渐变类深浅色相同，其余提供深色版：
+
+| 令牌 | 值 | 用途 |
+|---|---|---|
+| AppGradients.assetHero | 118deg #4D5BEF → #8A4BE0 42% → #D4569B 70% → #F0944C | P-07 资产大卡 |
+| AppGradients.filterOn | 135deg #7D4DF0 → #A944D8 | P-07 筛选胶囊选中 |
+| AssetHeroColors | 涨 #7CF2A4 / 跌 #FFC9CB（渐变上）、眼睛底白 22%、系列色（股票 / 现金 / ETF / 青 / 绿 / 灰） | P-07 |
+| MarketColors.indexGrads | #5A57EE→#8A4BE0、#A944D8→#D4569B、#E0638A→#F0944C | P-09 指数卡 |
+| MarketColors | 平档柱 #C9C4DC、内部人三卡底（绿 / 红 / 紫）、演示角标琥珀 | P-09 |
+| OrderDoneColors | 波浪 #D9CEF8→#EFEAFB→#F6F3FE、徽章环 #EFEBFE、闪光 #A98FF5、金币紫 / 金、箭头 #16A34A | 成交成功页 |
+| StoreColors.grad | 100deg #7D4DF0 → #A944D8 55% → #D63AA8 | 商店 / 任务 CTA、选中等级 |
+| StoreColors.fifiHero | 118deg #4D4FE0 → #7D4DF0 40% → #B44BD8 72% → #E08BC8 | P-26 英雄卡 |
+| StoreColors（其余） | XP 胶囊描边 #D9D2F5、等级胶囊、可兑换绿底、已完成行绿底 #EDF9F1、火焰底 #FDEDE4、投影紫 25% | P-27、任务页 |
+| WelcomeColors.logoGlow | 白 90% | P-01 深色字标辉光 |
+
+动效与声音：成交成功页弹出时播完整彩带 + `order_success.wav`（tool/gen_order_success.py 合成 C6–E6–G6–C7 上行琶音，约 0.7 秒）+ 中等触感；签到与"开启上线提醒"沿用 `reminder_ding.wav`。P-01 恢复 `welcome_chime.wav`（tool/gen_welcome_chime.py）。
+
 ## 变更记录
 
 | 日期 | 内容 |
@@ -207,3 +232,4 @@
 | 2026-11-20 | v1.8：F20 欢迎页 AK 品牌版——第 4 节登记 ak_mark.png；第 7 节 P-01 入场改为字标淡入 + 橙色趋势线描画 + 5 个高点音调递增"滴"声 + 光点呼吸 + 注册按钮放大一次（替换原 Fifi 入场与钟声和弦）；新增第 9 节欢迎页橙色配色（欢迎页专属，App 内部仍为紫色系） |
 | 2026-11-20 | v1.9：App 图标母版改用 design/brand/ak_mark_icon_1024.png（AK 立体字标）重新生成 iOS AppIcon 全部尺寸，替换深蓝圆徽版（ak_icon_1024.png 保留备查）；第 5 节显示名称更正为 AK Stocks |
 | 2026-11-20 | v2.0：F21 深色模式——新增第 10 节（深色色板、模块深色版、欢迎页字标光晕、启动图深色变体、实现约束）；第 6 节改为已支持深色；全 App 硬编码颜色收编为主题令牌 |
+| 2026-11-21 | v2.1：F22 改版——第 4 节登记 F22 新素材（占位图标注待替换、fifi_quant 分辨率偏低）与欢迎页深色透明底版本；新增第 11 节 F22 令牌与成交提示音；P-01 回滚为 FinX 原版（第 9 节 AK 橙色配色与第 7 节高点滴声留档，不再使用） |
