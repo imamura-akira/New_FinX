@@ -397,7 +397,7 @@
 
 **结论（截至 2026-11-21 08:42 北京）**：DW 已创建入金并推进到 14 Approved，状态历史最后一条为 "Awaiting money movement window to open."——**资金划转窗口未开放，DW 尚未返回 `seasoningDetails`（购买力 / 可提现生效日）**，因此"1 天到账"本次暂无法判定，待窗口开放后复查（上一笔在窗口开放、转为 Successful 时才写入生效日）。
 
-**提交过程（我方缺陷，已定位）**：首次 `POST` 10 秒超时（结果不明）；超时期间后台对账任务用同一 Idempotency-Key 重放，DW 返回 404 IK075（IDEMPOTENCY_KEY_RESPONSE_ERROR，缓存的响应尚不可取）；dwclient 重试同样 IK075。后端把 IK075 当作"券商明确拒绝"，删除了本地记录并向 App 返回 422。实际上 DW 于 00:39:40.870Z 创建了**一笔**入金（按账户列出入金核实，无重复）。本地库因此缺这笔记录，详见 sandbox-log 2026-11-21。
+**提交过程（我方缺陷，已定位）**：首次 `POST` 10 秒超时（结果不明）；超时期间后台对账任务用同一 Idempotency-Key 重放，DW 返回 404 IK075（IDEMPOTENCY_KEY_RESPONSE_ERROR，缓存的响应尚不可取）；dwclient 重试同样 IK075。后端把 IK075 当作"券商明确拒绝"，删除了本地记录并向 App 返回 422。实际上 DW 于 00:39:40.870Z 创建了**一笔**入金（按账户列出入金核实，无重复）。本地库因此缺这笔记录（已按 DW 核实结果补录；缺陷已修复，提交 5dfbbee），详见 sandbox-log 2026-11-21。
 
 `POST /funding/deposits`（对账重放）· HTTP 404 · 2026-11-21T00:39:28.943668Z · DW request id `request_d8fe7f4e-81e0-436f-960d-2a6e4a221a6b_clm`
 
