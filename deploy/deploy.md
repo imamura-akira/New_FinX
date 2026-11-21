@@ -67,6 +67,13 @@ deploy/deploy.sh
 
 服务器端的构建与启动由 `remote-up.sh` 在后台执行（日志 `/opt/finx/deploy/last-deploy.log`，SSH 断开也不会中断），本机轮询直到成功或失败。脚本只同步 `backend/` 与 `deploy/`，不会覆盖或删除服务器上的 `.env`、`*.local.json`、`RELEASES`。镜像标签为 git 短提交号（有未提交改动时加 `-dirty`），每次部署追加一行到 `/opt/finx/deploy/RELEASES`。
 
+## 3.1 数据库备份（审计 OPS-P1-1 / OPS-P1-2）
+
+- **部署前自动备份**：`remote-up.sh` 在构建之后、迁移之前执行 `pg_dump`，生成 `/opt/finx/backups/finx-<UTC时间>-pre-deploy-<版本>.sql.gz`（目录 700、文件 600），并校验 gzip 完整且非空。**备份失败即中止部署（DEPLOY_FAIL），不执行迁移**。首次部署时数据库尚未运行，跳过备份。
+- **每日备份**：`/etc/cron.d/finx-backup` 每天 03:17 UTC 运行 `deploy/backup.sh`，生成 `/opt/finx/backups/daily/finx-YYYYmmdd.sql.gz`，本机保留 7 天。日志写入 `/var/log/finx-backup.log`（logrotate 每周轮转，保留 8 份），成功行为 `BACKUP_OK`，失败行为 `BACKUP_FAIL`。
+- **异地副本**：方案待定（见 design/audit-20261121.md 的 OPS-P1-1）。目前备份与数据库在同一台机器上。
+- **恢复**：用同版本 postgres 镜像起一个临时容器，执行 `gunzip -c <备份> | psql -v ON_ERROR_STOP=1`，核对后再切换。2026-11-21 已演练一次，21 张表全部恢复。
+
 ## 4. 回滚
 
 查看历史版本：
