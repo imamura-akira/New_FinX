@@ -128,9 +128,10 @@ func run(migrateCmd string, logger *slog.Logger) error {
 			authSvc.SetAllowedEmails(cfg.AllowedEmails)
 			logger.Info("login email allowlist enabled", slog.Int("entries", len(cfg.AllowedEmails)))
 		}
-		if cfg.OTPDevLog { // 演示固定验证码 000000（config 已禁止 production 开启 OTP_DEV_LOG）
+		// 固定验证码 000000：仅演示环境，生产禁止（config 校验），接入邮件服务后移除（审计 SEC-P0-1，用户已知悉并接受）
+		if cfg.OTPFixedCode {
 			authSvc.EnableDemoCode()
-			logger.Warn("demo OTP enabled: code 000000 is accepted (development only)")
+			logger.Warn("OTP_FIXED_CODE enabled: code 000000 is accepted (demo only; remove after email provider is integrated)")
 		}
 		cipher, err := crypto.New(cfg.PIIKey)
 		if err != nil {

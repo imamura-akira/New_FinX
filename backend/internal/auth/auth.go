@@ -134,6 +134,8 @@ func (s *Service) handleRequestOTP(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		var le otpLimitErr
 		if errors.As(err, &le) {
+			s.logger.WarnContext(r.Context(), "otp request rate limited", slog.String("email", MaskEmail(email)),
+				slog.String("scope", le.scope), slog.Int("retry_after", le.retryAfter))
 			httpx.Fail(w, r, httpx.RateLimited("请求过于频繁，请稍后再试", le.retryAfter))
 			return
 		}

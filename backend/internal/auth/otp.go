@@ -19,6 +19,9 @@ const (
 	OTPMaxAttempts     = 5 // 单个验证码最多校验次数，超过作废
 	OTPMaxSendsPerHour = 5 // 同一邮箱每小时最多发送次数
 	OTPMaxSendsPerIP   = 20
+	// OTPMaxSendsPerEmailIP：同一"邮箱 + IP"每小时最多请求次数，超限拒绝并记日志（审计 SEC-P0-1 的缓解措施）。
+	// 注意：反向代理后 ClientIP 目前是代理地址（审计 SEC-P1-1），修复前该限速实际等同于按邮箱限速。
+	OTPMaxSendsPerEmailIP = 5
 )
 
 // Sender 发送验证码邮件。
@@ -58,22 +61,28 @@ type otpEntry struct {
 }
 
 type otpStore struct {
-	mu      sync.Mutex
-	secret  []byte
-	codes   map[string]*otpEntry
-	byEmail map[string][]time.Time
-	byIP    map[string][]time.Time
+	mu        sync.Mutex
+	secret    []byte
+	codes     map[string]*otpEntry
+	byEmail   map[string][]time.Time
+	byIP      map[string][]time.Time
+	byEmailIP map[string][]time.Time
 }
 
 func newOTPStore(secret []byte) *otpStore {
-	return &otpStore{secret: secret, codes: map[string]*otpEntry{}, byEmail: map[string][]time.Time{}, byIP: map[string][]time.Time{}}
+	return &otpStore{secret: secret, codes: map[string]*otpEntry{}, byEmail: map[string][]time.Time{}, byIP: map[string][]time.Time{},
+		byEmailIP: map[string][]time.Time{}}
 }
 
-type otpLimitErr struct{ retryAfter int }
+// otpLimitErr：限速拒绝；scope 标明触发的规则（resend / email / email_ip / ip），用于日志。
+type otpLimitErr struct {
+	retryAfter int
+	scope      string
+}
 
 func (e otpLimitErr) Error() string { return "otp rate limited" }
 
-// DevFixedCode：演示模式固定验证码（仅 OTP_DEV_LOG=true 时启用；production 禁止开启该开关）。
+// DevFixedCode：演示模式固定验证码（仅 OTP_FIXED_CODE=true 时启用；仅演示环境，production 禁止，接入邮件服务后移除）。
 const DevFixedCode = "000000"
 
 // issue 生成新验证码；受重发间隔与每小时次数限制。fixed 非空时使用固定码（演示模式）。
@@ -81,15 +90,21 @@ func (s *otpStore) issue(email, ip, fixed string, now time.Time) (string, error)
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if e, ok := s.codes[email]; ok && now.Sub(e.sentAt) < OTPResendAfter {
-		return "", otpLimitErr{int((OTPResendAfter - now.Sub(e.sentAt)).Seconds()) + 1}
+		return "", otpLimitErr{int((OTPResendAfter - now.Sub(e.sentAt)).Seconds()) + 1, "resend"}
 	}
+	ek := email + "|" + ip
 	s.byEmail[email] = prune(s.byEmail[email], now)
 	s.byIP[ip] = prune(s.byIP[ip], now)
+	s.byEmailIP[ek] = prune(s.byEmailIP[ek], now)
+	retry := func(first time.Time) int { return int(time.Hour.Seconds()) - int(now.Sub(first).Seconds()) }
+	if len(s.byEmailIP[ek]) >= OTPMaxSendsPerEmailIP {
+		return "", otpLimitErr{retry(s.byEmailIP[ek][0]), "email_ip"}
+	}
 	if len(s.byEmail[email]) >= OTPMaxSendsPerHour {
-		return "", otpLimitErr{int(time.Hour.Seconds()) - int(now.Sub(s.byEmail[email][0]).Seconds())}
+		return "", otpLimitErr{retry(s.byEmail[email][0]), "email"}
 	}
 	if len(s.byIP[ip]) >= OTPMaxSendsPerIP {
-		return "", otpLimitErr{int(time.Hour.Seconds()) - int(now.Sub(s.byIP[ip][0]).Seconds())}
+		return "", otpLimitErr{retry(s.byIP[ip][0]), "ip"}
 	}
 	code := fixed
 	if code == "" {
@@ -102,6 +117,7 @@ func (s *otpStore) issue(email, ip, fixed string, now time.Time) (string, error)
 	s.codes[email] = &otpEntry{mac: mac(s.secret, email+":"+code), expires: now.Add(OTPTTL), sentAt: now}
 	s.byEmail[email] = append(s.byEmail[email], now)
 	s.byIP[ip] = append(s.byIP[ip], now)
+	s.byEmailIP[ek] = append(s.byEmailIP[ek], now)
 	return code, nil
 }
 

@@ -28,8 +28,10 @@ pw=$(grep '^POSTGRES_PASSWORD=' .env | head -1 | cut -d= -f2-)
 
 set_kv "$APP_ENV_FILE" DATABASE_URL "postgres://finx:${pw}@postgres:5432/finx?sslmode=disable"
 set_kv "$APP_ENV_FILE" OTP_DEV_LOG true
+# 固定验证码 000000：仅演示环境，生产禁止，接入邮件服务后移除（审计 SEC-P0-1，用户已知悉并接受）
+set_kv "$APP_ENV_FILE" OTP_FIXED_CODE true
 if [[ -n "${ALLOWED_EMAILS:-}" ]]; then
 	set_kv "$APP_ENV_FILE" ALLOWED_EMAILS "$ALLOWED_EMAILS"
 fi
 chmod 600 .env "$APP_ENV_FILE"
-echo "已写入 backend/.env：DATABASE_URL、OTP_DEV_LOG$([[ -n "${ALLOWED_EMAILS:-}" ]] && echo '、ALLOWED_EMAILS')"
+echo "已写入 backend/.env：DATABASE_URL、OTP_DEV_LOG、OTP_FIXED_CODE$([[ -n "${ALLOWED_EMAILS:-}" ]] && echo '、ALLOWED_EMAILS')"

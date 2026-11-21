@@ -80,6 +80,8 @@ func TestValidation(t *testing.T) {
 		{"旧变量 ALLOWED_EMAIL_SUFFIXES 合法", map[string]string{"ALLOWED_EMAIL_SUFFIXES": "@example.com, @demo.test"}, ""},
 		{"登录白名单合法（后缀与完整邮箱）", map[string]string{"ALLOWED_EMAILS": "@example.com, Demo.User@Mail.test"}, ""},
 		{"开发环境允许打印验证码", map[string]string{"OTP_DEV_LOG": "true", "JWT_SECRET": base64.StdEncoding.EncodeToString(make([]byte, 48))}, ""},
+		{"生产环境禁止固定验证码", map[string]string{"APP_ENV": "production", "OTP_FIXED_CODE": "true"}, "OTP_FIXED_CODE"},
+		{"固定验证码开关非布尔", map[string]string{"OTP_FIXED_CODE": "on"}, "OTP_FIXED_CODE"},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -108,5 +110,31 @@ func TestErrorDoesNotLeakSecret(t *testing.T) {
 	_, err := LoadFrom(env(map[string]string{"DW_CLIENT_SECRET": "super-secret-value", "KYC_MODE": "BAD"}))
 	if err == nil || strings.Contains(err.Error(), "super-secret-value") {
 		t.Fatalf("错误信息不得包含凭据: %v", err)
+	}
+}
+
+// OTP_FIXED_CODE：未设置时沿用 OTP_DEV_LOG（本机开发与现有部署 000000 照旧）；显式设置时以其为准。
+func TestOTPFixedCodeDefault(t *testing.T) {
+	jwt := base64.StdEncoding.EncodeToString(make([]byte, 48))
+	for _, tc := range []struct {
+		name string
+		env  map[string]string
+		want bool
+	}{
+		{"都未设置", map[string]string{}, false},
+		{"只开 OTP_DEV_LOG：沿用", map[string]string{"OTP_DEV_LOG": "true"}, true},
+		{"显式关闭", map[string]string{"OTP_DEV_LOG": "true", "OTP_FIXED_CODE": "false"}, false},
+		{"显式开启", map[string]string{"OTP_FIXED_CODE": "true"}, true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			tc.env["JWT_SECRET"] = jwt
+			c, err := LoadFrom(env(tc.env))
+			if err != nil {
+				t.Fatal(err)
+			}
+			if c.OTPFixedCode != tc.want {
+				t.Fatalf("OTPFixedCode = %v，期望 %v", c.OTPFixedCode, tc.want)
+			}
+		})
 	}
 }

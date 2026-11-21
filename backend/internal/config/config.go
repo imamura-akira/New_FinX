@@ -98,6 +98,9 @@ type Config struct {
 	SessionTTL time.Duration // 会话有效期，默认 24h（契约暂无刷新接口）
 	// OTPDevLog：把邮箱验证码打印到日志，并启用演示固定验证码 000000（仅开发/演示；production 禁止开启）。
 	OTPDevLog bool
+	// OTPFixedCode：接受固定验证码 000000（OTP_FIXED_CODE）。
+	// 仅演示环境，生产禁止，接入邮件服务后移除。未设置时沿用 OTP_DEV_LOG 的值（兼容现有部署与本机开发）。
+	OTPFixedCode bool
 	// MarketDataMode / MarketTick：F11 虚拟行情（backend-design.md 6.5）。
 	MarketDataMode MarketDataMode
 	MarketTick     time.Duration
@@ -200,6 +203,8 @@ func LoadFrom(get Getenv) (*Config, error) {
 			c.JWTSecret = key
 		}
 	}
+	// OTP_FIXED_CODE 未设置时沿用 OTP_DEV_LOG（兼容现有部署与本机开发：000000 照旧）
+	c.OTPFixedCode = p.bool("OTP_FIXED_CODE", c.OTPDevLog)
 	if len(p.errs) > 0 {
 		return nil, fmt.Errorf("配置错误: %s", strings.Join(p.errs, "; "))
 	}
@@ -273,6 +278,9 @@ func (c *Config) Validate() error {
 	}
 	if c.DW.LogBodies && c.Env == "production" {
 		errs = append(errs, "production 环境禁止开启 DW_LOG_BODIES")
+	}
+	if c.OTPFixedCode && c.Env == "production" {
+		errs = append(errs, "production 环境禁止开启 OTP_FIXED_CODE（固定验证码仅演示环境，接入邮件服务后移除）")
 	}
 	if c.OTPDevLog && c.Env == "production" {
 		errs = append(errs, "production 环境禁止开启 OTP_DEV_LOG")

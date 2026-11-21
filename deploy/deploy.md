@@ -107,11 +107,11 @@ ssh root@72.60.104.228 'cd /opt/finx/deploy && docker compose run --rm --no-deps
 flutter run --dart-define=API_BASE_URL=https://finxnew.akira.diy/api/v1 --dart-define=DEMO_MODE=true
 ```
 
-登录邮箱须在服务器 `ALLOWED_EMAILS` 白名单内；演示验证码仍为 000000（`OTP_DEV_LOG=true`，仅 sandbox 允许）。
+登录邮箱须在服务器 `ALLOWED_EMAILS` 白名单内；演示验证码仍为 000000（`OTP_FIXED_CODE=true`；未设置时沿用 `OTP_DEV_LOG`）。**仅演示环境，生产禁止，接入邮件服务后移除**；同一邮箱 + IP 每小时最多请求 5 次验证码，超限拒绝并记日志。
 
 ## 7. 安全要点
 
-- 仅沙盒：`APP_ENV` 必须为 sandbox（config 在 production 下禁止 `OTP_DEV_LOG`）。
+- 仅沙盒：`APP_ENV` 必须为 sandbox（config 在 production 下禁止 `OTP_DEV_LOG` 与 `OTP_FIXED_CODE`）。
 - 登录白名单（`ALLOWED_EMAILS`）防止公网任意邮箱用演示验证码登录；名单外邮箱返回与格式错误相同的提示。
 - 日志：`docker compose logs` 不含 PII（dwclient 已脱敏）；不要开启 `DW_LOG_BODIES`。
 - 数据库只在内部网络；backend 端口只在 docker0 网关上，外部只能经 HTTPS 访问。

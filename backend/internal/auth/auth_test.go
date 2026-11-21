@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log/slog"
@@ -456,5 +457,30 @@ func TestDemoFixedCode(t *testing.T) {
 	h.login(t, "demo@example.com")
 	if r := h.do("POST", "/api/v1/auth/otp/verify", "", map[string]string{"email": "demo@example.com", "code": DevFixedCode}); r.Code != 42200 {
 		t.Fatalf("固定码不应可重复使用: %+v", r)
+	}
+}
+
+// 同一"邮箱 + IP"每小时最多 5 次验证码请求，超限拒绝（scope=email_ip，handler 记日志）；审计 SEC-P0-1 缓解措施。
+func TestOTPEmailIPLimit(t *testing.T) {
+	st := newOTPStore([]byte("k"))
+	now := time.Date(2026, 11, 21, 0, 0, 0, 0, time.UTC)
+	for i := 0; i < OTPMaxSendsPerEmailIP; i++ {
+		if _, err := st.issue("a@example.com", "198.51.100.7", "", now); err != nil {
+			t.Fatalf("第 %d 次不应被拒: %v", i+1, err)
+		}
+		now = now.Add(OTPResendAfter)
+	}
+	_, err := st.issue("a@example.com", "198.51.100.7", "", now)
+	var le otpLimitErr
+	if !errors.As(err, &le) || le.scope != "email_ip" || le.retryAfter <= 0 {
+		t.Fatalf("第 6 次应按 email_ip 拒绝: %v", err)
+	}
+	// 其他邮箱同一 IP 不受影响
+	if _, err := st.issue("b@example.com", "198.51.100.7", "", now); err != nil {
+		t.Fatalf("其他邮箱不应被拒: %v", err)
+	}
+	// 一小时后恢复
+	if _, err := st.issue("a@example.com", "198.51.100.7", "", now.Add(time.Hour)); err != nil {
+		t.Fatalf("一小时后应恢复: %v", err)
 	}
 }
