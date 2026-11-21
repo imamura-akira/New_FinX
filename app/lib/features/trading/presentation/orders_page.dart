@@ -195,6 +195,7 @@ class _OrdersPageState extends State<OrdersPage> {
           if (o.orderNo != null) KvRow(t.ordersOrderNo, o.orderNo!),
           if (o.rejectReason != null) Notice(localizeServerText(o.rejectReason!, o.status == 'CANCELED' ? t.serverReasonCanceled : t.serverReasonRejected), kind: o.status == 'CANCELED' ? NoticeKind.info : NoticeKind.danger),
           if (o.status == 'SUBMITTING') Notice(t.ordersTheBrokerHasnT),
+          if (o.status == 'UNCONFIRMED') Notice(t.ordersUnconfirmedNotice, key: Key('p11.unconfirmed.${o.id}'), kind: NoticeKind.warn),
           if (isOrderCancellable(o.status))
             Padding(
               padding: const EdgeInsets.only(top: 6),

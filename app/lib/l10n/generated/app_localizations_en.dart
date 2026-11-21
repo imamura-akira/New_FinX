@@ -2362,4 +2362,15 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get srvIdemKeyReusedOrder =>
       'The details of this order changed. Please go back and place it again.';
+
+  @override
+  String get statusUnconfirmed => 'Unconfirmed';
+
+  @override
+  String get xferUnconfirmedNotice =>
+      'We\'re manually confirming this with the broker. Please don\'t submit it again — we\'ll update this record once it\'s confirmed. Contact support if you have questions.';
+
+  @override
+  String get ordersUnconfirmedNotice =>
+      'We\'re manually confirming this order with the broker, so it can\'t be canceled. Please don\'t place it again — we\'ll update it once it\'s confirmed. Contact support if you have questions.';
 }

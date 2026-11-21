@@ -674,5 +674,8 @@
   "errSubmitUnconfirmedFunding": "The network timed out while we confirm your request. Check Transfer History first — tapping Submit again won't create a duplicate.",
   "errSubmitUnconfirmedOrder": "The network timed out while we confirm your order. Check Orders first — tapping Submit again won't place a duplicate.",
   "srvIdemKeyReusedTransfer": "The details of this request changed. Please go back and submit again.",
-  "srvIdemKeyReusedOrder": "The details of this order changed. Please go back and place it again."
+  "srvIdemKeyReusedOrder": "The details of this order changed. Please go back and place it again.",
+  "statusUnconfirmed": "Unconfirmed",
+  "xferUnconfirmedNotice": "We're manually confirming this with the broker. Please don't submit it again — we'll update this record once it's confirmed. Contact support if you have questions.",
+  "ordersUnconfirmedNotice": "We're manually confirming this order with the broker, so it can't be canceled. Please don't place it again — we'll update it once it's confirmed. Contact support if you have questions."
 }

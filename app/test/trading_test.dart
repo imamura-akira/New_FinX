@@ -369,6 +369,20 @@ void main() {
     await tester.pump(const Duration(seconds: 3)); // 等提示消失
   });
 
+  testWidgets('P-11：券商结果待人工核对（UNCONFIRMED）显示"未确认"、说明，且不能撤单；归入未完成（审计 FUND-P1-1）', (tester) async {
+    await _phone(tester);
+    final be = _backend()..on('GET /orders', (_) => FakeBackend.ok([_order('ord-u', 'UNCONFIRMED', amount: 100)]));
+    await pumpApp(tester, backend: be, storedToken: 'tok');
+    await tester.scrollUntilVisible(find.byKey(const Key('home.orders')), 200, scrollable: find.byType(Scrollable).first);
+    await tester.tap(find.byKey(const Key('home.orders')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(tester.widget<StatusBadge>(find.byKey(const Key('p11.status.ord-u'))).label, '未确认');
+    expect(find.byKey(const Key('p11.unconfirmed.ord-u')), findsOneWidget);
+    expect(find.byKey(const Key('p11.cancel.ord-u')), findsNothing, reason: '未确认订单不能撤单');
+    expect(isOrderOpen('UNCONFIRMED'), isTrue);
+  });
+
   testWidgets('P-12：持仓数量、市值、成本、盈亏为 DW 返回值，只计算盈亏百分比', (tester) async {
     await _phone(tester);
     await pumpApp(tester, backend: _backend(), storedToken: 'tok');

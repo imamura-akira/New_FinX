@@ -2236,4 +2236,15 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get srvIdemKeyReusedOrder => '这笔订单的内容已变化，请返回后重新下单。';
+
+  @override
+  String get statusUnconfirmed => '未确认';
+
+  @override
+  String get xferUnconfirmedNotice =>
+      '券商结果待人工核对。请勿重复提交，我们核对后会更新这笔记录；如有疑问请联系客服。';
+
+  @override
+  String get ordersUnconfirmedNotice =>
+      '券商结果待人工核对，该订单不能撤单。请勿重复下单，我们核对后会更新这笔订单；如有疑问请联系客服。';
 }

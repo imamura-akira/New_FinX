@@ -1355,5 +1355,8 @@
   "errSubmitUnconfirmedFunding": "网络超时，提交结果确认中。请先到资金记录中查看；再次点击提交不会重复申请。",
   "errSubmitUnconfirmedOrder": "网络超时，订单结果确认中。请先到订单中查看；再次点击提交不会重复下单。",
   "srvIdemKeyReusedTransfer": "这笔申请的内容已变化，请返回后重新提交。",
-  "srvIdemKeyReusedOrder": "这笔订单的内容已变化，请返回后重新下单。"
+  "srvIdemKeyReusedOrder": "这笔订单的内容已变化，请返回后重新下单。",
+  "statusUnconfirmed": "未确认",
+  "xferUnconfirmedNotice": "券商结果待人工核对。请勿重复提交，我们核对后会更新这笔记录；如有疑问请联系客服。",
+  "ordersUnconfirmedNotice": "券商结果待人工核对，该订单不能撤单。请勿重复下单，我们核对后会更新这笔订单；如有疑问请联系客服。"
 }

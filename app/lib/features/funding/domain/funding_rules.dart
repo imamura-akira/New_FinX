@@ -55,9 +55,10 @@ bool validAba(String raw) {
   return sum % 10 == 0;
 }
 
-/// 出入金状态文案（DW Deposit Status + 我方 SUBMITTING）。
+/// 出入金状态文案（DW Deposit Status + 我方 SUBMITTING / UNCONFIRMED）。
 Map<String, String> get transferStatusLabels => {
   'SUBMITTING': t.tradeSubmitting,
+  'UNCONFIRMED': t.statusUnconfirmed, // 券商结果待人工核对（审计 FUND-P1-4）
   'STARTED': t.fundInitiated,
   'PENDING': t.fundPending,
   'PROCESSING': t.fundProcessing,

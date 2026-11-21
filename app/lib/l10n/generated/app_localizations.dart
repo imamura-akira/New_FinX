@@ -4154,6 +4154,24 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'这笔订单的内容已变化，请返回后重新下单。'**
   String get srvIdemKeyReusedOrder;
+
+  /// No description provided for @statusUnconfirmed.
+  ///
+  /// In zh, this message translates to:
+  /// **'未确认'**
+  String get statusUnconfirmed;
+
+  /// No description provided for @xferUnconfirmedNotice.
+  ///
+  /// In zh, this message translates to:
+  /// **'券商结果待人工核对。请勿重复提交，我们核对后会更新这笔记录；如有疑问请联系客服。'**
+  String get xferUnconfirmedNotice;
+
+  /// No description provided for @ordersUnconfirmedNotice.
+  ///
+  /// In zh, this message translates to:
+  /// **'券商结果待人工核对，该订单不能撤单。请勿重复下单，我们核对后会更新这笔订单；如有疑问请联系客服。'**
+  String get ordersUnconfirmedNotice;
 }
 
 class _AppLocalizationsDelegate

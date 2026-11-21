@@ -67,16 +67,18 @@ Map<String, String> get orderStatusLabels => {
   'REJECTED': t.tradeRejected,
   'CANCELED': t.tradeCanceled,
   'PENDING_CANCEL': t.tradePendingCancel,
+  'UNCONFIRMED': t.statusUnconfirmed, // 我方取值：券商结果待人工核对（审计 FUND-P1-1）
 };
 
 BadgeKind orderStatusKind(String s) => switch (s) {
   'FILLED' => BadgeKind.ok,
   'REJECTED' => BadgeKind.danger,
   'CANCELED' => BadgeKind.neutral,
+  'UNCONFIRMED' => BadgeKind.warn,
   _ => BadgeKind.info,
 };
 
-bool isOrderOpen(String s) => const {'SUBMITTING', 'NEW', 'PARTIAL_FILL', 'PENDING_CANCEL'}.contains(s);
+bool isOrderOpen(String s) => const {'SUBMITTING', 'NEW', 'PARTIAL_FILL', 'PENDING_CANCEL', 'UNCONFIRMED'}.contains(s);
 bool isOrderCancellable(String s) => s == 'NEW' || s == 'PARTIAL_FILL';
 
 String sideLabel(String side) => side == 'SELL' ? t.instrumentSell : t.instrumentBuy;

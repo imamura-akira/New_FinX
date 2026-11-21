@@ -319,4 +319,35 @@ void main() {
     expect(tester.widget<Text>(find.byKey(const Key('p18.wdDate'))).data, '2026-12-19');
     expect(find.text('Payroll ••6789'), findsOneWidget);
   });
+
+  testWidgets('P-18：券商结果待人工核对（UNCONFIRMED）显示"未确认"与说明，不显示为失败原因（审计 FUND-P1-4）', (tester) async {
+    await _phone(tester);
+    final be = _backend(banks: [_bank])
+      ..on(
+        'GET /funding/transfers',
+        (_) => FakeBackend.ok([
+          {
+            'transferId': 'tr-u',
+            'type': 'WITHDRAWAL',
+            'method': 'ACH',
+            'amount': 50,
+            'status': 'UNCONFIRMED',
+            'failureReason': '对账重放被券商拒绝（E031），待人工核对',
+            'submittedAt': '2026-11-19T12:00:00Z',
+            'doneAt': null,
+            'bankAccountId': 'bank-1',
+            'buyingPowerAvailableAt': null,
+            'withdrawableAt': null,
+          },
+        ]),
+      );
+    await pumpApp(tester, backend: be, storedToken: 'tok');
+    await _openDrawerItem(tester, 'drawer.history');
+    expect(find.text('未确认'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('p18.row.tr-u')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('p18.unconfirmed')), findsOneWidget);
+    expect(find.textContaining('请勿重复提交'), findsOneWidget);
+    expect(find.textContaining('E031'), findsNothing, reason: '内部核对原因不展示给用户');
+  });
 }
