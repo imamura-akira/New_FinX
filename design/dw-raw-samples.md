@@ -12,11 +12,12 @@
 | 来源 | 后端日志中 `dwclient` 记录的请求体 / 响应体，未经手工改写 |
 
 **脱敏规则**
-- 原样保留：DW 的各类 id（入金 id、accountID、userID、bankAccountID、request id 等）、状态、金额、日期时间。
+- 原样保留：DW request id、入金 / 出金 id 中账户号码之后的部分、状态、金额、日期时间。
+- **占位符（2026-11-21，审计 SEC-P1-2）**：DW 账户号码改为 `<ACCOUNT_NO_A/B/C>`（入金 / 出金 id 以账户号码开头，同样替换前缀），userID 改为 `<DW_USER_ID>`，accountID 改为 `<DW_ACCOUNT_ID>`，bankAccountID 改为 `<DW_BANK_ID>`。git 历史中仍含原沙盒编号：仓库为私有，按用户决定接受、不改写历史。
 - 已打码：账户号码（`accountNo` / `account_number`，保留尾 4 位）、银行账号与路由号（保留尾 4 位）、姓名与邮箱（保留首字母）、DW 用户名。
 - 请求头（含 Authorization、DW App Key）不写入日志，因此本文件不含任何凭据。
 - 补充：银行户名 `accountHolderName` 在采集时未被日志脱敏覆盖，本文件中已打码（保留首字母）；日志脱敏规则已同步修正。
-- 说明：DW 入金 id 的前缀由 DW 按账户号码生成（如 `FEYQ000001-…`），按"id 原样保留"的规则未改动；均为沙盒虚构账户。
+- 说明：DW 入金 id 的前缀由 DW 按账户号码生成（如 `<ACCOUNT_NO_A>-…`），已随账户号码一并替换；均为沙盒虚构账户。
 
 ---
 
@@ -32,7 +33,7 @@
 {
   "accountNo": "******0001",
   "amount": 10,
-  "bankAccountID": "bank_02797f3e-7f75-4cbf-b437-407b58c98cd9",
+  "bankAccountID": "<DW_BANK_ID>",
   "currency": "USD",
   "type": "ACH"
 }
@@ -42,7 +43,7 @@
 
 ```json
 {
-  "accountID": "0e05d5c1-b209-4237-a4a7-6296bc726534.1795093468784",
+  "accountID": "<DW_ACCOUNT_ID>",
   "accountNo": "******0001",
   "account_number": "******0001",
   "amount": 10,
@@ -50,7 +51,7 @@
   "category": "DEPOSIT",
   "created": "2026-11-20T05:50:19.662Z",
   "currency": "USD",
-  "id": "FEYQ000001-1795153819661-DOZDW",
+  "id": "<ACCOUNT_NO_A>-1795153819661-DOZDW",
   "source": {
     "brand": "ACH",
     "id": "ACH",
@@ -62,7 +63,7 @@
     "updated": "2026-11-20T05:50:19.662Z"
   },
   "transactionCode": "RECEIPT_ACH_MT",
-  "userID": "0e05d5c1-b209-4237-a4a7-6296bc726534",
+  "userID": "<DW_USER_ID>",
   "wlpFinTranTypeID": "536c7cff-c7eb-472c-bb88-30f6a2169227"
 }
 ```
@@ -73,14 +74,14 @@
 
 后台对账任务按入金 id 查询状态。本次为美东非工作时间，DW 将入金推进到 **14 Approved** 后停在 **"Awaiting money movement window to open."**（等待资金划转窗口开放），资金尚未入账——原样入档，作为窗口期实证（sandbox-log 2026-11-20）。以下为采集期间最后一次查询的响应（共查询 8 次，内容一致）。
 
-`GET /funding/deposits/FEYQ000001-1795153819661-DOZDW` · HTTP 200 · 2026-11-20T05:51:37.2199Z · DW request id `request_523e6c21-f43e-48a8-b788-8f43c3b0c7e3_clm`
+`GET /funding/deposits/<ACCOUNT_NO_A>-1795153819661-DOZDW` · HTTP 200 · 2026-11-20T05:51:37.2199Z · DW request id `request_523e6c21-f43e-48a8-b788-8f43c3b0c7e3_clm`
 
 **DW 响应体**
 
 ```json
 {
   "accountDetails": {
-    "accountID": "0e05d5c1-b209-4237-a4a7-6296bc726534.1795093468784",
+    "accountID": "<DW_ACCOUNT_ID>",
     "accountManagementType": {
       "description": "Self Directed Account",
       "name": "SELF"
@@ -92,7 +93,7 @@
     }
   },
   "amount": 10,
-  "bankAccountID": "bank_02797f3e-7f75-4cbf-b437-407b58c98cd9",
+  "bankAccountID": "<DW_BANK_ID>",
   "batch": true,
   "category": "DEPOSIT",
   "created": "2026-11-20T05:50:19.662Z",
@@ -109,7 +110,7 @@
     "bankRoutingNumber": "****0021",
     "country": "USA"
   },
-  "id": "FEYQ000001-1795153819661-DOZDW",
+  "id": "<ACCOUNT_NO_A>-1795153819661-DOZDW",
   "note": "null|Demo Checking|****6789",
   "otherDetails": "null|Demo Checking|****6789",
   "status": {
@@ -168,7 +169,7 @@
       "id": "be390250-511f-4143-89e2-fd0e502039f0",
       "name": "Golden State Capital Inc."
     },
-    "userID": "0e05d5c1-b209-4237-a4a7-6296bc726534",
+    "userID": "<DW_USER_ID>",
     "username": "[REDACTED]",
     "wlpID": "FINX"
   },
@@ -182,13 +183,13 @@
 
 入金提交后，App 资产页通过我方 `GET /account/money` 触发后端查询 DW 资金汇总。由于本笔 $10 仍在等待资金划转窗口，`cashBalance` 仍为此前入金的 $1,000（尚未计入 $10）；该 $1,000 的购买力与可提现在 DW 返回的可用日（2026-11-23）之前为 0（`pendingDepositsAmountNotAvailable` / `amountWithheldFromRedemptions` 为 1000）。
 
-`GET /accounts/0e05d5c1-b209-4237-a4a7-6296bc726534.1795093468784/summary/money` · HTTP 200 · 2026-11-20T05:50:23.782921Z · DW request id `request_b974ad41-c2e6-48a7-aaa9-6b4e2151e6ba_clm`
+`GET /accounts/<DW_ACCOUNT_ID>/summary/money` · HTTP 200 · 2026-11-20T05:50:23.782921Z · DW request id `request_b974ad41-c2e6-48a7-aaa9-6b4e2151e6ba_clm`
 
 **DW 响应体**
 
 ```json
 {
-  "accountID": "0e05d5c1-b209-4237-a4a7-6296bc726534.1795093468784",
+  "accountID": "<DW_ACCOUNT_ID>",
   "accountNo": "******0001",
   "cash": {
     "cashAvailableForTrade": 0,
@@ -225,14 +226,14 @@
 
 同一笔 $10 ACH 入金在资金划转窗口开放后的状态。**DW 于 2026-11-20 09:01:04 UTC（美东 04:01）开放窗口**（状态历史 "MMW Open. Moving to Successful"），入金由 14 Approved 推进到 **2 Successful**，现金入账；同时 DW 记录"购买力与可提现暂扣至 2026-11-23"（`seasoningDetails.statusMessage = AWAITING_BUYING_POWER`）。采集方式：本机临时后端（`DW_LOG_BODIES=true`）查询资金汇总；入金详情因本地记录已是 SUCCESSFUL、对账任务不再查询，改用一次性临时命令按入金 id 查询（同一 dwclient，日志脱敏规则相同，命令未入库）。
 
-`GET /funding/deposits/FEYQ000001-1795153819661-DOZDW` · HTTP 200 · 2026-11-20T22:34:06.312456+08:00 · DW request id `request_3ebe0af4-5882-44fb-9f11-319ba8f1d3c6_clm`
+`GET /funding/deposits/<ACCOUNT_NO_A>-1795153819661-DOZDW` · HTTP 200 · 2026-11-20T22:34:06.312456+08:00 · DW request id `request_3ebe0af4-5882-44fb-9f11-319ba8f1d3c6_clm`
 
 **DW 响应体**
 
 ```json
 {
   "accountDetails": {
-    "accountID": "0e05d5c1-b209-4237-a4a7-6296bc726534.1795093468784",
+    "accountID": "<DW_ACCOUNT_ID>",
     "accountManagementType": {
       "description": "Self Directed Account",
       "name": "SELF"
@@ -244,7 +245,7 @@
     }
   },
   "amount": 10,
-  "bankAccountID": "bank_02797f3e-7f75-4cbf-b437-407b58c98cd9",
+  "bankAccountID": "<DW_BANK_ID>",
   "batch": true,
   "category": "DEPOSIT",
   "created": "2026-11-20T05:50:19.662Z",
@@ -262,7 +263,7 @@
     "country": "USA"
   },
   "finTranRef": "NK.481ba7a4-e980-492e-963c-00b1bef59e22",
-  "id": "FEYQ000001-1795153819661-DOZDW",
+  "id": "<ACCOUNT_NO_A>-1795153819661-DOZDW",
   "note": "null|Demo Checking|****6789",
   "otherDetails": "null|Demo Checking|****6789",
   "seasoningDetails": {
@@ -342,7 +343,7 @@
       "id": "be390250-511f-4143-89e2-fd0e502039f0",
       "name": "Golden State Capital Inc."
     },
-    "userID": "0e05d5c1-b209-4237-a4a7-6296bc726534",
+    "userID": "<DW_USER_ID>",
     "username": "[REDACTED]",
     "wlpID": "FINX"
   },
@@ -358,7 +359,7 @@
 
 ```json
 {
-  "accountID": "0e05d5c1-b209-4237-a4a7-6296bc726534.1795093468784",
+  "accountID": "<DW_ACCOUNT_ID>",
   "accountNo": "******0001",
   "cash": {
     "cashAvailableForTrade": 0,
@@ -411,7 +412,7 @@
 {
   "accountNo": "******0001",
   "amount": 10,
-  "bankAccountID": "bank_02797f3e-7f75-4cbf-b437-407b58c98cd9",
+  "bankAccountID": "<DW_BANK_ID>",
   "currency": "USD",
   "type": "ACH"
 }
@@ -426,16 +427,16 @@
 }
 ```
 
-`GET /accounts/{accountID}/funding/deposits?limit=10` · HTTP 200 · 2026-11-21 08:41 北京（按账户列出入金，用于核实是否创建 / 是否重复）：共 3 笔——本笔 `FEYQ000001-1795221580864-DPJID`（$10，Approved，无 seasoningDetails）、11-20 的 $10（Successful，购买力 / 可提现暂扣至 2026-11-23）、11-19 的 $1,000（Successful，暂扣至 2026-11-23）。
+`GET /accounts/{accountID}/funding/deposits?limit=10` · HTTP 200 · 2026-11-21 08:41 北京（按账户列出入金，用于核实是否创建 / 是否重复）：共 3 笔——本笔 `<ACCOUNT_NO_A>-1795221580864-DPJID`（$10，Approved，无 seasoningDetails）、11-20 的 $10（Successful，购买力 / 可提现暂扣至 2026-11-23）、11-19 的 $1,000（Successful，暂扣至 2026-11-23）。
 
-`GET /funding/deposits/FEYQ000001-1795221580864-DPJID` · HTTP 200 · 2026-11-21T08:42:13.391325+08:00 · DW request id `request_0099cf70-61bc-4b0d-ac0d-1e33fde6d011_clm`
+`GET /funding/deposits/<ACCOUNT_NO_A>-1795221580864-DPJID` · HTTP 200 · 2026-11-21T08:42:13.391325+08:00 · DW request id `request_0099cf70-61bc-4b0d-ac0d-1e33fde6d011_clm`
 
 **DW 响应体**
 
 ```json
 {
   "accountDetails": {
-    "accountID": "0e05d5c1-b209-4237-a4a7-6296bc726534.1795093468784",
+    "accountID": "<DW_ACCOUNT_ID>",
     "accountManagementType": {
       "description": "Self Directed Account",
       "name": "SELF"
@@ -447,7 +448,7 @@
     }
   },
   "amount": 10,
-  "bankAccountID": "bank_02797f3e-7f75-4cbf-b437-407b58c98cd9",
+  "bankAccountID": "<DW_BANK_ID>",
   "batch": true,
   "category": "DEPOSIT",
   "created": "2026-11-21T00:39:40.870Z",
@@ -464,7 +465,7 @@
     "bankRoutingNumber": "****0021",
     "country": "USA"
   },
-  "id": "FEYQ000001-1795221580864-DPJID",
+  "id": "<ACCOUNT_NO_A>-1795221580864-DPJID",
   "note": "null|Demo Checking|****6789",
   "otherDetails": "null|Demo Checking|****6789",
   "status": {
@@ -523,7 +524,7 @@
       "id": "be390250-511f-4143-89e2-fd0e502039f0",
       "name": "Golden State Capital Inc."
     },
-    "userID": "0e05d5c1-b209-4237-a4a7-6296bc726534",
+    "userID": "<DW_USER_ID>",
     "username": "[REDACTED]",
     "wlpID": "FINX"
   },
