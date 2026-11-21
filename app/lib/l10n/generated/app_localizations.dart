@@ -4442,6 +4442,378 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'返回首页'**
   String get orderDoneBackHome;
+
+  /// No description provided for @xpPill.
+  ///
+  /// In zh, this message translates to:
+  /// **'{xp} XP'**
+  String xpPill(String xp);
+
+  /// No description provided for @fifiTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'Fifi 量化助手'**
+  String get fifiTitle;
+
+  /// No description provided for @fifiSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'你的智能投资助理'**
+  String get fifiSubtitle;
+
+  /// No description provided for @fifiHeroTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'即将上线'**
+  String get fifiHeroTitle;
+
+  /// No description provided for @fifiHeroBody.
+  ///
+  /// In zh, this message translates to:
+  /// **'Fifi 正在学习为你解读图表、风险与持仓。'**
+  String get fifiHeroBody;
+
+  /// No description provided for @fifiFeat1.
+  ///
+  /// In zh, this message translates to:
+  /// **'持仓体检'**
+  String get fifiFeat1;
+
+  /// No description provided for @fifiFeat1Desc.
+  ///
+  /// In zh, this message translates to:
+  /// **'分析你的持仓与未实现盈亏。'**
+  String get fifiFeat1Desc;
+
+  /// No description provided for @fifiFeat2.
+  ///
+  /// In zh, this message translates to:
+  /// **'持有或卖出'**
+  String get fifiFeat2;
+
+  /// No description provided for @fifiFeat2Desc.
+  ///
+  /// In zh, this message translates to:
+  /// **'行动前对比趋势、风险与仓位。'**
+  String get fifiFeat2Desc;
+
+  /// No description provided for @fifiFeat3.
+  ///
+  /// In zh, this message translates to:
+  /// **'个股研究'**
+  String get fifiFeat3;
+
+  /// No description provided for @fifiFeat3Desc.
+  ///
+  /// In zh, this message translates to:
+  /// **'汇总价格走势、基本面与新闻信号。'**
+  String get fifiFeat3Desc;
+
+  /// No description provided for @fifiFeat4.
+  ///
+  /// In zh, this message translates to:
+  /// **'风险预警'**
+  String get fifiFeat4;
+
+  /// No description provided for @fifiFeat4Desc.
+  ///
+  /// In zh, this message translates to:
+  /// **'提示波动、集中度与下行压力。'**
+  String get fifiFeat4Desc;
+
+  /// No description provided for @fifiFeat5.
+  ///
+  /// In zh, this message translates to:
+  /// **'量化信号'**
+  String get fifiFeat5;
+
+  /// No description provided for @fifiFeat5Desc.
+  ///
+  /// In zh, this message translates to:
+  /// **'跟踪动量、反转、成交量与因子分。'**
+  String get fifiFeat5Desc;
+
+  /// No description provided for @fifiFeat6.
+  ///
+  /// In zh, this message translates to:
+  /// **'跟 Fifi 学投资'**
+  String get fifiFeat6;
+
+  /// No description provided for @fifiFeat6Desc.
+  ///
+  /// In zh, this message translates to:
+  /// **'用简单清晰的语言理解投资逻辑。'**
+  String get fifiFeat6Desc;
+
+  /// No description provided for @fifiRemind.
+  ///
+  /// In zh, this message translates to:
+  /// **'开启上线提醒'**
+  String get fifiRemind;
+
+  /// No description provided for @fifiRemindOn.
+  ///
+  /// In zh, this message translates to:
+  /// **'已开启上线提醒'**
+  String get fifiRemindOn;
+
+  /// No description provided for @fifiRemindCaption.
+  ///
+  /// In zh, this message translates to:
+  /// **'Fifi 量化助手就绪时，我们会第一时间通知你。'**
+  String get fifiRemindCaption;
+
+  /// No description provided for @storeTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'Fifi 商店'**
+  String get storeTitle;
+
+  /// No description provided for @storeTier.
+  ///
+  /// In zh, this message translates to:
+  /// **'等级 {n}'**
+  String storeTier(int n);
+
+  /// No description provided for @storeDream.
+  ///
+  /// In zh, this message translates to:
+  /// **'梦想'**
+  String get storeDream;
+
+  /// No description provided for @storeTierNew.
+  ///
+  /// In zh, this message translates to:
+  /// **'等级 {n} 上新'**
+  String storeTierNew(int n);
+
+  /// No description provided for @storeTierEmpty.
+  ///
+  /// In zh, this message translates to:
+  /// **'该等级商品即将上新'**
+  String get storeTierEmpty;
+
+  /// No description provided for @storeTierLocked.
+  ///
+  /// In zh, this message translates to:
+  /// **'达到等级 {n} 后解锁'**
+  String storeTierLocked(int n);
+
+  /// No description provided for @storeAvailable.
+  ///
+  /// In zh, this message translates to:
+  /// **'可兑换'**
+  String get storeAvailable;
+
+  /// No description provided for @storeNotEnoughXp.
+  ///
+  /// In zh, this message translates to:
+  /// **'XP 不足'**
+  String get storeNotEnoughXp;
+
+  /// No description provided for @storeUnlockAt.
+  ///
+  /// In zh, this message translates to:
+  /// **'等级 {n} 解锁'**
+  String storeUnlockAt(int n);
+
+  /// No description provided for @storeBundleXp.
+  ///
+  /// In zh, this message translates to:
+  /// **'套装 · {xp} XP'**
+  String storeBundleXp(String xp);
+
+  /// No description provided for @storePreview.
+  ///
+  /// In zh, this message translates to:
+  /// **'预 览'**
+  String get storePreview;
+
+  /// No description provided for @storeComingSoon.
+  ///
+  /// In zh, this message translates to:
+  /// **'敬请期待'**
+  String get storeComingSoon;
+
+  /// No description provided for @storePreviewOnFifi.
+  ///
+  /// In zh, this message translates to:
+  /// **'在 Fifi 上预览'**
+  String get storePreviewOnFifi;
+
+  /// No description provided for @storePreviewOnFifiSoon.
+  ///
+  /// In zh, this message translates to:
+  /// **'在 Fifi 上预览即将上线'**
+  String get storePreviewOnFifiSoon;
+
+  /// No description provided for @storeEarnXp.
+  ///
+  /// In zh, this message translates to:
+  /// **'赚取 XP'**
+  String get storeEarnXp;
+
+  /// No description provided for @storeRedeemSoon.
+  ///
+  /// In zh, this message translates to:
+  /// **'兑换即将开启'**
+  String get storeRedeemSoon;
+
+  /// No description provided for @storeSearchSoon.
+  ///
+  /// In zh, this message translates to:
+  /// **'商店搜索即将上线'**
+  String get storeSearchSoon;
+
+  /// No description provided for @storeImagePlaceholder.
+  ///
+  /// In zh, this message translates to:
+  /// **'示意图，正式图片即将更新'**
+  String get storeImagePlaceholder;
+
+  /// No description provided for @storeDemoNote.
+  ///
+  /// In zh, this message translates to:
+  /// **'XP 为站内成长值，不可兑换现金；商品与兑换规则以上线公告为准。'**
+  String get storeDemoNote;
+
+  /// No description provided for @earnTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'Fifi 奖励任务'**
+  String get earnTitle;
+
+  /// No description provided for @earnToday.
+  ///
+  /// In zh, this message translates to:
+  /// **'今日任务'**
+  String get earnToday;
+
+  /// No description provided for @earnResetIn.
+  ///
+  /// In zh, this message translates to:
+  /// **'{time} 后重置'**
+  String earnResetIn(String time);
+
+  /// No description provided for @earnTask1.
+  ///
+  /// In zh, this message translates to:
+  /// **'每日签到'**
+  String get earnTask1;
+
+  /// No description provided for @earnTask1Desc.
+  ///
+  /// In zh, this message translates to:
+  /// **'保持你的连续记录'**
+  String get earnTask1Desc;
+
+  /// No description provided for @earnTask2.
+  ///
+  /// In zh, this message translates to:
+  /// **'跟 Fifi 学一课'**
+  String get earnTask2;
+
+  /// No description provided for @earnTask2Desc.
+  ///
+  /// In zh, this message translates to:
+  /// **'完成一节市场小课堂'**
+  String get earnTask2Desc;
+
+  /// No description provided for @earnTask3.
+  ///
+  /// In zh, this message translates to:
+  /// **'运行持仓体检'**
+  String get earnTask3;
+
+  /// No description provided for @earnTask3Desc.
+  ///
+  /// In zh, this message translates to:
+  /// **'检查你的资金健康度'**
+  String get earnTask3Desc;
+
+  /// No description provided for @earnTask4.
+  ///
+  /// In zh, this message translates to:
+  /// **'本月储蓄目标'**
+  String get earnTask4;
+
+  /// No description provided for @earnTask4Desc.
+  ///
+  /// In zh, this message translates to:
+  /// **'完成本月入金小目标'**
+  String get earnTask4Desc;
+
+  /// No description provided for @earnTask5.
+  ///
+  /// In zh, this message translates to:
+  /// **'分享一次 FinX'**
+  String get earnTask5;
+
+  /// No description provided for @earnTask5Desc.
+  ///
+  /// In zh, this message translates to:
+  /// **'邀请一位朋友一起学习'**
+  String get earnTask5Desc;
+
+  /// No description provided for @earnXpPlus.
+  ///
+  /// In zh, this message translates to:
+  /// **'+{xp} XP'**
+  String earnXpPlus(int xp);
+
+  /// No description provided for @earnTaskSoon.
+  ///
+  /// In zh, this message translates to:
+  /// **'该任务即将开启'**
+  String get earnTaskSoon;
+
+  /// No description provided for @earnCheckedIn.
+  ///
+  /// In zh, this message translates to:
+  /// **'签到成功 +{xp} XP'**
+  String earnCheckedIn(int xp);
+
+  /// No description provided for @earnAlreadyCheckedIn.
+  ///
+  /// In zh, this message translates to:
+  /// **'今日已签到'**
+  String get earnAlreadyCheckedIn;
+
+  /// No description provided for @earnStreak.
+  ///
+  /// In zh, this message translates to:
+  /// **'连续 {n} 天'**
+  String earnStreak(int n);
+
+  /// No description provided for @earnKeepGoing.
+  ///
+  /// In zh, this message translates to:
+  /// **'继续保持！'**
+  String get earnKeepGoing;
+
+  /// No description provided for @earnStartStreak.
+  ///
+  /// In zh, this message translates to:
+  /// **'今天签到，开启连续记录'**
+  String get earnStartStreak;
+
+  /// No description provided for @earnWeekdays.
+  ///
+  /// In zh, this message translates to:
+  /// **'一,二,三,四,五,六,日'**
+  String get earnWeekdays;
+
+  /// No description provided for @earnGoWardrobe.
+  ///
+  /// In zh, this message translates to:
+  /// **'前往 Fifi 衣橱'**
+  String get earnGoWardrobe;
+
+  /// No description provided for @earnLoadFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'任务加载失败，请下拉重试'**
+  String get earnLoadFailed;
 }
 
 class _AppLocalizationsDelegate

@@ -32,6 +32,8 @@ tags:
     description: 文件（F10，P-15）
   - name: notifications
     description: 通知（F10，P-17）
+  - name: rewards
+    description: 奖励 / XP（F22-e Fifi 商店、F22-f 赚取 XP 任务，演示）
 
 paths:
   # ───────────── 1. 认证 ─────────────
@@ -1377,6 +1379,86 @@ paths:
                             items: { $ref: "#/components/schemas/Position" }
         "401": { $ref: "#/components/responses/Unauthorized" }
 
+  # ───────────── 5.10 奖励 / XP（F22-e、F22-f，演示） ─────────────
+  /rewards/xp:
+    get:
+      tags: [rewards]
+      operationId: getXP
+      summary: XP 余额与等级（F22-e）
+      description: |
+        新增接口，向后兼容。XP 为站内成长值（账本合计，初始 0），与券商资金、模拟盘、预测积分完全隔离，不可兑换现金。
+        等级按 seed 门槛计算（GET /rewards/catalog 的 tiers）。
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - type: object
+                    properties:
+                      data: { $ref: "#/components/schemas/XPBalance" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+  /rewards/catalog:
+    get:
+      tags: [rewards]
+      operationId: getRewardsCatalog
+      summary: Fifi 商店与任务 seed 配置（F22-e / F22-f）
+      description: |
+        新增接口，向后兼容。商品、套装、敬请期待、等级门槛与任务 XP 均为后端 seed 配置（构建期内嵌）；本期兑换未开放（App 详情弹层提示"兑换即将开启"）。
+        image 为 App 内置素材名（placeholder=true 为占位图，高清图后续替换）；tasks 中 complianceReview=true 的任务上线前需合规审核。
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - type: object
+                    properties:
+                      data: { $ref: "#/components/schemas/RewardsCatalog" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+  /rewards/checkin:
+    get:
+      tags: [rewards]
+      operationId: getCheckin
+      summary: 今日签到状态、连续天数、本周七圆点（F22-f）
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - type: object
+                    properties:
+                      data: { $ref: "#/components/schemas/CheckinStatus" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+    post:
+      tags: [rewards]
+      operationId: checkin
+      summary: 每日签到（F22-f）
+      description: |
+        每个美东日期一次（主键防重复），首次入账 seed 中 checkin 任务的 XP（+10），返回 granted；同日重复调用不入账（无 granted），返回当前状态。
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - type: object
+                    properties:
+                      data: { $ref: "#/components/schemas/CheckinStatus" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "501": { $ref: "#/components/responses/NotEnabled" }
+
   # ───────────── 6. 文件与通知 ─────────────
   /documents:
     get:
@@ -2035,6 +2117,58 @@ components:
               cash: { $ref: "#/components/schemas/Money" }
               stock: { $ref: "#/components/schemas/Money" }
               etf: { $ref: "#/components/schemas/Money" }
+    XPBalance:
+      type: object
+      required: [balance, tier]
+      properties:
+        balance: { type: integer, description: XP 余额（账本合计） }
+        tier: { type: integer }
+        nextTier: { type: integer, description: 已是最高级时省略 }
+        nextTierMinXp: { type: integer }
+    RewardsCatalog:
+      type: object
+      required: [tiers, items, bundles, comingSoon, tasks]
+      properties:
+        tiers:
+          type: array
+          items: { type: object, required: [tier, minXp], properties: { tier: { type: integer }, minXp: { type: integer } } }
+        items: { type: array, items: { $ref: "#/components/schemas/RewardItem" } }
+        bundles: { type: array, items: { $ref: "#/components/schemas/RewardItem" } }
+        comingSoon: { type: array, items: { $ref: "#/components/schemas/RewardItem" } }
+        tasks:
+          type: array
+          items:
+            type: object
+            required: [id, xp, enabled]
+            properties:
+              id: { type: string, enum: [checkin, lesson, checkup, savings, share] }
+              xp: { type: integer }
+              enabled: { type: boolean }
+              complianceReview: { type: boolean }
+    RewardItem:
+      type: object
+      required: [id, unlockTier, image, name]
+      properties:
+        id: { type: string }
+        tier: { type: integer, description: 所在等级页签 }
+        unlockTier: { type: integer }
+        xp: { type: integer }
+        image: { type: string, description: App 内置素材名 }
+        placeholder: { type: boolean }
+        name: { type: object, required: [zh, en], properties: { zh: { type: string }, en: { type: string } } }
+        desc: { type: object, properties: { zh: { type: string }, en: { type: string } } }
+    CheckinStatus:
+      type: object
+      required: [today, checkedIn, streak, week, resetAt, xp, balance]
+      properties:
+        today: { type: string, format: date, description: 美东日期 }
+        checkedIn: { type: boolean }
+        streak: { type: integer, description: 连续签到天数（今日未签时截至昨日） }
+        week: { type: array, minItems: 7, maxItems: 7, items: { type: boolean }, description: 本周一至周日（美东）是否已签 }
+        resetAt: { type: string, format: date-time, description: 下一个美东零点 }
+        xp: { type: integer, description: 签到奖励 }
+        granted: { type: integer, description: 仅 POST 首次签到：本次入账 }
+        balance: { type: integer }
     PaperAccount:
       type: object
       required: [simulated, initialCash, cash, reservedCash, buyingPower, positionsValue, totalValue, totalPL]

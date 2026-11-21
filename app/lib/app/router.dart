@@ -9,6 +9,8 @@ import '../features/auth/presentation/welcome_page.dart';
 import '../features/common/session_expired_page.dart';
 import '../features/discover/presentation/discover_pages.dart';
 import '../features/discover/presentation/rewards_page.dart';
+import '../features/rewards/presentation/store_page.dart';
+import 'config.dart';
 import '../features/predict/presentation/my_predictions_page.dart';
 import '../features/predict/presentation/predict_page.dart';
 import '../features/funding/presentation/bank_pages.dart';
@@ -96,7 +98,8 @@ GoRouter buildRouter(SessionController session) {
           ), // P-26
           GoRoute(
             path: '/rewards',
-            pageBuilder: (_, _) => const NoTransitionPage(child: RewardsPage()),
+            // F22-e：P-27 = Fifi 商店；SEASONAL_THEME=true 时为圣诞限定版（F16 留档）
+            pageBuilder: (_, _) => const NoTransitionPage(child: AppConfig.seasonalTheme ? RewardsPage() : StorePage()),
           ), // P-27
         ],
       ),

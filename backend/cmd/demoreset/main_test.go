@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"github.com/imamura-akira/New_FinX/backend/internal/store"
+	"os"
 	"strings"
 	"testing"
 )
@@ -57,6 +59,7 @@ func TestResetStepsOrder(t *testing.T) {
 	for _, pair := range [][2]string{
 		{"orders", "accounts"}, {"orders", "users_app"}, {"transfers", "bank_accounts"}, {"bank_accounts", "accounts"}, {"accounts", "dw_users"},
 		{"kyc_issues", "dw_users"}, {"dw_users", "applications"}, {"applications", "users_app"}, {"sessions", "users_app"}, {"paper_accounts", "users_app"}, {"asset_snapshots", "users_app"}, {"predict_bets", "users_app"}, {"predict_accounts", "users_app"},
+		{"asset_intraday", "users_app"}, {"xp_checkins", "users_app"}, {"xp_ledger", "users_app"},
 	} {
 		if idx[pair[0]] >= idx[pair[1]] {
 			t.Errorf("%s 应在 %s 之前删除", pair[0], pair[1])
@@ -90,5 +93,43 @@ func TestPrintVerify(t *testing.T) {
 	}
 	if strings.Contains(out, "Should") || strings.Contains(out, "NotPrint") {
 		t.Error("不应打印姓名")
+	}
+}
+
+// 每张外键引用 users_app 的表都必须在 resetSteps 中（防止新表漏删导致 reset 失败）。需要 TEST_DATABASE_URL。
+func TestResetCoversAllUserTables(t *testing.T) {
+	dsn := os.Getenv("TEST_DATABASE_URL")
+	if dsn == "" {
+		t.Skip("未设置 TEST_DATABASE_URL，跳过数据库集成测试")
+	}
+	st, err := store.Open(context.Background(), dsn)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer st.Close()
+	if err := st.MigrateUp(); err != nil {
+		t.Fatal(err)
+	}
+	rows, err := st.DB.Query(`SELECT DISTINCT tc.table_name FROM information_schema.table_constraints tc
+	    JOIN information_schema.constraint_column_usage cu ON cu.constraint_name = tc.constraint_name
+	   WHERE tc.constraint_type = 'FOREIGN KEY' AND cu.table_name = 'users_app'`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer rows.Close()
+	covered := map[string]bool{}
+	for _, s := range resetSteps {
+		covered[s.table] = true
+	}
+	// 由父表级联删除或不按用户隔离的表
+	cascaded := map[string]bool{"paper_orders": true, "paper_positions": true, "audit_log": true, "users_app": true}
+	for rows.Next() {
+		var tbl string
+		if err := rows.Scan(&tbl); err != nil {
+			t.Fatal(err)
+		}
+		if !covered[tbl] && !cascaded[tbl] {
+			t.Errorf("表 %s 外键引用 users_app，但 demoreset reset 未删除", tbl)
+		}
 	}
 }

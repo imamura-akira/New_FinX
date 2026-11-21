@@ -1,19 +1,15 @@
 import 'dart:typed_data';
 
+import 'package:finx_app/app/theme.dart';
 import 'package:finx_app/core/sound/ui_sound.dart';
+import 'package:finx_app/features/discover/presentation/rewards_page.dart';
+import 'package:finx_app/l10n/l10n.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 
-import 'helpers.dart';
 
-// F16：P-27 奖励 Tab 圣诞季限定版式。
-
-FakeBackend _backend() => FakeBackend()
-  ..on(
-    'GET /me',
-    (_) => FakeBackend.ok({'email': 'demo@example.com', 'loginProvider': 'EMAIL', 'applicationId': null, 'accountStatus': 'NONE'}),
-  );
+// F16：P-27 奖励 Tab 圣诞季限定版式（F22-e 起为 SEASONAL_THEME 开关后的留档版本）。
 
 Future<void> _phone(WidgetTester tester) async {
   tester.view.physicalSize = const Size(1206, 2622);
@@ -41,10 +37,12 @@ Future<void> _phone(WidgetTester tester) async {
   return (sounds, haptics);
 }
 
+/// F22-e：奖励 Tab 默认为 Fifi 商店；圣诞限定版由 SEASONAL_THEME 开关切换（默认 off），此处直接挂载留档页面，防止归档代码腐坏。
 Future<void> _openRewards(WidgetTester tester) async {
   await _phone(tester);
-  await pumpApp(tester, backend: _backend(), storedToken: 'tok');
-  await tester.tap(find.byKey(const Key('tab.rewards')));
+  AppColors.apply(Brightness.light);
+  debugSetLocale(const Locale('zh'));
+  await tester.pumpWidget(MaterialApp(theme: buildTheme(AppPalette.light), home: const RewardsPage()));
   await tester.pumpAndSettle();
 }
 
@@ -121,11 +119,9 @@ void main() {
     _mockPlatform(tester);
     await _tapNotify(tester);
     expect(find.text('✓ 已开启提醒'), findsOneWidget);
-    // 模拟重启：先卸载再重新挂载整个 App
+    // 模拟重启：先卸载再重新挂载
     await tester.pumpWidget(const SizedBox());
-    await pumpApp(tester, backend: _backend(), storedToken: 'tok');
-    await tester.tap(find.byKey(const Key('tab.rewards')));
-    await tester.pumpAndSettle();
+    await _openRewards(tester);
     await _showNotify(tester);
     expect(find.text('🔔 开启上线提醒'), findsOneWidget);
   });

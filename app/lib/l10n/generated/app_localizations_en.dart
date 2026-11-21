@@ -2525,4 +2525,216 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get orderDoneBackHome => 'Back to Home';
+
+  @override
+  String xpPill(String xp) {
+    return '$xp XP';
+  }
+
+  @override
+  String get fifiTitle => 'Fifi Quant Agent';
+
+  @override
+  String get fifiSubtitle => 'Your smart investing assistant';
+
+  @override
+  String get fifiHeroTitle => 'Coming Soon';
+
+  @override
+  String get fifiHeroBody =>
+      'Fifi is learning to read charts, risk, and holdings for you.';
+
+  @override
+  String get fifiFeat1 => 'Portfolio Checkup';
+
+  @override
+  String get fifiFeat1Desc => 'Analyze your holdings and unrealized P&L.';
+
+  @override
+  String get fifiFeat2 => 'Hold or Sell';
+
+  @override
+  String get fifiFeat2Desc => 'Compare trend, risk, and sizing before you act.';
+
+  @override
+  String get fifiFeat3 => 'Stock Research';
+
+  @override
+  String get fifiFeat3Desc =>
+      'Price action, fundamentals, and news signals in one view.';
+
+  @override
+  String get fifiFeat4 => 'Risk Alerts';
+
+  @override
+  String get fifiFeat4Desc =>
+      'Flags volatility, concentration, and downside pressure.';
+
+  @override
+  String get fifiFeat5 => 'Quant Signals';
+
+  @override
+  String get fifiFeat5Desc =>
+      'Tracks momentum, reversal, volume, and factor scores.';
+
+  @override
+  String get fifiFeat6 => 'Learn with Fifi';
+
+  @override
+  String get fifiFeat6Desc => 'Understand investing in clear, simple language.';
+
+  @override
+  String get fifiRemind => 'Notify Me at Launch';
+
+  @override
+  String get fifiRemindOn => 'Launch Reminder On';
+
+  @override
+  String get fifiRemindCaption =>
+      'We\'ll let you know as soon as Fifi Quant Agent is ready.';
+
+  @override
+  String get storeTitle => 'Fifi Store';
+
+  @override
+  String storeTier(int n) {
+    return 'Tier $n';
+  }
+
+  @override
+  String get storeDream => 'Dream';
+
+  @override
+  String storeTierNew(int n) {
+    return 'New in Tier $n';
+  }
+
+  @override
+  String get storeTierEmpty => 'Items for this tier are coming soon';
+
+  @override
+  String storeTierLocked(int n) {
+    return 'Unlocks at Tier $n';
+  }
+
+  @override
+  String get storeAvailable => 'Available';
+
+  @override
+  String get storeNotEnoughXp => 'Need more XP';
+
+  @override
+  String storeUnlockAt(int n) {
+    return 'Tier $n unlock';
+  }
+
+  @override
+  String storeBundleXp(String xp) {
+    return 'Set · $xp XP';
+  }
+
+  @override
+  String get storePreview => 'Preview';
+
+  @override
+  String get storeComingSoon => 'Coming Soon';
+
+  @override
+  String get storePreviewOnFifi => 'Preview on Fifi';
+
+  @override
+  String get storePreviewOnFifiSoon => 'Preview on Fifi is coming soon';
+
+  @override
+  String get storeEarnXp => 'Earn XP';
+
+  @override
+  String get storeRedeemSoon => 'Redemption opening soon';
+
+  @override
+  String get storeSearchSoon => 'Store search is coming soon';
+
+  @override
+  String get storeImagePlaceholder => 'Preview image — final art coming soon';
+
+  @override
+  String get storeDemoNote =>
+      'XP is an in-app progress score and can\'t be exchanged for cash. Items and redemption rules are subject to the launch announcement.';
+
+  @override
+  String get earnTitle => 'Fifi Rewards';
+
+  @override
+  String get earnToday => 'Today\'s Missions';
+
+  @override
+  String earnResetIn(String time) {
+    return 'Resets in $time';
+  }
+
+  @override
+  String get earnTask1 => 'Daily Check-in';
+
+  @override
+  String get earnTask1Desc => 'Keep your streak going';
+
+  @override
+  String get earnTask2 => 'Learn a Lesson with Fifi';
+
+  @override
+  String get earnTask2Desc => 'Finish a quick market lesson';
+
+  @override
+  String get earnTask3 => 'Run a Portfolio Checkup';
+
+  @override
+  String get earnTask3Desc => 'Check your financial health';
+
+  @override
+  String get earnTask4 => 'Monthly Savings Goal';
+
+  @override
+  String get earnTask4Desc => 'Hit this month\'s deposit goal';
+
+  @override
+  String get earnTask5 => 'Share FinX Once';
+
+  @override
+  String get earnTask5Desc => 'Invite a friend to learn with you';
+
+  @override
+  String earnXpPlus(int xp) {
+    return '+$xp XP';
+  }
+
+  @override
+  String get earnTaskSoon => 'This mission is opening soon';
+
+  @override
+  String earnCheckedIn(int xp) {
+    return 'Checked in! +$xp XP';
+  }
+
+  @override
+  String get earnAlreadyCheckedIn => 'Already checked in today';
+
+  @override
+  String earnStreak(int n) {
+    return '$n-day streak';
+  }
+
+  @override
+  String get earnKeepGoing => 'Keep it up!';
+
+  @override
+  String get earnStartStreak => 'Check in today to start a streak';
+
+  @override
+  String get earnWeekdays => 'M,T,W,T,F,S,S';
+
+  @override
+  String get earnGoWardrobe => 'Go to Fifi\'s Wardrobe';
+
+  @override
+  String get earnLoadFailed => 'Couldn\'t load missions. Pull down to retry.';
 }

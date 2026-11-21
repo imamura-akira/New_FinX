@@ -10,6 +10,8 @@
 //	                                      原样打印 DW 返回的编号与状态，与 App"DW 沙盒凭证"区当场对照。
 //	                                      -email 只用本地库查出 DW 用户 id，其余数据全部来自 DW（不读本地库）。
 //
+//	grant-xp -email <邮箱> [-xp 1493]     F22-e 演示：为该用户发放演示 XP（固定一笔，重复执行改为新值，不叠加；签到所得另计）
+//
 // 虚拟行情（marketsim）用固定种子在服务启动时初始化：重启服务即重置行情。
 //
 // 运行：set -a; source .env; set +a; go run ./cmd/demoreset <子命令> ...
@@ -34,6 +36,7 @@ import (
 	"github.com/imamura-akira/New_FinX/backend/internal/config"
 	"github.com/imamura-akira/New_FinX/backend/internal/crypto"
 	"github.com/imamura-akira/New_FinX/backend/internal/dwclient"
+	"github.com/imamura-akira/New_FinX/backend/internal/rewards"
 	"github.com/imamura-akira/New_FinX/backend/internal/store"
 )
 
@@ -86,6 +89,12 @@ func main() {
 			}
 		}
 		err = runImport(ctx, cfg, st.DB, in)
+	case "grant-xp":
+		fs := flag.NewFlagSet("grant-xp", flag.ExitOnError)
+		email := fs.String("email", "", "演示用户邮箱")
+		xp := fs.Int("xp", 1493, "演示 XP（> 0）")
+		_ = fs.Parse(args)
+		err = grantXP(ctx, st.DB, *email, *xp)
 	case "verify":
 		fs := flag.NewFlagSet("verify", flag.ExitOnError)
 		email := fs.String("email", "", "本地登录邮箱（仅用于查出 DW 用户 id）")
@@ -101,7 +110,7 @@ func main() {
 }
 
 func usage() {
-	fmt.Fprintln(os.Stderr, "用法：demoreset list | reset -email X [-yes] | import (-local LABEL | -email X -dw-user ID [-bank-id ...]) | verify (-email X | -dw-user ID)")
+	fmt.Fprintln(os.Stderr, "用法：demoreset list | reset -email X [-yes] | grant-xp -email X [-xp N] | import (-local LABEL | -email X -dw-user ID [-bank-id ...]) | verify (-email X | -dw-user ID)")
 	os.Exit(2)
 }
 
@@ -160,6 +169,9 @@ var resetSteps = []struct{ table, sql string }{
 	{"applications", `DELETE FROM applications WHERE user_id = $1`},
 	{"sessions", `DELETE FROM sessions WHERE user_id = $1`},
 	{"asset_snapshots", `DELETE FROM asset_snapshots WHERE user_id = $1`},   // F17 每日资产快照（实盘与模拟盘）
+	{"asset_intraday", `DELETE FROM asset_intraday WHERE user_id = $1`},     // F22-a 日内资产快照
+	{"xp_checkins", `DELETE FROM xp_checkins WHERE user_id = $1`},           // F22-f 每日签到
+	{"xp_ledger", `DELETE FROM xp_ledger WHERE user_id = $1`},               // F22-e XP 账本
 	{"predict_bets", `DELETE FROM predict_bets WHERE user_id = $1`},         // F19 预测下注
 	{"predict_accounts", `DELETE FROM predict_accounts WHERE user_id = $1`}, // F19 预测积分账户
 	{"paper_accounts", `DELETE FROM paper_accounts WHERE user_id = $1`},     // F15 模拟盘（订单、持仓随之级联删除）
@@ -553,5 +565,32 @@ func printVerify(ctx context.Context, dw dwGetter, dwUser string, out io.Writer)
 		fmt.Fprintf(out, "  money         cash %s · buyingPower %s · withdrawable %s · updated %s\n",
 			m.Cash.CashBalance, m.Cash.CashAvailableForTrade, m.Cash.CashAvailableForWithdrawal, m.Updated)
 	}
+	return nil
+}
+
+// grantXP：F22-e 演示用户发放 XP（rewards.GrantDemo，幂等）。不打印邮箱以外的个人信息。
+func grantXP(ctx context.Context, db *sql.DB, email string, xp int) error {
+	email = strings.TrimSpace(email)
+	if email == "" || xp <= 0 {
+		return errors.New("需要 -email 与正数 -xp")
+	}
+	var uid string
+	if err := db.QueryRowContext(ctx, `SELECT id FROM users_app WHERE lower(email) = lower($1) AND deleted_at IS NULL`, email).Scan(&uid); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return fmt.Errorf("本地没有用户 %s", email)
+		}
+		return err
+	}
+	if err := rewards.GrantDemo(ctx, db, uid, xp); err != nil {
+		return err
+	}
+	var bal int
+	if err := db.QueryRowContext(ctx, `SELECT COALESCE(SUM(delta), 0) FROM xp_ledger WHERE user_id = $1`, uid).Scan(&bal); err != nil {
+		return err
+	}
+	if err := store.Audit(ctx, db, "demoreset", "demo.grant_xp", uid, map[string]any{"xp": xp}); err != nil {
+		return err
+	}
+	fmt.Printf("已发放演示 XP %d，当前余额 %d\n", xp, bal)
 	return nil
 }

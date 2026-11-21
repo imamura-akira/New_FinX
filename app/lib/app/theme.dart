@@ -584,3 +584,38 @@ abstract final class OrderDoneColors {
   static const arrow = Color(0xFF16A34A);
   static Color _c(int l, int d) => _ld(l, d);
 }
+
+/// F22-d / F22-e / F22-f 令牌（design/reward-design/v3/fifi_v2、store_final、earn_xp）。渐变深浅色相同。
+abstract final class StoreColors {
+  /// CTA / 选中等级：100deg #7D4DF0 → #A944D8 55% → #D63AA8
+  static const grad = LinearGradient(
+    begin: Alignment(-1, -0.18),
+    end: Alignment(1, 0.18),
+    colors: [Color(0xFF7D4DF0), Color(0xFFA944D8), Color(0xFFD63AA8)],
+    stops: [0, .55, 1],
+  );
+
+  /// Fifi 页英雄卡：118deg #4D4FE0 → #7D4DF0 40% → #B44BD8 72% → #E08BC8
+  static const fifiHero = LinearGradient(
+    begin: Alignment(-1, -0.55),
+    end: Alignment(1, 0.55),
+    colors: [Color(0xFF4D4FE0), Color(0xFF7D4DF0), Color(0xFFB44BD8), Color(0xFFE08BC8)],
+    stops: [0, .40, .72, 1],
+  );
+
+  static Color get xpBorder => _ld(0xFFD9D2F5, 0xFF3A3560);
+  static Color get tierBg => _ld(0xFFEFEBFC, 0xFF27233D);
+  static Color get lockedBg => _ld(0xFFEFEDF4, 0xFF221F33);
+  static Color get lockedFg => _ld(0xFFA7A1BC, 0xFF6E6889);
+  static Color get availBg => _ld(0xFFE8F7EE, 0xFF173326);
+  static Color get mutedChipBg => _ld(0xFFF1EFFA, 0xFF27233D);
+  static Color get mutedChipFg => _ld(0xFF8F87A5, 0xFF9B95B5);
+  static List<Color> get bundleBg => [_ld(0xFFF3EBFD, 0xFF2A2342), _ld(0xFFFBEAF6, 0xFF33213A)];
+  static Color get lockBadge => const Color(0x8C141028);
+  static Color get remindBg => _ld(0xFFEFEBFE, 0xFF2A2546);
+  static Color get doneRowBg => _ld(0xFFEDF9F1, 0xFF15291F);
+  static Color get xpDoneBg => _ld(0xFFE4F6EA, 0xFF1C3A28);
+  static Color get fireBg => _ld(0xFFFDEDE4, 0xFF3A2620);
+  static Color get ring => _ld(0xFFC9C2E8, 0xFF4A4566);
+  static const imageShadow = Color(0x406C5BF5);
+}

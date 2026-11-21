@@ -35,6 +35,7 @@ import (
 	"github.com/imamura-akira/New_FinX/backend/internal/papertrade"
 	"github.com/imamura-akira/New_FinX/backend/internal/portfolio"
 	"github.com/imamura-akira/New_FinX/backend/internal/predict"
+	"github.com/imamura-akira/New_FinX/backend/internal/rewards"
 	"github.com/imamura-akira/New_FinX/backend/internal/store"
 	"github.com/imamura-akira/New_FinX/backend/internal/trading"
 )
@@ -288,6 +289,11 @@ func buildRoutes(ctx context.Context, cfg *config.Config, st *store.Store, dw *d
 			})
 			go statsSvc.Run(ctx, time.Minute)
 		}
+		// F22-e / F22-f 最小 XP 体系：XP 账本、每日签到、商店 seed 配置（与资金、模拟盘、预测积分隔离）
+		rewardsSvc, err := rewards.New(rewards.PGRepo{DB: st.DB}, logger)
+		if err != nil {
+			return nil, fmt.Errorf("rewards catalog: %w", err)
+		}
 		// F19 预测板块（积分演示版）：只依赖数据库与虚拟行情，与券商资金、模拟盘完全隔离
 		var predictSvc *predict.Service
 		if market != nil {
@@ -331,6 +337,7 @@ func buildRoutes(ctx context.Context, cfg *config.Config, st *store.Store, dw *d
 				paperSvc.Routes(mux, apiPrefix, authSvc.RequireAuth)
 			}
 			pfSvc.Routes(mux, apiPrefix, authSvc.RequireAuth)
+			rewardsSvc.Routes(mux, apiPrefix, authSvc.RequireAuth)
 			if statsSvc != nil {
 				statsSvc.Routes(mux, apiPrefix) // /market/* 与行情一致不要求登录
 			}

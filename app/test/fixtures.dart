@@ -200,5 +200,5 @@ const keyPages = <(String, String, String)>[
   ('/masters', '股票大师', 'Masters'),
   ('/masters/all', '全部机构', 'All Institutions'),
   ('/fifi', 'AI 助手', 'AI Assistant'),
-  ('/rewards', 'Fifi 奖励', 'Fifi Rewards'),
+  ('/rewards', 'Fifi 商店', 'Fifi Store'),
 ];

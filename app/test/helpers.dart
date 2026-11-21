@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:finx_app/app/config.dart';
 import 'package:finx_app/core/amount_mask.dart';
@@ -7,6 +8,7 @@ import 'package:finx_app/core/session/session.dart';
 import 'package:finx_app/core/widgets/celebration.dart';
 import 'package:finx_app/features/auth/presentation/welcome_page.dart';
 import 'package:finx_app/features/funding/domain/funding_rules.dart';
+import 'package:finx_app/features/rewards/data/rewards_api.dart';
 import 'package:finx_app/features/market/domain/instruments.dart';
 import 'package:finx_app/features/trading/domain/trading_mode.dart';
 import 'package:finx_app/main.dart';
@@ -69,12 +71,17 @@ Future<(FakeBackend, SessionController, MemoryTokenStore)> pumpApp(
   be.handlers.putIfAbsent('GET /market/quotes', () => fakeQuotes());
   be.handlers.putIfAbsent('GET /market/sentiment', () => fakeSentiment());
   be.handlers.putIfAbsent('GET /market/stats', () => fakeStats());
+  // F22-e / F22-f：XP 与商店 seed（取后端真实 catalog.json，保证 App 与 seed 一致）
+  be.handlers.putIfAbsent('GET /rewards/xp', () => (_) => FakeBackend.ok({'balance': 1493, 'tier': 3, 'nextTier': 4, 'nextTierMinXp': 4500}));
+  be.handlers.putIfAbsent('GET /rewards/catalog', () => (_) => FakeBackend.ok(rewardsCatalogSeed()));
+  be.handlers.putIfAbsent('GET /rewards/checkin', () => (_) => FakeBackend.ok(checkinJson()));
   Watchlist.instance.reset();
   Celebration.resetForTest();
   LaunchIntro.resetForTest();
   TradingMode.instance.reset();
   FundingLimits.reset();
   AmountMask.instance.reset();
+  XpBalance.instance.reset();
   final api = ApiClient(baseUrl: 'http://test/api/v1', httpClient: be.client);
   final store = MemoryTokenStore()..value = storedToken;
   final session = SessionController(api: api, store: store);
@@ -130,6 +137,21 @@ http.Response Function(http.Request) fakeQuotes() {
     return FakeBackend.ok({'simulated': true, 'ts': '2026-11-19T15:00:00Z', 'quotes': quotes});
   };
 }
+
+/// 后端 seed（backend/internal/rewards/catalog.json）。
+Map<String, dynamic> rewardsCatalogSeed() => jsonDecode(File('../backend/internal/rewards/catalog.json').readAsStringSync()) as Map<String, dynamic>;
+
+/// GET/POST /rewards/checkin 响应。
+Map<String, dynamic> checkinJson({bool checkedIn = false, int streak = 0, List<bool>? week, int balance = 1493, int granted = 0, String resetAt = '2026-11-22T05:00:00Z'}) => {
+  'today': '2026-11-21',
+  'checkedIn': checkedIn,
+  'streak': streak,
+  'week': week ?? List.filled(7, false),
+  'resetAt': resetAt,
+  'xp': 10,
+  'balance': balance,
+  'granted': ?(granted > 0 ? granted : null),
+};
 
 /// 模拟 GET /market/stats（F22-b）：TODAY 返回 [counts]；30D 默认数据积累中。
 http.Response Function(http.Request) fakeStats({List<int> counts = const [1, 2, 3, 5, 2, 6, 3, 1, 1], List<int>? counts30, String? since}) => (req) {

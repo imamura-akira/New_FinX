@@ -17,6 +17,10 @@ class AppConfig {
     demoMode: bool.fromEnvironment('DEMO_MODE'),
   );
 
+  /// F22-e 季节限定主题开关（--dart-define=SEASONAL_THEME=true）：开启时 P-27 奖励 Tab 显示圣诞限定版（F16，代码与素材留档），
+  /// 默认关闭 = Fifi 商店。
+  static const bool seasonalTheme = bool.fromEnvironment('SEASONAL_THEME');
+
   /// 品牌名（design/theme.md 第 5 节）。
   static const String appName = 'FinX';
 }

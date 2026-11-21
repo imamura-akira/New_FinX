@@ -2399,4 +2399,210 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get orderDoneBackHome => '返回首页';
+
+  @override
+  String xpPill(String xp) {
+    return '$xp XP';
+  }
+
+  @override
+  String get fifiTitle => 'Fifi 量化助手';
+
+  @override
+  String get fifiSubtitle => '你的智能投资助理';
+
+  @override
+  String get fifiHeroTitle => '即将上线';
+
+  @override
+  String get fifiHeroBody => 'Fifi 正在学习为你解读图表、风险与持仓。';
+
+  @override
+  String get fifiFeat1 => '持仓体检';
+
+  @override
+  String get fifiFeat1Desc => '分析你的持仓与未实现盈亏。';
+
+  @override
+  String get fifiFeat2 => '持有或卖出';
+
+  @override
+  String get fifiFeat2Desc => '行动前对比趋势、风险与仓位。';
+
+  @override
+  String get fifiFeat3 => '个股研究';
+
+  @override
+  String get fifiFeat3Desc => '汇总价格走势、基本面与新闻信号。';
+
+  @override
+  String get fifiFeat4 => '风险预警';
+
+  @override
+  String get fifiFeat4Desc => '提示波动、集中度与下行压力。';
+
+  @override
+  String get fifiFeat5 => '量化信号';
+
+  @override
+  String get fifiFeat5Desc => '跟踪动量、反转、成交量与因子分。';
+
+  @override
+  String get fifiFeat6 => '跟 Fifi 学投资';
+
+  @override
+  String get fifiFeat6Desc => '用简单清晰的语言理解投资逻辑。';
+
+  @override
+  String get fifiRemind => '开启上线提醒';
+
+  @override
+  String get fifiRemindOn => '已开启上线提醒';
+
+  @override
+  String get fifiRemindCaption => 'Fifi 量化助手就绪时，我们会第一时间通知你。';
+
+  @override
+  String get storeTitle => 'Fifi 商店';
+
+  @override
+  String storeTier(int n) {
+    return '等级 $n';
+  }
+
+  @override
+  String get storeDream => '梦想';
+
+  @override
+  String storeTierNew(int n) {
+    return '等级 $n 上新';
+  }
+
+  @override
+  String get storeTierEmpty => '该等级商品即将上新';
+
+  @override
+  String storeTierLocked(int n) {
+    return '达到等级 $n 后解锁';
+  }
+
+  @override
+  String get storeAvailable => '可兑换';
+
+  @override
+  String get storeNotEnoughXp => 'XP 不足';
+
+  @override
+  String storeUnlockAt(int n) {
+    return '等级 $n 解锁';
+  }
+
+  @override
+  String storeBundleXp(String xp) {
+    return '套装 · $xp XP';
+  }
+
+  @override
+  String get storePreview => '预 览';
+
+  @override
+  String get storeComingSoon => '敬请期待';
+
+  @override
+  String get storePreviewOnFifi => '在 Fifi 上预览';
+
+  @override
+  String get storePreviewOnFifiSoon => '在 Fifi 上预览即将上线';
+
+  @override
+  String get storeEarnXp => '赚取 XP';
+
+  @override
+  String get storeRedeemSoon => '兑换即将开启';
+
+  @override
+  String get storeSearchSoon => '商店搜索即将上线';
+
+  @override
+  String get storeImagePlaceholder => '示意图，正式图片即将更新';
+
+  @override
+  String get storeDemoNote => 'XP 为站内成长值，不可兑换现金；商品与兑换规则以上线公告为准。';
+
+  @override
+  String get earnTitle => 'Fifi 奖励任务';
+
+  @override
+  String get earnToday => '今日任务';
+
+  @override
+  String earnResetIn(String time) {
+    return '$time 后重置';
+  }
+
+  @override
+  String get earnTask1 => '每日签到';
+
+  @override
+  String get earnTask1Desc => '保持你的连续记录';
+
+  @override
+  String get earnTask2 => '跟 Fifi 学一课';
+
+  @override
+  String get earnTask2Desc => '完成一节市场小课堂';
+
+  @override
+  String get earnTask3 => '运行持仓体检';
+
+  @override
+  String get earnTask3Desc => '检查你的资金健康度';
+
+  @override
+  String get earnTask4 => '本月储蓄目标';
+
+  @override
+  String get earnTask4Desc => '完成本月入金小目标';
+
+  @override
+  String get earnTask5 => '分享一次 FinX';
+
+  @override
+  String get earnTask5Desc => '邀请一位朋友一起学习';
+
+  @override
+  String earnXpPlus(int xp) {
+    return '+$xp XP';
+  }
+
+  @override
+  String get earnTaskSoon => '该任务即将开启';
+
+  @override
+  String earnCheckedIn(int xp) {
+    return '签到成功 +$xp XP';
+  }
+
+  @override
+  String get earnAlreadyCheckedIn => '今日已签到';
+
+  @override
+  String earnStreak(int n) {
+    return '连续 $n 天';
+  }
+
+  @override
+  String get earnKeepGoing => '继续保持！';
+
+  @override
+  String get earnStartStreak => '今天签到，开启连续记录';
+
+  @override
+  String get earnWeekdays => '一,二,三,四,五,六,日';
+
+  @override
+  String get earnGoWardrobe => '前往 Fifi 衣橱';
+
+  @override
+  String get earnLoadFailed => '任务加载失败，请下拉重试';
 }

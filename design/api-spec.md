@@ -164,6 +164,19 @@ Base URL：`/api/v1`　认证：`Authorization: Bearer <sessionToken>`（除 /au
 - 本契约 v1 随 UI 定稿冻结路径与字段名；新增字段向后兼容，破坏性变更升 /api/v2。
 - 【Q-DW-x】标注处的请求体结构已为两种方案预留，答复后删除未选方案并更新 OpenAPI。
 
+### 5.10 奖励 / XP（F22-e、F22-f，演示）
+
+XP 为站内成长值（账本合计，初始 0），与券商资金、模拟盘、预测积分完全隔离，不可兑换现金。全部需登录。
+
+| 接口 | 请求 | 响应 data | 说明 |
+|---|---|---|---|
+| GET /rewards/xp | — | `{balance, tier, nextTier?, nextTierMinXp?}` | XP 胶囊显示 balance；等级按 seed 门槛（0 / 500 / 1,000 / 4,500 / 8,000 / 12,000） |
+| GET /rewards/catalog | — | `{tiers, items, bundles, comingSoon, tasks}` | 商店与任务 seed 配置（backend/internal/rewards/catalog.json，构建期内嵌）；本期兑换未开放；`placeholder: true` 为占位图；任务 `complianceReview: true`（本月储蓄目标，入金类）上线前需合规审核 |
+| GET /rewards/checkin | — | `{today, checkedIn, streak, week[7], resetAt, xp, balance}` | today 为美东日期；week 为本周一至周日；resetAt 为下一个美东零点 |
+| POST /rewards/checkin | — | 同上 + `granted?` | 每美东日一次（xp_checkins 主键防重复），首次入账 +10（seed）；重复调用不入账。签到未开放时 50003 |
+
+数据：迁移 000012（xp_ledger、xp_checkins）。演示发放：`demoreset grant-xp -email X [-xp 1493]`（固定一笔，重复执行改为新值）。
+
 ## 10. 变更记录
 
 | 日期 | 变更 | 性质 |
@@ -192,3 +205,4 @@ Base URL：`/api/v1`　认证：`Authorization: Bearer <sessionToken>`（除 /au
 | 2026-11-21 | openapi 修正：`GET /account` 账户未开立的错误响应由误写的 404 改为 409（40901），与本文件 2026-11-19 记录及实现一致（审计 DOC-P1-1） | 文档修正 |
 | 2026-11-21 | F22-a：`GET /account/history`、`GET /paper/account/history` 的 `range` 新增 `1D`、`1W`、`3M`、`1Y`、`YTD`；`range=1D` 返回日内快照（新表 asset_intraday，迁移 000010），点新增可选字段 `at` | 新增，向后兼容 |
 | 2026-11-21 | F22-b：新增 `GET /market/stats?period=TODAY\|30D`（涨跌分布，`simulated: true`，无需登录；新表 instrument_daily_close，迁移 000011）。`GET /market/sentiment` 保留（P-09 恐慌贪婪 UI 移除，接口不变） | 新增，向后兼容 |
+| 2026-11-21 | F22-e / F22-f：新增 5.10 奖励 / XP——`GET /rewards/xp`、`GET /rewards/catalog`、`GET /rewards/checkin`、`POST /rewards/checkin`（迁移 000012 xp_ledger / xp_checkins）；新增结构 XPBalance、RewardsCatalog、RewardItem、CheckinStatus | 新增，向后兼容 |

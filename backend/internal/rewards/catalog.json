@@ -1,0 +1,33 @@
+{
+  "tiers": [
+    {"tier": 1, "minXp": 0},
+    {"tier": 2, "minXp": 500},
+    {"tier": 3, "minXp": 1000},
+    {"tier": 4, "minXp": 4500},
+    {"tier": 5, "minXp": 8000},
+    {"tier": 6, "minXp": 12000}
+  ],
+  "items": [
+    {"id": "jacket", "tier": 3, "unlockTier": 3, "xp": 800, "image": "jacket", "name": {"zh": "棒球夹克", "en": "Varsity Jacket"}},
+    {"id": "vest", "tier": 3, "unlockTier": 3, "xp": 1200, "image": "vest", "name": {"zh": "交易马甲", "en": "Trader Vest"}},
+    {"id": "bag", "tier": 3, "unlockTier": 3, "xp": 950, "image": "bag", "name": {"zh": "紫色挎包", "en": "Purple Crossbody"}},
+    {"id": "phones", "tier": 3, "unlockTier": 4, "xp": 2200, "image": "phones", "name": {"zh": "量化耳机", "en": "Quant Headphones"}}
+  ],
+  "bundles": [
+    {"id": "analyst", "tier": 3, "unlockTier": 3, "xp": 2600, "image": "bundle_placeholder", "placeholder": true,
+     "name": {"zh": "限定分析师套装", "en": "Limited Analyst Set"}, "desc": {"zh": "夹克 + 挎包 + 球鞋", "en": "Jacket + Bag + Sneakers"}}
+  ],
+  "comingSoon": [
+    {"id": "garage", "unlockTier": 4, "image": "garage_placeholder", "placeholder": true, "name": {"zh": "车库", "en": "Garage"}},
+    {"id": "home", "unlockTier": 5, "image": "home_placeholder", "placeholder": true, "name": {"zh": "梦想之家", "en": "Dream Home"}},
+    {"id": "yacht", "unlockTier": 5, "image": "yacht_placeholder", "placeholder": true, "name": {"zh": "游艇", "en": "Yacht"}},
+    {"id": "jet", "unlockTier": 6, "image": "jet_placeholder", "placeholder": true, "name": {"zh": "私人飞机", "en": "Private Jet"}}
+  ],
+  "tasks": [
+    {"id": "checkin", "xp": 10, "enabled": true},
+    {"id": "lesson", "xp": 30, "enabled": false},
+    {"id": "checkup", "xp": 20, "enabled": false},
+    {"id": "savings", "xp": 80, "enabled": false, "complianceReview": true},
+    {"id": "share", "xp": 20, "enabled": false}
+  ]
+}

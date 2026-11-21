@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS xp_checkins;
+DROP TABLE IF EXISTS xp_ledger;
