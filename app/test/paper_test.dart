@@ -378,4 +378,129 @@ void main() {
     expect(tester.widget<Text>(find.byKey(const Key('p12.pl.AAPL'))).data, r'+$261.30  +13.07%');
     expect(find.textContaining('DriveWealth'), findsNothing);
   });
+
+  // 2026-11-21 真机反馈"模拟盘下单被购买力不足拦截"回归：根因为该用户模拟资金确已用完（$0），
+  // 但提示与实盘购买力同一文案，被误认为 DW 购买力拦截。模拟盘只受模拟账户约束，与 DW 购买力无关。
+  group('模拟盘 / 实盘资金隔离回归', () {
+    Future<void> next(WidgetTester tester) async {
+      await tester.tap(find.byKey(const Key('p19.next')));
+      await tester.pumpAndSettle();
+    }
+
+    String? inputError(WidgetTester tester) =>
+        [for (final w in tester.widgetList<Text>(find.byType(Text))) w.data].whereType<String>().where((s) => s.contains('超过')).firstOrNull;
+
+    testWidgets('实盘购买力为 0 时，模拟盘买入成功（只走 /paper/orders）', (tester) async {
+      await _phone(tester);
+      final be = _backend(); // 实盘 DW 购买力 0，模拟可用资金 $100,000
+      await pumpApp(tester, backend: be, storedToken: 'tok');
+      await _push(tester, '/trade/AAPL?side=BUY&paper=1');
+      expect(tester.widget<Text>(find.byKey(const Key('p19.buyingPower'))).data, r'$100,000.00');
+      await tester.enterText(find.byKey(const Key('p19.input')), '5000');
+      await next(tester);
+      expect(find.byKey(const Key('p19.submit')), findsOneWidget, reason: '前置校验按模拟资金通过');
+      await tester.tap(find.byKey(const Key('p19.submit')));
+      for (var i = 0; i < 5; i++) {
+        await tester.pump(const Duration(milliseconds: 100));
+      }
+      expect(_hit(be, 'POST', '/paper/orders'), isTrue);
+      expect(_hit(be, 'POST', '/orders'), isFalse);
+      expect(_hit(be, 'GET', '/account/money'), isTrue, reason: '资产页加载过实盘资金');
+      await tester.pumpAndSettle();
+    });
+
+    testWidgets('模拟资金不足：按模拟账户拦截（模拟文案 + 用完提示 + 可重置），不发请求', (tester) async {
+      await _phone(tester);
+      var reset = false;
+      final be = _backend()
+        ..on('GET /paper/account', (_) => FakeBackend.ok(_paperAccount(cash: reset ? 100000 : 0, posValue: 100000)))
+        ..on('POST /paper/account/reset', (_) {
+          reset = true;
+          return FakeBackend.ok(_paperAccount());
+        })
+        ..on(
+          'GET /account/money',
+          (_) => FakeBackend.ok({
+            'cash': 5000,
+            'settledCash': 5000,
+            'buyingPower': 5000, // 实盘有钱也不影响模拟盘
+            'cashAvailableForWithdrawal': 0,
+            'unsettled': 0,
+            'pendingDeposits': 0,
+            'withheldForSeasoning': 0,
+            'updatedAt': '2026-11-21T15:00:00Z',
+          }),
+        );
+      await pumpApp(tester, backend: be, storedToken: 'tok');
+      await _push(tester, '/trade/AAPL?side=BUY&paper=1');
+      expect(tester.widget<Text>(find.byKey(const Key('p19.buyingPower'))).data, r'$0.00');
+      expect(find.byKey(const Key('p19.paperFundsUsedUp')), findsOneWidget);
+      expect(find.textContaining('与实盘购买力无关'), findsOneWidget);
+      await tester.enterText(find.byKey(const Key('p19.input')), '100');
+      await next(tester);
+      expect(inputError(tester), r'超过模拟账户可用资金 $0.00');
+      expect(find.textContaining('超过可用购买力'), findsNothing, reason: '模拟盘不用实盘购买力文案');
+      expect(find.byKey(const Key('p19.submit')), findsNothing);
+      // 按股数同样按模拟资金拦截
+      await tester.tap(find.descendant(of: find.byKey(const Key('p19.mode')), matching: find.text('按股数')));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byKey(const Key('p19.input')), '1');
+      await next(tester);
+      expect(inputError(tester), startsWith('预估金额'));
+      expect(inputError(tester), endsWith(r'超过模拟账户可用资金 $0.00'));
+      expect(be.requests.where((r) => r.method == 'POST'), isEmpty);
+      // 一键重置后恢复初始资金，提示消失
+      await tester.tap(find.byKey(const Key('p19.paperReset')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('paper.reset.confirm')));
+      await tester.pumpAndSettle();
+      expect(_hit(be, 'POST', '/paper/account/reset'), isTrue);
+      expect(find.byKey(const Key('p19.paperFundsUsedUp')), findsNothing);
+      expect(tester.widget<Text>(find.byKey(const Key('p19.buyingPower'))).data, r'$100,000.00');
+      await tester.pump(const Duration(seconds: 3));
+    });
+
+    testWidgets('实盘不受模拟盘余额影响：模拟资金为 0、实盘购买力 \$500 时按实盘校验', (tester) async {
+      await _phone(tester);
+      final be = _backend()
+        ..on('GET /paper/account', (_) => FakeBackend.ok(_paperAccount(cash: 0)))
+        ..on(
+          'GET /account/money',
+          (_) => FakeBackend.ok({
+            'cash': 500,
+            'settledCash': 500,
+            'buyingPower': 500,
+            'cashAvailableForWithdrawal': 0,
+            'unsettled': 0,
+            'pendingDeposits': 0,
+            'withheldForSeasoning': 0,
+            'updatedAt': '2026-11-21T15:00:00Z',
+          }),
+        );
+      await pumpApp(tester, backend: be, storedToken: 'tok');
+      await _push(tester, '/trade/AAPL?side=BUY');
+      expect(tester.widget<Text>(find.byKey(const Key('p19.buyingPower'))).data, r'$500.00');
+      expect(find.byKey(const Key('p19.paperFundsUsedUp')), findsNothing);
+      await tester.enterText(find.byKey(const Key('p19.input')), '600');
+      await next(tester);
+      expect(inputError(tester), r'超过可用购买力 $500.00', reason: '实盘仍用 DW 购买力文案');
+      await tester.enterText(find.byKey(const Key('p19.input')), '100');
+      await next(tester);
+      expect(find.byKey(const Key('p19.submit')), findsOneWidget, reason: '模拟资金为 0 不影响实盘');
+      expect(_hit(be, 'GET', '/paper/account'), isFalse, reason: '实盘下单页不读模拟账户');
+    });
+
+    testWidgets('下单页内切换 实盘 ↔ 模拟盘：可用资金与校验随之切换', (tester) async {
+      await _phone(tester);
+      await pumpApp(tester, backend: _backend(), storedToken: 'tok');
+      await _push(tester, '/trade/AAPL?side=BUY');
+      expect(tester.widget<Text>(find.byKey(const Key('p19.buyingPower'))).data, r'$0.00');
+      await tester.tap(find.descendant(of: find.byKey(const Key('mode.switch')), matching: find.text('模拟盘')));
+      await tester.pumpAndSettle();
+      expect(tester.widget<Text>(find.byKey(const Key('p19.buyingPower'))).data, r'$100,000.00');
+      await tester.enterText(find.byKey(const Key('p19.input')), '1000');
+      await next(tester);
+      expect(find.byKey(const Key('p19.submit')), findsOneWidget);
+    });
+  });
 }

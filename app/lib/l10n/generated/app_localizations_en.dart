@@ -2740,4 +2740,27 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get searchTypeStock => 'Stock';
+
+  @override
+  String tradeExceedsPaperFunds(String v0) {
+    return 'Exceeds your paper account\'s available funds of $v0';
+  }
+
+  @override
+  String tradeEstimatedExceedsPaperFunds(String v0, String v1) {
+    return 'Estimated amount $v0 exceeds your paper account\'s available funds of $v1';
+  }
+
+  @override
+  String tradeHoldExceedsPaperFunds(String v0, String v1) {
+    return 'Amount on hold $v0 exceeds your paper account\'s available funds of $v1';
+  }
+
+  @override
+  String orderPaperFundsUsedUp(String v0) {
+    return 'Your paper account\'s available funds are used up ($v0). Sell paper positions or reset the paper account to restore the starting balance. Paper trading uses virtual funds only — it\'s separate from your live buying power, and live deposits don\'t add paper funds.';
+  }
+
+  @override
+  String get orderPaperResetNow => 'Reset Paper Account';
 }

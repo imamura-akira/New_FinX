@@ -4820,6 +4820,36 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'股票'**
   String get searchTypeStock;
+
+  /// No description provided for @tradeExceedsPaperFunds.
+  ///
+  /// In zh, this message translates to:
+  /// **'超过模拟账户可用资金 {v0}'**
+  String tradeExceedsPaperFunds(String v0);
+
+  /// No description provided for @tradeEstimatedExceedsPaperFunds.
+  ///
+  /// In zh, this message translates to:
+  /// **'预估金额 {v0} 超过模拟账户可用资金 {v1}'**
+  String tradeEstimatedExceedsPaperFunds(String v0, String v1);
+
+  /// No description provided for @tradeHoldExceedsPaperFunds.
+  ///
+  /// In zh, this message translates to:
+  /// **'冻结金额 {v0} 超过模拟账户可用资金 {v1}'**
+  String tradeHoldExceedsPaperFunds(String v0, String v1);
+
+  /// No description provided for @orderPaperFundsUsedUp.
+  ///
+  /// In zh, this message translates to:
+  /// **'模拟账户可用资金已用完（{v0}）。可卖出模拟持仓，或重置模拟账户恢复初始资金。模拟盘只用虚拟资金，与实盘购买力无关，实盘入金不会增加模拟资金。'**
+  String orderPaperFundsUsedUp(String v0);
+
+  /// No description provided for @orderPaperResetNow.
+  ///
+  /// In zh, this message translates to:
+  /// **'重置模拟账户'**
+  String get orderPaperResetNow;
 }
 
 class _AppLocalizationsDelegate

@@ -149,6 +149,23 @@ class _OrderPageState extends State<OrderPage> {
     _load();
   }
 
+  /// 模拟资金用完时一键重置模拟账户（确认后），重新加载模拟数据。
+  Future<void> _resetPaper() async {
+    if (!await confirmPaperReset(context) || !mounted) return;
+    try {
+      final a = await TradingApi(AppScope.of(context).api, paper: true).resetPaper();
+      if (!mounted || !_paper) return;
+      setState(() {
+        _paperAccount = a;
+        _inputError = _limitError = _submitError = null;
+      });
+      showToast(context, t.homePaperAccountHasBeen);
+      _load();
+    } on ApiException catch (e) {
+      if (mounted) showToast(context, tradingErrorText(e));
+    }
+  }
+
   Future<void> _loadQuote() async {
     if (!mounted || _step == 'done') return;
     try {
@@ -186,11 +203,11 @@ class _OrderPageState extends State<OrderPage> {
   void _toConfirm() {
     String? err, lErr;
     if (_isLimit) {
-      (err, lErr) = validateLimitOrder(_input.text, _limit.text, buy: _buy, buyingPower: _buyingPower, sellableQty: _buy ? null : _sellable);
+      (err, lErr) = validateLimitOrder(_input.text, _limit.text, buy: _buy, buyingPower: _buyingPower, sellableQty: _buy ? null : _sellable, paper: _paper);
     } else if (_mode == _Mode.amount) {
-      err = validateOrderAmount(_input.text, buy: _buy, buyingPower: _buyingPower, sellableValue: _buy ? null : _sellableValue);
+      err = validateOrderAmount(_input.text, buy: _buy, buyingPower: _buyingPower, sellableValue: _buy ? null : _sellableValue, paper: _paper);
     } else {
-      err = validateOrderQty(_input.text, buy: _buy, price: _refPrice, buyingPower: _buyingPower, sellableQty: _buy ? null : _sellable);
+      err = validateOrderQty(_input.text, buy: _buy, price: _refPrice, buyingPower: _buyingPower, sellableQty: _buy ? null : _sellable, paper: _paper);
     }
     setState(() {
       _inputError = err;
@@ -407,6 +424,19 @@ class _OrderPageState extends State<OrderPage> {
         AccountModeSwitch(onChanged: _switchAccount),
         if (_paper) const PaperBanner(),
         if (_submitError != null) Notice(_submitError!, kind: NoticeKind.danger),
+        // 模拟资金用完：说明与实盘购买力无关，给出卖出 / 重置两条出路（不引导实盘入金）
+        if (_paper && _buy && _paperAccount != null && _paperAccount!.buyingPower < TradingLimits.minOrder) ...[
+          Notice(t.orderPaperFundsUsedUp(fmtUsd(_paperAccount!.buyingPower)), kind: NoticeKind.warn, key: const Key('p19.paperFundsUsedUp')),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton.icon(
+              key: const Key('p19.paperReset'),
+              onPressed: _resetPaper,
+              icon: Icon(Icons.restart_alt_rounded, size: 18, color: PaperColors.fg),
+              label: Text(t.orderPaperResetNow, style: TextStyle(color: PaperColors.fg)),
+            ),
+          ),
+        ],
         _header(),
         Seg2<String>(
           key: const Key('p19.side'),

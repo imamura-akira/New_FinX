@@ -2608,4 +2608,27 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get searchTypeStock => '股票';
+
+  @override
+  String tradeExceedsPaperFunds(String v0) {
+    return '超过模拟账户可用资金 $v0';
+  }
+
+  @override
+  String tradeEstimatedExceedsPaperFunds(String v0, String v1) {
+    return '预估金额 $v0 超过模拟账户可用资金 $v1';
+  }
+
+  @override
+  String tradeHoldExceedsPaperFunds(String v0, String v1) {
+    return '冻结金额 $v0 超过模拟账户可用资金 $v1';
+  }
+
+  @override
+  String orderPaperFundsUsedUp(String v0) {
+    return '模拟账户可用资金已用完（$v0）。可卖出模拟持仓，或重置模拟账户恢复初始资金。模拟盘只用虚拟资金，与实盘购买力无关，实盘入金不会增加模拟资金。';
+  }
+
+  @override
+  String get orderPaperResetNow => '重置模拟账户';
 }

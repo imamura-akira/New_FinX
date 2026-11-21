@@ -452,3 +452,31 @@ func TestHoldings(t *testing.T) {
 		t.Fatalf("新用户 cash %d vals %v err %v", cash, vals, err)
 	}
 }
+
+// 2026-11-21 真机反馈回归：模拟资金用完后买入按模拟账户拦截（42201，模拟账户文案），卖出仍可用；
+// 复现该用户的实际序列：$100,000 全仓买入 → 卖出 $10,000 → 再买 $10,000 → 现金 $0。模拟盘不读 DW。
+func TestPaperFundsExhaustedOnlyPaperConstraint(t *testing.T) {
+	f := newFx(t)
+	for _, b := range []string{
+		`{"symbol":"AAPL","side":"BUY","orderType":"MARKET","amount":100000}`,
+		`{"symbol":"AAPL","side":"SELL","orderType":"MARKET","amount":10000}`,
+		`{"symbol":"AAPL","side":"BUY","orderType":"MARKET","amount":10000}`,
+	} {
+		if r := f.call("POST", "/api/v1/paper/orders", b); r.Code != 0 {
+			t.Fatalf("%s：%+v", b, r)
+		}
+	}
+	if a := f.account(t); a["cash"] != 0.0 || a["buyingPower"] != 0.0 {
+		t.Fatalf("现金应为 0：%v", a)
+	}
+	r := f.call("POST", "/api/v1/paper/orders", `{"symbol":"AAPL","side":"BUY","orderType":"MARKET","amount":100}`)
+	if r.Code != 42201 || !strings.Contains(r.Msg, "超过模拟账户可用资金 $0.00") {
+		t.Fatalf("应按模拟账户拦截：%+v", r)
+	}
+	if r := f.call("POST", "/api/v1/paper/orders", `{"symbol":"AAPL","side":"SELL","orderType":"MARKET","amount":500}`); r.Code != 0 {
+		t.Fatalf("资金用完仍可卖出：%+v", r)
+	}
+	if r := f.call("POST", "/api/v1/paper/orders", `{"symbol":"AAPL","side":"BUY","orderType":"MARKET","amount":100}`); r.Code != 0 {
+		t.Fatalf("卖出所得可再买入：%+v", r)
+	}
+}

@@ -31,18 +31,21 @@ String fmtQty(double v) {
 String get minOrderText => t.tradeMinOrder;
 
 /// 按金额下单校验。买入不超过 [buyingPower]；卖出不超过 [sellableValue]（可卖数量 × DW 市价）。
-String? validateOrderAmount(String raw, {required bool buy, double? buyingPower, double? sellableValue}) {
+String? validateOrderAmount(String raw, {required bool buy, double? buyingPower, double? sellableValue, bool paper = false}) {
   if (raw.trim().isEmpty) return t.tradePleaseEnterAnAmount;
   final v = parseAmount(raw);
   if (v == null) return t.tradeEnterAValidAmount;
   if (v < TradingLimits.minOrder) return minOrderText;
-  if (buy && buyingPower != null && v > buyingPower) return t.tradeExceedsYourAvailableBuying(fmtUsd(buyingPower));
+  if (buy && buyingPower != null && v > buyingPower) {
+    // 模拟盘用模拟账户可用资金，文案与实盘购买力区分（2026-11-21 真机反馈：误以为被 DW 购买力拦截）
+    return paper ? t.tradeExceedsPaperFunds(fmtUsd(buyingPower)) : t.tradeExceedsYourAvailableBuying(fmtUsd(buyingPower));
+  }
   if (!buy && sellableValue != null && v > sellableValue) return t.tradeExceedsTheSellableMarket(fmtUsd(sellableValue));
   return null;
 }
 
 /// 按股数下单校验。买入按演示参考价 [price] 估算金额；卖出不超过 [sellableQty]。
-String? validateOrderQty(String raw, {required bool buy, double? price, double? buyingPower, double? sellableQty}) {
+String? validateOrderQty(String raw, {required bool buy, double? price, double? buyingPower, double? sellableQty, bool paper = false}) {
   if (raw.trim().isEmpty) return t.tradePleaseEnterTheNumber;
   final q = parseQty(raw);
   if (q == null) return t.tradeEnterAValidNumber;
@@ -51,7 +54,9 @@ String? validateOrderQty(String raw, {required bool buy, double? price, double? 
     if (price == null || price <= 0) return t.tradeNoQuoteAvailablePlease;
     final est = q * price;
     if (est < TradingLimits.minOrder) return minOrderText;
-    if (buyingPower != null && est > buyingPower) return t.tradeEstimatedAmountExceedsYour(fmtUsd(est), fmtUsd(buyingPower));
+    if (buyingPower != null && est > buyingPower) {
+      return paper ? t.tradeEstimatedExceedsPaperFunds(fmtUsd(est), fmtUsd(buyingPower)) : t.tradeEstimatedAmountExceedsYour(fmtUsd(est), fmtUsd(buyingPower));
+    }
   } else {
     if (sellableQty != null && q > sellableQty + 1e-9) return t.tradeExceedsYourSellableQuantity(fmtQty(sellableQty));
   }
@@ -106,7 +111,7 @@ double? parseLimitPrice(String raw) {
 
 /// 限价单校验（按股数）。买入冻结金额 = 股数 × 限价，不低于单笔最低、不超过可用资金；卖出不超过可卖数量。
 /// 返回 (股数错误, 限价错误)。
-(String?, String?) validateLimitOrder(String qtyRaw, String limitRaw, {required bool buy, double? buyingPower, double? sellableQty}) {
+(String?, String?) validateLimitOrder(String qtyRaw, String limitRaw, {required bool buy, double? buyingPower, double? sellableQty, bool paper = false}) {
   String? qErr, lErr;
   final q = parseQty(qtyRaw);
   if (qtyRaw.trim().isEmpty) {
@@ -126,7 +131,9 @@ double? parseLimitPrice(String raw) {
   if (buy) {
     final reserve = q! * l!;
     if (reserve < TradingLimits.minOrder) return (minOrderText, null);
-    if (buyingPower != null && reserve > buyingPower) return (t.tradeAmountOnHoldExceeds(fmtUsd(reserve), fmtUsd(buyingPower)), null);
+    if (buyingPower != null && reserve > buyingPower) {
+      return (paper ? t.tradeHoldExceedsPaperFunds(fmtUsd(reserve), fmtUsd(buyingPower)) : t.tradeAmountOnHoldExceeds(fmtUsd(reserve), fmtUsd(buyingPower)), null);
+    }
   } else if (sellableQty != null && q! > sellableQty + 1e-9) {
     return (t.tradeExceedsYourSellableQuantity(fmtQty(sellableQty)), null);
   }
