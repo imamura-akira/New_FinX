@@ -26,6 +26,11 @@ func pathAccountDeposits(dwAccountID string) string {
 	return "/accounts/" + dwAccountID + "/funding/deposits?limit=50"
 }
 
+// pathAccountRedemptions：按账户列出出金（DW List Account Withdrawals；列表项不含银行账户与类型字段）。
+func pathAccountRedemptions(dwAccountID string) string {
+	return "/accounts/" + dwAccountID + "/funding/redemptions?limit=50"
+}
+
 func pathMoney(dwAccountID string) string { return "/accounts/" + dwAccountID + "/summary/money" }
 
 func pathInstructions(dwAccountID string) string {

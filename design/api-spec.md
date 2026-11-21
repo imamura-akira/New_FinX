@@ -58,7 +58,7 @@ Base URL：`/api/v1`　认证：`Authorization: Bearer <sessionToken>`（除 /au
 | POST /funding/withdrawals | `{method:"ACH"\|"WIRE", amount, bankAccountId?, wire?{bankName, accountNumber, swiftOrAba, country, intermediarySwift?}}` | `{transferId, status}` | 后端转 DW `POST /funding/redemptions`【Q-DW-8d 字段待核】；WIRE 收款人固定为本人，后端强制 |
 | GET /funding/transfers | `?type=&cursor=` | `[{transferId, type, method, amount, status, failureReason, submittedAt, doneAt}]` | P-18 时间线 |
 
-**入金状态枚举**（DW Deposit Status）：`STARTED / PENDING / SUCCESSFUL / FAILED / RETURNED / APPROVED / REJECTED / ON_HOLD / PROCESSING`（PROCESSING 为沙盒实测新增，见第 10 节）；出金状态枚举待 Q-DW-8d。
+**入金状态枚举**（DW Deposit Status）：`STARTED / PENDING / SUCCESSFUL / FAILED / RETURNED / APPROVED / REJECTED / ON_HOLD / PROCESSING`（PROCESSING 为沙盒实测新增，见第 10 节）；出金状态枚举待 Q-DW-8d。出入金另有我方取值 `SUBMITTING`（提交中）与 `UNCONFIRMED`（券商结果待人工核对，App 显示"未确认"）。
 **金额校验**：限额走后端配置 `limits.*`（当前示例值）；超限返回 42201 并带限额。
 
 ## 5.5 市场数据（F11，阶段性虚拟行情）
@@ -86,7 +86,7 @@ Base URL：`/api/v1`　认证：`Authorization: Bearer <sessionToken>`（除 /au
 | GET /positions | — | `{updatedAt, equityValue, positions:[{symbol, quantity, sellableQty, avgPrice, costBasis, marketPrice, marketValue, unrealizedPL, unrealizedDayPL}]}` | 全部为 DW `summary/positions` 返回值（App 只计算盈亏百分比）；未开户返回 40901 |
 
 **Order**：`{orderId, orderNo, symbol, side, orderType, quantity, amount, limitPrice, timeInForce, status, filledQty, avgPrice, totalAmount, fees, rejectReason, submittedAt, updatedAt, doneAt}`（`limitPrice` / `timeInForce` 仅限价单有值）；`quantity` / `amount` 为委托值（二者其一为 null），`filledQty`、`avgPrice`、`totalAmount`、`fees` 为 DW 返回（未成交为 null），`rejectReason` 为可展示的中文原因（不透出 DW 原文）。
-**订单状态枚举**（DW Order Status）：`NEW / PARTIAL_FILL / FILLED / REJECTED / CANCELED / PENDING_CANCEL`；我方新增 `SUBMITTING`（已记录、提交结果待确认）。App 文案：NEW = 排队中 / 已报，PARTIAL_FILL = 部分成交，FILLED = 已成交，REJECTED = 已拒绝，CANCELED = 已撤单，PENDING_CANCEL = 撤单中，SUBMITTING = 提交中。
+**订单状态枚举**（DW Order Status）：`NEW / PARTIAL_FILL / FILLED / REJECTED / CANCELED / PENDING_CANCEL`；我方新增 `SUBMITTING`（已记录、提交结果待确认）、`UNCONFIRMED`（券商结果待人工核对，不能撤单）。App 文案：NEW = 排队中 / 已报，PARTIAL_FILL = 部分成交，FILLED = 已成交，REJECTED = 已拒绝，CANCELED = 已撤单，PENDING_CANCEL = 撤单中，SUBMITTING = 提交中，UNCONFIRMED = 未确认。
 
 ## 5.7 模拟交易 / 模拟盘（F15，演示与练习用途）
 
@@ -185,3 +185,4 @@ Base URL：`/api/v1`　认证：`Authorization: Bearer <sessionToken>`（除 /au
 | 2026-11-20 | F17 资产分布与资产趋势：新增 `GET /account/allocation`、`GET /account/history?range=`、`GET /paper/account/allocation`、`GET /paper/account/history`（每日资产快照，迁移 000008 asset_snapshots）；新增结构 `Allocation`、`AssetHistory` | 新增，向后兼容 |
 | 2026-11-20 | 新增 5.9 预测板块（F19，积分演示版）：`/predict/account`、`/predict/markets`、`/predict/markets/{id}`、`/predict/bets`（POST / GET）、`/predict/claim`；新增结构 PredictMarket、PredictBet、PredictStats；虚拟行情新增模拟加密标的 BTC、SOL | 新增，向后兼容 |
 | 2026-11-21 | 资金类写接口 `POST /funding/deposits`、`POST /funding/withdrawals`、`POST /orders` 新增**可选**请求头 `Idempotency-Key`（UUID，App 每笔申请生成、重试沿用）：后端按"账户 + 键"去重，已有记录时不再提交券商，按原记录作答（已受理 → 200 原编号与状态；确认中 → 502/50001 带原编号；内容不同 → 42200）。不带时行为不变。审计 FUND-P0-1 | 新增，向后兼容 |
+| 2026-11-21 | `Transfer.status` 与 `Order.status` 新增我方取值 `UNCONFIRMED`（券商结果待人工核对：对账重放被券商拒绝、订单超出重放窗口〔同一美东交易日 15 分钟内〕、出入金超过券商幂等有效期仍未查到）；订单列表 `status=OPEN` 包含该值；该状态订单不能撤单。出金提交改为附带幂等键（DW 文档：Create Withdrawal 支持），结果不明时按原键重放并按账户反查。审计 FUND-P1-1/P1-2/P1-4 | 新增，向后兼容 |

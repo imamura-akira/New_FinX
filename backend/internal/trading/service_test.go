@@ -529,7 +529,9 @@ func TestCreateOrderDWOutcomes(t *testing.T) {
 		if n := f.dw.count("POST /orders"); n != 1 {
 			t.Fatalf("提交后 1 分钟内不应重放（首次提交可能仍在进行中），POST 次数 %d", n)
 		}
-		f.svc.now = func() time.Time { return time.Now().Add(2 * time.Minute) }
+		noon := time.Date(2026, 11, 23, 12, 0, 0, 0, time.FixedZone("ET", -5*3600)) // 固定在交易日中午，避免跨美东日期
+		f.repo.orders[0].SubmittedAt = noon
+		f.svc.now = func() time.Time { return noon.Add(2 * time.Minute) }
 		f.svc.Sync(context.Background(), time.Minute)
 		if f.dw.last("POST /orders").idem != first {
 			t.Fatal("重放必须使用原 Idempotency-Key")
@@ -770,6 +772,57 @@ func TestOrderClientIdempotencyKey(t *testing.T) {
 			if tc.wantCode != 42200 {
 				if a, b := first.field(t, "orderId"), r.field(t, "orderId"); a == "" || a != b {
 					t.Fatalf("重试应返回原 orderId：%q vs %q", a, b)
+				}
+			}
+		})
+	}
+}
+
+// 审计 FUND-P1-1：结果不明的订单只在 15 分钟内、同一美东交易日内重放；超出后标为 UNCONFIRMED（不重放、不能撤单）。
+// 审计 FUND-P1-4：重放被拒不删除，标为 UNCONFIRMED。
+func TestOrderReplayWindow(t *testing.T) {
+	ny, _ := time.LoadLocation("America/New_York")
+	base := time.Date(2026, 11, 23, 10, 0, 0, 0, ny) // 周一 10:00 ET
+	cases := []struct {
+		name      string
+		after     time.Duration
+		replayErr error
+		wantPosts int
+		wantState string
+	}{
+		{"1 分钟内：不重放", 30 * time.Second, nil, 1, StatusSubmitting},
+		{"5 分钟：重放成功", 5 * time.Minute, nil, 2, StatusFilled},
+		{"5 分钟：重放被拒 → 未确认，不删除", 5 * time.Minute, &dwclient.APIError{Status: 400, DWCode: "O012"}, 2, StatusUnconfirmed},
+		{"20 分钟：超出窗口 → 未确认，不重放", 20 * time.Minute, nil, 1, StatusUnconfirmed},
+		{"次日 9:35：跨交易日 → 未确认，不重放", 23*time.Hour + 35*time.Minute, nil, 1, StatusUnconfirmed},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			f := newFx(t)
+			f.svc.now = func() time.Time { return base }
+			f.dw.fail["POST /orders"] = []error{&dwclient.APIError{Status: 503}}
+			f.call("POST", "/api/v1/orders", `{"symbol":"AAPL","side":"BUY","orderType":"MARKET","amount":100}`)
+			f.repo.orders[0].SubmittedAt = base
+			f.svc.now = func() time.Time { return base.Add(tc.after) }
+			if tc.replayErr != nil {
+				f.dw.fail["POST /orders"] = []error{tc.replayErr}
+			}
+			f.svc.Sync(context.Background(), time.Minute)
+			if n := f.dw.count("POST /orders"); n != tc.wantPosts {
+				t.Fatalf("POST 次数 = %d，期望 %d", n, tc.wantPosts)
+			}
+			o := f.repo.find("ord-1")
+			if o == nil || o.Status != tc.wantState {
+				t.Fatalf("状态 = %+v，期望 %s", o, tc.wantState)
+			}
+			if tc.wantState == StatusUnconfirmed {
+				if r := f.call("POST", "/api/v1/orders/ord-1/cancel", ""); r.Code != 40901 {
+					t.Fatalf("未确认订单不能撤单：%+v", r)
+				}
+				f.svc.now = func() time.Time { return base.Add(tc.after + time.Minute) }
+				f.svc.Sync(context.Background(), time.Minute)
+				if n := f.dw.count("POST /orders"); n != tc.wantPosts {
+					t.Fatalf("未确认订单不得再重放：%d", n)
 				}
 			}
 		})

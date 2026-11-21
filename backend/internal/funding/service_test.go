@@ -239,6 +239,7 @@ func (m *memRepo) Audit(context.Context, string, string, string, map[string]any)
 type dwCall struct {
 	method, path, idem string
 	body               map[string]any
+	canceled           bool // 调用时 context 是否已取消（审计 FUND-P1-3）
 }
 
 type fakeDW struct {
@@ -254,7 +255,7 @@ func (f *fakeDW) Do(ctx context.Context, method, path string, body, out any) err
 	var m map[string]any
 	raw, _ := json.Marshal(body)
 	_ = json.Unmarshal(raw, &m)
-	f.calls = append(f.calls, dwCall{method, path, dwclient.IdempotencyKey(ctx), m})
+	f.calls = append(f.calls, dwCall{method, path, dwclient.IdempotencyKey(ctx), m, ctx.Err() != nil})
 	key := method + " " + path
 	for k, errs := range f.fail {
 		if strings.HasPrefix(key, k) && len(errs) > 0 {
@@ -608,8 +609,8 @@ func TestWithdrawal(t *testing.T) {
 	}{
 		{"ACH 成功", func(b string) string { return `{"method":"ACH","amount":100,"bankAccountId":"` + b + `"}` }, nil, 0, func(t *testing.T, f *fx) {
 			c := f.dw.last("POST /funding/redemptions")
-			if c.body["type"] != "ACH" || c.body["bankAccountID"] != "bank_test1" || c.idem != "" {
-				t.Fatalf("ACH 出金请求不正确（出金不附带幂等键）: %v idem=%q", c.body, c.idem)
+			if c.body["type"] != "ACH" || c.body["bankAccountID"] != "bank_test1" || c.idem == "" || c.idem != f.repo.transfers[0].IdempotencyKey {
+				t.Fatalf("ACH 出金请求不正确（须附带已落库的幂等键，审计 FUND-P1-2）: %v idem=%q", c.body, c.idem)
 			}
 		}},
 		{"超过可提现金额（DW 返回 250.25）", func(b string) string { return `{"method":"ACH","amount":250.26,"bankAccountId":"` + b + `"}` }, nil, 42201, func(t *testing.T, f *fx) {
@@ -917,10 +918,11 @@ func TestSyncStopsReplayPastIdempotencyWindow(t *testing.T) {
 		age       time.Duration
 		wantPosts int
 		wantList  int
+		wantState string
 	}{
-		{"94 小时：仍重放", 94 * time.Hour, 2, 1},
-		{"95 小时：停止重放，只反查", 95 * time.Hour, 1, 1},
-		{"10 天：停止重放，只反查", 240 * time.Hour, 1, 1},
+		{"94 小时：仍重放", 94 * time.Hour, 2, 1, StatusSubmitting},
+		{"95 小时：停止重放，只反查，查不到标为未确认", 95 * time.Hour, 1, 1, StatusUnconfirmed},
+		{"10 天：停止重放，只反查，查不到标为未确认", 240 * time.Hour, 1, 1, StatusUnconfirmed},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			f := newFx(t)
@@ -938,9 +940,104 @@ func TestSyncStopsReplayPastIdempotencyWindow(t *testing.T) {
 			if n := f.dw.count("GET /accounts/dwacc-1/funding/deposits"); n != tc.wantList {
 				t.Fatalf("反查次数 = %d，期望 %d", n, tc.wantList)
 			}
-			if st := f.repo.transfers[0].Status; st != StatusSubmitting {
-				t.Fatalf("查不到时保持提交中、转人工：%s", st)
+			if st := f.repo.transfers[0].Status; st != tc.wantState {
+				t.Fatalf("状态 = %s，期望 %s", st, tc.wantState)
 			}
 		})
+	}
+}
+
+// 审计 FUND-P1-4：首次提交的 4xx 只有"首次尝试即收到、且非幂等 / 冲突类"才算明确拒绝；对账重放被拒一律不删除。
+func TestRejectionIsOnlyDefinitiveOnFirstAttempt(t *testing.T) {
+	cases := []struct {
+		name     string
+		err      error
+		wantCode int
+		keep     bool
+	}{
+		{"首次尝试 400：明确拒绝，撤销记录", &dwclient.APIError{Status: 400, DWCode: "E032"}, 42200, false},
+		{"重试后才收到 400：结果不明，保留", &dwclient.APIError{Status: 400, DWCode: "E032", Retried: true}, 50001, true},
+		{"409 冲突：结果不明，保留", &dwclient.APIError{Status: 409}, 50001, true},
+		{"408 超时：结果不明，保留", &dwclient.APIError{Status: 408}, 50001, true},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			f := newFx(t)
+			bank := f.link(t)
+			f.dw.fail["POST /funding/deposits"] = []error{tc.err}
+			r := f.call("POST", "/api/v1/funding/deposits", `{"bankAccountId":"`+bank+`","amount":10}`)
+			if r.Code != tc.wantCode {
+				t.Fatalf("code = %d，期望 %d", r.Code, tc.wantCode)
+			}
+			if got := len(f.repo.transfers) == 1; got != tc.keep {
+				t.Fatalf("保留记录 = %v，期望 %v", got, tc.keep)
+			}
+		})
+	}
+}
+
+func TestReplayRejectionMarksUnconfirmed(t *testing.T) {
+	for _, typ := range []string{"DEPOSIT", "WITHDRAWAL"} {
+		t.Run(typ, func(t *testing.T) {
+			f := newFx(t)
+			bank := f.link(t)
+			post, path, body := "POST /funding/deposits", "/api/v1/funding/deposits", `{"bankAccountId":"`+bank+`","amount":10}`
+			if typ == "WITHDRAWAL" {
+				post, path, body = "POST /funding/redemptions", "/api/v1/funding/withdrawals", `{"method":"ACH","bankAccountId":"`+bank+`","amount":10}`
+			}
+			f.dw.fail[post] = []error{fmt.Errorf("timeout")}
+			f.call("POST", path, body)
+			first := f.dw.last(post).idem
+			f.svc.now = func() time.Time { return time.Now().Add(2 * time.Minute) }
+			f.dw.fail[post] = []error{&dwclient.APIError{Status: 400, DWCode: "E031"}}
+			f.svc.Sync(context.Background(), time.Minute)
+			if n := f.dw.count(post); n != 2 || f.dw.last(post).idem != first {
+				t.Fatalf("应用原幂等键重放一次：%d 次", n)
+			}
+			if len(f.repo.transfers) != 1 || f.repo.transfers[0].Status != StatusUnconfirmed {
+				t.Fatalf("重放被拒不得删除，应标为 UNCONFIRMED：%+v", f.repo.transfers)
+			}
+			// 之后只反查、不再重放
+			f.dw.resp["GET /accounts/dwacc-1/funding/"] = `[]`
+			f.svc.Sync(context.Background(), time.Minute)
+			if n := f.dw.count(post); n != 2 {
+				t.Fatalf("UNCONFIRMED 不得再重放：%d 次", n)
+			}
+		})
+	}
+}
+
+// 审计 FUND-P1-2：出金结果不明后，按账户列出出金反查（列表金额为负、无银行字段）并关联。
+func TestWithdrawalLookupByRedemptions(t *testing.T) {
+	f := newFx(t)
+	bank := f.link(t)
+	f.dw.fail["POST /funding/redemptions"] = []error{fmt.Errorf("timeout")}
+	f.call("POST", "/api/v1/funding/withdrawals", `{"method":"ACH","bankAccountId":"`+bank+`","amount":50}`)
+	submitted := f.repo.transfers[0].SubmittedAt
+	f.svc.now = func() time.Time { return submitted.Add(11 * time.Minute) }
+	f.dw.fail["POST /funding/redemptions"] = []error{fmt.Errorf("timeout")}
+	f.dw.resp["GET /accounts/dwacc-1/funding/redemptions"] = `[{"id":"RED-9","amount":-50,"timestamp":"` +
+		submitted.Add(3*time.Second).UTC().Format(time.RFC3339Nano) + `","status":{"id":14,"message":"Approved"}}]`
+	f.svc.Sync(context.Background(), time.Minute)
+	if tr := f.repo.transfers[0]; tr.DWRef != "RED-9" || tr.Status != "APPROVED" {
+		t.Fatalf("应反查关联 RED-9：%+v", tr)
+	}
+}
+
+// 审计 FUND-P1-3：App 断开（请求 context 取消）不得中途放弃提交券商与落库。
+func TestSubmitSurvivesClientDisconnect(t *testing.T) {
+	f := newFx(t)
+	bank := f.link(t)
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	req := httptest.NewRequest("POST", "/api/v1/funding/deposits", strings.NewReader(`{"bankAccountId":"`+bank+`","amount":10}`)).WithContext(ctx)
+	req.Header.Set("Content-Type", "application/json")
+	f.mux.ServeHTTP(httptest.NewRecorder(), req)
+	c := f.dw.last("POST /funding/deposits")
+	if c == nil || c.canceled {
+		t.Fatalf("提交券商时 context 不应已取消：%+v", c)
+	}
+	if tr := f.repo.transfers[0]; tr.DWRef != "DEP-1" {
+		t.Fatalf("应完成落库：%+v", tr)
 	}
 }

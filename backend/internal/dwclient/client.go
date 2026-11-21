@@ -50,6 +50,9 @@ type APIError struct {
 	DWCode    string
 	Message   string
 	RequestID string
+	// Retried：此前已有尝试因网络错误 / 5xx / 429 失败后才得到本响应。此时的 4xx 可能反映的是前一次尝试已生效后的状态，
+	// 不能当作"券商明确拒绝"（审计 FUND-P1-4）。
+	Retried bool
 }
 
 func (e *APIError) Error() string {
@@ -200,7 +203,9 @@ func (c *Client) Do(ctx context.Context, method, path string, reqBody, out any) 
 		if err != nil {
 			return err
 		}
-		return newAPIError(status, respBody, reqID)
+		ae := newAPIError(status, respBody, reqID)
+		ae.Retried = attempt > 1
+		return ae
 	}
 }
 

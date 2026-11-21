@@ -81,6 +81,9 @@ const (
 	StatusRejected      = "REJECTED"
 	StatusCanceled      = "CANCELED"
 	StatusPendingCancel = "PENDING_CANCEL"
+	// StatusUnconfirmed：我方状态，券商结果待人工核对（重放被拒、超出重放窗口仍不明）。不重放、不能撤单；
+	// App 显示"未确认"（审计 FUND-P1-1 / P1-4）。
+	StatusUnconfirmed = "UNCONFIRMED"
 )
 
 var knownStatus = map[string]bool{StatusNew: true, StatusPartialFill: true, StatusFilled: true, StatusRejected: true, StatusCanceled: true, StatusPendingCancel: true}

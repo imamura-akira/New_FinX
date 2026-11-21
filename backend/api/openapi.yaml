@@ -979,7 +979,7 @@ paths:
         - name: status
           in: query
           schema: { type: string, enum: [OPEN, CLOSED] }
-          description: OPEN = SUBMITTING / NEW / PARTIAL_FILL / PENDING_CANCEL；CLOSED = 其余
+          description: OPEN = SUBMITTING / NEW / PARTIAL_FILL / PENDING_CANCEL / UNCONFIRMED；CLOSED = 其余
         - $ref: "#/components/parameters/Cursor"
       responses:
         "200":
@@ -1794,6 +1794,7 @@ components:
           description: |
             入金按 DepositStatus；出金按 DW Redemption Status（STARTED / PENDING / SUCCESSFUL / FAILED / OTHER / RIA_* / APPROVED / REJECTED / ON_HOLD；Q-DW-8d 复核）。
             我方新增 SUBMITTING：已记录、正在提交给 DW 或提交结果待确认（新增取值）。
+            我方新增 UNCONFIRMED：券商结果待人工核对（对账重放被拒、超过幂等有效期仍未查到；新增取值，2026-11-21）。
         failureReason: { type: string, nullable: true, description: 可展示的中文原因（不透出 DW 原文） }
         submittedAt: { type: string, format: date-time }
         doneAt: { type: string, format: date-time, nullable: true }
@@ -1803,8 +1804,8 @@ components:
 
     OrderStatus:
       type: string
-      description: DW Order Status；SUBMITTING 为我方取值（已记录、提交结果待确认）
-      enum: [SUBMITTING, NEW, PARTIAL_FILL, FILLED, REJECTED, CANCELED, PENDING_CANCEL]
+      description: DW Order Status；SUBMITTING、UNCONFIRMED 为我方取值（已记录、提交结果待确认 / 券商结果待人工核对，不能撤单）
+      enum: [SUBMITTING, NEW, PARTIAL_FILL, FILLED, REJECTED, CANCELED, PENDING_CANCEL, UNCONFIRMED]
 
     Order:
       type: object

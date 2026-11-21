@@ -73,7 +73,7 @@ type Repo interface {
 }
 
 // openStatuses：未完结（需刷新）的状态。
-var openStatuses = []string{StatusSubmitting, StatusNew, StatusPartialFill, StatusPendingCancel}
+var openStatuses = []string{StatusSubmitting, StatusNew, StatusPartialFill, StatusPendingCancel, StatusUnconfirmed}
 
 // IsOpen 是否未完结。
 func IsOpen(s string) bool {
@@ -86,7 +86,7 @@ func IsOpen(s string) bool {
 }
 
 // openSQL：openStatuses 的 SQL 字面量（常量，非用户输入）。
-const openSQL = `('SUBMITTING', 'NEW', 'PARTIAL_FILL', 'PENDING_CANCEL')`
+const openSQL = `('SUBMITTING', 'NEW', 'PARTIAL_FILL', 'PENDING_CANCEL', 'UNCONFIRMED')`
 
 // PGRepo：Postgres 实现。
 type PGRepo struct{ DB *sql.DB }

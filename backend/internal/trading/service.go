@@ -390,6 +390,8 @@ func (s *Service) handleCreate(w http.ResponseWriter, r *http.Request) {
 		httpx.Fail(w, r, httpx.Conflict("刚刚已提交过相同的订单，请勿重复提交"))
 		return
 	}
+	ctx, cancel := detached(ctx) // 落库 + 提交券商不随请求取消（审计 FUND-P1-3）
+	defer cancel()
 	if o.ID, err = s.Repo.InsertOrder(ctx, o); err != nil {
 		if idem != "" && s.replayed(w, r, a.ID, idem, want) { // 同键并发请求：另一请求已落库
 			return
@@ -397,7 +399,7 @@ func (s *Service) handleCreate(w http.ResponseWriter, r *http.Request) {
 		httpx.Fail(w, r, err)
 		return
 	}
-	status, err := s.submit(ctx, o)
+	status, err := s.submit(ctx, o, false)
 	if err != nil {
 		httpx.Fail(w, r, err)
 		return
@@ -408,8 +410,44 @@ func (s *Service) handleCreate(w http.ResponseWriter, r *http.Request) {
 	httpx.OK(w, map[string]string{"orderId": o.ID, "status": status})
 }
 
-// submit 用固定的 Idempotency-Key 调 DW（首次提交与结果不明后的重放共用），成功后立即查询一次状态。
-func (s *Service) submit(ctx context.Context, o Order) (string, error) {
+// errReplayRejected：对账重放被券商拒绝，订单已标为 UNCONFIRMED。
+var errReplayRejected = errors.New("trading: replay rejected, marked unconfirmed")
+
+// detached：提交券商与落库这一段不随请求取消（审计 FUND-P1-3），另设独立超时。
+func detached(ctx context.Context) (context.Context, context.CancelFunc) {
+	return context.WithTimeout(context.WithoutCancel(ctx), 2*time.Minute)
+}
+
+// definitiveReject：只有首次尝试就收到的 4xx 才算券商明确拒绝；幂等键类错误（IK*）、408/409/425/429、
+// 经过重试才收到的 4xx 一律按结果不明处理（审计 FUND-P1-4）。
+func definitiveReject(err error) (*dwclient.APIError, bool) {
+	var ae *dwclient.APIError
+	if !errors.As(err, &ae) || ae.Status < 400 || ae.Status >= 500 || ae.Retried || strings.HasPrefix(ae.DWCode, "IK") {
+		return ae, false
+	}
+	switch ae.Status {
+	case http.StatusRequestTimeout, http.StatusConflict, http.StatusTooEarly, http.StatusTooManyRequests:
+		return ae, false
+	}
+	return ae, true
+}
+
+// markUnconfirmed：订单结果待人工核对（不删除、不再重放）。
+func (s *Service) markUnconfirmed(ctx context.Context, o Order, now time.Time, reason string) {
+	if o.Status == StatusUnconfirmed {
+		_ = s.Repo.TouchOrder(ctx, o.ID, now)
+		return
+	}
+	if err := s.Repo.UpdateOrder(ctx, o.ID, Fill{Status: StatusUnconfirmed, DWReason: &reason}, now); err != nil {
+		s.Logger.ErrorContext(ctx, "mark order unconfirmed failed", slog.String("order_id", o.ID), slog.String("error", err.Error()))
+		return
+	}
+	_ = s.Repo.Audit(ctx, "system", "order.unconfirmed", "order:"+o.ID, map[string]any{"from": o.Status, "reason": reason})
+	s.Logger.ErrorContext(ctx, "order outcome unconfirmed, manual check required", slog.String("order_id", o.ID), slog.String("reason", reason))
+}
+
+// submit 用固定的 Idempotency-Key 调 DW（首次提交与对账重放共用；replay 标明是否为重放），成功后立即查询一次状态。
+func (s *Service) submit(ctx context.Context, o Order, replay bool) (string, error) {
 	var res dwCreateRes
 	var qty, notional *string
 	if o.Quantity != nil {
@@ -428,9 +466,11 @@ func (s *Service) submit(ctx context.Context, o Order) (string, error) {
 	}
 	err := s.DW.Do(dctx, http.MethodPost, pathOrders, orderBody(o.DWAccountNo, o.Symbol, o.Side, o.OrderType, qty, notional, price, o.TimeInForce, s.PreventQueuing), &res)
 	if err != nil {
-		var ae *dwclient.APIError
-		// 幂等键类错误（IK 开头）只说明缓存响应暂不可取，DW 可能已受理（2026-11-21 沙盒实测），按结果不明处理
-		if errors.As(err, &ae) && ae.Status >= 400 && ae.Status < 500 && ae.Status != http.StatusTooManyRequests && !strings.HasPrefix(ae.DWCode, "IK") {
+		if ae, ok := definitiveReject(err); ok && replay {
+			// 对账重放被拒：首次请求可能已生效，不删除，转人工核对
+			s.markUnconfirmed(ctx, o, s.now().UTC(), fmt.Sprintf("对账重放被券商拒绝（%s），待人工核对", ae.DWCode))
+			return "", errReplayRejected
+		} else if ok {
 			_ = s.Repo.DeleteOrder(ctx, o.ID)
 			s.Logger.WarnContext(ctx, "dw order rejected", slog.String("order_id", o.ID), slog.Int("status", ae.Status), slog.String("dw_code", ae.DWCode))
 			msg := "券商未受理该笔订单，请核对后重试"

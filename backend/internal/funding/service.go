@@ -385,6 +385,8 @@ func (s *Service) handleDeposit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	ctx, cancel := detached(ctx) // 落库 + 提交券商不随请求取消（审计 FUND-P1-3）
+	defer cancel()
 	t := Transfer{AccountID: a.ID, BankAccountID: &bank.ID, Type: "DEPOSIT", Method: "ACH", Amount: amount, Status: StatusSubmitting,
 		IdempotencyKey: keyOr(idem), CreatedBy: httpx.UserID(ctx), DWAccountNo: a.AccountNo, DWBankID: bank.DWBankID}
 	if t.ID, err = s.Repo.InsertTransfer(ctx, t); err != nil {
@@ -394,7 +396,7 @@ func (s *Service) handleDeposit(w http.ResponseWriter, r *http.Request) {
 		httpx.Fail(w, r, err)
 		return
 	}
-	status, err := s.submitDeposit(ctx, t)
+	status, err := s.submitDeposit(ctx, t, false)
 	if err != nil {
 		httpx.Fail(w, r, err)
 		return
@@ -403,12 +405,21 @@ func (s *Service) handleDeposit(w http.ResponseWriter, r *http.Request) {
 	httpx.OK(w, map[string]string{"transferId": t.ID, "status": status})
 }
 
-// submitDeposit 用固定的 Idempotency-Key 调 DW（首次提交与结果不明后的重放共用）。
-func (s *Service) submitDeposit(ctx context.Context, t Transfer) (string, error) {
+// submitDeposit 用固定的 Idempotency-Key 调 DW（首次提交与结果不明后的重放共用；replay 标明是否为对账重放）。
+func (s *Service) submitDeposit(ctx context.Context, t Transfer, replay bool) (string, error) {
 	var res dwTransferRes
 	dctx := dwclient.WithIdempotencyKey(ctx, t.IdempotencyKey)
 	err := s.DW.Do(dctx, http.MethodPost, pathDeposits, depositBody(t.DWAccountNo, parseCents(t.Amount), t.DWBankID), &res)
-	return s.afterSubmit(ctx, t, res, err, "deposit")
+	return s.afterSubmit(ctx, t, res, err, "deposit", replay)
+}
+
+// submitWithdrawal：出金同样带已落库的 Idempotency-Key（DW 文档：Create Withdrawal 支持，保存 4 天，重复键返回原响应），
+// 首次提交与对账重放共用（审计 FUND-P1-2）。收款人一律为开户法定姓名，WIRE 信息从加密存储中解出。
+func (s *Service) submitWithdrawal(ctx context.Context, t Transfer, owner string, wire *Wire, replay bool) (string, error) {
+	var res dwTransferRes
+	dctx := dwclient.WithIdempotencyKey(ctx, t.IdempotencyKey)
+	err := s.DW.Do(dctx, http.MethodPost, pathRedemptions, redemptionBody(t.DWAccountNo, parseCents(t.Amount), t.Method, t.DWBankID, owner, wire), &res)
+	return s.afterSubmit(ctx, t, res, err, "redemption", replay)
 }
 
 // idempotencyError：DW 幂等键类错误（错误码 IK 开头，DW Errors 文档 "Idempotency Errors"）。
@@ -416,11 +427,34 @@ func (s *Service) submitDeposit(ctx context.Context, t Transfer) (string, error)
 // DW 实际已创建入金。因此按"结果不明"处理，不能当作拒绝删除本地记录。
 func idempotencyError(ae *dwclient.APIError) bool { return strings.HasPrefix(ae.DWCode, "IK") }
 
-// afterSubmit：DW 明确拒绝（4xx，幂等键类错误除外）→ 撤销本地记录并返回可展示的错误；结果不明（网络/5xx）→ 保留 SUBMITTING 待对账重放。
-func (s *Service) afterSubmit(ctx context.Context, t Transfer, res dwTransferRes, err error, op string) (string, error) {
+// definitiveReject：只有首次尝试就收到的 4xx 才算券商明确拒绝。幂等键类错误（IK*）、408/409/425/429，
+// 以及经过重试才收到的 4xx（前一次尝试可能已生效）一律按"结果不明"处理（审计 FUND-P1-4）。
+func definitiveReject(err error) (*dwclient.APIError, bool) {
+	var ae *dwclient.APIError
+	if !errors.As(err, &ae) || ae.Status < 400 || ae.Status >= 500 || ae.Retried || idempotencyError(ae) {
+		return ae, false
+	}
+	switch ae.Status {
+	case http.StatusRequestTimeout, http.StatusConflict, http.StatusTooEarly, http.StatusTooManyRequests:
+		return ae, false
+	}
+	return ae, true
+}
+
+// afterSubmit：处理提交 / 重放结果。
+//   - 首次提交（replay=false）且券商明确拒绝：撤销本地记录，返回可展示的错误；
+//   - 对账重放（replay=true）被拒：不删除记录（首次请求可能已生效），标为 UNCONFIRMED 转人工核对；
+//   - 结果不明：保留记录，首次提交返回 502/50001，对账稍后重放。
+func (s *Service) afterSubmit(ctx context.Context, t Transfer, res dwTransferRes, err error, op string, replay bool) (string, error) {
 	if err != nil {
-		var ae *dwclient.APIError
-		if errors.As(err, &ae) && ae.Status >= 400 && ae.Status < 500 && ae.Status != http.StatusTooManyRequests && !idempotencyError(ae) {
+		if ae, ok := definitiveReject(err); ok {
+			if replay {
+				reason := fmt.Sprintf("对账重放被券商拒绝（%s），待人工核对", ae.DWCode)
+				_ = s.Repo.UpdateTransfer(ctx, t.ID, StatusUnconfirmed, &reason, nil, s.now().UTC())
+				s.Logger.ErrorContext(ctx, "dw "+op+" replay rejected, manual check required", slog.String("transfer_id", t.ID),
+					slog.Int("status", ae.Status), slog.String("dw_code", ae.DWCode))
+				return "", errReplayRejected
+			}
 			_ = s.Repo.DeleteTransfer(ctx, t.ID)
 			s.Logger.WarnContext(ctx, "dw "+op+" rejected", slog.String("transfer_id", t.ID), slog.Int("status", ae.Status), slog.String("dw_code", ae.DWCode))
 			return "", httpx.Validation("券商未受理该笔申请，请核对金额与账户后重试")
@@ -438,6 +472,14 @@ func (s *Service) afterSubmit(ctx context.Context, t Transfer, res dwTransferRes
 		return "", err
 	}
 	return status, nil
+}
+
+// errReplayRejected：对账重放被券商拒绝，记录已标为 UNCONFIRMED。
+var errReplayRejected = errors.New("funding: replay rejected, marked unconfirmed")
+
+// detached：提交券商与落库这一段不随请求取消（App 超时断开时不中途放弃，审计 FUND-P1-3），另设独立超时。
+func detached(ctx context.Context) (context.Context, context.CancelFunc) {
+	return context.WithTimeout(context.WithoutCancel(ctx), 2*time.Minute)
 }
 
 // ---------- 出金 ----------
@@ -550,6 +592,8 @@ func (s *Service) handleWithdrawal(w http.ResponseWriter, r *http.Request) {
 		httpx.Fail(w, r, httpx.Conflict("刚刚已提交过相同金额的出金，请勿重复提交"))
 		return
 	}
+	ctx, cancel := detached(ctx) // 落库 + 提交券商不随请求取消（审计 FUND-P1-3）
+	defer cancel()
 	t := Transfer{AccountID: a.ID, BankAccountID: bankID, Type: "WITHDRAWAL", Method: in.Method, Amount: amount, Status: StatusSubmitting,
 		IdempotencyKey: keyOr(idem), CreatedBy: httpx.UserID(ctx), DWAccountNo: a.AccountNo}
 	if in.Method == "WIRE" {
@@ -566,14 +610,10 @@ func (s *Service) handleWithdrawal(w http.ResponseWriter, r *http.Request) {
 		httpx.Fail(w, r, err)
 		return
 	}
-	dwBank := ""
 	if bank != nil {
-		dwBank = bank.DWBankID
+		t.DWBankID = bank.DWBankID
 	}
-	var res dwTransferRes
-	// 出金接口文档未说明是否支持 Idempotency-Key：不附带、不自动重试（结果不明时保留 SUBMITTING，转人工核对）
-	derr := s.DW.Do(ctx, http.MethodPost, pathRedemptions, redemptionBody(a.AccountNo, cents, in.Method, dwBank, owner, in.Wire), &res)
-	status, err := s.afterSubmit(ctx, t, res, derr, "redemption")
+	status, err := s.submitWithdrawal(ctx, t, owner, in.Wire, false)
 	if err != nil {
 		httpx.Fail(w, r, err)
 		return

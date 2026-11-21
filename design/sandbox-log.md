@@ -179,6 +179,14 @@
   修复：① IK 开头的幂等键错误按"结果不明"处理（保留记录、提示请勿重复提交）；② 对账不重放提交未满 1 分钟的记录；③ 入金重放超过 10 分钟仍无结果时，按账户列出 DW 入金（`GET /accounts/{accountID}/funding/deposits`）反查同额、同银行账户、时间吻合且未关联的唯一一笔并关联，多笔转人工。下单（`POST /orders`）存在同样的①②问题，一并修复（订单反查未做，DW 列订单接口待核实）。
   补录：本机开发库已按 DW 核实结果补录这笔入金（APPROVED，关联 `FEYQ000001-1795221580864-DPJID`），审计记录 `deposit.backfilled`；窗口开放后由对账任务自动更新状态与生效日。服务器库不涉及（该笔由本机后端发起）。
 
+## 2026-11-21 · 出金幂等键实测（审计 FUND-P1-2）
+
+- 用同一个 `Idempotency-Key` 对 funded1 连发两次 `POST /funding/redemptions`（ACH $1.00，临时只读工具 + dwclient，未入库）：
+  - 第 1 次：HTTP 400 `Y075`，request id `request_e9cc3d09-1e83-461d-9c6e-6ab36fb765e3_clm`，耗时 1193 ms；
+  - 第 2 次：HTTP 400 `Y075`，响应体逐字相同、**没有新的 request id**，耗时 447 ms。
+  - 结论：符合 DW 文档"重复键返回原响应（状态码与内容相同）"，出金接受幂等键。后端已改为出金附带已落库的幂等键，结果不明时按原键重放并按账户反查。
+- Y075 原文："The redemption amount is more than the cash available. Details: Available balance cannot be less than or equal to the fees of the withdrawal. Available balance: 0, Fees: 0.25"。由此得知：**沙盒 ACH 出金手续费 $0.25，可提现余额须大于手续费**（生产取值待 Q-DW-8 书面确认）。本次未产生任何出金。
+
 ## 2026-11-20 · F14 交易模块：未实测项与假设（11-23 实测后回写）
 
 > 依据 DW 参考文档（Create Order / Retrieve Order / Update Order / List Account Positions / Errors / Idempotent requests，2026-11-20 查阅）。已入金测试用户的购买力 2026-11-23 生效，真实下单实测排在当天；今天只用 fake DW 单测。

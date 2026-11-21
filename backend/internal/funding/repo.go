@@ -53,6 +53,9 @@ type Transfer struct {
 // 我方状态（DW 返回前）。DW 状态见 api-spec.md 第 5 节。
 const (
 	StatusSubmitting = "SUBMITTING" // 已落库、正在提交给 DW（或结果不明待重放）
+	// StatusUnconfirmed：券商结果待人工核对（对账重放被拒、超过幂等有效期仍查不到）。不是终态：继续按账户反查，
+	// 仍视为在途（不能解绑该银行卡）；App 显示"未确认"（审计 FUND-P1-4 / P1-2）。
+	StatusUnconfirmed = "UNCONFIRMED"
 )
 
 // Terminal：不再轮询的状态。SUCCESSFUL 的 ACH 入金仍可能被退回（RETURNED），因此在 returnWindow 内继续对账。
