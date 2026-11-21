@@ -141,6 +141,17 @@ cd "/Users/ak/Desktop/Claude FinX New/backend" && (set -a; source ./.env; set +a
 | 演示验真 | App（DEMO_MODE）P-08 抽屉底部"DW 沙盒凭证"；服务器上 `demoreset verify -email X` 直接读 DW 原样打印编号与状态，用于当场对照（deploy.md 第 5 节、demo-script B12） |
 | 注意 | 服务器对短时间内的多个新 SSH 连接会断开，deploy.sh 已用连接复用；本机代理（fake-IP）下 dig 结果不准，以公共 DNS 为准 |
 
+## 0.3 里程碑状态（2026-11-21，审计 DOC-P1-8）
+
+| 里程碑 | 状态 | 说明 |
+|---|---|---|
+| M0 环境与契约 | ✅ 完成 | 契约 v1 冻结并持续以新增方式扩展（api-spec 第 10 节） |
+| M1 注册登录 + 开户 + KYC 提交 | ✅ 完成 | F1–F4；OAuth 按计划返回 50003 |
+| M2 KYC 结果与补救 | ⚠️ 部分完成 | 账户可到 OPEN；**F5 补救（P-34/35/36，PATCH /application/remediate）未实现**，受 Q-DW-5 阻塞；DoD 第 3 条未达成 |
+| M3 绑卡 + 入金 + 出金 | ⚠️ 部分完成 | 绑卡、ACH 入金沙盒实测通过；**出金成功路径待资金生效后实测**（DoD 第 7 条）；WIRE 出金 App 未开放（D-4） |
+| M4 通知与上线准备 | ⏳ 未开始 | **F10 通知（P-17、/notifications）未实现**；上线门槛见 audit-20261121.md 7b |
+| 扩展 F11–F21 | ✅ 完成 | 行情、交易、模拟盘、奖励、资产分析、双语、预测、品牌、深色模式 |
+
 ## 1. 当前位置
 
 - **里程碑**：M0 已完成；M1 剩余工作并入 Demo-1，Demo-1 已全部完成（见第 0、0.1 节）。下文第 2–4 节为早期记录，保留备查。
