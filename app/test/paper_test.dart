@@ -82,6 +82,19 @@ FakeBackend _backend({bool opened = true}) => FakeBackend()
         : FakeBackend.err(409, 40901, '交易账户尚未开立'),
   )
   ..on(
+    'GET /account/allocation',
+    (_) => FakeBackend.ok({
+      'simulated': false,
+      'total': 1234.56, // 无持仓：总资产 = 现金
+      'items': [
+        {'type': 'STOCK', 'amount': 0, 'pct': 0},
+        {'type': 'ETF', 'amount': 0, 'pct': 0},
+        {'type': 'CASH', 'amount': 1234.56, 'pct': 100},
+      ],
+      'updatedAt': '2026-11-20T15:00:00Z',
+    }),
+  )
+  ..on(
     'GET /account/money',
     (_) => FakeBackend.ok({
       'cash': 1234.56,

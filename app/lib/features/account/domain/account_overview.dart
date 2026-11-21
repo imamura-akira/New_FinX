@@ -2,13 +2,22 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../core/api/api_client.dart';
 import '../data/account_api.dart';
+import '../data/portfolio_api.dart';
 import '../../../l10n/l10n.dart';
 
 /// 首页资产卡（P-07）与账户抽屉（P-08）共用的数据：开户进度、账户、资金汇总。
 /// 资金一律取 DW money summary（F12）；加载失败时保留上次数据并给出错误。
 class AccountOverview extends ChangeNotifier {
-  AccountOverview(this._api);
+  AccountOverview(this._api, {this.portfolio});
   final AccountApi _api;
+  final PortfolioApi? portfolio;
+
+  /// 实盘资产分布（GET /account/allocation：现金 + 股票 + ETF，均为 DW 返回值）。
+  /// 首页"总资产"与资产分布卡共用这一份数据，两处数字必然一致（D-18 定案，审计 FUND-P0-3）。
+  Allocation? allocation;
+
+  /// 总资产 = 现金 + 持仓市值（取自 [allocation]）；取不到时为 null（显示"—"，不以现金冒充总资产）。
+  double? get totalAssets => allocation?.total;
 
   ApplicationProgress? progress;
   AccountInfo? account;
@@ -28,6 +37,7 @@ class AccountOverview extends ChangeNotifier {
       progress = null;
       account = null;
       money = null;
+      allocation = null;
       equityValue = null;
       dayPL = null;
       error = null;
@@ -43,6 +53,11 @@ class AccountOverview extends ChangeNotifier {
         account = await _api.account();
         money = await _api.money();
         try {
+          allocation = await portfolio?.allocation();
+        } on ApiException {
+          allocation = null; // 资产分布失败：总资产显示"—"，资产分布卡显示加载失败
+        }
+        try {
           final s = await _api.positionsSummary();
           equityValue = s.equityValue;
           dayPL = s.dayPL;
@@ -53,6 +68,7 @@ class AccountOverview extends ChangeNotifier {
       } else {
         account = null;
         money = null;
+        allocation = null;
         equityValue = null;
         dayPL = null;
       }
@@ -64,11 +80,11 @@ class AccountOverview extends ChangeNotifier {
     }
   }
 
-  /// 今日变动百分比：今日持仓盈亏 ÷ 昨日资产（现金 + 持仓市值 − 今日盈亏）；无法计算时为 null。
+  /// 今日变动百分比：今日持仓盈亏 ÷ 昨日资产（总资产 − 今日盈亏）；无法计算时为 null。
   double? get dayPLPct {
     final d = dayPL, m = money;
     if (d == null || m == null) return null;
-    final base = m.cash + (equityValue ?? 0) - d;
+    final base = (totalAssets ?? m.cash + (equityValue ?? 0)) - d;
     return base > 0 ? d / base * 100 : null;
   }
 

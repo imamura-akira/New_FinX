@@ -164,7 +164,10 @@ void main() {
     await _phone(tester);
     await pumpApp(tester, backend: _backend(), storedToken: 'tok');
     await _scrollTo(tester, find.byKey(const Key('p07.alloc')));
-    expect(_text(tester, 'p07.alloc.total'), r'$6,543', reason: '环心显示总资产（取整）');
+    expect(_text(tester, 'p07.alloc.total'), r'$6,543.21', reason: '环心显示总资产');
+    // D-18 定案（审计 FUND-P0-3）：首页"总资产" = 现金 + 持仓市值，与资产分布同源，两处数字完全一致；不是 DW 现金 $1,635.80
+    expect(_text(tester, 'home.total'), _text(tester, 'p07.alloc.total'));
+    expect(_text(tester, 'home.total'), isNot(r'$1,635.80'));
     expect(_text(tester, 'p07.alloc.STOCK.amount'), r'$2,944.45');
     expect(_text(tester, 'p07.alloc.STOCK.pct'), '45.0%');
     expect(_text(tester, 'p07.alloc.ETF.amount'), r'$1,962.96');

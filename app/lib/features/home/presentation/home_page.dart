@@ -9,6 +9,7 @@ import '../../../core/session/session.dart';
 import '../../../core/widgets/form_widgets.dart';
 import '../../../core/widgets/widgets.dart';
 import '../../account/data/account_api.dart';
+import '../../account/data/portfolio_api.dart';
 import '../../account/domain/account_overview.dart';
 import '../../account/presentation/account_drawer.dart';
 import '../../account/presentation/asset_analysis.dart';
@@ -54,7 +55,7 @@ class _HomePageState extends State<HomePage> {
     super.didChangeDependencies();
     if (_overview == null) {
       final scope = AppScope.of(context);
-      _overview = AccountOverview(AccountApi(scope.api));
+      _overview = AccountOverview(AccountApi(scope.api), portfolio: PortfolioApi(scope.api));
       _session = scope.session..addListener(_onSession);
       _onSession();
       _feed = QuoteFeed(MarketApi(scope.api), symbols: _watch.symbols)..start();
@@ -186,7 +187,7 @@ class _HomePageState extends State<HomePage> {
                         ],
                       ),
                     ),
-                  if (opened) AssetAnalysis(key: const Key('home.analysis'), paper: false, generation: _analysisGen),
+                  if (opened) AssetAnalysis(key: const Key('home.analysis'), paper: false, generation: _analysisGen, allocation: ov.allocation),
                   if (opened && money.cash == 0 && money.pendingDeposits == 0 && ov.restriction == null)
                     AppCard(
                       child: Row(
@@ -318,7 +319,7 @@ class _HomePageState extends State<HomePage> {
             ),
             const SizedBox(height: 6),
             Text(
-              m == null ? '—' : v(m.cash),
+              m == null ? '—' : (_overview!.totalAssets == null ? (_hide ? '****' : '—') : v(_overview!.totalAssets!)),
               key: const Key('home.total'),
               style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w800, fontFeatures: [FontFeature.tabularFigures()]),
             ),

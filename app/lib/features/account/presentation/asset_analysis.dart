@@ -46,9 +46,12 @@ String _mmdd(DateTime d) => '${d.month.toString().padLeft(2, '0')}-${d.day.toStr
 
 /// 资产分布 + 资产趋势两张卡。[generation] 变化时重新加载（下拉刷新、模拟盘重置）。
 class AssetAnalysis extends StatefulWidget {
-  const AssetAnalysis({super.key, required this.paper, this.generation = 0});
+  const AssetAnalysis({super.key, required this.paper, this.generation = 0, this.allocation});
   final bool paper;
   final int generation;
+
+  /// 实盘：由首页资产卡同一份数据传入（与"总资产"同源，D-18）；为 null 时自行加载（模拟盘或尚未取到）。
+  final Allocation? allocation;
 
   @override
   State<AssetAnalysis> createState() => _AssetAnalysisState();
@@ -77,6 +80,11 @@ class _AssetAnalysisState extends State<AssetAnalysis> {
     if (old.paper != widget.paper || old.generation != widget.generation) {
       _api = PortfolioApi(AppScope.of(context).api, paper: widget.paper);
       _loadAll();
+    } else if (widget.allocation != null && !identical(widget.allocation, old.allocation)) {
+      setState(() {
+        _alloc = widget.allocation;
+        _allocFailed = false;
+      });
     }
   }
 
@@ -86,6 +94,11 @@ class _AssetAnalysisState extends State<AssetAnalysis> {
   }
 
   Future<void> _loadAllocation() async {
+    if (widget.allocation != null) {
+      _alloc = widget.allocation;
+      _allocFailed = false;
+      return;
+    }
     try {
       final a = await _api!.allocation();
       if (!mounted) return;
@@ -213,7 +226,7 @@ class AllocationCard extends StatelessWidget {
                     child: FittedBox(
                       fit: BoxFit.scaleDown,
                       child: Text(
-                        fmtUsdWhole(data.total),
+                        fmtUsd(data.total), // 与首页资产卡"总资产"同源同格式（D-18），不再取整
                         key: const Key('p07.alloc.total'),
                         style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: AppColors.ink),
                       ),
