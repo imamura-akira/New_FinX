@@ -187,7 +187,7 @@ FakeBackend openedUserBackend({bool opened = true}) => FakeBackend()
 /// 关键页面（已开户用户）：路由 → 该页面必定出现的中文 / 英文文案。
 const keyPages = <(String, String, String)>[
   ('/home', '购买力', 'Buying Power'),
-  ('/market', '市场情绪', 'Market Sentiment'),
+  ('/market', '市场统计', 'Market Stats'),
   ('/market/AAPL', '关键数据', 'Key Stats'),
   ('/trade/AAPL', '订单类型', 'Order Type'),
   ('/orders', '订单', 'Orders'),

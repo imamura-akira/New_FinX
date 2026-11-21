@@ -16,6 +16,7 @@ import '../features/funding/presentation/transfer_pages.dart';
 import '../features/home/presentation/home_page.dart';
 import '../features/market/presentation/instrument_page.dart';
 import '../features/market/presentation/market_page.dart';
+import '../features/market/presentation/search_page.dart';
 import '../features/onboarding/presentation/final_pages.dart';
 import '../features/onboarding/presentation/onboarding_shell.dart';
 import '../features/onboarding/presentation/step_pages.dart';
@@ -106,6 +107,8 @@ GoRouter buildRouter(SessionController session) {
         path: '/masters/:id',
         builder: (_, state) => InstitutionDetailPage(id: state.pathParameters['id']!),
       ),
+      // F22-b 搜索页（须在 /market/:symbol 之前匹配）
+      GoRoute(path: '${Routes.market}/search', builder: (_, _) => const MarketSearchPage()),
       // P-10 个股详情（全屏，push 进入）
       GoRoute(
         path: '${Routes.market}/:symbol',

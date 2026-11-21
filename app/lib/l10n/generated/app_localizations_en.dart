@@ -2425,4 +2425,80 @@ class AppLocalizationsEn extends AppLocalizations {
   String drawerWithdrawable(String amount) {
     return 'Available to withdraw: $amount';
   }
+
+  @override
+  String get marketUsMarket => 'U.S. Market';
+
+  @override
+  String get marketSearch => 'Search';
+
+  @override
+  String get marketSearchHint => 'Search symbol or name';
+
+  @override
+  String get marketSearchNoResults => 'No matching symbols';
+
+  @override
+  String get marketStats => 'Market Stats';
+
+  @override
+  String get marketStatsToday => 'Today';
+
+  @override
+  String get marketStats30d => '30 Days';
+
+  @override
+  String get marketStatsBuilding => 'Building data';
+
+  @override
+  String marketStatsBuildingSince(String date) {
+    return 'Building data · recording since $date';
+  }
+
+  @override
+  String marketStatsDown(int n) {
+    return 'Down $n';
+  }
+
+  @override
+  String marketStatsUp(int n) {
+    return 'Up $n';
+  }
+
+  @override
+  String get marketStatsNote =>
+      'All stocks & ETFs in the demo pool (simulated quotes)';
+
+  @override
+  String get marketInsiders => 'Insider Trading';
+
+  @override
+  String get demoDataBadge => 'Demo Data';
+
+  @override
+  String get insiderTopBuy => 'Top Buy';
+
+  @override
+  String get insiderTopSell => 'Top Sell';
+
+  @override
+  String get insiderMostActive => 'Most Active';
+
+  @override
+  String insiderBought(String amount) {
+    return 'Bought $amount';
+  }
+
+  @override
+  String insiderSold(String amount) {
+    return 'Sold $amount';
+  }
+
+  @override
+  String insiderTrades(int n) {
+    return '$n trades';
+  }
+
+  @override
+  String get insiderMoreComingSoon => 'Insider trading details coming soon';
 }

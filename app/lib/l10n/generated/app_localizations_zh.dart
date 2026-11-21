@@ -2300,4 +2300,79 @@ class AppLocalizationsZh extends AppLocalizations {
   String drawerWithdrawable(String amount) {
     return '可提现 $amount';
   }
+
+  @override
+  String get marketUsMarket => '美国市场';
+
+  @override
+  String get marketSearch => '搜索';
+
+  @override
+  String get marketSearchHint => '搜索代码或名称';
+
+  @override
+  String get marketSearchNoResults => '未找到相关标的';
+
+  @override
+  String get marketStats => '市场统计';
+
+  @override
+  String get marketStatsToday => '今日';
+
+  @override
+  String get marketStats30d => '近 30 日';
+
+  @override
+  String get marketStatsBuilding => '数据积累中';
+
+  @override
+  String marketStatsBuildingSince(String date) {
+    return '数据积累中 · 自 $date 起记录';
+  }
+
+  @override
+  String marketStatsDown(int n) {
+    return '下跌 $n';
+  }
+
+  @override
+  String marketStatsUp(int n) {
+    return '上涨 $n';
+  }
+
+  @override
+  String get marketStatsNote => '统计标的池全部股票与 ETF（虚拟行情）';
+
+  @override
+  String get marketInsiders => '内部人交易';
+
+  @override
+  String get demoDataBadge => '演示数据';
+
+  @override
+  String get insiderTopBuy => '买入最多';
+
+  @override
+  String get insiderTopSell => '卖出最多';
+
+  @override
+  String get insiderMostActive => '最活跃';
+
+  @override
+  String insiderBought(String amount) {
+    return '买入 $amount';
+  }
+
+  @override
+  String insiderSold(String amount) {
+    return '卖出 $amount';
+  }
+
+  @override
+  String insiderTrades(int n) {
+    return '交易 $n 次';
+  }
+
+  @override
+  String get insiderMoreComingSoon => '内部人交易明细即将上线';
 }

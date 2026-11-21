@@ -71,6 +71,7 @@ Base URL：`/api/v1`　认证：`Authorization: Bearer <sessionToken>`（除 /au
 |---|---|---|---|
 | GET /market/quotes | `?symbols=AAPL,SPY` | `{simulated, ts, quotes:[{symbol, last, chg, chgPct, bid, ask}]}` | 批量报价；P-07 自选、P-09 列表用 |
 | GET /market/instruments/{symbol} | — | `{simulated, symbol, name, last, chg, chgPct, dayHigh, dayLow, prevClose, candles:[{t,o,h,l,c}]}` | P-10 个股页；candles 为模拟分时/日 K |
+| GET /market/stats | `?period=TODAY\|30D`（缺省 TODAY） | `{simulated: true, period, insufficient, since?, buckets:[{label, count}×9], up, down, flat, total, asOf}` | P-09 市场统计（F22-b，无需登录）。统计标的池全部股票与 ETF（虚拟行情）：TODAY 按当前涨跌幅实时统计；30D 按当前价相对 30 个自然日前（含）最近一个每日收盘快照（美东交易日 16:05 后写入，迁移 000011）。任一标的缺基准时 `insufficient: true`（App 显示"数据积累中"）。9 档：>7%、7~5、5~3、3~0、0（\|涨跌幅\| < 0.005%）、0~3、3~5、5~7、>7%。period 非法 42200 |
 | GET /market/sentiment | — | `{simulated: true, ts, fearGreed:{value, label, components:{breadth, change, momentum, volatility}}, breadth:{up, down, flat, total, flatThresholdPct}}` | P-09 市场情绪卡（2026-11-20 F11 扩展，无需登录，App 每 3 秒轮询）。`value` 0–100 整数；`label` 档位：0–24 `EXTREME_FEAR` 极度恐慌、25–44 `FEAR` 恐慌、45–55 `NEUTRAL` 中性、56–75 `GREED` 贪婪、76–100 `EXTREME_GREED` 极度贪婪。由虚拟行情合成：涨跌家数 30% + 平均涨跌幅 30% + 动量 20% + 波动 20%，指数平滑缓慢变化。`breadth` 统计全部虚拟标的，\|涨跌幅\| < `flatThresholdPct`（0.10%）计为平盘。**恐慌贪婪指数正式数据源待定（自行计算或采购，不得抓取第三方指数）** |
 
 ## 5.6 交易（F14，P-19 / P-11 / P-12）
@@ -190,3 +191,4 @@ Base URL：`/api/v1`　认证：`Authorization: Bearer <sessionToken>`（除 /au
 | 2026-11-21 | 新增 `GET /funding/limits`：出入金限额与观察期（后端配置 limits.* 与 seasoning_*）。App 前置校验与时效文案改用此接口，不再写死（审计 DOC-P1-4/P1-5） | 新增，向后兼容 |
 | 2026-11-21 | openapi 修正：`GET /account` 账户未开立的错误响应由误写的 404 改为 409（40901），与本文件 2026-11-19 记录及实现一致（审计 DOC-P1-1） | 文档修正 |
 | 2026-11-21 | F22-a：`GET /account/history`、`GET /paper/account/history` 的 `range` 新增 `1D`、`1W`、`3M`、`1Y`、`YTD`；`range=1D` 返回日内快照（新表 asset_intraday，迁移 000010），点新增可选字段 `at` | 新增，向后兼容 |
+| 2026-11-21 | F22-b：新增 `GET /market/stats?period=TODAY\|30D`（涨跌分布，`simulated: true`，无需登录；新表 instrument_daily_close，迁移 000011）。`GET /market/sentiment` 保留（P-09 恐慌贪婪 UI 移除，接口不变） | 新增，向后兼容 |

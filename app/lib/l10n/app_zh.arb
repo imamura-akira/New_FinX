@@ -1395,5 +1395,68 @@
         "type": "String"
       }
     }
-  }
+  },
+  "marketUsMarket": "美国市场",
+  "marketSearch": "搜索",
+  "marketSearchHint": "搜索代码或名称",
+  "marketSearchNoResults": "未找到相关标的",
+  "marketStats": "市场统计",
+  "marketStatsToday": "今日",
+  "marketStats30d": "近 30 日",
+  "marketStatsBuilding": "数据积累中",
+  "marketStatsBuildingSince": "数据积累中 · 自 {date} 起记录",
+  "@marketStatsBuildingSince": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "marketStatsDown": "下跌 {n}",
+  "@marketStatsDown": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "marketStatsUp": "上涨 {n}",
+  "@marketStatsUp": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "marketStatsNote": "统计标的池全部股票与 ETF（虚拟行情）",
+  "marketInsiders": "内部人交易",
+  "demoDataBadge": "演示数据",
+  "insiderTopBuy": "买入最多",
+  "insiderTopSell": "卖出最多",
+  "insiderMostActive": "最活跃",
+  "insiderBought": "买入 {amount}",
+  "@insiderBought": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "insiderSold": "卖出 {amount}",
+  "@insiderSold": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "insiderTrades": "交易 {n} 次",
+  "@insiderTrades": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "insiderMoreComingSoon": "内部人交易明细即将上线"
 }

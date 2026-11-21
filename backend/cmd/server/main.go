@@ -31,6 +31,7 @@ import (
 	"github.com/imamura-akira/New_FinX/backend/internal/funding"
 	"github.com/imamura-akira/New_FinX/backend/internal/httpx"
 	"github.com/imamura-akira/New_FinX/backend/internal/marketsim"
+	"github.com/imamura-akira/New_FinX/backend/internal/marketstats"
 	"github.com/imamura-akira/New_FinX/backend/internal/papertrade"
 	"github.com/imamura-akira/New_FinX/backend/internal/portfolio"
 	"github.com/imamura-akira/New_FinX/backend/internal/predict"
@@ -269,6 +270,24 @@ func buildRoutes(ctx context.Context, cfg *config.Config, st *store.Store, dw *d
 		}
 		pfSvc := portfolio.New(pfDeps)
 		go pfSvc.Run(ctx, time.Minute) // F22-a：盘中每 30 分钟一档日内快照，按分钟检查档位
+		// F22-b 市场统计：涨跌分布（今日实时 / 近 30 日按每日收盘快照），统计标的池全部股票与 ETF（虚拟行情）
+		var statsSvc *marketstats.Service
+		if market != nil {
+			statsSvc = marketstats.New(marketstats.Deps{
+				Repo: marketstats.PGRepo{DB: st.DB},
+				Quotes: func() []marketstats.Quote {
+					var out []marketstats.Quote
+					for _, q := range market.Quotes(nil) {
+						if t, ok := marketsim.InstrumentType(q.Symbol); ok && (t == "STOCK" || t == "ETF") {
+							out = append(out, marketstats.Quote{Symbol: q.Symbol, Last: q.Last, ChgPct: q.ChgPct()})
+						}
+					}
+					return out
+				},
+				Logger: logger,
+			})
+			go statsSvc.Run(ctx, time.Minute)
+		}
 		// F19 预测板块（积分演示版）：只依赖数据库与虚拟行情，与券商资金、模拟盘完全隔离
 		var predictSvc *predict.Service
 		if market != nil {
@@ -312,6 +331,9 @@ func buildRoutes(ctx context.Context, cfg *config.Config, st *store.Store, dw *d
 				paperSvc.Routes(mux, apiPrefix, authSvc.RequireAuth)
 			}
 			pfSvc.Routes(mux, apiPrefix, authSvc.RequireAuth)
+			if statsSvc != nil {
+				statsSvc.Routes(mux, apiPrefix) // /market/* 与行情一致不要求登录
+			}
 			if predictSvc != nil {
 				predictSvc.Routes(mux, apiPrefix, authSvc.RequireAuth)
 			}

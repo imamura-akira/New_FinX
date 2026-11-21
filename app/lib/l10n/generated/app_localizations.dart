@@ -4268,6 +4268,132 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'可提现 {amount}'**
   String drawerWithdrawable(String amount);
+
+  /// No description provided for @marketUsMarket.
+  ///
+  /// In zh, this message translates to:
+  /// **'美国市场'**
+  String get marketUsMarket;
+
+  /// No description provided for @marketSearch.
+  ///
+  /// In zh, this message translates to:
+  /// **'搜索'**
+  String get marketSearch;
+
+  /// No description provided for @marketSearchHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'搜索代码或名称'**
+  String get marketSearchHint;
+
+  /// No description provided for @marketSearchNoResults.
+  ///
+  /// In zh, this message translates to:
+  /// **'未找到相关标的'**
+  String get marketSearchNoResults;
+
+  /// No description provided for @marketStats.
+  ///
+  /// In zh, this message translates to:
+  /// **'市场统计'**
+  String get marketStats;
+
+  /// No description provided for @marketStatsToday.
+  ///
+  /// In zh, this message translates to:
+  /// **'今日'**
+  String get marketStatsToday;
+
+  /// No description provided for @marketStats30d.
+  ///
+  /// In zh, this message translates to:
+  /// **'近 30 日'**
+  String get marketStats30d;
+
+  /// No description provided for @marketStatsBuilding.
+  ///
+  /// In zh, this message translates to:
+  /// **'数据积累中'**
+  String get marketStatsBuilding;
+
+  /// No description provided for @marketStatsBuildingSince.
+  ///
+  /// In zh, this message translates to:
+  /// **'数据积累中 · 自 {date} 起记录'**
+  String marketStatsBuildingSince(String date);
+
+  /// No description provided for @marketStatsDown.
+  ///
+  /// In zh, this message translates to:
+  /// **'下跌 {n}'**
+  String marketStatsDown(int n);
+
+  /// No description provided for @marketStatsUp.
+  ///
+  /// In zh, this message translates to:
+  /// **'上涨 {n}'**
+  String marketStatsUp(int n);
+
+  /// No description provided for @marketStatsNote.
+  ///
+  /// In zh, this message translates to:
+  /// **'统计标的池全部股票与 ETF（虚拟行情）'**
+  String get marketStatsNote;
+
+  /// No description provided for @marketInsiders.
+  ///
+  /// In zh, this message translates to:
+  /// **'内部人交易'**
+  String get marketInsiders;
+
+  /// No description provided for @demoDataBadge.
+  ///
+  /// In zh, this message translates to:
+  /// **'演示数据'**
+  String get demoDataBadge;
+
+  /// No description provided for @insiderTopBuy.
+  ///
+  /// In zh, this message translates to:
+  /// **'买入最多'**
+  String get insiderTopBuy;
+
+  /// No description provided for @insiderTopSell.
+  ///
+  /// In zh, this message translates to:
+  /// **'卖出最多'**
+  String get insiderTopSell;
+
+  /// No description provided for @insiderMostActive.
+  ///
+  /// In zh, this message translates to:
+  /// **'最活跃'**
+  String get insiderMostActive;
+
+  /// No description provided for @insiderBought.
+  ///
+  /// In zh, this message translates to:
+  /// **'买入 {amount}'**
+  String insiderBought(String amount);
+
+  /// No description provided for @insiderSold.
+  ///
+  /// In zh, this message translates to:
+  /// **'卖出 {amount}'**
+  String insiderSold(String amount);
+
+  /// No description provided for @insiderTrades.
+  ///
+  /// In zh, this message translates to:
+  /// **'交易 {n} 次'**
+  String insiderTrades(int n);
+
+  /// No description provided for @insiderMoreComingSoon.
+  ///
+  /// In zh, this message translates to:
+  /// **'内部人交易明细即将上线'**
+  String get insiderMoreComingSoon;
 }
 
 class _AppLocalizationsDelegate

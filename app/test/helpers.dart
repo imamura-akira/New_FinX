@@ -68,6 +68,7 @@ Future<(FakeBackend, SessionController, MemoryTokenStore)> pumpApp(
   // 行情默认模拟（虚拟行情，价格随请求次数变化）；测试可自行覆盖
   be.handlers.putIfAbsent('GET /market/quotes', () => fakeQuotes());
   be.handlers.putIfAbsent('GET /market/sentiment', () => fakeSentiment());
+  be.handlers.putIfAbsent('GET /market/stats', () => fakeStats());
   Watchlist.instance.reset();
   Celebration.resetForTest();
   LaunchIntro.resetForTest();
@@ -129,6 +130,26 @@ http.Response Function(http.Request) fakeQuotes() {
     return FakeBackend.ok({'simulated': true, 'ts': '2026-11-19T15:00:00Z', 'quotes': quotes});
   };
 }
+
+/// 模拟 GET /market/stats（F22-b）：TODAY 返回 [counts]；30D 默认数据积累中。
+http.Response Function(http.Request) fakeStats({List<int> counts = const [1, 2, 3, 5, 2, 6, 3, 1, 1], List<int>? counts30, String? since}) => (req) {
+  final p = req.url.queryParameters['period'] ?? 'TODAY';
+  final c = p == '30D' ? counts30 : counts;
+  final cc = c ?? List.filled(9, 0);
+  int sum(Iterable<int> x) => x.fold(0, (a, b) => a + b);
+  return FakeBackend.ok({
+    'simulated': true,
+    'period': p,
+    'insufficient': c == null,
+    'since': ?since,
+    'buckets': [for (final (i, n) in cc.indexed) {'label': '$i', 'count': n}],
+    'down': sum(cc.take(4)),
+    'flat': cc[4],
+    'up': sum(cc.skip(5)),
+    'total': sum(cc),
+    'asOf': '2026-11-21T15:00:00Z',
+  });
+};
 
 /// 模拟 GET /market/sentiment：每次请求按序返回 values 中的指数（用完停在最后一个），涨跌家数固定。
 http.Response Function(http.Request) fakeSentiment({List<int> values = const [62], int up = 18, int down = 9, int flat = 3}) {

@@ -537,3 +537,27 @@ abstract final class AssetHeroColors {
     _ld(0xFFB5AFC9, 0xFF5E5878),
   ];
 }
+
+/// F22-b 市场页令牌（design/reward-design/v3/market_v2.png）。指数卡渐变与卡上文字深浅色相同。
+abstract final class MarketColors {
+  static const indexGrads = [
+    LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [Color(0xFF5A57EE), Color(0xFF8A4BE0)]),
+    LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [Color(0xFFA944D8), Color(0xFFD4569B)]),
+    LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [Color(0xFFE0638A), Color(0xFFF0944C)]),
+  ];
+  static const upOnGrad = Color(0xFF8CF2B0);
+  static const downOnGrad = Color(0xFFFFC9CB);
+
+  /// 涨跌分布"平"档柱色与数字色
+  static Color get flatBar => _ld(0xFFC9C4DC, 0xFF4A4566);
+  static Color get flatText => _ld(0xFF8F87A5, 0xFF9B95B5);
+
+  /// 内部人交易三卡底色：买入（绿）/ 卖出（红）/ 最活跃（紫）
+  static Color get buyBg => _ld(0xFFE8F7EE, 0xFF173326);
+  static Color get sellBg => _ld(0xFFFDEDEE, 0xFF3A1E24);
+  static Color get activeBg => _ld(0xFFF1EFFA, 0xFF27233D);
+
+  /// "演示数据"角标（琥珀）
+  static Color get demoBg => _ld(0xFFFBF3DF, 0xFF3A3018);
+  static Color get demoFg => _ld(0xFFB57E0C, 0xFFE8B54A);
+}

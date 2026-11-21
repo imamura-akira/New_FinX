@@ -892,6 +892,56 @@ paths:
                                 l: { type: number }
                                 c: { type: number }
         "422": { $ref: "#/components/responses/ValidationError" }
+  /market/stats:
+    get:
+      tags: [market]
+      operationId: getMarketStats
+      summary: 市场统计（P-09；涨跌分布，演示数据；F22-b）
+      description: |
+        新增接口，向后兼容。统计标的池全部股票与 ETF（虚拟行情）。TODAY = 当前涨跌幅（相对昨收）实时统计；
+        30D = 当前价相对 30 个自然日前（含）最近一个每日收盘快照（迁移 000011 instrument_daily_close，美东交易日 16:05 后写入）；
+        任一标的缺少基准快照时 insufficient=true、各档为 0（App 显示"数据积累中"），不补造历史。
+        9 档自大跌到大涨：>7%、7~5、5~3、3~0、0（|涨跌幅| < 0.005%）、0~3、3~5、5~7、>7%。
+      security: []
+      parameters:
+        - name: period
+          in: query
+          required: false
+          schema: { type: string, enum: [TODAY, 30D], default: TODAY }
+      responses:
+        "200":
+          description: 涨跌分布
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        required: [simulated, period, insufficient, buckets, up, down, flat, total, asOf]
+                        properties:
+                          simulated: { type: boolean, description: 恒为 true（演示数据） }
+                          period: { type: string, enum: [TODAY, 30D] }
+                          insufficient: { type: boolean, description: 30D 基准快照不足（数据积累中） }
+                          since: { type: string, format: date, description: 最早收盘快照日期（仅 30D 不足时） }
+                          buckets:
+                            type: array
+                            description: 9 档，自大跌到大涨
+                            items:
+                              type: object
+                              required: [label, count]
+                              properties:
+                                label: { type: string }
+                                count: { type: integer }
+                          up: { type: integer }
+                          down: { type: integer }
+                          flat: { type: integer }
+                          total: { type: integer }
+                          asOf: { type: string, format: date-time }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
   /market/sentiment:
     get:
       tags: [market]

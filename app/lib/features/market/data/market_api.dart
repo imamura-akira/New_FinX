@@ -98,6 +98,25 @@ class MarketSentiment {
 }
 
 /// 行情接口（api-spec.md 5.5；第一阶段为后端虚拟行情，响应带 simulated:true）。
+/// F22-b 市场统计（GET /market/stats）：9 档涨跌分布，自大跌到大涨。
+class MarketStats {
+  const MarketStats({required this.period, required this.insufficient, required this.counts, required this.up, required this.down, required this.flat, this.since});
+  factory MarketStats.fromJson(Map<String, dynamic> j) => MarketStats(
+    period: '${j['period'] ?? 'TODAY'}',
+    insufficient: j['insufficient'] == true,
+    since: j['since'] as String?,
+    counts: [for (final b in (j['buckets'] as List? ?? const [])) ((b as Map)['count'] as num?)?.toInt() ?? 0],
+    up: (j['up'] as num?)?.toInt() ?? 0,
+    down: (j['down'] as num?)?.toInt() ?? 0,
+    flat: (j['flat'] as num?)?.toInt() ?? 0,
+  );
+  final String period; // TODAY / 30D
+  final bool insufficient;
+  final String? since;
+  final List<int> counts;
+  final int up, down, flat;
+}
+
 class MarketApi {
   MarketApi(this._api);
   final ApiClient _api;
@@ -118,6 +137,10 @@ class MarketApi {
 
   Future<InstrumentDetail> instrument(String symbol) async =>
       InstrumentDetail.fromJson(await _api.get('/market/instruments/${Uri.encodeComponent(symbol)}') as Map<String, dynamic>);
+
+  /// F22-b 市场统计：period = TODAY / 30D。
+  Future<MarketStats> stats(String period) async =>
+      MarketStats.fromJson(await _api.get('/market/stats', query: {'period': period}) as Map<String, dynamic>);
 
   Future<MarketSentiment> sentiment() async =>
       MarketSentiment.fromJson(await _api.get('/market/sentiment') as Map<String, dynamic>);

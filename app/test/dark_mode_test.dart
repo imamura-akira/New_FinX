@@ -207,7 +207,7 @@ void main() {
   group('双语 × 双主题抽查 4 个核心页', () {
     const core = [
       ('/home', '购买力', 'Buying Power'),
-      ('/market', '市场情绪', 'Market Sentiment'),
+      ('/market', '市场统计', 'Market Stats'),
       ('/trade/AAPL', '订单类型', 'Order Type'),
       ('/funding/deposit', '选择入金方式', 'Choose a deposit method'),
     ];
