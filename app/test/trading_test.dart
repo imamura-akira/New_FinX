@@ -1,4 +1,6 @@
+import 'package:finx_app/core/sound/ui_sound.dart';
 import 'package:finx_app/core/widgets/celebration.dart';
+import 'package:flutter/services.dart';
 import 'package:finx_app/core/widgets/form_widgets.dart';
 import 'package:finx_app/features/trading/domain/trading_rules.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -184,18 +186,42 @@ void main() {
     expect(tester.widget<Text>(find.byKey(const Key('p19.confirm.size'))).data, r'$100.00');
     expect(find.text('显示价格为演示行情，实际成交以券商（DriveWealth）返回为准'), findsOneWidget);
 
+    final sound = <String>[], haptics = <String>[];
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(UiSound.channel, (c) async {
+      sound.add('${(c.arguments as Map)['asset']}');
+      return true;
+    });
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(SystemChannels.platform, (c) async {
+      if (c.method == 'HapticFeedback.vibrate') haptics.add('${c.arguments}');
+      return null;
+    });
+    addTearDown(() {
+      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(UiSound.channel, null);
+      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(SystemChannels.platform, null);
+    });
     await tester.tap(find.byKey(const Key('p19.submit')));
     for (var i = 0; i < 5; i++) {
       await tester.pump(const Duration(milliseconds: 100)); // 逐帧推进：pumpAndSettle 会把庆祝动画跑完
     }
     expect(be.lastBody('POST /orders'), {'symbol': 'AAPL', 'side': 'BUY', 'orderType': 'MARKET', 'amount': 100});
-    expect(find.text('订单已成交'), findsOneWidget);
-    expect(tester.widget<Text>(find.byKey(const Key('p19.result.status'))).data, '已成交');
-    expect(tester.widget<Text>(find.byKey(const Key('p19.result.avgPrice'))).data, r'$226.13');
+    // F22-c：下单即成交 → 成交成功页（DW 回执）：下单成功 / 公司 · 数量 / Fifi / 成交摘要 / 返回首页；彩带 + 提示音 + 触感
+    expect(find.byKey(const Key('orderDone')), findsOneWidget);
+    expect(find.text('下单成功'), findsOneWidget);
+    expect(tester.widget<Text>(find.byKey(const Key('orderDone.subtitle'))).data, 'Apple Inc. · 0.442 股');
+    expect(find.byKey(const Key('orderDone.fifi')), findsOneWidget);
+    String v(String k) => tester.widget<Text>(find.byKey(Key('orderDone.$k'))).data!;
+    expect([v('symbol'), v('price'), v('qty'), v('total'), v('time')], ['AAPL', r'$226.13', '0.442 股', r'$99.95', '2026-11-23 · 10:00 AM ET']);
+    expect(find.byKey(const Key('paper.badge')), findsNothing, reason: '实盘无模拟角标');
+    expect(sound, ['assets/sounds/order_success.wav']);
+    expect(haptics, contains('HapticFeedbackType.mediumImpact'));
     expect(find.byType(ConfettiBurst), findsOneWidget);
-    expect(tester.widget<ConfettiBurst>(find.byType(ConfettiBurst)).level, CelebrationLevel.light);
+    expect(tester.widget<ConfettiBurst>(find.byType(ConfettiBurst)).level, CelebrationLevel.full);
     await tester.pumpAndSettle();
     expect(find.byType(ConfettiBurst), findsNothing);
+    await tester.ensureVisible(find.byKey(const Key('orderDone.home')));
+    await tester.tap(find.byKey(const Key('orderDone.home')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('home.hero')), findsOneWidget, reason: '返回首页');
   });
 
   testWidgets('P-19 按股数卖出：不超过 DW 可卖数量，"全部卖出"填入可卖数量', (tester) async {

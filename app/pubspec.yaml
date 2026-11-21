@@ -70,7 +70,8 @@ flutter:
   # FinX 品牌素材（来源 prototype/assets/，登记见 design/theme.md 第 4 节）
   assets:
     - assets/brand/
-    # 提示音（tool/gen_welcome_chime.py、tool/gen_peak_ticks.py（F20 归档）、tool/gen_reminder_ding.py 脚本合成，见 design/theme.md 第 7 节）
+    - assets/brand/store/ # F22-e / F22-f 商店与任务页素材（来源 design/brand/store/）
+    # 提示音（tool/gen_welcome_chime.py、tool/gen_peak_ticks.py（F20 归档）、tool/gen_reminder_ding.py、tool/gen_order_success.py 脚本合成，见 design/theme.md 第 7 节）
     - assets/sounds/
 
   # To add assets to your application, add an assets section, like this:

@@ -20,6 +20,9 @@ abstract final class UiSound {
   /// P-27 "开启上线提醒"清脆提示音（tool/gen_reminder_ding.py 脚本合成，约 0.4 秒）。
   static const reminderDing = 'assets/sounds/reminder_ding.wav';
 
+  /// F22-c 成交成功上行琶音（tool/gen_order_success.py 脚本合成，约 0.7 秒）。
+  static const orderSuccess = 'assets/sounds/order_success.wav';
+
   static Future<void> play(String asset) async {
     try {
       await channel.invokeMethod<bool>('play', {'asset': asset});

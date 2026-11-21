@@ -2375,4 +2375,28 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get insiderMoreComingSoon => '内部人交易明细即将上线';
+
+  @override
+  String get orderDoneTitle => '下单成功';
+
+  @override
+  String get orderDoneSummary => '成交摘要';
+
+  @override
+  String get orderDoneSymbol => '代码';
+
+  @override
+  String get orderDonePrice => '成交价';
+
+  @override
+  String get orderDoneQty => '数量';
+
+  @override
+  String get orderDoneTotal => '总金额';
+
+  @override
+  String get orderDoneTime => '时间';
+
+  @override
+  String get orderDoneBackHome => '返回首页';
 }

@@ -2501,4 +2501,28 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get insiderMoreComingSoon => 'Insider trading details coming soon';
+
+  @override
+  String get orderDoneTitle => 'Order Placed';
+
+  @override
+  String get orderDoneSummary => 'Fill Summary';
+
+  @override
+  String get orderDoneSymbol => 'Symbol';
+
+  @override
+  String get orderDonePrice => 'Fill Price';
+
+  @override
+  String get orderDoneQty => 'Quantity';
+
+  @override
+  String get orderDoneTotal => 'Total';
+
+  @override
+  String get orderDoneTime => 'Time';
+
+  @override
+  String get orderDoneBackHome => 'Back to Home';
 }

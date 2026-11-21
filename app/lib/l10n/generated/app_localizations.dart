@@ -4394,6 +4394,54 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'内部人交易明细即将上线'**
   String get insiderMoreComingSoon;
+
+  /// No description provided for @orderDoneTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'下单成功'**
+  String get orderDoneTitle;
+
+  /// No description provided for @orderDoneSummary.
+  ///
+  /// In zh, this message translates to:
+  /// **'成交摘要'**
+  String get orderDoneSummary;
+
+  /// No description provided for @orderDoneSymbol.
+  ///
+  /// In zh, this message translates to:
+  /// **'代码'**
+  String get orderDoneSymbol;
+
+  /// No description provided for @orderDonePrice.
+  ///
+  /// In zh, this message translates to:
+  /// **'成交价'**
+  String get orderDonePrice;
+
+  /// No description provided for @orderDoneQty.
+  ///
+  /// In zh, this message translates to:
+  /// **'数量'**
+  String get orderDoneQty;
+
+  /// No description provided for @orderDoneTotal.
+  ///
+  /// In zh, this message translates to:
+  /// **'总金额'**
+  String get orderDoneTotal;
+
+  /// No description provided for @orderDoneTime.
+  ///
+  /// In zh, this message translates to:
+  /// **'时间'**
+  String get orderDoneTime;
+
+  /// No description provided for @orderDoneBackHome.
+  ///
+  /// In zh, this message translates to:
+  /// **'返回首页'**
+  String get orderDoneBackHome;
 }
 
 class _AppLocalizationsDelegate

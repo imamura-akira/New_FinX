@@ -7,6 +7,7 @@ import '../../../app/scope.dart';
 import '../../../app/theme.dart';
 import '../../../core/api/api_client.dart';
 import '../../../core/format.dart';
+import '../../../core/sound/ui_sound.dart';
 import '../../../core/widgets/celebration.dart';
 import '../../../core/widgets/form_widgets.dart';
 import '../../../core/widgets/widgets.dart';
@@ -18,6 +19,7 @@ import '../../market/presentation/market_widgets.dart';
 import '../data/trading_api.dart';
 import '../domain/trading_mode.dart';
 import '../domain/trading_rules.dart';
+import 'order_done_view.dart';
 import 'paper_widgets.dart';
 import '../../../l10n/l10n.dart';
 
@@ -238,9 +240,18 @@ class _OrderPageState extends State<OrderPage> {
       final status = detail?.status ?? r.status;
       // 交易提交成功：轻量版庆祝（同入金；结果待确认、被拒绝或限价单仅挂单时不播放）；同一订单只播一次
       final celebrate = !r.pending && status != 'REJECTED' && !(_isLimit && status == 'NEW');
+      // F22-c：即时成交 → 成交成功页，弹出时播彩带 + 提示音 + 触感（同一订单只播一次）
+      final filled = !r.pending && detail?.status == 'FILLED';
       if (celebrate) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) Celebration.show(context, key: '${paper ? 'paper-' : ''}order:${r.orderId}', level: CelebrationLevel.light);
+          if (!mounted) return;
+          final played = Celebration.show(
+            context,
+            key: '${paper ? 'paper-' : ''}order:${r.orderId}',
+            level: filled ? CelebrationLevel.full : CelebrationLevel.light,
+            haptic: filled,
+          );
+          if (played && filled) UiSound.play(UiSound.orderSuccess);
         });
       }
     } on ApiException catch (e) {
@@ -296,7 +307,12 @@ class _OrderPageState extends State<OrderPage> {
   @override
   Widget build(BuildContext context) {
     final title = '${_buy ? t.orderSideBuy : t.orderSideSell} ${widget.symbol}';
-    if (_step == 'done' && _result != null) return _resultView();
+    if (_step == 'done' && _result != null) {
+      // F22-c：下单即成交进入成交成功页；其余（已提交 / 挂单 / 待确认 / 被拒）走原结果页
+      final f = _filled;
+      if (!_result!.pending && f != null && f.status == 'FILLED') return OrderDoneView(order: f, paper: _resultPaper);
+      return _resultView();
+    }
     if (_notOpened && !_paper) {
       return Scaffold(
         appBar: AppBar(title: Text(title), leading: const AppBackButton()),

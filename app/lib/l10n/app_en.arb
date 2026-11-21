@@ -714,5 +714,13 @@
   "insiderBought": "Bought {amount}",
   "insiderSold": "Sold {amount}",
   "insiderTrades": "{n} trades",
-  "insiderMoreComingSoon": "Insider trading details coming soon"
+  "insiderMoreComingSoon": "Insider trading details coming soon",
+  "orderDoneTitle": "Order Placed",
+  "orderDoneSummary": "Fill Summary",
+  "orderDoneSymbol": "Symbol",
+  "orderDonePrice": "Fill Price",
+  "orderDoneQty": "Quantity",
+  "orderDoneTotal": "Total",
+  "orderDoneTime": "Time",
+  "orderDoneBackHome": "Back to Home"
 }

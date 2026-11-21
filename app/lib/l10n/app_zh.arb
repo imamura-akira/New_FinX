@@ -1458,5 +1458,13 @@
       }
     }
   },
-  "insiderMoreComingSoon": "内部人交易明细即将上线"
+  "insiderMoreComingSoon": "内部人交易明细即将上线",
+  "orderDoneTitle": "下单成功",
+  "orderDoneSummary": "成交摘要",
+  "orderDoneSymbol": "代码",
+  "orderDonePrice": "成交价",
+  "orderDoneQty": "数量",
+  "orderDoneTotal": "总金额",
+  "orderDoneTime": "时间",
+  "orderDoneBackHome": "返回首页"
 }

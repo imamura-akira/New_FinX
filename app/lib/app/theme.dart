@@ -297,6 +297,17 @@ abstract final class BrandAssets {
   /// F16 P-27 圣诞季限定：圣诞毛衣 Fifi（透明背景，来源 design/reward-design/cat_xmas.png）。
   static const catXmas = 'assets/brand/cat_xmas.png';
 
+  /// F22-c 成交成功页：Fifi 举回执（透明背景，来源 design/brand/fifi_order.png，缩至 720px）。
+  static const fifiOrder = 'assets/brand/fifi_order.png';
+
+  /// F22-d Fifi 页英雄卡：Fifi 拿平板（透明背景，来源 design/brand/fifi_quant.png，原图 240×333）。
+  static const fifiQuant = 'assets/brand/fifi_quant.png';
+
+  /// F22-e / F22-f 商店与任务页素材（来源 design/brand/store/；*_placeholder 为占位图，高清图后续热替换）。
+  static const storeHero = 'assets/brand/store/st_hero_full.png';
+  static const xpHero = 'assets/brand/store/xp_hero.png';
+  static String storeItem(String id) => 'assets/brand/store/st_$id.png';
+
   /// F20 P-01 欢迎页 AK 字标（透明背景，来源 design/brand/ak_mark.png，缩至 600px 宽）。
   static const akMark = 'assets/brand/ak_mark.png';
 }
@@ -560,4 +571,16 @@ abstract final class MarketColors {
   /// "演示数据"角标（琥珀）
   static Color get demoBg => _ld(0xFFFBF3DF, 0xFF3A3018);
   static Color get demoFg => _ld(0xFFB57E0C, 0xFFE8B54A);
+}
+
+/// F22-c 成交成功页令牌（design/reward-design/v3/order_done.png）。
+abstract final class OrderDoneColors {
+  /// 底部紫色波浪（上 → 下）
+  static List<Color> get wave => [_c(0xFFD9CEF8, 0xFF2C2350), _c(0xFFEFEAFB, 0xFF221C3A), _c(0xFFF6F3FE, 0xFF1A1729)];
+  static Color get badgeRing => _ld(0xFFEFEBFE, 0xFF2E2A4A);
+  static Color get sparkle => _ld(0xFFA98FF5, 0xFF8F7BF8);
+  static const coinPurple = [Color(0xFFC9B2FF), Color(0xFF8F5BF5)];
+  static const coinGold = [Color(0xFFFFD9A0), Color(0xFFF0A13C)];
+  static const arrow = Color(0xFF16A34A);
+  static Color _c(int l, int d) => _ld(l, d);
 }

@@ -265,7 +265,10 @@ void main() {
     expect(be.lastBody('POST /paper/orders'), {'symbol': 'AAPL', 'side': 'BUY', 'orderType': 'MARKET', 'amount': 1000});
     expect(_hit(be, 'POST', '/orders'), isFalse, reason: '模拟盘不走实盘下单');
     expect(_hit(be, 'GET', '/account/money'), isTrue, reason: '仅资产页实盘加载过');
-    expect(find.text('模拟订单已成交'), findsOneWidget);
+    // F22-c：模拟盘同一成交成功页，加琥珀"模拟"角标
+    expect(find.byKey(const Key('orderDone')), findsOneWidget);
+    expect(find.text('下单成功'), findsOneWidget);
+    expect(find.descendant(of: find.byKey(const Key('orderDone')), matching: find.byKey(const Key('paper.badge'))), findsOneWidget);
     expect(find.byType(ConfettiBurst), findsOneWidget);
     await tester.pumpAndSettle();
   });
