@@ -5,6 +5,7 @@ import 'package:finx_app/core/api/api_client.dart';
 import 'package:finx_app/core/format.dart';
 import 'package:finx_app/features/onboarding/presentation/step_pages.dart';
 import 'package:finx_app/l10n/l10n.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
@@ -236,5 +237,21 @@ void main() {
     await LocaleController.instance.select('zh');
     await frames(tester, 15);
     expect(find.text('购买力'), findsWidgets);
+  });
+
+  test('F22-0 首次安装默认英文；跟随系统 / 中文 / English 均持久化', () async {
+    TestWidgetsFlutterBinding.ensureInitialized();
+    FlutterSecureStorage.setMockInitialValues({});
+    final c = LocaleController.instance;
+    addTearDown(() => c.value = 'zh');
+    await c.load();
+    expect(c.value, 'en', reason: '未保存过选择 = 英文');
+    expect(c.locale, const Locale('en'));
+    for (final pick in <String?>[null, 'zh', 'en']) {
+      await c.select(pick);
+      c.value = 'x';
+      await c.load();
+      expect(c.value, pick, reason: '重启后读取为 $pick');
+    }
   });
 }

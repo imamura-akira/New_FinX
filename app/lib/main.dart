@@ -15,7 +15,7 @@ import 'l10n/l10n.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await LocaleController.instance.load(); // F18：读取语言选择（默认跟随系统）
+  await LocaleController.instance.load(); // F18 / F22-0：读取语言选择（首次安装默认英文）
   await AppearanceController.instance.load(); // F21：读取外观选择（默认跟随系统）
   const config = AppConfig.fromEnvironment;
   final api = ApiClient(baseUrl: config.apiBaseUrl);
@@ -73,7 +73,7 @@ class _FinxAppState extends State<FinxApp> {
         themeMode: AppearanceController.instance.value,
         themeAnimationDuration: Duration.zero, // 令牌按当前色板取值，逐帧插值无意义
         routerConfig: _router,
-        // F18：中英双语。跟随系统时 locale 为 null，按系统语言解析（zh → 中文，其余 → 英文）
+        // F18：中英双语（F22-0 首次安装为英文）。跟随系统时 locale 为 null，按系统语言解析（zh → 中文，其余 → 英文）
         locale: LocaleController.instance.locale,
         supportedLocales: supportedLocales,
         localizationsDelegates: const [

@@ -7,7 +7,7 @@ import 'generated/app_localizations.dart';
 export 'generated/app_localizations.dart';
 
 // F18 国际化：简体中文 / 北美英语（ARB：lib/l10n/app_zh.arb 为模板，app_en.arb）。
-// - 默认跟随系统语言：zh → 中文，其余 → 英文；账户抽屉可改为固定中文或英文（持久化）。
+// - F22-0：首次安装默认英文；账户抽屉可改为 跟随系统（zh → 中文，其余 → 英文）/ 中文 / English（持久化）。
 // - 开户与 KYC 模块（P-03–P-06、P-30、P-34–P-36）恒为英文，不走本文件。
 // - 文案统一经全局 [t] 取用（领域层规则函数没有 BuildContext 也能取）；切换语言时 App 重建页面树（保留当前路由）。
 
@@ -32,21 +32,28 @@ void setCurrentLocalizations(AppLocalizations l) => _current = l;
 void debugSetLocale(Locale l) => _current = lookupAppLocalizations(l);
 
 /// 语言设置：null = 跟随系统，'zh' / 'en' = 固定。持久化在 Keychain（与会话同一存储，非敏感值）。
+/// F22-0：未保存过选择（首次安装）= 英文；选"跟随系统"时显式保存 'system'，以区别于首次安装。
 class LocaleController extends ValueNotifier<String?> {
-  LocaleController._() : super(null);
+  LocaleController._() : super(defaultCode);
+  static const defaultCode = 'en'; // F22-0 首次安装默认语言
+  static const _system = 'system';
   static final instance = LocaleController._();
 
   static const _key = 'app_locale';
   FlutterSecureStorage? _storage;
 
-  /// 启动时读取已保存的选择（失败按跟随系统）。
+  /// 启动时读取已保存的选择：未保存（首次安装）或读取失败 = 英文。
   Future<void> load([FlutterSecureStorage? storage]) async {
     _storage = storage ?? const FlutterSecureStorage();
     try {
       final v = await _storage!.read(key: _key);
-      value = (v == 'zh' || v == 'en') ? v : null;
+      value = switch (v) {
+        'zh' || 'en' => v,
+        _system => null,
+        _ => defaultCode,
+      };
     } catch (_) {
-      value = null;
+      value = defaultCode;
     }
   }
 
@@ -56,11 +63,7 @@ class LocaleController extends ValueNotifier<String?> {
     try {
       final s = _storage;
       if (s == null) return;
-      if (code == null) {
-        await s.delete(key: _key);
-      } else {
-        await s.write(key: _key, value: code);
-      }
+      await s.write(key: _key, value: code ?? _system);
     } catch (_) {
       // 保存失败只影响下次启动，不影响当前选择
     }
@@ -70,7 +73,7 @@ class LocaleController extends ValueNotifier<String?> {
   Locale? get locale => value == null ? null : Locale(value!);
 
   @visibleForTesting
-  void reset() => value = null;
+  void reset() => value = defaultCode;
 }
 
 // ---------------------------------------------------------------------------
