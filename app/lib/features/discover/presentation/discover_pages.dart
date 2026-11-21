@@ -55,12 +55,10 @@ class InstAvatar extends StatelessWidget {
 
 /// 渐变预告横幅（原型 .soon）。
 class _Banner extends StatelessWidget {
-  const _Banner({required this.gradient, required this.title, required this.sub, this.kicker, this.image});
+  const _Banner({required this.gradient, required this.title, required this.sub});
   final Gradient gradient;
-  final String? kicker;
   final String title;
   final String sub;
-  final String? image;
 
   @override
   Widget build(BuildContext context) => Container(
@@ -73,7 +71,6 @@ class _Banner extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (kicker != null) Text(kicker!, style: TextStyle(fontSize: 12, color: AppColors.onAccent.withValues(alpha: .7))),
               Text(
                 title,
                 style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: AppColors.onAccent),
@@ -83,29 +80,10 @@ class _Banner extends StatelessWidget {
             ],
           ),
         ),
-        if (image != null) ...[const SizedBox(width: 8), Image.asset(image!, width: 86, height: 86)],
       ],
     ),
   );
 }
-
-/// 顶部 XP 徽标（原型右上角 🔒 XP）。
-Widget _xpBadge(String text) => Padding(
-  padding: const EdgeInsets.only(right: 12),
-  child: Center(
-    child: Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(Icons.lock_outline_rounded, size: 12, color: AppColors.muted),
-        const SizedBox(width: 3),
-        Text(
-          text,
-          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.muted),
-        ),
-      ],
-    ),
-  ),
-);
 
 // ---------------------------------------------------------------------------
 // P-23 股票大师（机构持仓追踪）
@@ -526,120 +504,3 @@ class _InstitutionDetailPageState extends State<InstitutionDetailPage> {
   );
 }
 
-// ---------------------------------------------------------------------------
-// P-26 Fifi 功能中心
-
-class FifiPage extends StatefulWidget {
-  const FifiPage({super.key});
-
-  @override
-  State<FifiPage> createState() => _FifiPageState();
-}
-
-class _FifiPageState extends State<FifiPage> {
-  bool _subscribed = false;
-
-  @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: Text(t.mastersAiAssistant), actions: [_xpBadge('XP')]),
-    body: ListView(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-      children: [
-        Notice(t.mastersNotIncludedInThe, kind: NoticeKind.warn),
-        _Banner(
-          gradient: AppGradients.soon,
-          kicker: t.mastersFifiQuantAssistant,
-          title: t.mastersComingSoon2,
-          sub: t.mastersFifiIsLearningTo,
-          image: BrandAssets.fifiPaw,
-        ),
-        GridView.count(
-          crossAxisCount: 2,
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          mainAxisSpacing: 10,
-          crossAxisSpacing: 10,
-          childAspectRatio: 1.25, // F18：英文副标题两行也放得下
-          children: [
-            for (final (k, (icon, title, desc)) in fifiFeatures.indexed)
-              _LockedCard(
-                key: Key('p26.feat.$k'),
-                icon: icon,
-                title: '${k + 1}. $title',
-                sub: desc,
-                onTap: () => showToast(context, t.featureComingSoon(title)),
-              ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Notice(t.mastersBeforeLaunchWeNeed, kind: NoticeKind.warn),
-        AppButton(
-          _subscribed ? t.mastersLaunchReminderOn : t.mastersRemindMeAtLaunch,
-          key: const Key('p26.sub'),
-          kind: _subscribed ? ButtonKind.ghost : ButtonKind.secondary,
-          icon: const Icon(Icons.notifications_none_rounded, size: 18),
-          onPressed: () {
-            setState(() => _subscribed = !_subscribed);
-            showToast(context, _subscribed ? t.mastersLaunchReminderOn : t.mastersReminderCanceled);
-          },
-        ),
-        DemoDataNote(t.mastersDemoDataFeaturesShown),
-      ],
-    ),
-  );
-}
-
-/// 带锁的功能卡（原型 .feat）。
-class _LockedCard extends StatelessWidget {
-  const _LockedCard({
-    super.key,
-    required this.icon,
-    required this.title,
-    required this.sub,
-    required this.onTap,
-  });
-  final IconData icon;
-  final String title;
-  final String sub;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) => InkWell(
-    onTap: onTap,
-    borderRadius: BorderRadius.circular(AppShape.radius),
-    child: Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(AppShape.radius), boxShadow: AppShape.shadow),
-      child: Stack(
-        children: [
-          Positioned(right: 0, top: 0, child: Icon(Icons.lock_outline_rounded, size: 14, color: AppColors.faint)),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                width: 34,
-                height: 34,
-                decoration: BoxDecoration(color: AppColors.primaryWeak, borderRadius: BorderRadius.circular(10)),
-                child: Icon(icon, size: 18, color: AppColors.primary),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                title,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
-              ),
-              Text(
-                sub,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(fontSize: 12, color: AppColors.muted),
-              ),
-            ],
-          ),
-        ],
-      ),
-    ),
-  );
-}

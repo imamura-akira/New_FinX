@@ -10,6 +10,7 @@ import '../features/common/session_expired_page.dart';
 import '../features/discover/presentation/discover_pages.dart';
 import '../features/discover/presentation/rewards_page.dart';
 import '../features/rewards/presentation/earn_xp_page.dart';
+import '../features/rewards/presentation/fifi_page.dart';
 import '../features/rewards/presentation/store_page.dart';
 import 'config.dart';
 import '../features/predict/presentation/my_predictions_page.dart';

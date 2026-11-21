@@ -118,15 +118,6 @@ const opportunities = <String, List<Opportunity>>{
 };
 
 /// Fifi 功能中心（P-26）六个功能。
-List<(IconData, String, String)> get fifiFeatures => <(IconData, String, String)>[
-  (Icons.pie_chart_outline_rounded, t.demoPortfolioCheckup, t.demoAnalyzeYourHoldingsAnd),
-  (Icons.swap_horiz_rounded, t.demoHoldOrSell, t.demoCompareTrendsRiskAnd),
-  (Icons.search_rounded, t.demoStockResearch, t.demoPricesFundamentalsAndNews),
-  (Icons.warning_amber_rounded, t.demoRiskAlerts, t.demoSpotVolatilityConcentrationAnd),
-  (Icons.bar_chart_rounded, t.demoQuantSignals, t.demoMomentumReversalVolumeAnd),
-  (Icons.menu_book_outlined, t.demoInvesting101, t.demoUnderstandInvestingInPlain),
-];
-
 /// 奖励中心（P-27）各等级商品：名称、所需 XP。
 /// F16 P-27 圣诞新手礼（等级 1 解锁；演示示例，正式奖品以上线公告为准）。顺序对应 rewards_page.dart 的奖品图。
 List<(String, int)> get xmasRewards => <(String, int)>[(t.demoFinxSportsBottle, 150), (t.demoFifiHolidayBeanie, 200), (t.demoWirelessHeadphones, 600), (t.demoFifiCrossbodyBag, 250)];

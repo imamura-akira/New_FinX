@@ -199,6 +199,6 @@ const keyPages = <(String, String, String)>[
   ('/funding/history', '资金记录', 'Transfer History'),
   ('/masters', '股票大师', 'Masters'),
   ('/masters/all', '全部机构', 'All Institutions'),
-  ('/fifi', 'AI 助手', 'AI Assistant'),
+  ('/fifi', 'Fifi 量化助手', 'Fifi Quant Agent'),
   ('/rewards', 'Fifi 商店', 'Fifi Store'),
 ];

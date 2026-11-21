@@ -1,3 +1,4 @@
+import 'package:finx_app/core/sound/ui_sound.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -80,17 +81,43 @@ void main() {
     }
   });
 
-  testWidgets('P-26 Fifi：六个功能卡，点击提示即将上线；保留合规提示', (tester) async {
+  testWidgets('P-26 Fifi（F22-d 定稿 fifi_v2）：标题副题 + 真实 XP + 头像、英雄卡即将上线、六张编号带锁卡（轻提示）、开启上线提醒（叮 + 已开启态）', (tester) async {
     await _phone(tester);
+    final sounds = <String>[];
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(UiSound.channel, (c) async {
+      sounds.add('${(c.arguments as Map)['asset']}');
+      return true;
+    });
+    addTearDown(() => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(UiSound.channel, null));
     await pumpApp(tester, backend: _backend(), storedToken: 'tok');
     await _tab(tester, 'fifi');
-    expect(find.textContaining('首期不做，待合规评估'), findsOneWidget);
+    expect(find.text('Fifi 量化助手'), findsOneWidget);
+    expect(find.text('你的智能投资助理'), findsOneWidget);
+    expect(tester.widget<Text>(find.byKey(const Key('xp.value'))).data, '1,493 XP');
+    expect(find.text('即将上线'), findsOneWidget);
+    expect(find.byKey(const Key('p26.fifi')), findsOneWidget);
+    const titles = ['1. 持仓体检', '2. 持有或卖出', '3. 个股研究', '4. 风险预警', '5. 量化信号', '6. 跟 Fifi 学投资'];
     for (var k = 0; k < 6; k++) {
       await _scrollTo(tester, find.byKey(Key('p26.feat.$k')));
-      expect(find.byKey(Key('p26.feat.$k')), findsOneWidget);
+      expect(find.descendant(of: find.byKey(Key('p26.feat.$k')), matching: find.text(titles[k])), findsOneWidget);
+      expect(find.byKey(Key('p26.feat.$k.lock')), findsOneWidget);
     }
     await tester.tap(find.byKey(const Key('p26.feat.0')));
     await tester.pump();
     expect(find.text('持仓体检即将上线'), findsOneWidget);
+    await tester.pump(const Duration(seconds: 3));
+    await _scrollTo(tester, find.byKey(const Key('p26.compliance')));
+    expect(find.textContaining('首期不做，待合规评估'), findsOneWidget, reason: '合规提示保留为页脚小字');
+    await tester.drag(find.byType(Scrollable).first, const Offset(0, -200));
+    await tester.pumpAndSettle();
+    expect(tester.widget<Text>(find.byKey(const Key('reminder.label'))).data, '🔔 开启上线提醒');
+    await tester.tap(find.byKey(const Key('reminder.button')));
+    await tester.pumpAndSettle();
+    expect(tester.widget<Text>(find.byKey(const Key('reminder.label'))).data, '✓ 已开启上线提醒');
+    expect(sounds, ['assets/sounds/reminder_ding.wav']);
+    await tester.tap(find.byKey(const Key('reminder.button')));
+    await tester.pumpAndSettle();
+    expect(tester.widget<Text>(find.byKey(const Key('reminder.label'))).data, '🔔 开启上线提醒');
+    expect(sounds, hasLength(1), reason: '取消不出声');
   });
 }
