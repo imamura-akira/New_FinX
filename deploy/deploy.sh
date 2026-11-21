@@ -29,7 +29,7 @@ rsync -az --delete "${RSYNC_EXCLUDES[@]}" backend/ "$HOST:$DIR/backend/"
 rsync -az --delete "${RSYNC_EXCLUDES[@]}" deploy/ "$HOST:$DIR/deploy/"
 
 # 服务器端步骤脱离 SSH 会话在后台执行（会话断开也不会中断构建），本机轮询结果
-ssh "$HOST" "cd '$DIR/deploy' && chmod +x remote-up.sh init-env.sh && setsid nohup ./remote-up.sh '$TAG' > last-deploy.log 2>&1 < /dev/null &"
+ssh "$HOST" "cd '$DIR/deploy' && chmod +x remote-up.sh init-env.sh backup.sh && setsid nohup ./remote-up.sh '$TAG' > last-deploy.log 2>&1 < /dev/null &"
 echo "==> 服务器开始构建与启动（日志 $DIR/deploy/last-deploy.log）"
 for _ in $(seq 1 120); do
 	sleep 5

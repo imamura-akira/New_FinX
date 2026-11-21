@@ -16,6 +16,19 @@ BIND=${BIND:-172.16.0.1:18082}
 
 echo "==> build $TAG"
 docker compose build migrate || fail "构建失败"
+
+# 迁移前自动备份数据库（审计 OPS-P1-2）：数据库在运行时必须备份成功，否则中止部署；首次部署（数据库未运行）跳过
+if [[ -n "$(docker compose ps -q postgres 2>/dev/null)" ]]; then
+	BK_DIR=/opt/finx/backups
+	mkdir -p "$BK_DIR" && chmod 700 "$BK_DIR"
+	BK="$BK_DIR/finx-$(date -u +%Y%m%dT%H%M%SZ)-pre-deploy-$TAG.sql.gz"
+	echo "==> backup $(basename "$BK")"
+	(umask 077 && docker compose exec -T postgres pg_dump -U finx -d finx | gzip >"$BK") || { rm -f "$BK"; fail "部署前备份失败，已中止（未执行迁移）"; }
+	gzip -t "$BK" && [[ $(gzip -dc "$BK" | head -c 4096 | wc -c) -gt 0 ]] || { rm -f "$BK"; fail "部署前备份文件校验失败，已中止（未执行迁移）"; }
+else
+	echo "==> backup skipped（postgres 未运行，视为首次部署）"
+fi
+
 echo "==> up"
 docker compose up -d --remove-orphans postgres migrate backend || fail "启动失败（docker compose logs --tail 100 migrate backend）"
 printf '%s %s\n' "$(date -u +%FT%TZ)" "$TAG" >>RELEASES
