@@ -206,3 +206,4 @@ XP 为站内成长值（账本合计，初始 0），与券商资金、模拟盘
 | 2026-11-21 | F22-a：`GET /account/history`、`GET /paper/account/history` 的 `range` 新增 `1D`、`1W`、`3M`、`1Y`、`YTD`；`range=1D` 返回日内快照（新表 asset_intraday，迁移 000010），点新增可选字段 `at` | 新增，向后兼容 |
 | 2026-11-21 | F22-b：新增 `GET /market/stats?period=TODAY\|30D`（涨跌分布，`simulated: true`，无需登录；新表 instrument_daily_close，迁移 000011）。`GET /market/sentiment` 保留（P-09 恐慌贪婪 UI 移除，接口不变） | 新增，向后兼容 |
 | 2026-11-21 | F22-e / F22-f：新增 5.10 奖励 / XP——`GET /rewards/xp`、`GET /rewards/catalog`、`GET /rewards/checkin`、`POST /rewards/checkin`（迁移 000012 xp_ledger / xp_checkins）；新增结构 XPBalance、RewardsCatalog、RewardItem、CheckinStatus | 新增，向后兼容 |
+| 2026-11-21 | F22-e 商店补充：`RewardItem` 新增可选字段 `color`（待配图商品的纯色占位，`image` 为空串）；seed 等级 1、2 各补 2 件小商品；套装 / 敬请期待改用高清素材（`placeholder` 去掉） | 新增，向后兼容 |

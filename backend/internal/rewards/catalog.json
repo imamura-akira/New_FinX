@@ -8,20 +8,24 @@
     {"tier": 6, "minXp": 12000}
   ],
   "items": [
+    {"id": "stickers", "tier": 1, "unlockTier": 1, "xp": 100, "image": "", "placeholder": true, "color": "#FFC857", "name": {"zh": "Fifi 贴纸包", "en": "Fifi Sticker Pack"}},
+    {"id": "badge", "tier": 1, "unlockTier": 1, "xp": 150, "image": "", "placeholder": true, "color": "#7FD1AE", "name": {"zh": "新手徽章", "en": "Rookie Pin"}},
+    {"id": "case", "tier": 2, "unlockTier": 2, "xp": 300, "image": "", "placeholder": true, "color": "#8FB8FF", "name": {"zh": "Fifi 手机壳", "en": "Fifi Phone Case"}},
+    {"id": "cap", "tier": 2, "unlockTier": 2, "xp": 400, "image": "", "placeholder": true, "color": "#F59AC4", "name": {"zh": "棒球帽", "en": "Baseball Cap"}},
     {"id": "jacket", "tier": 3, "unlockTier": 3, "xp": 800, "image": "jacket", "name": {"zh": "棒球夹克", "en": "Varsity Jacket"}},
     {"id": "vest", "tier": 3, "unlockTier": 3, "xp": 1200, "image": "vest", "name": {"zh": "交易马甲", "en": "Trader Vest"}},
     {"id": "bag", "tier": 3, "unlockTier": 3, "xp": 950, "image": "bag", "name": {"zh": "紫色挎包", "en": "Purple Crossbody"}},
     {"id": "phones", "tier": 3, "unlockTier": 4, "xp": 2200, "image": "phones", "name": {"zh": "量化耳机", "en": "Quant Headphones"}}
   ],
   "bundles": [
-    {"id": "analyst", "tier": 3, "unlockTier": 3, "xp": 2600, "image": "bundle_placeholder", "placeholder": true,
+    {"id": "analyst", "tier": 3, "unlockTier": 3, "xp": 2600, "image": "bundle_banner",
      "name": {"zh": "限定分析师套装", "en": "Limited Analyst Set"}, "desc": {"zh": "夹克 + 挎包 + 球鞋", "en": "Jacket + Bag + Sneakers"}}
   ],
   "comingSoon": [
-    {"id": "garage", "unlockTier": 4, "image": "garage_placeholder", "placeholder": true, "name": {"zh": "车库", "en": "Garage"}},
-    {"id": "home", "unlockTier": 5, "image": "home_placeholder", "placeholder": true, "name": {"zh": "梦想之家", "en": "Dream Home"}},
-    {"id": "yacht", "unlockTier": 5, "image": "yacht_placeholder", "placeholder": true, "name": {"zh": "游艇", "en": "Yacht"}},
-    {"id": "jet", "unlockTier": 6, "image": "jet_placeholder", "placeholder": true, "name": {"zh": "私人飞机", "en": "Private Jet"}}
+    {"id": "garage", "unlockTier": 4, "image": "garage", "name": {"zh": "车库", "en": "Garage"}},
+    {"id": "home", "unlockTier": 5, "image": "home", "name": {"zh": "梦想之家", "en": "Dream Home"}},
+    {"id": "yacht", "unlockTier": 5, "image": "yacht", "name": {"zh": "游艇", "en": "Yacht"}},
+    {"id": "jet", "unlockTier": 6, "image": "jet", "name": {"zh": "私人飞机", "en": "Private Jet"}}
   ],
   "tasks": [
     {"id": "checkin", "xp": 10, "enabled": true},

@@ -40,8 +40,9 @@ type Item struct {
 	Tier        int    `json:"tier,omitempty"` // 所在等级页签
 	UnlockTier  int    `json:"unlockTier"`
 	XP          int    `json:"xp,omitempty"`
-	Image       string `json:"image"`
+	Image       string `json:"image"`                 // App 内置素材名；空 = 待配图（App 按 color 渲染纯色占位）
 	Placeholder bool   `json:"placeholder,omitempty"` // 占位图，高清图后续替换
+	Color       string `json:"color,omitempty"`       // 待配图时的纯色占位（#RRGGBB）
 	Name        Text   `json:"name"`
 	Desc        *Text  `json:"desc,omitempty"`
 }

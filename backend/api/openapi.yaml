@@ -2153,8 +2153,9 @@ components:
         tier: { type: integer, description: 所在等级页签 }
         unlockTier: { type: integer }
         xp: { type: integer }
-        image: { type: string, description: App 内置素材名 }
+        image: { type: string, description: App 内置素材名；空字符串 = 待配图（按 color 显示纯色占位） }
         placeholder: { type: boolean }
+        color: { type: string, description: 待配图时的纯色占位（#RRGGBB），可选 }
         name: { type: object, required: [zh, en], properties: { zh: { type: string }, en: { type: string } } }
         desc: { type: object, properties: { zh: { type: string }, en: { type: string } } }
     CheckinStatus:

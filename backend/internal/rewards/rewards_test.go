@@ -10,6 +10,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"sort"
+	"strings"
 	"testing"
 	"time"
 
@@ -95,16 +96,31 @@ func TestCatalogSeed(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(c.Items) != 4 || len(c.Bundles) != 1 || len(c.ComingSoon) != 4 || len(c.Tasks) != 5 {
+	if len(c.Items) != 8 || len(c.Bundles) != 1 || len(c.ComingSoon) != 4 || len(c.Tasks) != 5 {
 		t.Fatalf("seed 数量: %+v", c)
 	}
-	want := map[string]int{"jacket": 800, "vest": 1200, "bag": 950, "phones": 2200}
+	want := map[string]int{"stickers": 100, "badge": 150, "case": 300, "cap": 400, "jacket": 800, "vest": 1200, "bag": 950, "phones": 2200}
+	perTier := map[int]int{}
 	for _, it := range c.Items {
 		if want[it.ID] != it.XP || it.Name.Zh == "" || it.Name.En == "" {
 			t.Fatalf("商品 %+v", it)
 		}
+		// 待配图商品：image 为空、标 placeholder、带纯色占位
+		if it.Image == "" && (!it.Placeholder || len(it.Color) != 7 || it.Color[0] != '#') {
+			t.Fatalf("待配图商品缺占位色 %+v", it)
+		}
+		perTier[it.Tier]++
 	}
-	if c.Bundles[0].XP != 2600 || !c.Bundles[0].Placeholder {
+	// 等级 1、2 不再为空（真机空页）
+	if perTier[1] < 2 || perTier[1] > 4 || perTier[2] < 2 || perTier[2] > 4 {
+		t.Fatalf("等级 1/2 商品数 %v", perTier)
+	}
+	for _, s := range append(append([]Item{}, c.Bundles...), c.ComingSoon...) {
+		if s.Placeholder || strings.Contains(s.Image, "placeholder") {
+			t.Fatalf("套装 / 敬请期待应为高清图 %+v", s)
+		}
+	}
+	if c.Bundles[0].XP != 2600 || c.Bundles[0].Image != "bundle_banner" {
 		t.Fatalf("套装 %+v", c.Bundles[0])
 	}
 	enabled := 0
@@ -144,7 +160,7 @@ func TestXPAndCatalogEndpoints(t *testing.T) {
 		t.Fatalf("%v", d)
 	}
 	code, d = f.call(t, "GET", "/api/v1/rewards/catalog")
-	if code != 0 || len(d["items"].([]any)) != 4 || len(d["tasks"].([]any)) != 5 {
+	if code != 0 || len(d["items"].([]any)) != 8 || len(d["tasks"].([]any)) != 5 {
 		t.Fatalf("catalog %v", d)
 	}
 }
