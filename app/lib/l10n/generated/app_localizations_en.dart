@@ -387,9 +387,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get drawerPaper => 'Paper';
 
   @override
-  String get drawerPaperAccountIsnT => 'Paper account isn\'t available yet';
-
-  @override
   String get drawerFunds => 'Funds';
 
   @override
@@ -1406,10 +1403,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Buying power is granted after settlement, usually 4–5 business days (to be confirmed by DW)';
 
   @override
-  String get fundAchDepositsCanT =>
-      'ACH deposits can\'t be withdrawn during a 30-day holding period after they arrive by default; DW may adjust this (to be confirmed by DW)';
-
-  @override
   String get fundUsually45Business =>
       'Usually 4–5 business days (to be confirmed by DW)';
 
@@ -1680,10 +1673,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get xferWithdrawable => 'Withdrawable';
-
-  @override
-  String get xferAfterThe30Day =>
-      'After the 30-day holding period ends (default; to be confirmed by DW)';
 
   @override
   String get xferReturnNoticeIfYour =>
@@ -2373,4 +2362,14 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get ordersUnconfirmedNotice =>
       'We\'re manually confirming this order with the broker, so it can\'t be canceled. Please don\'t place it again — we\'ll update it once it\'s confirmed. Contact support if you have questions.';
+
+  @override
+  String fundAchHoldingPeriod(int days) {
+    return 'ACH deposits can\'t be withdrawn during a $days-day holding period after they arrive by default; DW may adjust this (to be confirmed by DW)';
+  }
+
+  @override
+  String xferAfterHoldingPeriod(int days) {
+    return 'After the $days-day holding period ends (default; to be confirmed by DW)';
+  }
 }

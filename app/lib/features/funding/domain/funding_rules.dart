@@ -1,16 +1,39 @@
+import 'package:flutter/foundation.dart' show visibleForTesting;
+
 import '../../../core/format.dart';
 import '../../../l10n/l10n.dart';
 
-/// 客户端预校验用的限额（与后端 config `limits.*` 默认值一致，均为示例值）。
+/// 客户端预校验用的限额与观察期：取自后端 `GET /funding/limits`（后端配置 limits.* / seasoning_*，Q-DW-8 / 8e），
+/// 取不到时用以下默认值（与后端默认一致，均为示例值）。审计 DOC-P1-4/P1-5：不再写死。
 /// 后端强制校验（CLAUDE.md 硬性规则 5），超限返回 42201 并带实际限额，以后端为准。
 abstract final class FundingLimits {
-  static const minDeposit = 10.0;
-  static const maxDeposit = 50000.0;
-  static const dailyDeposit = 50000.0;
-  static const minWithdrawal = 1.0;
-  static const maxWithdrawal = 50000.0;
-  static const maxBanks = 2;
-  static const achCutoffEt = '16:00';
+  static double minDeposit = 10.0;
+  static double maxDeposit = 50000.0;
+  static double dailyDeposit = 50000.0;
+  static double minWithdrawal = 1.0;
+  static double maxWithdrawal = 50000.0;
+  static int maxBanks = 2;
+  static String achCutoffEt = '16:00';
+  static int seasoningDays = 30;
+
+  /// 应用后端下发的取值（字段缺失或非法时保留原值）。
+  static void apply(Map<String, dynamic> j) {
+    double d(String k, double v) => (j[k] is num) ? (j[k] as num).toDouble() : v;
+    minDeposit = d('minDeposit', minDeposit);
+    maxDeposit = d('maxDeposit', maxDeposit);
+    dailyDeposit = d('dailyDeposit', dailyDeposit);
+    minWithdrawal = d('minWithdrawal', minWithdrawal);
+    maxWithdrawal = d('maxWithdrawal', maxWithdrawal);
+    if (j['maxBanks'] is num) maxBanks = (j['maxBanks'] as num).toInt();
+    if (j['achCutoffET'] is String && (j['achCutoffET'] as String).isNotEmpty) achCutoffEt = j['achCutoffET'] as String;
+    if (j['seasoningDays'] is num) seasoningDays = (j['seasoningDays'] as num).toInt();
+  }
+
+  @visibleForTesting
+  static void reset() => apply(const {
+    'minDeposit': 10.0, 'maxDeposit': 50000.0, 'dailyDeposit': 50000.0, 'minWithdrawal': 1.0, 'maxWithdrawal': 50000.0,
+    'maxBanks': 2, 'achCutoffET': '16:00', 'seasoningDays': 30,
+  });
 }
 
 final _amountRe = RegExp(r'^\d{1,9}(\.\d{0,2})?$');
@@ -75,6 +98,6 @@ bool isTransferDone(String s) => s == 'SUCCESSFUL';
 
 /// 时效说明（pages.md 3.1.5；DW 返回日期优先，以下为无返回值时的兜底文案）。
 String get buyingPowerFallback => t.fundBuyingPowerIsGranted;
-String get seasoningFallback => t.fundAchDepositsCanT;
+String get seasoningFallback => t.fundAchHoldingPeriod(FundingLimits.seasoningDays);
 String get achWithdrawalArrival => t.fundUsually45Business;
 String get achWithdrawalFee => t.fundAchFee;

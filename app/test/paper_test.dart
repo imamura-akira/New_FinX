@@ -188,6 +188,19 @@ void main() {
     });
   });
 
+  testWidgets('P-08：抽屉"切换账户 → 模拟盘"切到模拟盘并关闭抽屉，资产页显示模拟账户（审计 DOC-P1-3 / UX-P1-2）', (tester) async {
+    await _phone(tester);
+    await pumpApp(tester, backend: _backend(), storedToken: 'tok');
+    await tester.tap(find.byKey(const Key('home.avatar')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.descendant(of: find.byKey(const Key('drawer.mode')), matching: find.text('模拟盘')));
+    await tester.pumpAndSettle();
+    expect(TradingMode.instance.paper, isTrue);
+    expect(find.byKey(const Key('drawer.mode')), findsNothing, reason: '切换后关闭抽屉');
+    expect(find.byKey(const Key('paper.banner')), findsOneWidget);
+    expect(find.text('模拟账户暂未开放'), findsNothing, reason: '不再是死胡同');
+  });
+
   testWidgets('P-07：切换模拟盘只显示模拟账户（不混入 DW 资金），可一键重置；切回实盘恢复 DW 数据', (tester) async {
     await _phone(tester);
     final (be, _, _) = await pumpApp(tester, backend: _backend(), storedToken: 'tok');

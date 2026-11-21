@@ -137,7 +137,8 @@ class _DepositPageState extends State<DepositPage> {
 
   Future<void> _load() async {
     try {
-      final b = await FundingApi(AppScope.of(context).api).banks();
+      final fapi = FundingApi(AppScope.of(context).api);
+      final (b, _) = await (fapi.banks(), fapi.loadLimits()).wait;
       if (!mounted) return;
       setState(() {
         _banks = b;
@@ -328,7 +329,7 @@ class _DepositPageState extends State<DepositPage> {
             children: [
               KvRow(t.xferSubmissionCutoff, t.xferBusinessDaysEtSample(FundingLimits.achCutoffEt)),
               KvRow(t.xferBuyingPowerAvailable, buyingPowerFallback),
-              KvRow(t.xferWithdrawable, t.xferAfterThe30Day),
+              KvRow(t.xferWithdrawable, t.xferAfterHoldingPeriod(FundingLimits.seasoningDays)),
               KvRow(t.xferFee, r'$0.00'),
             ],
           ),
@@ -381,7 +382,7 @@ class _WithdrawPageState extends State<WithdrawPage> {
   Future<void> _load() async {
     final api = AppScope.of(context).api;
     try {
-      final (b, m) = await (FundingApi(api).banks(), AccountApi(api).money()).wait;
+      final (b, m, _) = await (FundingApi(api).banks(), AccountApi(api).money(), FundingApi(api).loadLimits()).wait;
       if (!mounted) return;
       setState(() {
         _banks = b;

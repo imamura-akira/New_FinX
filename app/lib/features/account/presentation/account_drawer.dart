@@ -6,6 +6,7 @@ import '../../../app/appearance.dart';
 import '../../../app/config.dart';
 import '../../../app/scope.dart';
 import '../../../app/theme.dart';
+import '../../trading/presentation/paper_widgets.dart';
 import '../../../core/format.dart';
 import '../../../core/widgets/form_widgets.dart';
 import '../../../core/widgets/widgets.dart';
@@ -82,13 +83,8 @@ class AccountDrawer extends StatelessWidget {
                 child: Text(t.drawerSwitchAccount, style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
               ),
               const SizedBox(height: 12),
-              Seg2<String>(
-                items: [('LIVE', t.drawerLive), ('PAPER', t.drawerPaper)],
-                value: 'LIVE',
-                onChanged: (v) {
-                  if (v == 'PAPER') showToast(context, t.drawerPaperAccountIsnT);
-                },
-              ),
+              // P-08 实盘 / 模拟切换：与资产页同一开关（TradingMode），切换后关闭抽屉回到资产页对应视图（审计 DOC-P1-3 / UX-P1-2）
+              AccountModeSwitch(segKey: const Key('drawer.mode'), onChanged: (_) => Scaffold.maybeOf(context)?.closeEndDrawer()),
               const SizedBox(height: 12),
               _accountCard(context),
               _group(t.drawerFunds, [

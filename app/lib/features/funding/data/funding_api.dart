@@ -1,4 +1,5 @@
 import '../../../core/api/api_client.dart';
+import '../domain/funding_rules.dart';
 import '../../../l10n/l10n.dart';
 
 double _d(Object? v) => v is num ? v.toDouble() : double.tryParse('${v ?? ''}') ?? 0;
@@ -130,6 +131,16 @@ class FundingApi {
       if (nickname.isNotEmpty) 'nickname': nickname,
     }) as Map<String, dynamic>;
     return d['id'] as String;
+  }
+
+  /// 出入金限额与观察期（后端配置），取到后写入 FundingLimits；失败时保留默认值（不影响页面，后端仍强制校验）。
+  Future<void> loadLimits() async {
+    try {
+      final d = await _api.get('/funding/limits');
+      if (d is Map) FundingLimits.apply(d.cast<String, dynamic>());
+    } on ApiException {
+      // 保留默认值
+    }
   }
 
   Future<void> unlinkBank(String id) => _api.delete('/funding/bank-accounts/${Uri.encodeComponent(id)}');

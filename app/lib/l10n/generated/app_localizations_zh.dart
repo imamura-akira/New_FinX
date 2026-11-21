@@ -349,9 +349,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get drawerPaper => '模拟';
 
   @override
-  String get drawerPaperAccountIsnT => '模拟账户暂未开放';
-
-  @override
   String get drawerFunds => '资金';
 
   @override
@@ -1320,10 +1317,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get fundBuyingPowerIsGranted => '结算后授予购买力，通常 4–5 个工作日（待 DW 确认）';
 
   @override
-  String get fundAchDepositsCanT =>
-      'ACH 入金到账后默认 30 天观察期内不可提现，可由 DW 配置调整（待 DW 确认）';
-
-  @override
   String get fundUsually45Business => '通常 4–5 个工作日（待 DW 确认）';
 
   @override
@@ -1583,9 +1576,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get xferWithdrawable => '可提现时间';
-
-  @override
-  String get xferAfterThe30Day => '到账后 30 天观察期结束（默认，待 DW 确认）';
 
   @override
   String get xferReturnNoticeIfYour =>
@@ -2247,4 +2237,14 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String get ordersUnconfirmedNotice =>
       '券商结果待人工核对，该订单不能撤单。请勿重复下单，我们核对后会更新这笔订单；如有疑问请联系客服。';
+
+  @override
+  String fundAchHoldingPeriod(int days) {
+    return 'ACH 入金到账后默认 $days 天观察期内不可提现，可由 DW 配置调整（待 DW 确认）';
+  }
+
+  @override
+  String xferAfterHoldingPeriod(int days) {
+    return '到账后 $days 天观察期结束（默认，待 DW 确认）';
+  }
 }

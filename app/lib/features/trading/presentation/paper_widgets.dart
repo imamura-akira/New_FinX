@@ -56,14 +56,15 @@ Widget paperTitle(String title, bool paper) => paper
 
 /// "实盘 / 模拟"切换（资产页、下单页）。切换写入 [TradingMode]。
 class AccountModeSwitch extends StatelessWidget {
-  const AccountModeSwitch({super.key, this.onChanged});
+  const AccountModeSwitch({super.key, this.onChanged, this.segKey = const Key('mode.switch')});
   final ValueChanged<bool>? onChanged;
+  final Key segKey; // 抽屉里另用一个 key，避免与资产页的切换重复
 
   @override
   Widget build(BuildContext context) => ValueListenableBuilder<bool>(
     valueListenable: TradingMode.instance,
     builder: (context, paper, _) => Seg2<bool>(
-      key: const Key('mode.switch'),
+      key: segKey,
       items: [(false, t.drawerLive), (true, t.paperPaper)],
       value: paper,
       onChanged: (v) {

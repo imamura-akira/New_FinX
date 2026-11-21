@@ -38,7 +38,8 @@ class _BankAccountsPageState extends State<BankAccountsPage> {
 
   Future<void> _load() async {
     try {
-      final b = await FundingApi(AppScope.of(context).api).banks();
+      final fapi = FundingApi(AppScope.of(context).api);
+      final (b, _) = await (fapi.banks(), fapi.loadLimits()).wait;
       if (!mounted) return;
       setState(() {
         _banks = b;

@@ -746,12 +746,6 @@ abstract class AppLocalizations {
   /// **'模拟'**
   String get drawerPaper;
 
-  /// No description provided for @drawerPaperAccountIsnT.
-  ///
-  /// In zh, this message translates to:
-  /// **'模拟账户暂未开放'**
-  String get drawerPaperAccountIsnT;
-
   /// No description provided for @drawerFunds.
   ///
   /// In zh, this message translates to:
@@ -2496,12 +2490,6 @@ abstract class AppLocalizations {
   /// **'结算后授予购买力，通常 4–5 个工作日（待 DW 确认）'**
   String get fundBuyingPowerIsGranted;
 
-  /// No description provided for @fundAchDepositsCanT.
-  ///
-  /// In zh, this message translates to:
-  /// **'ACH 入金到账后默认 30 天观察期内不可提现，可由 DW 配置调整（待 DW 确认）'**
-  String get fundAchDepositsCanT;
-
   /// No description provided for @fundUsually45Business.
   ///
   /// In zh, this message translates to:
@@ -2972,12 +2960,6 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'可提现时间'**
   String get xferWithdrawable;
-
-  /// No description provided for @xferAfterThe30Day.
-  ///
-  /// In zh, this message translates to:
-  /// **'到账后 30 天观察期结束（默认，待 DW 确认）'**
-  String get xferAfterThe30Day;
 
   /// No description provided for @xferReturnNoticeIfYour.
   ///
@@ -4172,6 +4154,18 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'券商结果待人工核对，该订单不能撤单。请勿重复下单，我们核对后会更新这笔订单；如有疑问请联系客服。'**
   String get ordersUnconfirmedNotice;
+
+  /// No description provided for @fundAchHoldingPeriod.
+  ///
+  /// In zh, this message translates to:
+  /// **'ACH 入金到账后默认 {days} 天观察期内不可提现，可由 DW 配置调整（待 DW 确认）'**
+  String fundAchHoldingPeriod(int days);
+
+  /// No description provided for @xferAfterHoldingPeriod.
+  ///
+  /// In zh, this message translates to:
+  /// **'到账后 {days} 天观察期结束（默认，待 DW 确认）'**
+  String xferAfterHoldingPeriod(int days);
 }
 
 class _AppLocalizationsDelegate

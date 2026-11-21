@@ -530,4 +530,36 @@ void main() {
       expect(find.byKey(const Key('funding.result')), findsNothing);
     });
   }
+
+  testWidgets('P-13：限额与观察期取自后端 GET /funding/limits，不写死（审计 DOC-P1-4/P1-5）', (tester) async {
+    await _phone(tester);
+    final be = _backend(banks: [_bank])
+      ..on(
+        'GET /funding/limits',
+        (_) => FakeBackend.ok({
+          'minDeposit': 25,
+          'maxDeposit': 2000,
+          'dailyDeposit': 3000,
+          'minWithdrawal': 1,
+          'maxWithdrawal': 2000,
+          'minWire': 100,
+          'maxBanks': 2,
+          'achCutoffET': '16:00',
+          'wireCutoffET': '15:00',
+          'seasoningDays': 5,
+          'seasoningStart': 'CLEARED',
+        }),
+      );
+    await pumpApp(tester, backend: be, storedToken: 'tok');
+    await _openDrawerItem(tester, 'drawer.deposit');
+    await tester.tap(find.byKey(const Key('p13.ach')));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('5 天观察期'), findsWidgets, reason: '观察期天数来自后端');
+    await tester.enterText(find.byKey(const Key('p13.amount')), '20');
+    await tester.tap(find.byKey(const Key('p13.next')));
+    await tester.pumpAndSettle();
+    expect(find.text(r'单笔最低入金 $25.00'), findsWidgets, reason: '最低入金来自后端');
+    expect(be.requests.where((r) => r.url.path.endsWith('/funding/deposits')), isEmpty);
+  });
 }
+

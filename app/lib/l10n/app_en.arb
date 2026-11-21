@@ -108,7 +108,6 @@
   "drawerSwitchAccount": "Switch Account",
   "drawerLive": "Live",
   "drawerPaper": "Paper",
-  "drawerPaperAccountIsnT": "Paper account isn't available yet",
   "drawerFunds": "Funds",
   "drawerWithdraw": "Withdraw",
   "drawerBankAccounts": "Bank Accounts",
@@ -399,7 +398,6 @@
   "fundReturned": "Returned",
   "fundOnHold": "On Hold",
   "fundBuyingPowerIsGranted": "Buying power is granted after settlement, usually 4–5 business days (to be confirmed by DW)",
-  "fundAchDepositsCanT": "ACH deposits can't be withdrawn during a 30-day holding period after they arrive by default; DW may adjust this (to be confirmed by DW)",
   "fundUsually45Business": "Usually 4–5 business days (to be confirmed by DW)",
   "fundBankAccount": "Bank Account",
   "fundSavings": "Savings",
@@ -478,7 +476,6 @@
   "xferSubmissionCutoff": "Submission cutoff",
   "xferBusinessDaysEtSample": "Business days {achCutoffEt} ET (sample; to be confirmed by DW)",
   "xferWithdrawable": "Withdrawable",
-  "xferAfterThe30Day": "After the 30-day holding period ends (default; to be confirmed by DW)",
   "xferReturnNoticeIfYour": "Return notice: if your bank returns this transfer (for example, due to insufficient funds), securities bought with these funds may be restricted from sale and return fees may apply; deposits to your account may also be suspended.",
   "xferWithdrawalRecorded": "Withdrawal recorded",
   "xferWithdrawalSubmitted": "Withdrawal submitted",
@@ -677,5 +674,7 @@
   "srvIdemKeyReusedOrder": "The details of this order changed. Please go back and place it again.",
   "statusUnconfirmed": "Unconfirmed",
   "xferUnconfirmedNotice": "We're manually confirming this with the broker. Please don't submit it again — we'll update this record once it's confirmed. Contact support if you have questions.",
-  "ordersUnconfirmedNotice": "We're manually confirming this order with the broker, so it can't be canceled. Please don't place it again — we'll update it once it's confirmed. Contact support if you have questions."
+  "ordersUnconfirmedNotice": "We're manually confirming this order with the broker, so it can't be canceled. Please don't place it again — we'll update it once it's confirmed. Contact support if you have questions.",
+  "fundAchHoldingPeriod": "ACH deposits can't be withdrawn during a {days}-day holding period after they arrive by default; DW may adjust this (to be confirmed by DW)",
+  "xferAfterHoldingPeriod": "After the {days}-day holding period ends (default; to be confirmed by DW)"
 }

@@ -157,7 +157,6 @@
   "drawerSwitchAccount": "切换账户",
   "drawerLive": "实盘",
   "drawerPaper": "模拟",
-  "drawerPaperAccountIsnT": "模拟账户暂未开放",
   "drawerFunds": "资金",
   "drawerWithdraw": "出金",
   "drawerBankAccounts": "银行账户",
@@ -770,7 +769,6 @@
   "fundReturned": "已退回",
   "fundOnHold": "暂缓处理",
   "fundBuyingPowerIsGranted": "结算后授予购买力，通常 4–5 个工作日（待 DW 确认）",
-  "fundAchDepositsCanT": "ACH 入金到账后默认 30 天观察期内不可提现，可由 DW 配置调整（待 DW 确认）",
   "fundUsually45Business": "通常 4–5 个工作日（待 DW 确认）",
   "fundBankAccount": "银行账户",
   "fundSavings": "储蓄账户",
@@ -934,7 +932,6 @@
     }
   },
   "xferWithdrawable": "可提现时间",
-  "xferAfterThe30Day": "到账后 30 天观察期结束（默认，待 DW 确认）",
   "xferReturnNoticeIfYour": "退回提示：如银行退回此笔转账（如余额不足），使用该笔资金买入的证券可能被限制卖出，并可能产生退回费用；账户入金功能也可能被暂停。",
   "xferWithdrawalRecorded": "出金已记录",
   "xferWithdrawalSubmitted": "出金已提交",
@@ -1358,5 +1355,21 @@
   "srvIdemKeyReusedOrder": "这笔订单的内容已变化，请返回后重新下单。",
   "statusUnconfirmed": "未确认",
   "xferUnconfirmedNotice": "券商结果待人工核对。请勿重复提交，我们核对后会更新这笔记录；如有疑问请联系客服。",
-  "ordersUnconfirmedNotice": "券商结果待人工核对，该订单不能撤单。请勿重复下单，我们核对后会更新这笔订单；如有疑问请联系客服。"
+  "ordersUnconfirmedNotice": "券商结果待人工核对，该订单不能撤单。请勿重复下单，我们核对后会更新这笔订单；如有疑问请联系客服。",
+  "fundAchHoldingPeriod": "ACH 入金到账后默认 {days} 天观察期内不可提现，可由 DW 配置调整（待 DW 确认）",
+  "xferAfterHoldingPeriod": "到账后 {days} 天观察期结束（默认，待 DW 确认）",
+  "@fundAchHoldingPeriod": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "@xferAfterHoldingPeriod": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  }
 }

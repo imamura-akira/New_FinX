@@ -5,6 +5,7 @@ import 'package:finx_app/core/api/api_client.dart';
 import 'package:finx_app/core/session/session.dart';
 import 'package:finx_app/core/widgets/celebration.dart';
 import 'package:finx_app/features/auth/presentation/welcome_page.dart';
+import 'package:finx_app/features/funding/domain/funding_rules.dart';
 import 'package:finx_app/features/market/domain/instruments.dart';
 import 'package:finx_app/features/trading/domain/trading_mode.dart';
 import 'package:finx_app/main.dart';
@@ -70,6 +71,7 @@ Future<(FakeBackend, SessionController, MemoryTokenStore)> pumpApp(
   Celebration.resetForTest();
   LaunchIntro.resetForTest();
   TradingMode.instance.reset();
+  FundingLimits.reset();
   final api = ApiClient(baseUrl: 'http://test/api/v1', httpClient: be.client);
   final store = MemoryTokenStore()..value = storedToken;
   final session = SessionController(api: api, store: store);
