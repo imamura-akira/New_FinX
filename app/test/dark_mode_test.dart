@@ -87,21 +87,28 @@ void main() {
     expect(AppColors.apply(Brightness.dark), isFalse);
   });
 
-  test('外观选择持久化：默认跟随系统，选深色后下次启动读取为深色', () async {
+  test('F22-0 外观：首次安装默认浅色；跟随系统 / 浅色 / 深色 均持久化', () async {
     TestWidgetsFlutterBinding.ensureInitialized();
     FlutterSecureStorage.setMockInitialValues({});
     final c = AppearanceController.instance;
     addTearDown(c.reset);
     await c.load();
-    expect(c.value, ThemeMode.system);
-    await c.select(ThemeMode.dark);
-    c.reset();
-    await c.load();
-    expect(c.value, ThemeMode.dark);
-    await c.select(ThemeMode.system);
-    c.reset();
-    await c.load();
-    expect(c.value, ThemeMode.system);
+    expect(c.value, ThemeMode.light, reason: '未保存过选择 = 浅色（不跟随系统）');
+    for (final m in [ThemeMode.system, ThemeMode.dark, ThemeMode.light]) {
+      await c.select(m);
+      c.value = m == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
+      await c.load();
+      expect(c.value, m, reason: '重启后读取为 ${m.name}');
+    }
+  });
+
+  testWidgets('F22-0 首次安装：系统为深色时界面仍为浅色', (tester) async {
+    await _phone(tester);
+    addTearDown(tester.platformDispatcher.clearPlatformBrightnessTestValue);
+    tester.platformDispatcher.platformBrightnessTestValue = Brightness.dark;
+    await pumpApp(tester, backend: openedUserBackend(), storedToken: 'tok', appearance: AppearanceController.defaultMode);
+    expect(AppColors.isDark, isFalse);
+    expect(_scaffoldBg, AppPalette.light.bg);
   });
 
   testWidgets('跟随系统：iOS 切换深浅色时实时生效', (tester) async {
