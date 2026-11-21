@@ -33,7 +33,25 @@ var CoreTypes = []string{DocBasicInfo, DocIdentification, DocPersonalInfo, DocAd
 // dwNone：非 PEP / 非董事时的取值。
 // 沙盒实测（2026-11-19，sandbox-log.md）：按文档示例发送 "NULL" 会被 DW 记为 politicallyExposed=true / director=true；
 // 发送空字符串得到 false。
-const dwNone = ""
+var dwNone = ""
+
+// Options：待 DW 确认的映射取值（Q-DW-9 / Q-DW-10），由 config 在启动时通过 Configure 设置（CLAUDE.md 规则 3，审计 DOC-P1-6/P1-7）。
+type Options struct {
+	NoneValue   string // Q-DW-9：非 PEP / 非董事时的取值（DW_NONE_VALUE，默认空字符串，沙盒实测）
+	ITINTaxType string // Q-DW-10：ITIN 对应的 DW userTaxIDType（DW_ITIN_TAX_TYPE，默认 SSN）
+	NINTaxType  string // 国家身份证号对应的 DW userTaxIDType（DW_NIN_TAX_TYPE，默认 OTHER）
+}
+
+// Configure 在启动时调用一次（之后只读）。空值表示沿用默认。
+func Configure(o Options) {
+	dwNone = o.NoneValue
+	if o.ITINTaxType != "" {
+		tinTypeDW["ITIN"] = o.ITINTaxType
+	}
+	if o.NINTaxType != "" {
+		tinTypeDW["NIN"] = o.NINTaxType
+	}
+}
 
 // Submission：除开户资料外，映射还需要的提交信息。
 type Submission struct {

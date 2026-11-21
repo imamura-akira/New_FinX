@@ -125,6 +125,11 @@ type Config struct {
 	KYCMode        KYCMode
 	BankLinkMethod BankLinkMethod
 	UserSubmitMode UserSubmitMode
+	// DWMapping：待 DW 确认的开户映射取值（Q-DW-9 / Q-DW-10，审计 DOC-P1-6/P1-7）。
+	DWNoneValue   string // DW_NONE_VALUE：非 PEP / 非董事时的取值（默认空字符串，沙盒实测；文档示例为 "NULL" 但会被记为 true）
+	DWITINTaxType string // DW_ITIN_TAX_TYPE：ITIN 对应的 userTaxIDType（默认 SSN，待 DW 确认）
+	DWNINTaxType  string // DW_NIN_TAX_TYPE：国家身份证号对应的 userTaxIDType（默认 OTHER）
+
 	SeasoningDays  int // 展示用；可提现以 DW 返回为准
 	SeasoningStart SeasoningStart
 	Limits         Limits
@@ -174,6 +179,9 @@ func LoadFrom(get Getenv) (*Config, error) {
 		KYCMode:              KYCMode(p.str("KYC_MODE", string(KYCModeDoKYC))),
 		BankLinkMethod:       BankLinkMethod(p.str("BANK_LINK_METHOD", string(BankLinkDirect))),
 		UserSubmitMode:       UserSubmitMode(p.str("USER_SUBMIT_MODE", string(SubmitPostPatch))),
+		DWNoneValue:          get("DW_NONE_VALUE"),
+		DWITINTaxType:        p.str("DW_ITIN_TAX_TYPE", "SSN"),
+		DWNINTaxType:         p.str("DW_NIN_TAX_TYPE", "OTHER"),
 		SeasoningDays:        p.int("SEASONING_DAYS", 30),
 		SeasoningStart:       SeasoningStart(p.str("SEASONING_START", string(SeasoningFromCleared))),
 		Limits: Limits{
@@ -247,6 +255,13 @@ func (c *Config) Validate() error {
 	case SubmitPostPatch, SubmitSinglePost:
 	default:
 		errs = append(errs, "USER_SUBMIT_MODE 只能是 POST_PATCH 或 SINGLE_POST")
+	}
+	dwTaxTypes := map[string]bool{"SSN": true, "EIN": true, "FTIN": true, "PASSPORT": true, "ALIEN_ID": true, "OTHER": true}
+	if !dwTaxTypes[c.DWITINTaxType] || !dwTaxTypes[c.DWNINTaxType] {
+		errs = append(errs, "DW_ITIN_TAX_TYPE / DW_NIN_TAX_TYPE 须为 DW userTaxIDType 之一（SSN、EIN、FTIN、PASSPORT、ALIEN_ID、OTHER）")
+	}
+	if len(c.DWNoneValue) > 16 {
+		errs = append(errs, "DW_NONE_VALUE 过长")
 	}
 	switch c.SeasoningStart {
 	case SeasoningFromCleared, SeasoningFromInitiated:

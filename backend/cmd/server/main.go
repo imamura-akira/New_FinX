@@ -26,6 +26,7 @@ import (
 	"github.com/imamura-akira/New_FinX/backend/internal/config"
 	"github.com/imamura-akira/New_FinX/backend/internal/crypto"
 	"github.com/imamura-akira/New_FinX/backend/internal/dwclient"
+	"github.com/imamura-akira/New_FinX/backend/internal/dwmapper"
 	"github.com/imamura-akira/New_FinX/backend/internal/events"
 	"github.com/imamura-akira/New_FinX/backend/internal/funding"
 	"github.com/imamura-akira/New_FinX/backend/internal/httpx"
@@ -162,7 +163,8 @@ func buildRoutes(ctx context.Context, cfg *config.Config, st *store.Store, dw *d
 		} else {
 			logger.Warn("email provider not configured and OTP_DEV_LOG=false: OTP login will fail")
 		}
-		httpx.SetTrustedProxies(cfg.TrustedProxies) // 限速按真实客户端 IP（审计 SEC-P1-1）
+		dwmapper.Configure(dwmapper.Options{NoneValue: cfg.DWNoneValue, ITINTaxType: cfg.DWITINTaxType, NINTaxType: cfg.DWNINTaxType}) // Q-DW-9/10
+		httpx.SetTrustedProxies(cfg.TrustedProxies)                                                                                    // 限速按真实客户端 IP（审计 SEC-P1-1）
 		if len(cfg.TrustedProxies) > 0 {
 			logger.Info("trusted proxies configured", slog.Int("entries", len(cfg.TrustedProxies)))
 		}
@@ -197,6 +199,7 @@ func buildRoutes(ctx context.Context, cfg *config.Config, st *store.Store, dw *d
 				Repo: funding.PGRepo{DB: st.DB}, DW: dw, Cipher: cipher,
 				Account: acctRepo.ForUser, LegalName: appSvc.LegalName,
 				Limits: cfg.Limits, BankLink: cfg.BankLinkMethod, Logger: logger,
+				SeasoningDays: cfg.SeasoningDays, SeasoningStart: string(cfg.SeasoningStart),
 			})
 		}
 		// F15 模拟盘：只依赖数据库与虚拟行情，不调 DW（DW 未配置时也可用）

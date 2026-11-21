@@ -40,8 +40,11 @@ type Deps struct {
 	Account   func(ctx context.Context, userID string) (*account.Account, error)
 	LegalName func(ctx context.Context, userID string) (string, error) // 开户法定姓名（来自开户资料）
 	Limits    config.Limits
-	BankLink  config.BankLinkMethod
-	Logger    *slog.Logger
+	// SeasoningDays / SeasoningStart：Q-DW-8e 观察期（展示用；可提现以 DW 返回为准），经 GET /funding/limits 下发给 App
+	SeasoningDays  int
+	SeasoningStart string
+	BankLink       config.BankLinkMethod
+	Logger         *slog.Logger
 }
 
 // Service：资金模块。
@@ -73,6 +76,7 @@ func (s *Service) Routes(mux *http.ServeMux, prefix string, auth func(http.Handl
 	mux.Handle("POST "+prefix+"/funding/deposits", h(s.handleDeposit))
 	mux.Handle("POST "+prefix+"/funding/withdrawals", h(s.handleWithdrawal))
 	mux.Handle("GET "+prefix+"/funding/transfers", h(s.handleTransfers))
+	mux.Handle("GET "+prefix+"/funding/limits", h(s.handleLimits))
 	mux.Handle("GET "+prefix+"/account/money", h(s.handleMoney))
 }
 
@@ -148,6 +152,19 @@ func (s *Service) replayed(w http.ResponseWriter, r *http.Request, accountID, ke
 	}
 	httpx.OK(w, map[string]string{"transferId": t.ID, "status": t.Status})
 	return true
+}
+
+// handleLimits：出入金限额与观察期（Q-DW-8 / 8e 配置值），App 据此做前置校验与文案，不再写死（审计 DOC-P1-4/P1-5）。
+// 后端仍对每笔申请强制校验（CLAUDE.md 规则 5）。
+func (s *Service) handleLimits(w http.ResponseWriter, r *http.Request) {
+	l := s.Limits
+	m := func(v float64) json.Number { return json.Number(Cents(CentsOf(v))) }
+	httpx.OK(w, map[string]any{
+		"minDeposit": m(l.MinDeposit), "maxDeposit": m(l.MaxDeposit), "dailyDeposit": m(l.DailyDeposit),
+		"minWithdrawal": m(l.MinWithdrawal), "maxWithdrawal": m(l.MaxWithdrawal), "minWire": m(l.MinWire),
+		"maxBanks": l.MaxBanks, "achCutoffET": l.ACHCutoffET, "wireCutoffET": l.WireCutoffET,
+		"seasoningDays": s.SeasoningDays, "seasoningStart": s.SeasoningStart,
+	})
 }
 
 // ---------- 银行账户 ----------

@@ -463,7 +463,7 @@ paths:
                               kycStatus: { type: string }
                               syncedAt: { type: string, format: date-time, nullable: true }
         "401": { $ref: "#/components/responses/Unauthorized" }
-        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" } # 账户尚未开立（40901，与 api-spec 第 10 节、实现一致；审计 DOC-P1-1）
 
   /account/money:
     get:
@@ -781,6 +781,27 @@ paths:
             X-Next-Cursor:
               description: 还有更多记录时返回，作为下一页的 cursor 参数（每页 50 条；新增）
               schema: { type: string }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+  /funding/limits:
+    get:
+      tags: [funding]
+      operationId: getFundingLimits
+      summary: 出入金限额与观察期（P-13 / P-14 前置校验与文案；新增，2026-11-21）
+      description: >-
+        取自后端配置 limits.* 与 seasoning_*（Q-DW-8 / 8e 待 DW 确认的取值）。App 据此做前置校验与文案，不再写死；
+        后端仍对每笔申请强制校验。可提现日以 DW 返回为准，seasoningDays 仅用于无返回值时的说明文案。
+      responses:
+        "200":
+          description: 限额与观察期
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - type: object
+                    properties:
+                      data: { $ref: "#/components/schemas/FundingLimits" }
         "401": { $ref: "#/components/responses/Unauthorized" }
 
   # ───────────── 5.5 市场数据（F11，虚拟行情） ─────────────
@@ -1576,6 +1597,21 @@ components:
       description: 分页游标
 
   schemas:
+    FundingLimits:
+      type: object
+      required: [minDeposit, maxDeposit, dailyDeposit, minWithdrawal, maxWithdrawal, minWire, maxBanks, seasoningDays, seasoningStart]
+      properties:
+        minDeposit: { $ref: "#/components/schemas/Money" }
+        maxDeposit: { $ref: "#/components/schemas/Money" }
+        dailyDeposit: { $ref: "#/components/schemas/Money" }
+        minWithdrawal: { $ref: "#/components/schemas/Money" }
+        maxWithdrawal: { $ref: "#/components/schemas/Money" }
+        minWire: { $ref: "#/components/schemas/Money" }
+        maxBanks: { type: integer }
+        achCutoffET: { type: string, description: "ACH 截止时间（美东，示例值，待 DW 确认）" }
+        wireCutoffET: { type: string, description: "电汇截止时间（美东，示例值，待 DW 确认）" }
+        seasoningDays: { type: integer, description: "ACH 入金观察期天数（Q-DW-8e，展示用）" }
+        seasoningStart: { type: string, enum: [CLEARED, INITIATED], description: "观察期起算点" }
     Envelope:
       type: object
       required: [code, message]

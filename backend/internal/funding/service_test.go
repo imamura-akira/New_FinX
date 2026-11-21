@@ -1186,3 +1186,22 @@ func TestLookupExcludesLinkedAndOtherBank(t *testing.T) {
 		t.Fatalf("应只关联 DEP-MINE（排除已关联与他行）：%q", tr.DWRef)
 	}
 }
+
+// 审计 DOC-P1-4/P1-5：GET /funding/limits 下发后端配置的限额与观察期，App 不再写死。
+func TestFundingLimitsEndpoint(t *testing.T) {
+	f := newFx(t)
+	f.svc.SeasoningDays, f.svc.SeasoningStart = 5, "CLEARED"
+	r := f.call("GET", "/api/v1/funding/limits", "")
+	if r.Code != 0 {
+		t.Fatal(r)
+	}
+	var d map[string]any
+	_ = json.Unmarshal(r.Data, &d)
+	for k, want := range map[string]any{"minDeposit": 10.0, "maxDeposit": 50000.0, "dailyDeposit": 60000.0, "minWithdrawal": 1.0,
+		"maxWithdrawal": 50000.0, "minWire": 100.0, "maxBanks": 2.0, "seasoningDays": 5.0, "seasoningStart": "CLEARED"} {
+		if d[k] != want {
+			t.Errorf("%s = %#v，期望 %#v", k, d[k], want)
+		}
+	}
+}
+

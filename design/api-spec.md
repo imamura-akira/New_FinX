@@ -57,6 +57,7 @@ Base URL：`/api/v1`　认证：`Authorization: Bearer <sessionToken>`（除 /au
 | POST /funding/deposits | `{bankAccountId, amount}` | `{transferId, status}` | ACH；后端转 DW `POST /back-office/funding/deposits`（type=ACH，已核实） |
 | POST /funding/withdrawals | `{method:"ACH"\|"WIRE", amount, bankAccountId?, wire?{bankName, accountNumber, swiftOrAba, country, intermediarySwift?}}` | `{transferId, status}` | 后端转 DW `POST /funding/redemptions`【Q-DW-8d 字段待核】；WIRE 收款人固定为本人，后端强制 |
 | GET /funding/transfers | `?type=&cursor=` | `[{transferId, type, method, amount, status, failureReason, submittedAt, doneAt}]` | P-18 时间线 |
+| GET /funding/limits | — | `{minDeposit, maxDeposit, dailyDeposit, minWithdrawal, maxWithdrawal, minWire, maxBanks, achCutoffET, wireCutoffET, seasoningDays, seasoningStart}` | P-13 / P-14 前置校验与时效文案（后端配置值，Q-DW-8 / 8e；新增） |
 
 **入金状态枚举**（DW Deposit Status）：`STARTED / PENDING / SUCCESSFUL / FAILED / RETURNED / APPROVED / REJECTED / ON_HOLD / PROCESSING`（PROCESSING 为沙盒实测新增，见第 10 节）；出金状态枚举待 Q-DW-8d。出入金另有我方取值 `SUBMITTING`（提交中）与 `UNCONFIRMED`（券商结果待人工核对，App 显示"未确认"）。
 **金额校验**：限额走后端配置 `limits.*`（当前示例值）；超限返回 42201 并带限额。
@@ -186,3 +187,5 @@ Base URL：`/api/v1`　认证：`Authorization: Bearer <sessionToken>`（除 /au
 | 2026-11-20 | 新增 5.9 预测板块（F19，积分演示版）：`/predict/account`、`/predict/markets`、`/predict/markets/{id}`、`/predict/bets`（POST / GET）、`/predict/claim`；新增结构 PredictMarket、PredictBet、PredictStats；虚拟行情新增模拟加密标的 BTC、SOL | 新增，向后兼容 |
 | 2026-11-21 | 资金类写接口 `POST /funding/deposits`、`POST /funding/withdrawals`、`POST /orders` 新增**可选**请求头 `Idempotency-Key`（UUID，App 每笔申请生成、重试沿用）：后端按"账户 + 键"去重，已有记录时不再提交券商，按原记录作答（已受理 → 200 原编号与状态；确认中 → 502/50001 带原编号；内容不同 → 42200）。不带时行为不变。审计 FUND-P0-1 | 新增，向后兼容 |
 | 2026-11-21 | `Transfer.status` 与 `Order.status` 新增我方取值 `UNCONFIRMED`（券商结果待人工核对：对账重放被券商拒绝、订单超出重放窗口〔同一美东交易日 15 分钟内〕、出入金超过券商幂等有效期仍未查到）；订单列表 `status=OPEN` 包含该值；该状态订单不能撤单。出金提交改为附带幂等键（DW 文档：Create Withdrawal 支持），结果不明时按原键重放并按账户反查。审计 FUND-P1-1/P1-2/P1-4 | 新增，向后兼容 |
+| 2026-11-21 | 新增 `GET /funding/limits`：出入金限额与观察期（后端配置 limits.* 与 seasoning_*）。App 前置校验与时效文案改用此接口，不再写死（审计 DOC-P1-4/P1-5） | 新增，向后兼容 |
+| 2026-11-21 | openapi 修正：`GET /account` 账户未开立的错误响应由误写的 404 改为 409（40901），与本文件 2026-11-19 记录及实现一致（审计 DOC-P1-1） | 文档修正 |

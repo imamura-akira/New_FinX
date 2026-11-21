@@ -14,7 +14,7 @@ var wantOps = []string{
 	"get /application/status", "patch /application/remediate",
 	"get /account", "get /account/money", "get /account/allocation", "get /account/history",
 	"get /funding/bank-accounts", "post /funding/bank-accounts", "delete /funding/bank-accounts/{id}",
-	"get /funding/deposit-instructions", "post /funding/deposits", "post /funding/withdrawals", "get /funding/transfers",
+	"get /funding/deposit-instructions", "post /funding/deposits", "post /funding/withdrawals", "get /funding/transfers", "get /funding/limits",
 	"get /documents", "get /notifications", "post /notifications/read",
 	"get /market/quotes", "get /market/instruments/{symbol}", "get /market/sentiment",
 	"post /orders", "get /orders", "get /orders/{id}", "post /orders/{id}/cancel", "get /positions",

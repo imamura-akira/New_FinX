@@ -122,7 +122,13 @@ market_data_mode: SIM       # SIM | REAL（F11，二期接真实行情）
 kyc_mode: DO_KYC            # Q-DW-1
 bank_link_method: DIRECT    # DIRECT | PLAID   Q-DW-2
 user_submit_mode: POST_PATCH # POST_PATCH | SINGLE_POST  Q-DW-3
-seasoning_days: 30          # Q-DW-8e（展示用；可提现以 DW 返回为准）
+seasoning_days: 30          # Q-DW-8e（展示用；可提现以 DW 返回为准；经 GET /funding/limits 下发给 App）
+seasoning_start: CLEARED    # Q-DW-8e 观察期起算点 CLEARED | INITIATED
+dw_none_value: ""           # Q-DW-9 非 PEP / 非董事时的取值（DW_NONE_VALUE；沙盒实测 "NULL" 会被记为 true）
+dw_itin_tax_type: SSN       # Q-DW-10 ITIN 对应的 DW userTaxIDType（DW_ITIN_TAX_TYPE）
+dw_nin_tax_type: OTHER      # 国家身份证号对应的 DW userTaxIDType（DW_NIN_TAX_TYPE）
+trusted_proxies: ""         # 受信反向代理网段（TRUSTED_PROXIES，CIDR；限速按真实客户端 IP，演示服务器 172.16.0.0/12）
+otp_fixed_code: false       # 固定验证码 000000（OTP_FIXED_CODE；仅演示环境，生产禁止，接入邮件服务后移除；未设置时沿用 OTP_DEV_LOG）
 limits: { min_deposit: 10, max_deposit: 50000, daily_deposit: 50000,
           min_withdrawal: 1, max_withdrawal: 50000, min_wire: 100, max_banks: 2,
           min_order: 1 }  # 示例值；min_order 为 F14 单笔最低下单金额（LIMIT_MIN_ORDER，以券商为准）

@@ -390,3 +390,30 @@ func TestRequestBodies(t *testing.T) {
 		t.Fatalf("String() 泄露 PII: %s", s)
 	}
 }
+
+// 审计 DOC-P1-6/P1-7：Q-DW-9（"不适用"取值）与 Q-DW-10（ITIN 对应类型）走配置，不写死。
+func TestConfigureQDWSwitches(t *testing.T) {
+	t.Cleanup(func() { Configure(Options{NoneValue: "", ITINTaxType: "SSN", NINTaxType: "OTHER"}) })
+	Configure(Options{NoneValue: "NONE", ITINTaxType: "OTHER", NINTaxType: "PASSPORT"})
+	d := usData()
+	d.TINType = "ITIN"
+	d.TIN = "912-70-1234"
+	core, rest, err := Build(d, sub())
+	if err != nil {
+		t.Fatal(err)
+	}
+	got := docsByType(t, core, rest)
+	if v := got[DocPersonalInfo]["politicallyExposedNames"]; v != "NONE" {
+		t.Errorf("politicallyExposedNames = %#v，期望配置值 NONE", v)
+	}
+	if v := got[DocEmploymentInfo]["directorOf"]; v != "NONE" {
+		t.Errorf("directorOf = %#v，期望配置值 NONE", v)
+	}
+	if v := got[DocIdentification]["type"]; v != "OTHER" {
+		t.Errorf("ITIN 映射 = %#v，期望配置值 OTHER", v)
+	}
+	if tinTypeDW["NIN"] != "PASSPORT" {
+		t.Errorf("NIN 映射未生效：%s", tinTypeDW["NIN"])
+	}
+}
+

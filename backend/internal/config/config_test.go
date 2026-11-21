@@ -83,6 +83,8 @@ func TestValidation(t *testing.T) {
 		{"生产环境禁止固定验证码", map[string]string{"APP_ENV": "production", "OTP_FIXED_CODE": "true"}, "OTP_FIXED_CODE"},
 		{"固定验证码开关非布尔", map[string]string{"OTP_FIXED_CODE": "on"}, "OTP_FIXED_CODE"},
 		{"受信代理须为 CIDR", map[string]string{"TRUSTED_PROXIES": "172.16.0.1"}, "TRUSTED_PROXIES"},
+		{"ITIN 映射须为 DW 枚举", map[string]string{"DW_ITIN_TAX_TYPE": "ITIN"}, "DW_ITIN_TAX_TYPE"},
+		{"NIN 映射须为 DW 枚举", map[string]string{"DW_NIN_TAX_TYPE": "NID"}, "DW_NIN_TAX_TYPE"},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
