@@ -98,6 +98,8 @@ class AccountDrawer extends StatelessWidget {
                   key: const Key('drawer.withdraw'),
                   icon: Icons.north_rounded,
                   title: t.drawerWithdraw,
+                  // F22-a：可提现由资产页大卡移至此处（DW 返回值，与 P-14 同源）
+                  subtitle: overview.money == null ? null : t.drawerWithdrawable(fmtUsd(overview.money!.cashAvailableForWithdrawal)),
                   onTap: () => _fromDrawer(context, '/funding/withdraw'),
                 ),
                 ListRow(

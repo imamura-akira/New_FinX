@@ -296,7 +296,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get homeCheckOrderStatusAnd => '查看订单状态，撤销未成交订单';
 
   @override
-  String get homeWatchlist => '自选股';
+  String get homeWatchlist => '自选';
 
   @override
   String get homeGoToMarkets => '去市场';
@@ -2246,5 +2246,58 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String xferAfterHoldingPeriod(int days) {
     return '到账后 $days 天观察期结束（默认，待 DW 确认）';
+  }
+
+  @override
+  String get assetHeroTotal => '总资产 (USD)';
+
+  @override
+  String get assetHeroTotalPaper => '模拟 · 总资产 (USD)';
+
+  @override
+  String get assetHeroToday => '今日';
+
+  @override
+  String get assetHeroTotalPL => '累计盈亏';
+
+  @override
+  String get assetIntradayBuilding => '日内数据积累中';
+
+  @override
+  String get assetHistoryBuilding => '记录积累中';
+
+  @override
+  String get assetFilterAll => '全部';
+
+  @override
+  String get assetFilterStock => '股票';
+
+  @override
+  String get assetFilterEtf => 'ETF';
+
+  @override
+  String get assetTotalValue => '总价值';
+
+  @override
+  String get assetOthers => '其他';
+
+  @override
+  String get assetNoStockHoldings => '暂无股票持仓';
+
+  @override
+  String get assetNoEtfHoldings => '暂无 ETF 持仓';
+
+  @override
+  String get assetShowAmounts => '显示金额';
+
+  @override
+  String get assetHideAmounts => '隐藏金额';
+
+  @override
+  String get watchLiveNote => '实时报价 · 3 秒刷新';
+
+  @override
+  String drawerWithdrawable(String amount) {
+    return '可提现 $amount';
   }
 }

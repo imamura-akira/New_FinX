@@ -268,7 +268,7 @@ func buildRoutes(ctx context.Context, cfg *config.Config, st *store.Store, dw *d
 			}, classify)
 		}
 		pfSvc := portfolio.New(pfDeps)
-		go pfSvc.Run(ctx, 5*time.Minute)
+		go pfSvc.Run(ctx, time.Minute) // F22-a：盘中每 30 分钟一档日内快照，按分钟检查档位
 		// F19 预测板块（积分演示版）：只依赖数据库与虚拟行情，与券商资金、模拟盘完全隔离
 		var predictSvc *predict.Service
 		if market != nil {

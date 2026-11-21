@@ -25,6 +25,8 @@ import '../../../l10n/l10n.dart';
 /// P-07 资产首页（Demo-1：资产卡取 DW 真实资金汇总 F12；未开户 / 开户中显示开户提示卡）。
 /// 自选股报价来自虚拟行情（F11），每 3 秒刷新；已开户时显示持仓 P-12 / 订单 P-11 入口（F14）；智能组合不在本期范围。
 /// F17：已开户（或模拟盘模式）时在资产卡下方显示资产分布与资产趋势（各自加载，失败整卡隐藏）。
+/// F22-a 定稿（v3/asset_v2.png）：渐变大卡内含走势线（范围 1D / 1W / 3M / 1Y / YTD）、眼睛隐藏全页金额（持久化）、
+/// 筛选 全部 / 股票 / ETF 作用于环形图；可提现移至账户抽屉资金区；自选保留；模拟盘同一组件。
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -36,7 +38,6 @@ class _HomePageState extends State<HomePage> {
   AccountOverview? _overview;
   SessionController? _session;
   String? _loadedFor;
-  bool _hide = false;
   QuoteFeed? _feed;
   final _watch = Watchlist.instance;
   final _mode = TradingMode.instance;
@@ -167,7 +168,21 @@ class _HomePageState extends State<HomePage> {
                 else ...[
                   if (ov.restriction != null) Notice(ov.restriction!, kind: NoticeKind.danger),
                   if (ov.error != null) Notice(t.homeCouldnTRefreshYour(ov.error!), kind: NoticeKind.warn),
-                  _hero(opened ? money : null),
+                  AssetOverview(
+                    key: const Key('home.analysis'),
+                    paper: false,
+                    analysis: opened,
+                    generation: _analysisGen,
+                    allocation: ov.allocation,
+                    hero: HeroData(
+                      title: t.assetHeroTotal,
+                      total: opened ? ov.totalAssets : null,
+                      buyingPower: opened ? money.buyingPower : null,
+                      deltaLabel: t.assetHeroToday,
+                      delta: opened ? ov.dayPL : null,
+                      deltaPct: ov.dayPLPct,
+                    ),
+                  ),
                   if (opened && money.updatedAt != null)
                     Padding(
                       padding: const EdgeInsets.fromLTRB(4, 0, 4, 12),
@@ -187,7 +202,6 @@ class _HomePageState extends State<HomePage> {
                         ],
                       ),
                     ),
-                  if (opened) AssetAnalysis(key: const Key('home.analysis'), paper: false, generation: _analysisGen, allocation: ov.allocation),
                   if (opened && money.cash == 0 && money.pendingDeposits == 0 && ov.restriction == null)
                     AppCard(
                       child: Row(
@@ -210,39 +224,33 @@ class _HomePageState extends State<HomePage> {
                   if (cue != null) _cueCard(context, cue),
                   if (!opened && !(ov.loading && ov.progress == null)) // 首次加载完成前不显示，避免闪现
                     AppButton(t.homeBrowseMarketsFirst, key: const Key('home.market'), kind: ButtonKind.ghost, onPressed: () => context.go('/market')),
-                  if (opened) ...[
-                    SectionTitle(t.homeTrading),
-                    ListGroup(
-                      children: [
-                        ListRow(
-                          key: const Key('home.positions'),
-                          icon: Icons.pie_chart_outline_rounded,
-                          title: t.homePositions,
-                          subtitle: t.homeQuantityMarketValueCost,
-                          trailing: Icon(Icons.chevron_right_rounded, color: AppColors.faint),
-                          onTap: () => context.push('/positions'),
-                        ),
-                        ListRow(
-                          key: const Key('home.orders'),
-                          icon: Icons.receipt_long_outlined,
-                          title: t.homeOrders,
-                          subtitle: t.homeCheckOrderStatusAnd,
-                          trailing: Icon(Icons.chevron_right_rounded, color: AppColors.faint),
-                          onTap: () => context.push('/orders'),
-                        ),
-                      ],
-                    ),
-                  ],
                 ],
-                SectionTitle(t.homeWatchlist, trailing: LinkButton(t.homeGoToMarkets, fontSize: 13, onPressed: () => context.go('/market'))),
-                if (_watch.symbols.isEmpty)
-                  AppCard(
-                    child: Text(t.homeYourWatchlistIsEmpty, style: TextStyle(fontSize: 13, color: AppColors.muted)),
-                  )
-                else
+                _watchlistCard(),
+                if (_mode.paper)
+                  ..._paperTrading()
+                else if (opened) ...[
+                  SectionTitle(t.homeTrading),
                   ListGroup(
-                    children: [for (final s in _watch.symbols) QuoteRow(symbol: s, quote: _feed!.quotes[s], moved: _feed!.moved[s] ?? 0)],
+                    children: [
+                      ListRow(
+                        key: const Key('home.positions'),
+                        icon: Icons.pie_chart_outline_rounded,
+                        title: t.homePositions,
+                        subtitle: t.homeQuantityMarketValueCost,
+                        trailing: Icon(Icons.chevron_right_rounded, color: AppColors.faint),
+                        onTap: () => context.push('/positions'),
+                      ),
+                      ListRow(
+                        key: const Key('home.orders'),
+                        icon: Icons.receipt_long_outlined,
+                        title: t.homeOrders,
+                        subtitle: t.homeCheckOrderStatusAnd,
+                        trailing: Icon(Icons.chevron_right_rounded, color: AppColors.faint),
+                        onTap: () => context.push('/orders'),
+                      ),
+                    ],
                   ),
+                ],
                 MarketDataNote(ts: _feed!.ts),
               ],
             ),
@@ -252,18 +260,43 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  /// 模拟盘模式：只显示模拟账户与模拟交易入口（不显示任何 DW 资金数字）。
+  /// 模拟盘模式：只显示模拟账户与模拟交易入口（不显示任何 DW 资金数字）。F22-a：与实盘同一大卡组件。
   List<Widget> _paperSection(BuildContext context) => [
     const PaperBanner(),
     if (_paperError != null) Notice(t.homeCouldnTRefreshYour2(_paperError!), kind: NoticeKind.warn),
-    if (_paper != null)
-      PaperAccountCard(account: _paper!, hide: _hide, onReset: _resetPaper)
-    else if (_paperError == null)
+    if (_paper != null) ...[
+      Align(
+        alignment: Alignment.centerRight,
+        child: TextButton.icon(
+          key: const Key('paper.reset'),
+          onPressed: _resetPaper,
+          icon: Icon(Icons.restart_alt_rounded, size: 18, color: PaperColors.fg),
+          label: Text(t.paperReset, style: TextStyle(color: PaperColors.fg)),
+        ),
+      ),
+      AssetOverview(
+        key: const Key('home.paper.analysis'),
+        paper: true,
+        generation: _analysisGen,
+        hero: HeroData(
+          title: t.assetHeroTotalPaper,
+          total: _paper!.totalValue,
+          buyingPower: _paper!.buyingPower,
+          deltaLabel: t.assetHeroTotalPL,
+          delta: _paper!.totalPL,
+          deltaPct: _paper!.totalPLPct,
+          paper: true,
+        ),
+      ),
+    ] else if (_paperError == null)
       const Padding(
         padding: EdgeInsets.all(24),
         child: Center(child: CircularProgressIndicator()),
       ),
-    if (_paper != null) AssetAnalysis(key: const Key('home.paper.analysis'), paper: true, generation: _analysisGen),
+  ];
+
+  /// 模拟盘交易入口（自选之后）。
+  List<Widget> _paperTrading() => [
     SectionTitle(t.homePaperTrading),
     ListGroup(
       children: [
@@ -294,73 +327,49 @@ class _HomePageState extends State<HomePage> {
     Text(t.homePickAStockOn, style: TextStyle(fontSize: 12, color: AppColors.faint)),
   ];
 
-  Widget _hero(AccountMoney? m) {
-    String v(double x) => _hide ? '****' : fmtUsd(x);
-    return Container(
-      key: const Key('home.hero'),
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
-      decoration: BoxDecoration(gradient: AppGradients.hero, borderRadius: BorderRadius.circular(AppShape.radiusLarge)),
-      child: DefaultTextStyle(
-        style: TextStyle(color: AppColors.onAccent),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Text(t.homeLiveTotalAssetsUsd, style: TextStyle(fontSize: 13, color: AppColors.onAccent.withValues(alpha: .85))),
-                const SizedBox(width: 4),
-                InkWell(
-                  key: const Key('home.hide'),
-                  onTap: () => setState(() => _hide = !_hide),
-                  child: Icon(_hide ? Icons.visibility_off_outlined : Icons.visibility_outlined, size: 16, color: AppColors.onAccent),
+  /// 自选（定稿：卡内标题"自选" + 右侧"实时报价 · 3 秒刷新"）。
+  Widget _watchlistCard() => Container(
+    key: const Key('home.watchlist'),
+    margin: const EdgeInsets.only(top: 2, bottom: 14),
+    padding: const EdgeInsets.only(top: 16, bottom: 4),
+    decoration: BoxDecoration(
+      color: AppColors.surface,
+      borderRadius: BorderRadius.circular(20),
+      boxShadow: [BoxShadow(color: AppColors.cardShadow, blurRadius: 20, offset: const Offset(0, 8))],
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+          child: Row(
+            children: [
+              Text(t.homeWatchlist, style: TextStyle(fontSize: 15.5, fontWeight: FontWeight.w800, color: AppColors.ink)),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  t.watchLiveNote,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.right,
+                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.hint),
                 ),
-              ],
-            ),
-            const SizedBox(height: 6),
-            Text(
-              m == null ? '—' : (_overview!.totalAssets == null ? (_hide ? '****' : '—') : v(_overview!.totalAssets!)),
-              key: const Key('home.total'),
-              style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w800, fontFeatures: [FontFeature.tabularFigures()]),
-            ),
-            if (m != null && _overview!.dayPL != null) ...[
-              const SizedBox(height: 2),
-              Text(
-                _hide ? t.homeTodayHidden : t.homeTodayChange(_signedUsd(_overview!.dayPL!), _signedPct(_overview!.dayPLPct)),
-                key: const Key('home.dayChange'),
-                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, fontFeatures: [FontFeature.tabularFigures()]),
               ),
             ],
-            const SizedBox(height: 14),
-            Row(
-              children: [
-                Expanded(child: _split(t.homeBuyingPower, m == null ? '—' : v(m.buyingPower), const Key('home.buyingPower'))),
-                Expanded(child: _split(t.homeAvailableToWithdraw, m == null ? '—' : v(m.cashAvailableForWithdrawal), const Key('home.withdrawable'))),
-              ],
-            ),
-          ],
+          ),
         ),
-      ),
-    );
-  }
-
-  /// +$42.18 / -$3.10 / $0.00。
-  static String _signedUsd(double v) => v > 0 ? '+${fmtUsd(v)}' : fmtUsd(v);
-
-  /// (+0.65%)；无法计算时为空串。
-  static String _signedPct(double? p) => p == null ? '' : ' (${p > 0 ? '+' : ''}${p.toStringAsFixed(2)}%)';
-
-  Widget _split(String k, String v, Key key) => Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Text(k, style: TextStyle(fontSize: 12, color: AppColors.onAccent.withValues(alpha: .75))),
-      const SizedBox(height: 2),
-      Text(
-        v,
-        key: key,
-        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, fontFeatures: [FontFeature.tabularFigures()]),
-      ),
-    ],
+        if (_watch.symbols.isEmpty)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 4, 16, 14),
+            child: Text(t.homeYourWatchlistIsEmpty, style: TextStyle(fontSize: 13, color: AppColors.muted)),
+          )
+        else
+          for (final s in _watch.symbols) ...[
+            Divider(height: 1, thickness: 1, color: AppColors.divider),
+            QuoteRow(symbol: s, quote: _feed!.quotes[s], moved: _feed!.moved[s] ?? 0),
+          ],
+      ],
+    ),
   );
 
   Widget _cueCard(BuildContext context, OnboardingCue cue) {

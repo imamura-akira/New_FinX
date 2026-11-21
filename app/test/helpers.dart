@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:finx_app/app/config.dart';
+import 'package:finx_app/core/amount_mask.dart';
 import 'package:finx_app/core/api/api_client.dart';
 import 'package:finx_app/core/session/session.dart';
 import 'package:finx_app/core/widgets/celebration.dart';
@@ -72,6 +73,7 @@ Future<(FakeBackend, SessionController, MemoryTokenStore)> pumpApp(
   LaunchIntro.resetForTest();
   TradingMode.instance.reset();
   FundingLimits.reset();
+  AmountMask.instance.reset();
   final api = ApiClient(baseUrl: 'http://test/api/v1', httpClient: be.client);
   final store = MemoryTokenStore()..value = storedToken;
   final session = SessionController(api: api, store: store);

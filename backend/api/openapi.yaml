@@ -536,8 +536,11 @@ paths:
         - name: range
           in: query
           required: false
-          schema: { type: string, enum: [7D, 30D, 90D, ALL], default: 7D }
-          description: 7D / 30D / 90D 为含今日的最近 N 个美东自然日；ALL 为全部
+          schema: { type: string, enum: [1D, 1W, 3M, 1Y, YTD, 7D, 30D, 90D, ALL], default: 7D }
+          description: |
+            7D / 30D / 90D 为含今日的最近 N 个美东自然日；ALL 为全部。
+            F22-a 新增（向后兼容）：1W = 7 天、3M = 90 天、1Y = 365 天、YTD = 当年 1 月 1 日（美东）起；
+            1D = 日内快照（美东交易日 09:30–16:00 每 30 分钟一档），返回最近一个有日内快照的美东日期的各档，点带 at
       responses:
         "200":
           description: 资产趋势
@@ -1169,8 +1172,11 @@ paths:
         - name: range
           in: query
           required: false
-          schema: { type: string, enum: [7D, 30D, 90D, ALL], default: 7D }
-          description: 7D / 30D / 90D 为含今日的最近 N 个美东自然日；ALL 为全部
+          schema: { type: string, enum: [1D, 1W, 3M, 1Y, YTD, 7D, 30D, 90D, ALL], default: 7D }
+          description: |
+            7D / 30D / 90D 为含今日的最近 N 个美东自然日；ALL 为全部。
+            F22-a 新增（向后兼容）：1W = 7 天、3M = 90 天、1Y = 365 天、YTD = 当年 1 月 1 日（美东）起；
+            1D = 日内快照（美东交易日 09:30–16:00 每 30 分钟一档），返回最近一个有日内快照的美东日期的各档，点带 at
       responses:
         "200":
           description: 资产趋势
@@ -1965,7 +1971,7 @@ components:
       required: [simulated, range, points]
       properties:
         simulated: { type: boolean }
-        range: { type: string, enum: [7D, 30D, 90D, ALL] }
+        range: { type: string, enum: [1D, 1W, 3M, 1Y, YTD, 7D, 30D, 90D, ALL] }
         points:
           type: array
           description: 按日期升序
@@ -1974,6 +1980,7 @@ components:
             required: [date, total, cash, stock, etf]
             properties:
               date: { type: string, format: date, description: 美东日期 }
+              at: { type: string, format: date-time, description: 仅 range=1D：日内档位时刻（UTC）（F22-a） }
               total: { $ref: "#/components/schemas/Money" }
               cash: { $ref: "#/components/schemas/Money" }
               stock: { $ref: "#/components/schemas/Money" }

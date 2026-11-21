@@ -676,5 +676,22 @@
   "xferUnconfirmedNotice": "We're manually confirming this with the broker. Please don't submit it again — we'll update this record once it's confirmed. Contact support if you have questions.",
   "ordersUnconfirmedNotice": "We're manually confirming this order with the broker, so it can't be canceled. Please don't place it again — we'll update it once it's confirmed. Contact support if you have questions.",
   "fundAchHoldingPeriod": "ACH deposits can't be withdrawn during a {days}-day holding period after they arrive by default; DW may adjust this (to be confirmed by DW)",
-  "xferAfterHoldingPeriod": "After the {days}-day holding period ends (default; to be confirmed by DW)"
+  "xferAfterHoldingPeriod": "After the {days}-day holding period ends (default; to be confirmed by DW)",
+  "assetHeroTotal": "Total Assets (USD)",
+  "assetHeroTotalPaper": "Paper · Total Assets (USD)",
+  "assetHeroToday": "Today",
+  "assetHeroTotalPL": "Total P&L",
+  "assetIntradayBuilding": "Building intraday data",
+  "assetHistoryBuilding": "Building history",
+  "assetFilterAll": "All",
+  "assetFilterStock": "Stocks",
+  "assetFilterEtf": "ETFs",
+  "assetTotalValue": "Total Value",
+  "assetOthers": "Other",
+  "assetNoStockHoldings": "No stock holdings yet",
+  "assetNoEtfHoldings": "No ETF holdings yet",
+  "assetShowAmounts": "Show amounts",
+  "assetHideAmounts": "Hide amounts",
+  "watchLiveNote": "Live quotes · every 3s",
+  "drawerWithdrawable": "Available to withdraw: {amount}"
 }

@@ -78,19 +78,19 @@ void main() {
     await _phone(tester);
     await pumpApp(tester, backend: _backend(), storedToken: 'tok');
     // 42.18 ÷ (1635.80 + 4907.41 − 42.18) = 0.6488% → +0.65%
-    expect(_row(tester), r'今日 +$42.18 (+0.65%)');
+    expect(_row(tester), r'+$42.18 (+0.65%)');
   });
 
   testWidgets('今日下跌显示负号', (tester) async {
     await _phone(tester);
     await pumpApp(tester, backend: _backend(dayPLs: [-10, -5.5]), storedToken: 'tok');
-    expect(_row(tester), startsWith(r'今日 -$15.50 (-0.'));
+    expect(_row(tester), startsWith(r'-$15.50 (-0.'));
   });
 
   testWidgets('无持仓：今日为零', (tester) async {
     await _phone(tester);
     await pumpApp(tester, backend: _backend(dayPLs: const [], equity: 0), storedToken: 'tok');
-    expect(_row(tester), r'今日 $0.00 (0.00%)');
+    expect(_row(tester), r'$0.00 (0.00%)');
   });
 
   testWidgets('隐藏金额时今日变动同样隐藏', (tester) async {
@@ -98,19 +98,19 @@ void main() {
     await pumpApp(tester, backend: _backend(), storedToken: 'tok');
     await tester.tap(find.byKey(const Key('home.hide')));
     await tester.pump();
-    expect(_row(tester), '今日 ****');
+    expect(_row(tester), '****');
   });
 
   testWidgets('持仓接口失败：不显示今日变动，资金照常', (tester) async {
     await _phone(tester);
     await pumpApp(tester, backend: _backend(positionsFail: true), storedToken: 'tok');
-    expect(find.byKey(const Key('home.dayChange')), findsNothing);
+    expect(_row(tester), '—', reason: 'F22-a 大卡"今日"位保留，无数据显示 —');
     expect(find.byKey(const Key('home.total')), findsOneWidget);
   });
 
   testWidgets('未开户：不显示今日变动', (tester) async {
     await _phone(tester);
     await pumpApp(tester, backend: _backend(opened: false), storedToken: 'tok');
-    expect(find.byKey(const Key('home.dayChange')), findsNothing);
+    expect(_row(tester), '—');
   });
 }

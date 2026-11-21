@@ -6,6 +6,8 @@
 //   - 趋势：每日资产快照（asset_snapshots），每个用户 × 账户类型 × 美东日期一条。收盘后（美东 16:10 起）任务为每个
 //     已开户用户与每个模拟账户记录 CLOSE 快照；当日首次请求分布 / 趋势时若尚无记录，兜底写入 FIRST_REQUEST 快照，
 //     之后的 CLOSE 快照覆盖它。快照为内部记录，金额一律来自 DW / 模拟账户返回，不自行推算历史。
+//   - 日内（F22-a，1D）：美东交易日盘中 09:30–16:00 每 30 分钟一档，为全部实盘 / 模拟盘用户记录日内快照（asset_intraday）。
+//     1D 返回最近一个有日内快照的美东日期的各档（不足 2 点时 App 显示"日内数据积累中"）。
 package portfolio
 
 import (
@@ -153,6 +155,18 @@ type Repo interface {
 	List(ctx context.Context, userID string, mode Mode, from time.Time) ([]Snapshot, error)
 	RealUsers(ctx context.Context) ([]string, error)
 	PaperUsers(ctx context.Context) ([]string, error)
+	// SaveIntraday 写入日内快照（同一档位已存在时忽略）；ListIntraday 返回 At ≥ since 的日内快照，按时刻升序。
+	SaveIntraday(ctx context.Context, s IntradaySnapshot) error
+	ListIntraday(ctx context.Context, userID string, mode Mode, since time.Time) ([]IntradaySnapshot, error)
+}
+
+// IntradaySnapshot：日内资产快照（F22-a）。At 为档位时刻（美东 09:30 起每 30 分钟，UTC 存储）。
+type IntradaySnapshot struct {
+	UserID     string
+	Mode       Mode
+	At         time.Time
+	Breakdown  Breakdown
+	CapturedAt time.Time
 }
 
 // Source：读取用户当前资产构成。
@@ -175,6 +189,7 @@ type Service struct {
 	now       func() time.Time
 	et        *time.Location
 	lastClose map[Mode]time.Time
+	lastSlot  map[Mode]time.Time
 }
 
 // New 创建模块。
@@ -186,7 +201,7 @@ func New(d Deps) *Service {
 	if err != nil {
 		et = time.FixedZone("ET", -5*3600)
 	}
-	return &Service{Deps: d, now: time.Now, et: et, lastClose: map[Mode]time.Time{}}
+	return &Service{Deps: d, now: time.Now, et: et, lastClose: map[Mode]time.Time{}, lastSlot: map[Mode]time.Time{}}
 }
 
 // Today：当前美东日期。
@@ -263,7 +278,8 @@ func (s *Service) allocation(m Mode) http.HandlerFunc {
 
 // Point：趋势点。
 type Point struct {
-	Date  string      `json:"date"` // 美东日期 YYYY-MM-DD
+	Date  string      `json:"date"`         // 美东日期 YYYY-MM-DD
+	At    string      `json:"at,omitempty"` // 1D 日内档位时刻（RFC 3339，UTC）；按日的区间不返回
 	Total json.Number `json:"total"`
 	Cash  json.Number `json:"cash"`
 	Stock json.Number `json:"stock"`
@@ -278,18 +294,53 @@ type HistoryView struct {
 }
 
 // RangeDays：7D / 30D / 90D 为含今日的最近 N 个美东自然日；ALL 为全部（0）。
+// F22-a 新增：1W = 7、3M = 90、1Y = 365 个自然日；YTD 与 1D 不按天数计（见 history），此处返回 0。
 func RangeDays(r string) (int, bool) {
 	switch strings.ToUpper(strings.TrimSpace(r)) {
-	case "", "7D":
+	case "", "7D", "1W":
 		return 7, true
 	case "30D":
 		return 30, true
-	case "90D":
+	case "90D", "3M":
 		return 90, true
-	case "ALL":
+	case "1Y":
+		return 365, true
+	case "ALL", "YTD", "1D":
 		return 0, true
 	}
 	return 0, false
+}
+
+// IntradaySlot：t 所在的日内档位（美东周一至周五 09:30–16:00，每 30 分钟一档，含 16:00 收盘档）；盘外返回 false。
+func IntradaySlot(t time.Time, et *time.Location) (time.Time, bool) {
+	l := t.In(et)
+	if l.Weekday() == time.Saturday || l.Weekday() == time.Sunday {
+		return time.Time{}, false
+	}
+	mins := l.Hour()*60 + l.Minute()
+	if mins < 9*60+30 || mins > 16*60 {
+		return time.Time{}, false
+	}
+	slot := mins - mins%30
+	return time.Date(l.Year(), l.Month(), l.Day(), slot/60, slot%60, 0, 0, et).UTC(), true
+}
+
+// intraday：最近一个有日内快照的美东日期（7 天内）的全部档位。
+func (s *Service) intraday(ctx context.Context, uid string, m Mode) ([]Point, error) {
+	snaps, err := s.Repo.ListIntraday(ctx, uid, m, s.now().Add(-7*24*time.Hour))
+	if err != nil || len(snaps) == 0 {
+		return []Point{}, err
+	}
+	last := dayOf(snaps[len(snaps)-1].At, s.et)
+	pts := []Point{}
+	for _, sn := range snaps {
+		if !dayOf(sn.At, s.et).Equal(last) {
+			continue
+		}
+		b := sn.Breakdown
+		pts = append(pts, Point{Date: last.Format("2006-01-02"), At: sn.At.UTC().Format(time.RFC3339), Total: Cents(b.Total()), Cash: Cents(b.Cash), Stock: Cents(b.Stock), ETF: Cents(b.ETF)})
+	}
+	return pts, nil
 }
 
 func (s *Service) history(m Mode) http.HandlerFunc {
@@ -298,7 +349,7 @@ func (s *Service) history(m Mode) http.HandlerFunc {
 		raw := r.URL.Query().Get("range")
 		days, ok := RangeDays(raw)
 		if !ok {
-			httpx.Fail(w, r, httpx.Validation("", httpx.FieldError{Field: "range", Reason: "range 只支持 7D、30D、90D、ALL"}))
+			httpx.Fail(w, r, httpx.Validation("", httpx.FieldError{Field: "range", Reason: "range 只支持 1D、1W、3M、1Y、YTD、7D、30D、90D、ALL"}))
 			return
 		}
 		rng := strings.ToUpper(strings.TrimSpace(raw))
@@ -320,9 +371,20 @@ func (s *Service) history(m Mode) http.HandlerFunc {
 			}
 			s.record(ctx, uid, m, b)
 		}
+		if rng == "1D" {
+			pts, err := s.intraday(ctx, uid, m)
+			if err != nil {
+				httpx.Fail(w, r, err)
+				return
+			}
+			httpx.OK(w, HistoryView{Simulated: m == Paper, Range: rng, Points: pts})
+			return
+		}
 		var from time.Time
 		if days > 0 {
 			from = today.AddDate(0, 0, -(days - 1))
+		} else if rng == "YTD" {
+			from = time.Date(today.Year(), 1, 1, 0, 0, 0, 0, time.UTC)
 		}
 		snaps, err := s.Repo.List(ctx, uid, m, from)
 		if err != nil {
@@ -354,10 +416,20 @@ func (s *Service) Run(ctx context.Context, every time.Duration) {
 	}
 }
 
-// Tick 执行一次检查（导出供测试）。
+// Tick 执行一次检查（导出供测试）：盘中按档位记录日内快照；收盘后记录当日 CLOSE 快照。
 func (s *Service) Tick(ctx context.Context) {
 	now := s.now().In(s.et)
 	today := dayOf(now, s.et)
+	if slot, ok := IntradaySlot(now, s.et); ok {
+		for _, m := range []Mode{Real, Paper} {
+			if s.source(m) == nil || s.lastSlot[m].Equal(slot) {
+				continue
+			}
+			if s.IntradayAll(ctx, m, slot) {
+				s.lastSlot[m] = slot
+			}
+		}
+	}
 	if now.Sub(time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, s.et)) < CloseAfter {
 		return
 	}
@@ -401,5 +473,34 @@ func (s *Service) SnapshotAll(ctx context.Context, m Mode, day time.Time) bool {
 		n++
 	}
 	s.Logger.InfoContext(ctx, "close snapshots recorded", slog.String("mode", string(m)), slog.String("day", day.Format("2006-01-02")), slog.Int("users", n))
+	return ok
+}
+
+// IntradayAll 为某类账户的全部用户记录一档日内快照；全部成功返回 true（部分失败下一轮重试，已写入的忽略）。
+func (s *Service) IntradayAll(ctx context.Context, m Mode, slot time.Time) bool {
+	list := s.Repo.RealUsers
+	if m == Paper {
+		list = s.Repo.PaperUsers
+	}
+	users, err := list(ctx)
+	if err != nil {
+		s.Logger.WarnContext(ctx, "intraday users query failed", slog.String("mode", string(m)), slog.String("error", err.Error()))
+		return false
+	}
+	ok := true
+	for _, uid := range users {
+		b, err := s.source(m)(ctx, uid)
+		if err != nil {
+			if !errors.Is(err, ErrNotOpened) {
+				ok = false
+				s.Logger.WarnContext(ctx, "intraday source failed", slog.String("mode", string(m)), slog.String("error", err.Error()))
+			}
+			continue
+		}
+		if err := s.Repo.SaveIntraday(ctx, IntradaySnapshot{UserID: uid, Mode: m, At: slot, Breakdown: b, CapturedAt: s.now().UTC()}); err != nil {
+			ok = false
+			s.Logger.WarnContext(ctx, "intraday save failed", slog.String("mode", string(m)), slog.String("error", err.Error()))
+		}
+	}
 	return ok
 }

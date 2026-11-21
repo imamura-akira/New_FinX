@@ -169,6 +169,15 @@ Future<void> _toPaper(WidgetTester tester) async {
   await tester.pumpAndSettle();
 }
 
+/// F22-a：模拟交易入口位于自选之后，先滚动到可见（并移出底部 Tab 栏遮挡区）再点。
+Future<void> _tapEntry(WidgetTester tester, String key) async {
+  final f = find.byKey(Key(key));
+  await tester.scrollUntilVisible(f, 200, scrollable: find.byType(Scrollable).first);
+  await tester.drag(find.byType(Scrollable).first, const Offset(0, -200));
+  await tester.pumpAndSettle();
+  await tester.tap(f);
+}
+
 bool _hit(FakeBackend be, String method, String path) => be.requests.any((r) => r.method == method && r.url.path == '/api/v1$path');
 
 void main() {
@@ -337,7 +346,7 @@ void main() {
       });
     await pumpApp(tester, backend: be, storedToken: 'tok');
     await _toPaper(tester);
-    await tester.tap(find.byKey(const Key('home.paper.orders')));
+    await _tapEntry(tester, 'home.paper.orders');
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
     expect(find.byKey(const Key('paper.banner')).hitTestable(), findsOneWidget);
@@ -358,7 +367,7 @@ void main() {
     await _phone(tester);
     await pumpApp(tester, backend: _backend(), storedToken: 'tok');
     await _toPaper(tester);
-    await tester.tap(find.byKey(const Key('home.paper.positions')));
+    await _tapEntry(tester, 'home.paper.positions');
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('paper.banner')).hitTestable(), findsOneWidget);
     expect(find.text('模拟持仓'), findsWidgets);

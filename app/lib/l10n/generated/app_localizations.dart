@@ -647,7 +647,7 @@ abstract class AppLocalizations {
   /// No description provided for @homeWatchlist.
   ///
   /// In zh, this message translates to:
-  /// **'自选股'**
+  /// **'自选'**
   String get homeWatchlist;
 
   /// No description provided for @homeGoToMarkets.
@@ -4166,6 +4166,108 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'到账后 {days} 天观察期结束（默认，待 DW 确认）'**
   String xferAfterHoldingPeriod(int days);
+
+  /// No description provided for @assetHeroTotal.
+  ///
+  /// In zh, this message translates to:
+  /// **'总资产 (USD)'**
+  String get assetHeroTotal;
+
+  /// No description provided for @assetHeroTotalPaper.
+  ///
+  /// In zh, this message translates to:
+  /// **'模拟 · 总资产 (USD)'**
+  String get assetHeroTotalPaper;
+
+  /// No description provided for @assetHeroToday.
+  ///
+  /// In zh, this message translates to:
+  /// **'今日'**
+  String get assetHeroToday;
+
+  /// No description provided for @assetHeroTotalPL.
+  ///
+  /// In zh, this message translates to:
+  /// **'累计盈亏'**
+  String get assetHeroTotalPL;
+
+  /// No description provided for @assetIntradayBuilding.
+  ///
+  /// In zh, this message translates to:
+  /// **'日内数据积累中'**
+  String get assetIntradayBuilding;
+
+  /// No description provided for @assetHistoryBuilding.
+  ///
+  /// In zh, this message translates to:
+  /// **'记录积累中'**
+  String get assetHistoryBuilding;
+
+  /// No description provided for @assetFilterAll.
+  ///
+  /// In zh, this message translates to:
+  /// **'全部'**
+  String get assetFilterAll;
+
+  /// No description provided for @assetFilterStock.
+  ///
+  /// In zh, this message translates to:
+  /// **'股票'**
+  String get assetFilterStock;
+
+  /// No description provided for @assetFilterEtf.
+  ///
+  /// In zh, this message translates to:
+  /// **'ETF'**
+  String get assetFilterEtf;
+
+  /// No description provided for @assetTotalValue.
+  ///
+  /// In zh, this message translates to:
+  /// **'总价值'**
+  String get assetTotalValue;
+
+  /// No description provided for @assetOthers.
+  ///
+  /// In zh, this message translates to:
+  /// **'其他'**
+  String get assetOthers;
+
+  /// No description provided for @assetNoStockHoldings.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无股票持仓'**
+  String get assetNoStockHoldings;
+
+  /// No description provided for @assetNoEtfHoldings.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无 ETF 持仓'**
+  String get assetNoEtfHoldings;
+
+  /// No description provided for @assetShowAmounts.
+  ///
+  /// In zh, this message translates to:
+  /// **'显示金额'**
+  String get assetShowAmounts;
+
+  /// No description provided for @assetHideAmounts.
+  ///
+  /// In zh, this message translates to:
+  /// **'隐藏金额'**
+  String get assetHideAmounts;
+
+  /// No description provided for @watchLiveNote.
+  ///
+  /// In zh, this message translates to:
+  /// **'实时报价 · 3 秒刷新'**
+  String get watchLiveNote;
+
+  /// No description provided for @drawerWithdrawable.
+  ///
+  /// In zh, this message translates to:
+  /// **'可提现 {amount}'**
+  String drawerWithdrawable(String amount);
 }
 
 class _AppLocalizationsDelegate

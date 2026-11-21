@@ -2372,4 +2372,57 @@ class AppLocalizationsEn extends AppLocalizations {
   String xferAfterHoldingPeriod(int days) {
     return 'After the $days-day holding period ends (default; to be confirmed by DW)';
   }
+
+  @override
+  String get assetHeroTotal => 'Total Assets (USD)';
+
+  @override
+  String get assetHeroTotalPaper => 'Paper · Total Assets (USD)';
+
+  @override
+  String get assetHeroToday => 'Today';
+
+  @override
+  String get assetHeroTotalPL => 'Total P&L';
+
+  @override
+  String get assetIntradayBuilding => 'Building intraday data';
+
+  @override
+  String get assetHistoryBuilding => 'Building history';
+
+  @override
+  String get assetFilterAll => 'All';
+
+  @override
+  String get assetFilterStock => 'Stocks';
+
+  @override
+  String get assetFilterEtf => 'ETFs';
+
+  @override
+  String get assetTotalValue => 'Total Value';
+
+  @override
+  String get assetOthers => 'Other';
+
+  @override
+  String get assetNoStockHoldings => 'No stock holdings yet';
+
+  @override
+  String get assetNoEtfHoldings => 'No ETF holdings yet';
+
+  @override
+  String get assetShowAmounts => 'Show amounts';
+
+  @override
+  String get assetHideAmounts => 'Hide amounts';
+
+  @override
+  String get watchLiveNote => 'Live quotes · every 3s';
+
+  @override
+  String drawerWithdrawable(String amount) {
+    return 'Available to withdraw: $amount';
+  }
 }

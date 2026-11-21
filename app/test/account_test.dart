@@ -105,7 +105,7 @@ void main() {
     );
     expect(find.byKey(const Key('home.total')), findsOneWidget);
     expect(find.text(r'$5,000.00'), findsWidgets);
-    expect(tester.widget<Text>(find.byKey(const Key('home.withdrawable'))).data, r'$0.00', reason: '可提现一律取 DW 返回值');
+    expect(find.byKey(const Key('home.withdrawable')), findsNothing, reason: 'F22-a：可提现移至账户抽屉资金区');
     expect(find.text('观察期内暂不可提现'), findsOneWidget);
     expect(find.byKey(const Key('home.openAccount')), findsNothing);
 

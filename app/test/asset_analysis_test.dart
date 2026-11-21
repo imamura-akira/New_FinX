@@ -1,11 +1,13 @@
 import 'package:finx_app/features/account/data/portfolio_api.dart';
+import 'package:finx_app/core/amount_mask.dart';
 import 'package:finx_app/features/account/presentation/asset_analysis.dart';
+import 'package:finx_app/features/trading/data/trading_api.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'helpers.dart';
 
-// F17：P-07 资产分布与资产趋势。
+// F17 / F22-a：P-07 资产页（渐变大卡 + 走势线、范围胶囊、眼睛、筛选环形图、自选）。
 
 Map<String, dynamic> _alloc({double stock = 2944.45, double etf = 1962.96, double cash = 1635.80, bool simulated = false}) {
   final total = stock + etf + cash;
@@ -98,7 +100,26 @@ FakeBackend _backend({bool opened = true}) => FakeBackend()
     }),
   )
   ..on('GET /paper/account/allocation', (_) => FakeBackend.ok(_alloc(stock: 1999.5, etf: 0, cash: 98000, simulated: true)))
-  ..on('GET /paper/account/history', (_) => FakeBackend.ok(_history([99999.5], simulated: true)));
+  ..on('GET /paper/account/history', (_) => FakeBackend.ok(_history([99999.5], simulated: true)))
+  ..on('GET /positions', (_) => FakeBackend.ok(_positions(const {'AAPL': 1000, 'NVDA': 1944.45, 'SPY': 1962.96})))
+  ..on('GET /paper/positions', (_) => FakeBackend.ok(_positions(const {'TSLA': 1999.5})));
+
+Map<String, dynamic> _pos(String sym, double v) => {
+  'symbol': sym,
+  'quantity': 1,
+  'sellableQty': 1,
+  'avgPrice': v,
+  'costBasis': v,
+  'marketPrice': v,
+  'marketValue': v,
+  'unrealizedPL': 0,
+  'unrealizedDayPL': 0,
+};
+
+Map<String, dynamic> _positions(Map<String, double> m) => {
+  'updatedAt': '2026-11-20T15:00:00Z',
+  'positions': [for (final e in m.entries) _pos(e.key, e.value)],
+};
 
 Future<void> _phone(WidgetTester tester) async {
   tester.view.physicalSize = const Size(1206, 2622);
@@ -113,15 +134,12 @@ String _text(WidgetTester tester, String key) => tester.widget<Text>(find.byKey(
 
 void main() {
   group('纯函数', () {
-    test('环形图扇区：0 金额类别不画扇区，其余按金额占比', () {
-      final a = Allocation.fromJson(_alloc(etf: 0));
-      final seg = donutSegments(a);
-      expect([for (final s in seg) s.$1], [AssetClass.stock, AssetClass.cash]);
-      expect(seg.fold<double>(0, (s, e) => s + e.$2), closeTo(1, 1e-9));
-      expect(donutSegments(Allocation.fromJson(_alloc(stock: 0, etf: 0, cash: 0))), isEmpty);
+    test('"全部"：现金 / 股票 / ETF 定稿顺序，金额与占比取后端', () {
+      final s = classSlices(Allocation.fromJson(_alloc()));
+      expect([for (final x in s) (x.id, x.amount, x.pct)], [('CASH', 1635.80, 25.0), ('STOCK', 2944.45, 45.0), ('ETF', 1962.96, 30.0)]);
     });
 
-    test('分布解析：按 STOCK / ETF / CASH 固定顺序，缺项按 0', () {
+    test('分布解析：缺项按 0', () {
       final a = Allocation.fromJson({
         'total': 10,
         'items': [
@@ -135,127 +153,189 @@ void main() {
       ]);
     });
 
-    test('环心金额取整到美元', () {
-      expect(fmtUsdWhole(6543.21), r'$6,543');
-      expect(fmtUsdWhole(99999.5), r'$100,000');
+    test('"股票" / "ETF"：按市值降序，前 5 个 + 其他；目录外代码按股票计；占比合计 100', () {
+      List<Position> ps(Map<String, double> m) => [for (final e in m.entries) Position.fromJson(_pos(e.key, e.value))];
+      final s = holdingSlices(ps({'AAPL': 10, 'MSFT': 60, 'NVDA': 50, 'TSLA': 40, 'META': 30, 'KO': 20, 'ZZZZ': 5, 'SPY': 999}), AllocFilter.stock);
+      expect([for (final x in s) x.id], ['MSFT', 'NVDA', 'TSLA', 'META', 'KO', 'OTHER']);
+      expect(s.last.amount, 15, reason: 'AAPL 10 + 目录外 ZZZZ 5');
+      expect(s.fold<double>(0, (a, x) => a + x.pct), closeTo(100, 1e-9));
+      final etf = holdingSlices(ps({'AAPL': 10, 'SPY': 30, 'QQQ': 10}), AllocFilter.etf);
+      expect([for (final x in etf) (x.id, x.pct)], [('SPY', 75.0), ('QQQ', 25.0)]);
+      expect(holdingSlices(ps({'AAPL': 10}), AllocFilter.etf), isEmpty);
     });
 
-    test('横轴日期抽样：首尾必显示，最多 7 个', () {
-      expect(axisLabelIndices(1), [0]);
-      expect(axisLabelIndices(5), [0, 1, 2, 3, 4]);
-      final idx = axisLabelIndices(30);
-      expect(idx.length, 7);
-      expect(idx.first, 0);
-      expect(idx.last, 29);
-    });
-
-    test('折线坐标：最高值在上、最新点在最右；数值全相同时居中', () {
-      const size = Size(358, 110);
-      final pts = TrendPainter.layout([100, 300, 200], size);
+    test('大卡走势线坐标：最高值在上、最新点在最右；数值全相同时居中', () {
+      const size = Size(200, 170);
+      final pts = HeroTrendPainter.layout([100, 300, 200], size);
       expect(pts[1].dy, lessThan(pts[2].dy));
       expect(pts[2].dy, lessThan(pts[0].dy));
-      expect(pts.last.dx, closeTo(352, 1e-9));
-      final flat = TrendPainter.layout([5, 5], size);
+      expect(pts.last.dx, closeTo(186, 1e-9));
+      final flat = HeroTrendPainter.layout([5, 5], size);
       expect(flat[0].dy, flat[1].dy);
+    });
+
+    test('范围：1D / 1W / 3M / 1Y / YTD，1D 为日内', () {
+      expect([for (final r in HistoryRange.values) r.code], ['1D', '1W', '3M', '1Y', 'YTD']);
+      expect(HistoryRange.d1.intraday, isTrue);
     });
   });
 
-  testWidgets('已开户：资产卡下方显示资产分布（金额、占比）与资产趋势，自选保留', (tester) async {
+  testWidgets('已开户：大卡（总资产 / 购买力 / 今日 + 走势线）→ 范围 → 筛选 → 环形图 → 自选；无可提现', (tester) async {
     await _phone(tester);
-    await pumpApp(tester, backend: _backend(), storedToken: 'tok');
+    final (be, _, _) = await pumpApp(tester, backend: _backend(), storedToken: 'tok');
+    // D-18：大卡"总资产"与环心同源同值，不是 DW 现金
     await _scrollTo(tester, find.byKey(const Key('p07.alloc')));
-    expect(_text(tester, 'p07.alloc.total'), r'$6,543.21', reason: '环心显示总资产');
-    // D-18 定案（审计 FUND-P0-3）：首页"总资产" = 现金 + 持仓市值，与资产分布同源，两处数字完全一致；不是 DW 现金 $1,635.80
-    expect(_text(tester, 'home.total'), _text(tester, 'p07.alloc.total'));
-    expect(_text(tester, 'home.total'), isNot(r'$1,635.80'));
-    expect(_text(tester, 'p07.alloc.STOCK.amount'), r'$2,944.45');
+    expect(_text(tester, 'home.total'), r'$6,543.21');
+    expect(_text(tester, 'p07.alloc.total'), _text(tester, 'home.total'));
+    expect(_text(tester, 'home.buyingPower'), r'$1,635.80');
+    expect(find.byKey(const Key('home.withdrawable')), findsNothing, reason: '可提现移出大卡');
+    expect(find.byKey(const Key('p07.hero.trend')), findsOneWidget, reason: '默认 1D');
+    expect(be.requests.any((r) => r.url.path == '/api/v1/account/history' && r.url.queryParameters['range'] == '1D'), isTrue);
+    expect(_text(tester, 'p07.alloc.CASH.amount'), r'$1,635.80');
     expect(_text(tester, 'p07.alloc.STOCK.pct'), '45.0%');
     expect(_text(tester, 'p07.alloc.ETF.amount'), r'$1,962.96');
-    expect(_text(tester, 'p07.alloc.CASH.pct'), '25.0%');
-    expect(find.text('按最新市值 · DW 实时'), findsOneWidget);
-    // 资产分布在资产卡之后、自选之前
-    await _scrollTo(tester, find.byKey(const Key('p07.trend')));
-    expect(find.byKey(const Key('p07.trend.chart')), findsOneWidget);
-    expect(find.text('11-20'), findsOneWidget, reason: '横轴含最新日期');
-    expect(find.text('11-14'), findsOneWidget);
-    final trendY = tester.getTopLeft(find.byKey(const Key('p07.trend'))).dy;
-    final allocY = tester.getTopLeft(find.byKey(const Key('p07.alloc'))).dy;
-    expect(allocY, lessThan(trendY));
-    await _scrollTo(tester, find.text('自选股'));
-    expect(tester.getTopLeft(find.text('自选股')).dy, greaterThan(tester.getTopLeft(find.byKey(const Key('p07.trend'))).dy));
-  });
-
-  testWidgets('分布中某类为 0：不画扇区但图例保留 \$0.00 与 0.0%', (tester) async {
-    await _phone(tester);
-    final be = _backend()..on('GET /account/allocation', (_) => FakeBackend.ok(_alloc(etf: 0)));
-    await pumpApp(tester, backend: be, storedToken: 'tok');
-    await _scrollTo(tester, find.byKey(const Key('p07.alloc')));
-    expect(_text(tester, 'p07.alloc.ETF.amount'), r'$0.00');
-    expect(_text(tester, 'p07.alloc.ETF.pct'), '0.0%');
-    final painter = tester.widget<CustomPaint>(find.byKey(const Key('p07.alloc.donut'))).painter! as DonutPainter;
-    expect([for (final s in painter.segments) s.$1], isNot(contains(AssetClass.etf)));
-  });
-
-  testWidgets('快照少于 2 个：显示"记录积累中"，不画折线；切换区间按 range 请求', (tester) async {
-    await _phone(tester);
-    final be = _backend()
-      ..on('GET /account/history', (req) => FakeBackend.ok(_history(req.url.queryParameters['range'] == 'ALL' ? [6500, 6543.21] : [6543.21])));
-    await pumpApp(tester, backend: be, storedToken: 'tok');
-    await _scrollTo(tester, find.byKey(const Key('p07.trend')));
-    expect(find.text('记录积累中，次日起可见趋势'), findsOneWidget);
-    expect(find.byKey(const Key('p07.trend.chart')), findsNothing);
-    await tester.tap(find.byKey(const Key('p07.trend.range.ALL')));
+    expect(find.text('总价值'), findsOneWidget);
+    expect(find.text('Portfolio'), findsNothing);
+    double y(String k) => tester.getTopLeft(find.byKey(Key(k))).dy;
+    expect(y('home.hero'), lessThan(y('p07.ranges')));
+    expect(y('p07.ranges'), lessThan(y('p07.filter.all')));
+    expect(y('p07.filter.all'), lessThan(y('p07.alloc')));
+    await _scrollTo(tester, find.byKey(const Key('home.watchlist')));
+    expect(y('p07.alloc'), lessThan(y('home.watchlist')));
+    expect(find.descendant(of: find.byKey(const Key('home.watchlist')), matching: find.text('自选')), findsOneWidget);
+    expect(find.text('实时报价 · 3 秒刷新'), findsOneWidget);
+    // 切换范围：按 range 请求，已加载的区间不重复请求
+    await _scrollTo(tester, find.byKey(const Key('p07.ranges')));
+    await tester.tap(find.byKey(const Key('p07.range.1W')));
     await tester.pumpAndSettle();
-    expect(be.requests.any((r) => r.url.path.endsWith('/account/history') && r.url.queryParameters['range'] == 'ALL'), isTrue);
-    expect(find.byKey(const Key('p07.trend.chart')), findsOneWidget);
-    expect(find.byKey(const Key('p07.trend.empty')), findsNothing);
+    expect(be.requests.where((r) => r.url.queryParameters['range'] == '1W'), hasLength(1));
+    await tester.tap(find.byKey(const Key('p07.range.1D')));
+    await tester.pumpAndSettle();
+    expect(be.requests.where((r) => r.url.queryParameters['range'] == '1D'), hasLength(1));
   });
 
-  testWidgets('接口失败：对应卡片整卡隐藏，其他区块不受影响', (tester) async {
+  testWidgets('走势线限定右侧 58%，任何金额长度下文字列不压线', (tester) async {
+    await _phone(tester);
+    final be = _backend()..on('GET /account/allocation', (_) => FakeBackend.ok(_alloc(stock: 987654321.98, etf: 123456789.12, cash: 55555555.55)));
+    await pumpApp(tester, backend: be, storedToken: 'tok');
+    final hero = tester.getRect(find.byKey(const Key('home.hero')));
+    final trend = tester.getRect(find.byKey(const Key('p07.hero.trend')));
+    expect(trend.left, closeTo(hero.right - hero.width * AssetHeroCard.trendFrac, 1));
+    for (final k in ['home.total', 'home.buyingPower', 'home.dayChange']) {
+      expect(tester.getRect(find.byKey(Key(k))).right, lessThanOrEqualTo(trend.left), reason: '$k 不进入走势线区域');
+    }
+    expect(_text(tester, 'home.total'), r'$1,166,666,666.65');
+  });
+
+  testWidgets('1D 不足 2 点："日内数据积累中"；其他区间不足 2 点："记录积累中"', (tester) async {
+    await _phone(tester);
+    final be = _backend()..on('GET /account/history', (req) => FakeBackend.ok(_history(req.url.queryParameters['range'] == '3M' ? [6500, 6543.21] : [6543.21])));
+    await pumpApp(tester, backend: be, storedToken: 'tok');
+    expect(find.text('日内数据积累中'), findsOneWidget);
+    expect(find.byKey(const Key('p07.hero.trend')), findsNothing);
+    await tester.tap(find.byKey(const Key('p07.range.1W')));
+    await tester.pumpAndSettle();
+    expect(find.text('记录积累中'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('p07.range.3M')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('p07.hero.trend')), findsOneWidget);
+  });
+
+  testWidgets('眼睛：全页金额变 ****（含图例），百分比保留；持久化', (tester) async {
+    await _phone(tester);
+    await pumpApp(tester, backend: _backend(), storedToken: 'tok');
+    await tester.tap(find.byKey(const Key('home.hide')));
+    await tester.pumpAndSettle();
+    expect(AmountMask.instance.value, isTrue);
+    for (final k in ['home.total', 'home.buyingPower', 'home.dayChange', 'p07.alloc.total', 'p07.alloc.CASH.amount', 'p07.alloc.ETF.amount']) {
+      expect(_text(tester, k), '****', reason: k);
+    }
+    expect(_text(tester, 'p07.alloc.STOCK.pct'), '45.0%', reason: '百分比保留');
+    await tester.tap(find.byKey(const Key('p07.filter.stock')));
+    await tester.pumpAndSettle();
+    expect(_text(tester, 'p07.alloc.NVDA.amount'), '****');
+    await tester.tap(find.byKey(const Key('home.hide')));
+    await tester.pumpAndSettle();
+    expect(_text(tester, 'home.total'), r'$6,543.21');
+  });
+
+  testWidgets('筛选 股票 / ETF：环形图按该类持仓的标的拆分；无持仓时显示说明', (tester) async {
+    await _phone(tester);
+    final (be, _, _) = await pumpApp(tester, backend: _backend(), storedToken: 'tok');
+    int posCalls() => be.requests.where((r) => r.url.path == '/api/v1/positions').length;
+    final before = posCalls(); // 资产概览本身会取持仓（今日盈亏），筛选只在首次切到股票 / ETF 时多取一次
+    await _scrollTo(tester, find.byKey(const Key('p07.alloc')));
+    await tester.ensureVisible(find.byKey(const Key('p07.filter.stock')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('p07.filter.stock')));
+    await tester.pumpAndSettle();
+    expect(_text(tester, 'p07.alloc.NVDA.amount'), r'$1,944.45');
+    expect(_text(tester, 'p07.alloc.AAPL.pct'), '34.0%');
+    expect(_text(tester, 'p07.alloc.total'), r'$2,944.45');
+    expect(find.byKey(const Key('p07.alloc.SPY')), findsNothing);
+    await tester.tap(find.byKey(const Key('p07.filter.etf')));
+    await tester.pumpAndSettle();
+    expect(_text(tester, 'p07.alloc.SPY.pct'), '100.0%');
+    expect(posCalls(), before + 1, reason: '筛选的持仓只取一次');
+    be.on('GET /positions', (_) => FakeBackend.ok(_positions(const {'AAPL': 10})));
+    await tester.tap(find.byKey(const Key('p07.filter.all')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('p07.alloc.CASH')), findsOneWidget);
+  });
+
+  testWidgets('接口失败：分布失败隐藏筛选与环形图，走势失败只隐藏线；不弹错误', (tester) async {
     await _phone(tester);
     final be = _backend()
       ..on('GET /account/allocation', (_) => FakeBackend.err(502, 50001, '券商服务暂时不可用'))
       ..on('GET /account/history', (_) => FakeBackend.err(502, 50001, '券商服务暂时不可用'));
     await pumpApp(tester, backend: be, storedToken: 'tok');
+    expect(find.byKey(const Key('home.hero')), findsOneWidget);
     expect(find.byKey(const Key('p07.alloc')), findsNothing);
-    expect(find.byKey(const Key('p07.trend')), findsNothing);
-    expect(find.textContaining('券商服务暂时不可用'), findsNothing, reason: '不弹错误提示');
-    await _scrollTo(tester, find.text('自选股'));
-    expect(find.text('自选股'), findsOneWidget);
+    expect(find.byKey(const Key('p07.filter.all')), findsNothing);
+    expect(find.byKey(const Key('p07.hero.trend')), findsNothing);
+    expect(find.byKey(const Key('p07.hero.trend.empty')), findsNothing);
+    expect(find.textContaining('券商服务暂时不可用'), findsNothing);
   });
 
-  testWidgets('仅分布失败：只隐藏分布卡，趋势照常', (tester) async {
-    await _phone(tester);
-    final be = _backend()..on('GET /account/allocation', (_) => FakeBackend.err(502, 50001, 'x'));
-    await pumpApp(tester, backend: be, storedToken: 'tok');
-    await _scrollTo(tester, find.byKey(const Key('p07.trend')));
-    expect(find.byKey(const Key('p07.alloc')), findsNothing);
-    expect(find.byKey(const Key('p07.trend')), findsOneWidget);
-  });
-
-  testWidgets('未开户：页面保持现状，不显示分布与趋势，也不请求接口', (tester) async {
+  testWidgets('未开户：只显示大卡（—），不显示范围 / 环形图，也不请求接口', (tester) async {
     await _phone(tester);
     final be = _backend(opened: false);
     await pumpApp(tester, backend: be, storedToken: 'tok');
+    expect(_text(tester, 'home.total'), '—');
+    expect(find.byKey(const Key('p07.ranges')), findsNothing);
     expect(find.byKey(const Key('p07.alloc')), findsNothing);
-    expect(find.byKey(const Key('p07.trend')), findsNothing);
     expect(be.requests.any((r) => r.url.path.contains('/account/allocation') || r.url.path.contains('/account/history')), isFalse);
   });
 
-  testWidgets('模拟盘：显示模拟账户的分布与趋势，带"模拟"角标，只请求 /paper 接口', (tester) async {
+  testWidgets('模拟盘：同一大卡与环形图，数据只来自 /paper/*；累计盈亏；可重置', (tester) async {
     await _phone(tester);
     final be = _backend(opened: false); // 模拟盘不依赖开户
     await pumpApp(tester, backend: be, storedToken: 'tok');
     await tester.tap(find.descendant(of: find.byKey(const Key('mode.switch')), matching: find.text('模拟盘')));
     await tester.pumpAndSettle();
+    expect(find.byKey(const Key('paper.hero')), findsOneWidget);
+    expect(find.text('模拟 · 总资产 (USD)'), findsOneWidget);
+    expect(_text(tester, 'paper.total'), r'$99,999.50');
+    expect(_text(tester, 'paper.buyingPower'), r'$98,000.00');
+    expect(find.text('累计盈亏'), findsOneWidget);
+    expect(find.text('日内数据积累中'), findsOneWidget);
+    expect(find.byKey(const Key('paper.reset')), findsOneWidget);
     await _scrollTo(tester, find.byKey(const Key('p07.alloc')));
-    expect(find.descendant(of: find.byKey(const Key('p07.alloc')), matching: find.byKey(const Key('paper.badge'))), findsOneWidget);
     expect(_text(tester, 'p07.alloc.CASH.amount'), r'$98,000.00');
-    expect(find.text('虚拟行情估值'), findsOneWidget);
-    await _scrollTo(tester, find.byKey(const Key('p07.trend')));
-    expect(find.descendant(of: find.byKey(const Key('p07.trend')), matching: find.byKey(const Key('paper.badge'))), findsOneWidget);
-    expect(find.text('记录积累中，次日起可见趋势'), findsOneWidget);
-    expect(be.requests.any((r) => r.url.path == '/api/v1/paper/account/allocation'), isTrue);
-    expect(be.requests.any((r) => r.url.path == '/api/v1/account/allocation'), isFalse);
+    await tester.tap(find.byKey(const Key('p07.filter.stock')));
+    await tester.pumpAndSettle();
+    expect(_text(tester, 'p07.alloc.TSLA.pct'), '100.0%');
+    expect(be.requests.any((r) => r.url.path == '/api/v1/paper/positions'), isTrue);
+    expect(be.requests.any((r) => r.url.path == '/api/v1/account/allocation' || r.url.path == '/api/v1/positions'), isFalse);
+  });
+
+  testWidgets('账户抽屉资金区显示可提现（DW 返回值）', (tester) async {
+    await _phone(tester);
+    await pumpApp(tester, backend: _backend(), storedToken: 'tok');
+    await tester.tap(find.byKey(const Key('home.avatar')));
+    await tester.pumpAndSettle();
+    final list = find.descendant(of: find.byType(Drawer), matching: find.byType(Scrollable)).first;
+    await tester.scrollUntilVisible(find.byKey(const Key('drawer.withdraw')), 200, scrollable: list);
+    expect(find.descendant(of: find.byKey(const Key('drawer.withdraw')), matching: find.text(r'可提现 $1,000.00')), findsOneWidget);
   });
 }

@@ -46,24 +46,27 @@ class Allocation {
   final List<AllocationItem> items;
 }
 
-/// 资产趋势区间。
+/// 资产走势区间（F22-a 定稿：1D / 1W / 3M / 1Y / YTD；1D 为后端日内快照，其余为每日快照）。
 enum HistoryRange {
-  d7('7D', 7),
-  d30('30D', 30),
-  d90('90D', 90),
-  all('ALL', 0);
+  d1('1D'),
+  w1('1W'),
+  m3('3M'),
+  y1('1Y'),
+  ytd('YTD');
 
-  const HistoryRange(this.code, this.days);
+  const HistoryRange(this.code);
   final String code;
-  final int days; // 0 = 全部
 
-  String get label => days == 0 ? t.rangeAll : t.rangeDays(days);
+  /// 胶囊文字（中英相同）。
+  String get label => code;
+  bool get intraday => this == HistoryRange.d1;
 }
 
 class AssetPoint {
-  const AssetPoint(this.date, this.total);
+  const AssetPoint(this.date, this.total, [this.at]);
   final DateTime date; // 美东日期
   final double total;
+  final DateTime? at; // 1D：日内档位时刻
 }
 
 /// 资产分布与趋势接口（api-spec.md 第 3 节 / 5.7；paper=true 走模拟盘）。
@@ -79,7 +82,7 @@ class PortfolioApi {
     final d = await _api.get('$_base/history', query: {'range': range.code}) as Map<String, dynamic>;
     return [
       for (final p in (d['points'] as List? ?? const []))
-        if (DateTime.tryParse('${(p as Map)['date']}') case final t?) AssetPoint(t, _d(p['total'])),
+        if (DateTime.tryParse('${(p as Map)['date']}') case final t?) AssetPoint(t, _d(p['total']), DateTime.tryParse('${p['at'] ?? ''}')),
     ];
   }
 }

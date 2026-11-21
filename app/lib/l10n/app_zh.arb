@@ -133,7 +133,7 @@
   "homeQuantityMarketValueCost": "数量、市值、成本与盈亏（券商返回）",
   "homeOrders": "订单",
   "homeCheckOrderStatusAnd": "查看订单状态，撤销未成交订单",
-  "homeWatchlist": "自选股",
+  "homeWatchlist": "自选",
   "homeGoToMarkets": "去市场",
   "homeYourWatchlistIsEmpty": "还没有自选股。在个股页点击右上角星标即可加入。",
   "homeCouldnTRefreshYour2": "模拟账户暂时无法刷新：{_paperError}",
@@ -1369,6 +1369,30 @@
     "placeholders": {
       "days": {
         "type": "int"
+      }
+    }
+  },
+  "assetHeroTotal": "总资产 (USD)",
+  "assetHeroTotalPaper": "模拟 · 总资产 (USD)",
+  "assetHeroToday": "今日",
+  "assetHeroTotalPL": "累计盈亏",
+  "assetIntradayBuilding": "日内数据积累中",
+  "assetHistoryBuilding": "记录积累中",
+  "assetFilterAll": "全部",
+  "assetFilterStock": "股票",
+  "assetFilterEtf": "ETF",
+  "assetTotalValue": "总价值",
+  "assetOthers": "其他",
+  "assetNoStockHoldings": "暂无股票持仓",
+  "assetNoEtfHoldings": "暂无 ETF 持仓",
+  "assetShowAmounts": "显示金额",
+  "assetHideAmounts": "隐藏金额",
+  "watchLiveNote": "实时报价 · 3 秒刷新",
+  "drawerWithdrawable": "可提现 {amount}",
+  "@drawerWithdrawable": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
       }
     }
   }

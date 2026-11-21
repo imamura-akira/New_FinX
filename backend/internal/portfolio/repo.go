@@ -103,3 +103,34 @@ func (p PGRepo) RealUsers(ctx context.Context) ([]string, error) {
 func (p PGRepo) PaperUsers(ctx context.Context) ([]string, error) {
 	return p.users(ctx, `SELECT user_id::text FROM paper_accounts`)
 }
+
+// SaveIntraday 写入日内快照（同一档位重复写入时忽略）。
+func (p PGRepo) SaveIntraday(ctx context.Context, s IntradaySnapshot) error {
+	b := s.Breakdown
+	_, err := p.DB.ExecContext(ctx, `INSERT INTO asset_intraday (user_id, mode, slot_at, total, cash, stock_value, etf_value, captured_at)
+	    VALUES ($1, $2, $3, $4, $5, $6, $7, $8) ON CONFLICT (user_id, mode, slot_at) DO NOTHING`,
+		s.UserID, string(s.Mode), s.At, dec(b.Total()), dec(b.Cash), dec(b.Stock), dec(b.ETF), s.CapturedAt)
+	return err
+}
+
+// ListIntraday 返回 slot_at ≥ since 的日内快照，按时刻升序。
+func (p PGRepo) ListIntraday(ctx context.Context, userID string, mode Mode, since time.Time) ([]IntradaySnapshot, error) {
+	rows, err := p.DB.QueryContext(ctx, `SELECT slot_at, cash::text, stock_value::text, etf_value::text, captured_at
+	    FROM asset_intraday WHERE user_id = $1 AND mode = $2 AND slot_at >= $3 ORDER BY slot_at`, userID, string(mode), since)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var out []IntradaySnapshot
+	for rows.Next() {
+		var cash, stock, etf string
+		s := IntradaySnapshot{UserID: userID, Mode: mode}
+		if err := rows.Scan(&s.At, &cash, &stock, &etf, &s.CapturedAt); err != nil {
+			return nil, err
+		}
+		s.At = s.At.UTC()
+		s.Breakdown = Breakdown{Cash: cents(cash), Stock: cents(stock), ETF: cents(etf)}
+		out = append(out, s)
+	}
+	return out, rows.Err()
+}

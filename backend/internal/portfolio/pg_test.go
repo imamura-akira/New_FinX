@@ -72,6 +72,29 @@ func TestPGRepo(t *testing.T) {
 	if _, err := r.RealUsers(ctx); err != nil {
 		t.Fatal(err)
 	}
+	// F22-a 日内快照：同档忽略、since 过滤、升序
+	at1 := time.Date(2026, 11, 20, 14, 30, 0, 0, time.UTC)
+	at2 := at1.Add(30 * time.Minute)
+	for _, s := range []IntradaySnapshot{
+		{UserID: uid, Mode: Paper, At: at2, Breakdown: Breakdown{Cash: 200, Stock: 50}, CapturedAt: time.Now().UTC()},
+		{UserID: uid, Mode: Paper, At: at1, Breakdown: Breakdown{Cash: 100}, CapturedAt: time.Now().UTC()},
+		{UserID: uid, Mode: Paper, At: at1, Breakdown: Breakdown{Cash: 999}, CapturedAt: time.Now().UTC()},
+	} {
+		if err := r.SaveIntraday(ctx, s); err != nil {
+			t.Fatal(err)
+		}
+	}
+	in, err := r.ListIntraday(ctx, uid, Paper, at1)
+	if err != nil || len(in) != 2 || !in[0].At.Equal(at1) || in[0].Breakdown.Cash != 100 || in[1].Breakdown.Total() != 250 {
+		t.Fatalf("日内快照 %+v %v", in, err)
+	}
+	if in, _ := r.ListIntraday(ctx, uid, Paper, at2); len(in) != 1 {
+		t.Fatalf("since 过滤 %d", len(in))
+	}
+	if in, _ := r.ListIntraday(ctx, uid, Real, at1); len(in) != 0 {
+		t.Fatal("账户类型隔离")
+	}
+	_, _ = st.DB.Exec(`DELETE FROM asset_intraday WHERE user_id = $1`, uid)
 	_, _ = st.DB.Exec(`DELETE FROM asset_snapshots WHERE user_id = $1`, uid)
 	_, _ = st.DB.Exec(`DELETE FROM paper_accounts WHERE user_id = $1`, uid)
 	_, _ = st.DB.Exec(`DELETE FROM users_app WHERE id = $1`, uid)

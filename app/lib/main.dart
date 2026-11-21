@@ -9,6 +9,7 @@ import 'app/config.dart';
 import 'app/router.dart';
 import 'app/scope.dart';
 import 'app/theme.dart';
+import 'core/amount_mask.dart';
 import 'core/api/api_client.dart';
 import 'core/session/session.dart';
 import 'l10n/l10n.dart';
@@ -16,7 +17,8 @@ import 'l10n/l10n.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await LocaleController.instance.load(); // F18 / F22-0：读取语言选择（首次安装默认英文）
-  await AppearanceController.instance.load(); // F21：读取外观选择（默认跟随系统）
+  await AppearanceController.instance.load(); // F21 / F22-0：读取外观选择（首次安装默认浅色）
+  await AmountMask.instance.load(); // F22-a：资产页"眼睛"隐藏金额（持久化）
   const config = AppConfig.fromEnvironment;
   final api = ApiClient(baseUrl: config.apiBaseUrl);
   final session = SessionController(api: api, store: SecureTokenStore());

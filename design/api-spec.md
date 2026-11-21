@@ -39,7 +39,7 @@ Base URL：`/api/v1`　认证：`Authorization: Bearer <sessionToken>`（除 /au
 | GET /account | `{accountId, accountNo, status, accountType:"LIVE", tradingType:"CASH", managementType:"SELF", openedAt}` | status: PENDING/OPEN/OPEN_NO_NEW_TRADES/FROZEN/CLOSED |
 | GET /account/money | `{cash, settledCash, buyingPower, cashAvailableForWithdrawal, unsettled, pendingDeposits, withheldForSeasoning, updatedAt}` | 来自 DW 账户资金汇总【Q-DW-8d 复核字段名】；**可提现一律用 DW 返回值** |
 | GET /account/allocation | `{simulated, total, items:[{type: "STOCK"\|"ETF"\|"CASH", amount, pct}], updatedAt}` | P-07 资产分布（F17，2026-11-20 新增）。现金取 DW summary/money 的 cash.cashBalance（与 /account/money 的 cash 同源），持仓市值取 DW summary/positions 的 marketValue，按我方标的列表 STOCK / ETF 归堆（列表外代码按股票计）；total = 现金 + 股票 + ETF；pct 由后端计算（一位小数，最大余数法合计 100.0，总额为 0 时全为 0）；items 固定 3 条、顺序 STOCK→ETF→CASH，0 金额照常返回。未开户 40901，DW 失败 50001 |
-| GET /account/history | `?range=7D\|30D\|90D\|ALL`（缺省 7D）→ `{simulated, range, points:[{date, total, cash, stock, etf}]}` | P-07 资产趋势（F17）。每日资产快照：每个用户 × 账户类型 × 美东日期一条，按日期升序；7D/30D/90D 为含今日的最近 N 个美东自然日。收盘后（美东 16:10 起）记录 CLOSE 快照；当日首次请求分布 / 趋势时若尚无记录兜底写入一条（之后被收盘快照覆盖）。有几天返回几天，不补造历史；快照为内部记录，金额以 DW 返回为基础。range 非法 42200 |
+| GET /account/history | `?range=1D\|1W\|3M\|1Y\|YTD\|7D\|30D\|90D\|ALL`（缺省 7D）→ `{simulated, range, points:[{date, at?, total, cash, stock, etf}]}` | P-07 资产趋势（F17）。每日资产快照：每个用户 × 账户类型 × 美东日期一条，按日期升序；7D/30D/90D 为含今日的最近 N 个美东自然日。收盘后（美东 16:10 起）记录 CLOSE 快照；当日首次请求分布 / 趋势时若尚无记录兜底写入一条（之后被收盘快照覆盖）。有几天返回几天，不补造历史；快照为内部记录，金额以 DW 返回为基础。range 非法 42200。F22-a：1W=7 天、3M=90 天、1Y=365 天、YTD=当年 1 月 1 日起；1D 为日内快照（美东交易日 09:30–16:00 每 30 分钟一档，实盘与模拟盘），返回最近一个有日内快照的美东日期的各档，点带 `at`（UTC） |
 
 ## 4. 银行账户（F7，P-31/P-32）
 
@@ -189,3 +189,4 @@ Base URL：`/api/v1`　认证：`Authorization: Bearer <sessionToken>`（除 /au
 | 2026-11-21 | `Transfer.status` 与 `Order.status` 新增我方取值 `UNCONFIRMED`（券商结果待人工核对：对账重放被券商拒绝、订单超出重放窗口〔同一美东交易日 15 分钟内〕、出入金超过券商幂等有效期仍未查到）；订单列表 `status=OPEN` 包含该值；该状态订单不能撤单。出金提交改为附带幂等键（DW 文档：Create Withdrawal 支持），结果不明时按原键重放并按账户反查。审计 FUND-P1-1/P1-2/P1-4 | 新增，向后兼容 |
 | 2026-11-21 | 新增 `GET /funding/limits`：出入金限额与观察期（后端配置 limits.* 与 seasoning_*）。App 前置校验与时效文案改用此接口，不再写死（审计 DOC-P1-4/P1-5） | 新增，向后兼容 |
 | 2026-11-21 | openapi 修正：`GET /account` 账户未开立的错误响应由误写的 404 改为 409（40901），与本文件 2026-11-19 记录及实现一致（审计 DOC-P1-1） | 文档修正 |
+| 2026-11-21 | F22-a：`GET /account/history`、`GET /paper/account/history` 的 `range` 新增 `1D`、`1W`、`3M`、`1Y`、`YTD`；`range=1D` 返回日内快照（新表 asset_intraday，迁移 000010），点新增可选字段 `at` | 新增，向后兼容 |

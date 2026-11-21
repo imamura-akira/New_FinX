@@ -245,6 +245,21 @@ abstract final class AppGradients {
     stops: [0, .55, 1],
   );
 
+  /// F22-a 资产页渐变大卡：118deg #4D5BEF → #8A4BE0 42% → #D4569B 70% → #F0944C（深浅色相同）
+  static const assetHero = LinearGradient(
+    begin: Alignment(-1, -0.55),
+    end: Alignment(1, 0.55),
+    colors: [Color(0xFF4D5BEF), Color(0xFF8A4BE0), Color(0xFFD4569B), Color(0xFFF0944C)],
+    stops: [0, .42, .70, 1],
+  );
+
+  /// F22-a 筛选胶囊选中态：135deg #7D4DF0 → #A944D8
+  static const filterOn = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFF7D4DF0), Color(0xFFA944D8)],
+  );
+
   /// 预告卡（Fifi / 奖励）
   static const soon = LinearGradient(
     begin: Alignment(-1, -0.6),
@@ -498,4 +513,27 @@ abstract final class WelcomeColors {
 
   /// 字标下的投影（浅色）/ 光晕（深色）
   static Color get markHalo => _ld(0x2E1B1830, 0x73FFFFFF);
+}
+
+/// F22-a 资产页令牌（design/reward-design/v3/asset_v2.png）。渐变卡上的元素深浅色相同。
+abstract final class AssetHeroColors {
+  /// 渐变卡上的涨 / 跌箭头（浅绿 / 浅红，保证在渐变上可读）
+  static const upOnGrad = Color(0xFF7CF2A4);
+  static const downOnGrad = Color(0xFFFFC9CB);
+
+  /// 卡投影（紫）
+  static const shadow = Color(0x4D6C5BF5);
+
+  /// 眼睛按钮底
+  static const eyeBg = Color(0x38FFFFFF);
+
+  /// 环形图按标的拆分（股票 / ETF 筛选）的系列色：前 5 个标的 + "其他"
+  static List<Color> get series => [
+    AppColors.allocStock,
+    AppColors.allocCash,
+    AppColors.allocEtf,
+    _ld(0xFF22A6B3, 0xFF3CC4D1),
+    _ld(0xFF16A34A, 0xFF22C55E),
+    _ld(0xFFB5AFC9, 0xFF5E5878),
+  ];
 }
