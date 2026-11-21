@@ -1204,4 +1204,3 @@ func TestFundingLimitsEndpoint(t *testing.T) {
 		}
 	}
 }
-
