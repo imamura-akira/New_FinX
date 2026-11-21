@@ -1512,7 +1512,7 @@
       }
     }
   },
-  "storeTierEmpty": "该等级商品即将上新",
+  "storeTierEmpty": "该等级商品即将上架",
   "storeTierLocked": "达到等级 {n} 后解锁",
   "@storeTierLocked": {
     "placeholders": {
@@ -1638,5 +1638,6 @@
       }
     }
   },
-  "orderPaperResetNow": "重置模拟账户"
+  "orderPaperResetNow": "重置模拟账户",
+  "storeArtPending": "待配图"
 }

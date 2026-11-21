@@ -2763,4 +2763,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get orderPaperResetNow => 'Reset Paper Account';
+
+  @override
+  String get storeArtPending => 'Art coming soon';
 }

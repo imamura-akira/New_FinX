@@ -11,8 +11,11 @@ import '../../../l10n/l10n.dart';
 
 /// F22-e P-27 奖励 Tab = Fifi 商店（定稿 design/reward-design/v3/store_final.png，参考 store_v2.html）。
 /// - 英雄横幅 st_hero_full.png：透明通道整卡 PNG，原图直接显示，不加容器裁切，仅加投影；中英文都用这张。
-/// - 等级胶囊 1–4 + 梦想：高于当前等级的带锁（点按轻提示）；默认选中当前等级。
+/// - 等级胶囊 1–4 + 梦想：高于当前等级的带锁（点按轻提示）；默认选中"有商品的最低等级"（seed 加载前按当前等级）。
 /// - 商品 / 套装 / 敬请期待与等级门槛来自后端 seed（GET /rewards/catalog）；点击商品或套装 → 详情弹层（兑换即将开启）。
+///   无商品的等级显示空态"该等级商品即将上架"；seed 中 image 为空的商品显示纯色占位并标注"待配图"。
+/// - 套装：st_bundle_banner.png 整条横幅（标题、XP、Preview 按钮已内嵌，中英通用），整卡可点 → 预览弹层。
+/// - 敬请期待：st_garage / home / yacht / jet 为带圆角的成品卡图，原图直接显示不裁切，锁角标叠加在图上。
 /// - "在 Fifi 上预览"轻提示即将上线；"赚取 XP" → F22-f 任务页。XP 胶囊为真实余额（GET /rewards/xp）。
 /// 圣诞限定版（F16）保留在 rewards_page.dart，由 AppConfig.seasonalTheme（SEASONAL_THEME，默认 off）切换。
 class StorePage extends StatefulWidget {
@@ -28,7 +31,7 @@ class StorePage extends StatefulWidget {
 class _StorePageState extends State<StorePage> {
   RewardsCatalog? _catalog;
   bool _failed = false;
-  int? _tab; // null = 跟随当前等级
+  int? _tab; // null = 默认等级（有商品的最低等级）
 
   @override
   void didChangeDependencies() {
@@ -57,7 +60,18 @@ class _StorePageState extends State<StorePage> {
 
   int get _userTier => XpBalance.instance.tier;
 
-  int get _selected => _tab ?? _userTier.clamp(1, 4);
+  /// 有商品（或套装）的最低等级页签；seed 未加载或全空时按当前等级。
+  int get _defaultTier {
+    final c = _catalog;
+    if (c != null) {
+      for (final tier in StorePage.tabs) {
+        if (c.items.any((i) => i.tier == tier) || c.bundles.any((b) => b.tier == tier)) return tier;
+      }
+    }
+    return _userTier.clamp(1, 4);
+  }
+
+  int get _selected => _tab ?? _defaultTier;
 
   void _tapTab(int tier) {
     if (tier > _userTier) {
@@ -134,7 +148,7 @@ class _StorePageState extends State<StorePage> {
 
   Widget _tierChip(int tier) {
     final locked = tier > _userTier;
-    final on = !locked && tier == _selected;
+    final on = tier == _selected;
     final label = tier == 5 ? t.storeDream : t.storeTier(tier);
     return GestureDetector(
       key: Key('store.tier.$tier'),
@@ -245,10 +259,7 @@ class _StorePageState extends State<StorePage> {
         decoration: _cardDeco,
         child: Column(
           children: [
-            SizedBox(
-              height: 74,
-              child: Image.asset(BrandAssets.storeItem(i.image), fit: BoxFit.contain, semanticLabel: i.name.text),
-            ),
+            SizedBox(height: 74, child: _art(i, size: 74)),
             const SizedBox(height: 6),
             Text(
               i.name.text,
@@ -285,110 +296,103 @@ class _StorePageState extends State<StorePage> {
     );
   }
 
-  Widget _bundleCard(RewardItem b) => GestureDetector(
-    key: Key('store.bundle.${b.id}'),
-    onTap: () => _detail(b),
-    child: Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: StoreColors.bundleBg),
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: Row(
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: Image.asset(BrandAssets.storeItem(b.image), width: 132, fit: BoxFit.cover, semanticLabel: b.name.text),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  b.name.text,
-                  style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w800, color: AppColors.ink),
-                ),
-                if (b.desc != null)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 3),
-                    child: Text(
-                      b.desc!.text,
-                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.sub),
-                    ),
-                  ),
-                const SizedBox(height: 3),
-                Text(
-                  t.storeBundleXp(fmtXp(b.xp)),
-                  style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w800, color: AppColors.primary),
-                ),
-                const SizedBox(height: 9),
-                Container(
-                  key: Key('store.bundle.${b.id}.preview'),
-                  padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 8),
-                  decoration: BoxDecoration(gradient: StoreColors.grad, borderRadius: BorderRadius.circular(999)),
-                  child: Text(
-                    t.storePreview,
-                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: AppColors.onAccent),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
+  /// 套装：整条横幅原图（文字与 Preview 按钮已内嵌），整卡可点进入预览弹层。
+  Widget _bundleCard(RewardItem b) => Padding(
+    padding: const EdgeInsets.only(bottom: 16),
+    child: Semantics(
+      button: true,
+      label: b.name.text,
+      excludeSemantics: true,
+      child: GestureDetector(
+        key: Key('store.bundle.${b.id}'),
+        behavior: HitTestBehavior.opaque,
+        onTap: () => _detail(b),
+        // 固定横幅比例（2172×724），图片解码前也占位，避免加载时跳动
+        child: AspectRatio(
+          aspectRatio: 3,
+          child: Image.asset(BrandAssets.storeItem(b.image), key: Key('store.bundle.${b.id}.banner'), fit: BoxFit.contain),
+        ),
       ),
     ),
   );
 
+  /// 敬请期待：成品卡图（自带圆角）原图显示、不裁切，锁角标叠加在图右上角。
   Widget _soonCard(RewardItem i) => GestureDetector(
     key: Key('store.soon.${i.id}'),
+    behavior: HitTestBehavior.opaque,
     onTap: () => showToast(context, t.storeTierLocked(i.unlockTier)),
-    child: Container(
-      clipBehavior: Clip.antiAlias,
-      decoration: _cardDeco,
-      child: Column(
-        children: [
-          Stack(
-            children: [
-              Image.asset(BrandAssets.storeItem(i.image), height: 66, width: double.infinity, fit: BoxFit.cover, semanticLabel: i.name.text),
-              // 占位图自带锁标；高清图替换后由此处补锁标
-              if (!i.placeholder)
-                Positioned(
-                  top: 5,
-                  right: 5,
-                  child: Container(
-                    width: 18,
-                    height: 18,
-                    decoration: BoxDecoration(color: StoreColors.lockBadge, shape: BoxShape.circle),
-                    child: Icon(Icons.lock_rounded, size: 10, color: AppColors.onAccent),
-                  ),
-                ),
-            ],
-          ),
-          const SizedBox(height: 5),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-            child: Text(
-              i.name.text,
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w800, color: AppColors.ink),
+    child: Column(
+      children: [
+        Stack(
+          children: [
+            // 成品卡图比例 1374×1145 ≈ 1.2
+            AspectRatio(
+              aspectRatio: 1.2,
+              child: Image.asset(BrandAssets.storeItem(i.image), key: Key('store.soon.${i.id}.image'), fit: BoxFit.contain, semanticLabel: i.name.text),
             ),
-          ),
-          const Spacer(),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(2, 2, 2, 7),
-            child: Text(
-              t.storeTier(i.unlockTier),
-              style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.w700, color: AppColors.primary),
+            Positioned(
+              top: 6,
+              right: 6,
+              child: Container(
+                key: Key('store.soon.${i.id}.lock'),
+                width: 18,
+                height: 18,
+                decoration: BoxDecoration(color: StoreColors.lockBadge, shape: BoxShape.circle),
+                child: Icon(Icons.lock_rounded, size: 10, color: AppColors.onAccent),
+              ),
             ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        Text(
+          i.name.text,
+          textAlign: TextAlign.center,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w800, color: AppColors.ink),
+        ),
+        const Spacer(),
+        Padding(
+          padding: const EdgeInsets.only(top: 2),
+          child: Text(
+            t.storeTier(i.unlockTier),
+            style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.w700, color: AppColors.primary),
           ),
-        ],
-      ),
+        ),
+      ],
     ),
   );
+
+  /// 商品图：有内置素材显示原图；seed 中 image 为空 → 纯色占位 + "待配图"。
+  Widget _art(RewardItem i, {required double size}) {
+    if (i.hasImage) return Image.asset(BrandAssets.storeItem(i.image), fit: BoxFit.contain, semanticLabel: i.name.text);
+    return Center(
+      child: Container(
+        key: Key('store.art.pending.${i.id}'),
+        width: size,
+        height: size,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(color: pendingArtColor(i.color).withValues(alpha: AppColors.isDark ? .45 : 1), borderRadius: BorderRadius.circular(size * .16)),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.image_outlined, size: size * .3, color: Colors.white.withValues(alpha: .9)),
+            const SizedBox(height: 2),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  t.storeArtPending,
+                  style: TextStyle(fontSize: size * .13, fontWeight: FontWeight.w800, color: Colors.white),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   Widget _cta() => GestureDetector(
     key: const Key('store.previewOnFifi'),
@@ -440,10 +444,7 @@ class _StorePageState extends State<StorePage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(14),
-                child: Image.asset(BrandAssets.storeItem(i.image), height: 150, fit: BoxFit.contain),
-              ),
+              SizedBox(height: 150, child: _art(i, size: 150)),
               if (i.placeholder)
                 Padding(
                   padding: const EdgeInsets.only(top: 6),
@@ -477,4 +478,11 @@ class _StorePageState extends State<StorePage> {
       ),
     );
   }
+}
+
+/// 待配图纯色占位：seed 的 #RRGGBB，缺省或非法时用等级胶囊底色。
+@visibleForTesting
+Color pendingArtColor(String? hex) {
+  final v = hex != null && hex.length == 7 && hex.startsWith('#') ? int.tryParse(hex.substring(1), radix: 16) : null;
+  return v == null ? StoreColors.tierBg : Color(0xFF000000 | v);
 }

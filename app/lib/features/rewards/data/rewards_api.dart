@@ -16,7 +16,7 @@ class LText {
 }
 
 class RewardItem {
-  const RewardItem({required this.id, required this.tier, required this.unlockTier, required this.xp, required this.image, required this.name, this.desc, this.placeholder = false});
+  const RewardItem({required this.id, required this.tier, required this.unlockTier, required this.xp, required this.image, required this.name, this.desc, this.placeholder = false, this.color});
   factory RewardItem.fromJson(Map<String, dynamic> j) => RewardItem(
     id: '${j['id']}',
     tier: _i(j['tier']),
@@ -24,6 +24,7 @@ class RewardItem {
     xp: _i(j['xp']),
     image: '${j['image'] ?? ''}',
     placeholder: j['placeholder'] == true,
+    color: j['color'] is String ? j['color'] as String : null,
     name: LText.fromJson(j['name']),
     desc: j['desc'] == null ? null : LText.fromJson(j['desc']),
   );
@@ -31,6 +32,13 @@ class RewardItem {
   final int tier, unlockTier, xp;
   final String image;
   final bool placeholder;
+
+  /// 待配图（image 为空）时的纯色占位，#RRGGBB。
+  final String? color;
+
+  /// 是否有内置素材图；无图时按 [color] 显示纯色占位并标注"待配图"。
+  bool get hasImage => image.isNotEmpty;
+
   final LText name;
   final LText? desc;
 }

@@ -56,7 +56,10 @@
 | fifi_quant.png（design/brand/，原图 240×333） | Fifi 拿平板（透明背景）；**分辨率偏低，3x 屏略糊，建议补高清图** | F22-d P-26 英雄卡 |
 | store/st_hero_full.png、store/xp_hero.png（design/brand/store/ → app/assets/brand/store/，缩至 1110px 宽） | 商店 / 任务页英雄横幅，透明通道整卡 PNG（已回正），原图显示、不裁切、仅投影；中英文同图（图中文字为英文） | F22-e P-27、F22-f 任务页 |
 | store/st_jacket / st_vest / st_bag / st_phones（缩至 330px） | 商品高清图（棒球夹克、交易马甲、紫色挎包、量化耳机） | F22-e 商品卡 |
-| store/st_bundle_placeholder / st_garage_placeholder / st_home_placeholder / st_yacht_placeholder / st_jet_placeholder | **占位图，待替换**（低分辨率，图中自带锁标；深色下可见白边）。高清图到位后同名替换文件即可，seed 中 placeholder 改为 false 后 App 自动补锁标 | F22-e 套装、敬请期待 |
+| store/st_garage / st_home / st_yacht / st_jet（design/brand/store/ → 缩至 480px 宽，原 1374×1145） | "敬请期待"高清成品卡图（自带圆角，透明边）：原图直接显示（AspectRatio 1.2，容器不裁切），锁角标 StoreColors.lockBadge 叠加在图右上角 | F22-e 敬请期待 |
+| store/st_bundle_banner（缩至 1086px 宽，原 2172×724） | 限定分析师套装整条横幅：标题、XP、Preview 按钮已内嵌（英文，中英模式通用），整卡可点进入预览弹层；不再原生渲染标题 / 价格 / 按钮 | F22-e 套装 |
+| store/st_bundle_placeholder / st_garage_placeholder / st_home_placeholder / st_yacht_placeholder / st_jet_placeholder | **已停用，保留备查**（低分辨率占位图，seed 不再引用） | — |
+| （无素材）等级 1、2 小商品：贴纸包、徽章、手机壳、棒球帽 | **待配图**：seed 中 image 为空、placeholder=true、color=#RRGGBB，App 渲染纯色圆角块 + "待配图 / Art coming soon"；深色下纯色降至 45% 不透明度。配图到位后放入 store/st_<id>.png 并在 seed 填 image | F22-e 商品卡 |
 
 规则：素材为我方品牌资产，可在任何页面使用；新素材先入 `assets/` 并登记到本表。
 样板中出现的真实投资人照片（股票大师页）**不进入**原型与正式 App，继续用字母头像；

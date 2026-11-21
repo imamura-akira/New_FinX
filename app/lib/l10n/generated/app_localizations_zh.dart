@@ -2479,7 +2479,7 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get storeTierEmpty => '该等级商品即将上新';
+  String get storeTierEmpty => '该等级商品即将上架';
 
   @override
   String storeTierLocked(int n) {
@@ -2631,4 +2631,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get orderPaperResetNow => '重置模拟账户';
+
+  @override
+  String get storeArtPending => '待配图';
 }

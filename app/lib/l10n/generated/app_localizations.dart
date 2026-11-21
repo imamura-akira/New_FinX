@@ -4590,7 +4590,7 @@ abstract class AppLocalizations {
   /// No description provided for @storeTierEmpty.
   ///
   /// In zh, this message translates to:
-  /// **'该等级商品即将上新'**
+  /// **'该等级商品即将上架'**
   String get storeTierEmpty;
 
   /// No description provided for @storeTierLocked.
@@ -4850,6 +4850,12 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'重置模拟账户'**
   String get orderPaperResetNow;
+
+  /// No description provided for @storeArtPending.
+  ///
+  /// In zh, this message translates to:
+  /// **'待配图'**
+  String get storeArtPending;
 }
 
 class _AppLocalizationsDelegate

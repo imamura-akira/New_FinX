@@ -790,5 +790,6 @@
   "tradeEstimatedExceedsPaperFunds": "Estimated amount {v0} exceeds your paper account's available funds of {v1}",
   "tradeHoldExceedsPaperFunds": "Amount on hold {v0} exceeds your paper account's available funds of {v1}",
   "orderPaperFundsUsedUp": "Your paper account's available funds are used up ({v0}). Sell paper positions or reset the paper account to restore the starting balance. Paper trading uses virtual funds only — it's separate from your live buying power, and live deposits don't add paper funds.",
-  "orderPaperResetNow": "Reset Paper Account"
+  "orderPaperResetNow": "Reset Paper Account",
+  "storeArtPending": "Art coming soon"
 }
