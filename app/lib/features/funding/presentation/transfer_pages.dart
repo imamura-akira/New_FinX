@@ -112,6 +112,7 @@ class DepositPage extends StatefulWidget {
 }
 
 class _DepositPageState extends State<DepositPage> {
+  final _submitKey = SubmitKey(); // 同一笔申请的重试沿用同一幂等键（审计 FUND-P0-1）
   List<BankAccount>? _banks;
   String? _bank;
   String? _loadError;
@@ -169,7 +170,10 @@ class _DepositPageState extends State<DepositPage> {
       _submitError = null;
     });
     try {
-      final r = await FundingApi(AppScope.of(context).api).deposit(bankAccountId: _bank!, amount: parseAmount(_amount.text)!);
+      final amount = parseAmount(_amount.text)!;
+      final r = await FundingApi(AppScope.of(context).api)
+          .deposit(bankAccountId: _bank!, amount: amount, idempotencyKey: _submitKey.forRequest('$_bank|$amount'));
+      _submitKey.reset();
       if (!mounted) return;
       setState(() {
         _result = r;
@@ -182,6 +186,7 @@ class _DepositPageState extends State<DepositPage> {
         });
       }
     } on ApiException catch (e) {
+      _submitKey.settle(e);
       if (!mounted) return;
       setState(() {
         _submitError = fundingErrorText(e);
@@ -348,6 +353,7 @@ class WithdrawPage extends StatefulWidget {
 }
 
 class _WithdrawPageState extends State<WithdrawPage> {
+  final _submitKey = SubmitKey(); // 同一笔申请的重试沿用同一幂等键（审计 FUND-P0-1）
   List<BankAccount>? _banks;
   AccountMoney? _money;
   String? _bank;
@@ -401,9 +407,13 @@ class _WithdrawPageState extends State<WithdrawPage> {
       _submitError = null;
     });
     try {
-      final r = await FundingApi(AppScope.of(context).api).withdrawAch(bankAccountId: _bank!, amount: parseAmount(_amount.text)!);
+      final amount = parseAmount(_amount.text)!;
+      final r = await FundingApi(AppScope.of(context).api)
+          .withdrawAch(bankAccountId: _bank!, amount: amount, idempotencyKey: _submitKey.forRequest('$_bank|$amount'));
+      _submitKey.reset();
       if (mounted) setState(() => _result = r);
     } on ApiException catch (e) {
+      _submitKey.settle(e);
       if (!mounted) return;
       setState(() {
         _submitError = fundingErrorText(e);

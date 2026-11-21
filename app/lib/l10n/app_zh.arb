@@ -1351,5 +1351,9 @@
   "appearanceTitle": "外观",
   "appearanceSystem": "跟随系统",
   "appearanceLight": "浅色",
-  "appearanceDark": "深色"
+  "appearanceDark": "深色",
+  "errSubmitUnconfirmedFunding": "网络超时，提交结果确认中。请先到资金记录中查看；再次点击提交不会重复申请。",
+  "errSubmitUnconfirmedOrder": "网络超时，订单结果确认中。请先到订单中查看；再次点击提交不会重复下单。",
+  "srvIdemKeyReusedTransfer": "这笔申请的内容已变化，请返回后重新提交。",
+  "srvIdemKeyReusedOrder": "这笔订单的内容已变化，请返回后重新下单。"
 }

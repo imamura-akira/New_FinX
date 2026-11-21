@@ -2223,4 +2223,17 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get appearanceDark => '深色';
+
+  @override
+  String get errSubmitUnconfirmedFunding =>
+      '网络超时，提交结果确认中。请先到资金记录中查看；再次点击提交不会重复申请。';
+
+  @override
+  String get errSubmitUnconfirmedOrder => '网络超时，订单结果确认中。请先到订单中查看；再次点击提交不会重复下单。';
+
+  @override
+  String get srvIdemKeyReusedTransfer => '这笔申请的内容已变化，请返回后重新提交。';
+
+  @override
+  String get srvIdemKeyReusedOrder => '这笔订单的内容已变化，请返回后重新下单。';
 }

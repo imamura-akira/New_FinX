@@ -2346,4 +2346,20 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get appearanceDark => 'Dark';
+
+  @override
+  String get errSubmitUnconfirmedFunding =>
+      'The network timed out while we confirm your request. Check Transfer History first — tapping Submit again won\'t create a duplicate.';
+
+  @override
+  String get errSubmitUnconfirmedOrder =>
+      'The network timed out while we confirm your order. Check Orders first — tapping Submit again won\'t place a duplicate.';
+
+  @override
+  String get srvIdemKeyReusedTransfer =>
+      'The details of this request changed. Please go back and submit again.';
+
+  @override
+  String get srvIdemKeyReusedOrder =>
+      'The details of this order changed. Please go back and place it again.';
 }

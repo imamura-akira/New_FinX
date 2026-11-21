@@ -43,6 +43,7 @@ class OrderPage extends StatefulWidget {
 enum _Mode { amount, qty }
 
 class _OrderPageState extends State<OrderPage> {
+  final _submitKey = SubmitKey(); // 同一笔申请的重试沿用同一幂等键（审计 FUND-P0-1）
   late String _side = widget.side == 'SELL' ? 'SELL' : 'BUY';
   late bool _paper = widget.paper;
   String _type = 'MARKET';
@@ -206,14 +207,19 @@ class _OrderPageState extends State<OrderPage> {
     final api = TradingApi(AppScope.of(context).api, paper: paper);
     try {
       final byAmount = !_isLimit && _mode == _Mode.amount;
+      final amount = byAmount ? parseAmount(_input.text) : null;
+      final quantity = byAmount ? null : parseQty(_input.text);
+      final limitPrice = _isLimit ? parseLimitPrice(_limit.text) : null;
       final r = await api.place(
         symbol: widget.symbol,
         side: _side,
         orderType: _type,
-        amount: byAmount ? parseAmount(_input.text) : null,
-        quantity: byAmount ? null : parseQty(_input.text),
-        limitPrice: _isLimit ? parseLimitPrice(_limit.text) : null,
+        amount: amount,
+        quantity: quantity,
+        limitPrice: limitPrice,
+        idempotencyKey: paper ? null : _submitKey.forRequest('${widget.symbol}|$_side|$_type|$amount|$quantity|$limitPrice'),
       );
+      _submitKey.reset();
       Order? detail;
       if (!r.pending) {
         try {
@@ -238,6 +244,7 @@ class _OrderPageState extends State<OrderPage> {
         });
       }
     } on ApiException catch (e) {
+      _submitKey.settle(e);
       if (!mounted) return;
       setState(() {
         _submitError = tradingErrorText(e);

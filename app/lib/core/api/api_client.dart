@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:http/http.dart' as http;
 
@@ -70,16 +71,19 @@ class ApiClient {
   void Function()? onSessionInvalid;
 
   Future<dynamic> get(String path, {Map<String, String>? query}) => _send('GET', path, query: query);
-  Future<dynamic> post(String path, [Object? body]) => _send('POST', path, body: body);
+  /// [headers]：附加请求头（如资金类申请的 Idempotency-Key）；[timeout]：覆盖默认超时（资金类提交需长于后端提交券商的最长耗时）。
+  Future<dynamic> post(String path, [Object? body, Map<String, String>? headers, Duration? timeout]) =>
+      _send('POST', path, body: body, headers: headers, timeout: timeout);
   Future<dynamic> put(String path, Object? body) => _send('PUT', path, body: body);
   Future<dynamic> patch(String path, Object? body) => _send('PATCH', path, body: body);
   Future<dynamic> delete(String path) => _send('DELETE', path);
 
-  Future<dynamic> _send(String method, String path, {Object? body, Map<String, String>? query}) async {
+  Future<dynamic> _send(String method, String path, {Object? body, Map<String, String>? query, Map<String, String>? headers, Duration? timeout}) async {
     final uri = Uri.parse('$_base$path').replace(queryParameters: (query == null || query.isEmpty) ? null : query);
     final req = http.Request(method, uri)..headers['Accept'] = 'application/json';
     final token = tokenProvider();
     if (token != null && token.isNotEmpty) req.headers['Authorization'] = 'Bearer $token';
+    if (headers != null) req.headers.addAll(headers);
     if (body != null) {
       req.headers['Content-Type'] = 'application/json';
       req.body = jsonEncode(body);
@@ -87,7 +91,7 @@ class ApiClient {
 
     http.Response res;
     try {
-      res = await http.Response.fromStream(await _http.send(req).timeout(timeout));
+      res = await http.Response.fromStream(await _http.send(req).timeout(timeout ?? this.timeout));
     } on TimeoutException {
       throw ApiException(code: ApiCodes.network, message: t.errTimeout);
     } on SocketException {
@@ -121,5 +125,43 @@ class ApiClient {
     );
     if (err.isSessionInvalid) onSessionInvalid?.call();
     throw err;
+  }
+}
+
+/// 资金类申请（入金、出金、下单）的提交超时：须长于后端向券商提交的最长耗时（最多 4 次尝试 × 10 秒 + 退避），
+/// 避免 App 先超时、用户重试（审计 FUND-P0-1）。
+const submitTimeout = Duration(seconds: 60);
+
+/// 新的幂等键（UUID v4）。
+String newIdempotencyKey() {
+  final r = Random.secure();
+  final b = List<int>.generate(16, (_) => r.nextInt(256));
+  b[6] = (b[6] & 0x0f) | 0x40;
+  b[8] = (b[8] & 0x3f) | 0x80;
+  String h(int from, int to) => b.sublist(from, to).map((x) => x.toRadixString(16).padLeft(2, '0')).join();
+  return '${h(0, 4)}-${h(4, 6)}-${h(6, 8)}-${h(8, 10)}-${h(10, 16)}';
+}
+
+/// 一笔资金类申请的幂等键：内容（[fingerprint]）不变的重试沿用同一个键，后端据此去重、不会重复提交；
+/// 内容变化或得到明确结果后换新键（审计 FUND-P0-1）。
+class SubmitKey {
+  String? _key;
+  String? _fingerprint;
+
+  String forRequest(String fingerprint) {
+    if (_key == null || _fingerprint != fingerprint) {
+      _key = newIdempotencyKey();
+      _fingerprint = fingerprint;
+    }
+    return _key!;
+  }
+
+  /// 已得到明确结果（成功、校验失败、券商明确拒绝）：下一次提交视为新申请。
+  void reset() => _key = _fingerprint = null;
+
+  /// 网络超时 / 断网时保留键（结果不明，重试必须是同一笔）；其余错误换新键。
+  void settle(Object error) {
+    if (error is ApiException && error.code == ApiCodes.network) return;
+    reset();
   }
 }

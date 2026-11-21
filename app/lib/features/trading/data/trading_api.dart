@@ -1,4 +1,5 @@
 import '../../../core/api/api_client.dart';
+import '../../../l10n/l10n.dart';
 
 double? _dn(Object? v) => v is num ? v.toDouble() : (v == null ? null : double.tryParse('$v'));
 double _d(Object? v) => _dn(v) ?? 0;
@@ -191,6 +192,7 @@ class TradingApi {
     double? quantity,
     String orderType = 'MARKET',
     double? limitPrice,
+    String? idempotencyKey, // 实盘必填：同一笔订单的重试沿用同一个值（见 SubmitKey）
   }) async {
     try {
       final d = await _api.post('$_p/orders', {
@@ -201,13 +203,14 @@ class TradingApi {
         if (quantity != null) 'quantity': double.parse(quantity.toStringAsFixed(6)),
         if (orderType == 'LIMIT' && limitPrice != null) 'limitPrice': double.parse(limitPrice.toStringAsFixed(4)),
         if (orderType == 'LIMIT') 'timeInForce': 'DAY',
-      }) as Map<String, dynamic>;
+      }, idempotencyKey == null ? null : {'Idempotency-Key': idempotencyKey}, paper ? null : submitTimeout) as Map<String, dynamic>;
       return OrderResult(orderId: d['orderId'] as String, status: d['status'] as String? ?? 'NEW');
     } on ApiException catch (e) {
       final data = e.data;
       if ((e.code == ApiCodes.dwFailed || e.code == ApiCodes.dwBadData) && data is Map && data['orderId'] is String) {
         return OrderResult(orderId: data['orderId'] as String, status: 'SUBMITTING', pending: true);
       }
+      if (!paper && e.code == ApiCodes.network) throw ApiException(code: ApiCodes.network, message: t.errSubmitUnconfirmedOrder);
       rethrow;
     }
   }

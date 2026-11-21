@@ -670,5 +670,9 @@
   "appearanceTitle": "Appearance",
   "appearanceSystem": "Use System Setting",
   "appearanceLight": "Light",
-  "appearanceDark": "Dark"
+  "appearanceDark": "Dark",
+  "errSubmitUnconfirmedFunding": "The network timed out while we confirm your request. Check Transfer History first — tapping Submit again won't create a duplicate.",
+  "errSubmitUnconfirmedOrder": "The network timed out while we confirm your order. Check Orders first — tapping Submit again won't place a duplicate.",
+  "srvIdemKeyReusedTransfer": "The details of this request changed. Please go back and submit again.",
+  "srvIdemKeyReusedOrder": "The details of this order changed. Please go back and place it again."
 }

@@ -4130,6 +4130,30 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'深色'**
   String get appearanceDark;
+
+  /// No description provided for @errSubmitUnconfirmedFunding.
+  ///
+  /// In zh, this message translates to:
+  /// **'网络超时，提交结果确认中。请先到资金记录中查看；再次点击提交不会重复申请。'**
+  String get errSubmitUnconfirmedFunding;
+
+  /// No description provided for @errSubmitUnconfirmedOrder.
+  ///
+  /// In zh, this message translates to:
+  /// **'网络超时，订单结果确认中。请先到订单中查看；再次点击提交不会重复下单。'**
+  String get errSubmitUnconfirmedOrder;
+
+  /// No description provided for @srvIdemKeyReusedTransfer.
+  ///
+  /// In zh, this message translates to:
+  /// **'这笔申请的内容已变化，请返回后重新提交。'**
+  String get srvIdemKeyReusedTransfer;
+
+  /// No description provided for @srvIdemKeyReusedOrder.
+  ///
+  /// In zh, this message translates to:
+  /// **'这笔订单的内容已变化，请返回后重新下单。'**
+  String get srvIdemKeyReusedOrder;
 }
 
 class _AppLocalizationsDelegate

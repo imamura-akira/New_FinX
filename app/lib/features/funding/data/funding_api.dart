@@ -134,11 +134,12 @@ class FundingApi {
 
   Future<void> unlinkBank(String id) => _api.delete('/funding/bank-accounts/${Uri.encodeComponent(id)}');
 
-  Future<TransferResult> deposit({required String bankAccountId, required double amount}) =>
-      _submit('/funding/deposits', {'bankAccountId': bankAccountId, 'amount': _money(amount)});
+  /// [idempotencyKey]：同一笔申请的重试沿用同一个值（见 SubmitKey），后端据此去重。
+  Future<TransferResult> deposit({required String bankAccountId, required double amount, required String idempotencyKey}) =>
+      _submit('/funding/deposits', {'bankAccountId': bankAccountId, 'amount': _money(amount)}, idempotencyKey);
 
-  Future<TransferResult> withdrawAch({required String bankAccountId, required double amount}) =>
-      _submit('/funding/withdrawals', {'method': 'ACH', 'bankAccountId': bankAccountId, 'amount': _money(amount)});
+  Future<TransferResult> withdrawAch({required String bankAccountId, required double amount, required String idempotencyKey}) =>
+      _submit('/funding/withdrawals', {'method': 'ACH', 'bankAccountId': bankAccountId, 'amount': _money(amount)}, idempotencyKey);
 
   Future<List<Transfer>> transfers({String? type}) async => [
     for (final t in (await _api.get('/funding/transfers', query: type == null ? null : {'type': type}) as List? ?? const []))
@@ -150,9 +151,9 @@ class FundingApi {
     return DepositInstructions({for (final e in d.entries) e.key: '${e.value ?? ''}'});
   }
 
-  Future<TransferResult> _submit(String path, Map<String, dynamic> body) async {
+  Future<TransferResult> _submit(String path, Map<String, dynamic> body, String idempotencyKey) async {
     try {
-      final d = await _api.post(path, body) as Map<String, dynamic>;
+      final d = await _api.post(path, body, {'Idempotency-Key': idempotencyKey}, submitTimeout) as Map<String, dynamic>;
       return TransferResult(transferId: d['transferId'] as String, status: d['status'] as String? ?? 'PENDING');
     } on ApiException catch (e) {
       // 50001：已记录、券商受理结果待确认（api-spec 第 10 节），后台对账后在资金记录中更新
@@ -160,6 +161,8 @@ class FundingApi {
       if (e.code == ApiCodes.dwFailed && data is Map && data['transferId'] is String) {
         return TransferResult(transferId: data['transferId'] as String, status: 'SUBMITTING', pending: true);
       }
+      // 超时 / 断网：结果不明，不提示"稍后重试"（重试沿用同一幂等键，不会重复申请）
+      if (e.code == ApiCodes.network) throw ApiException(code: ApiCodes.network, message: t.errSubmitUnconfirmedFunding);
       rethrow;
     }
   }

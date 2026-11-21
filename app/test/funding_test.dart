@@ -1,8 +1,12 @@
 import 'dart:convert';
 
+import 'package:finx_app/core/api/api_client.dart';
 import 'package:finx_app/core/widgets/celebration.dart';
 import 'package:finx_app/features/funding/domain/funding_rules.dart';
+import 'package:finx_app/features/trading/data/trading_api.dart';
+import 'package:finx_app/l10n/l10n.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart' as http;
 import 'package:material_ui/material_ui.dart';
 
 import 'helpers.dart';
@@ -200,6 +204,70 @@ void main() {
     expect(find.text('tr-9'), findsOneWidget);
     expect(find.text('提交中'), findsOneWidget);
     expect(find.byType(ConfettiBurst), findsNothing, reason: '结果待确认时不庆祝');
+  });
+
+  testWidgets('P-13：网络超时 → 提示"确认中"而非"稍后重试"；再次提交沿用同一幂等键；成功后下一笔换新键（审计 FUND-P0-1）', (tester) async {
+    await _phone(tester);
+    var n = 0;
+    final be = _backend(banks: [_bank])
+      ..on('POST /funding/deposits', (_) {
+        n++;
+        if (n == 1) throw http.ClientException('timeout'); // 首次：网络中断，结果不明
+        return FakeBackend.ok({'transferId': 'tr-7', 'status': 'PENDING'});
+      });
+    await pumpApp(tester, backend: be, storedToken: 'tok');
+    await _openDrawerItem(tester, 'drawer.deposit');
+    await tester.tap(find.byKey(const Key('p13.ach')));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(const Key('p13.amount')), '20');
+    await tester.tap(find.byKey(const Key('p13.next')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('p13.submit')));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('提交结果确认中'), findsOneWidget);
+    expect(find.textContaining('稍后重试'), findsNothing);
+    await tester.tap(find.byKey(const Key('p13.submit')));
+    await tester.pumpAndSettle();
+    final keys = [for (final r in be.requests.where((r) => r.method == 'POST' && r.url.path.endsWith('/funding/deposits'))) r.headers['Idempotency-Key']];
+    expect(keys, hasLength(2));
+    expect(keys[0], matches(RegExp(r'^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$')));
+    expect(keys[1], keys[0], reason: '结果不明后的重试必须是同一笔申请');
+    expect(find.text('tr-7'), findsOneWidget);
+  });
+
+  test('下单：实盘带 Idempotency-Key 且超时提示"确认中"；模拟盘不带（审计 FUND-P0-1）', () async {
+    debugSetLocale(const Locale('zh'));
+    var fail = true;
+    final be = FakeBackend()
+      ..on('POST /orders', (_) {
+        if (fail) throw http.ClientException('timeout');
+        return FakeBackend.ok({'orderId': 'o-1', 'status': 'NEW'});
+      })
+      ..on('POST /paper/orders', (_) => FakeBackend.ok({'orderId': 'p-1', 'status': 'FILLED'}));
+    final client = ApiClient(baseUrl: 'http://test/api/v1', httpClient: be.client);
+    final live = TradingApi(client);
+    await expectLater(
+      live.place(symbol: 'AAPL', side: 'BUY', amount: 100, idempotencyKey: 'k-1'),
+      throwsA(isA<ApiException>().having((e) => e.message, 'message', contains('订单结果确认中'))),
+    );
+    fail = false;
+    await live.place(symbol: 'AAPL', side: 'BUY', amount: 100, idempotencyKey: 'k-1');
+    final heads = [for (final r in be.requests.where((r) => r.url.path.endsWith('/api/v1/orders'))) r.headers['Idempotency-Key']];
+    expect(heads, ['k-1', 'k-1']);
+    await TradingApi(client, paper: true).place(symbol: 'AAPL', side: 'BUY', amount: 100);
+    expect(be.requests.last.headers.containsKey('Idempotency-Key'), isFalse);
+  });
+
+  test('SubmitKey：内容不变沿用；内容变化、明确结果后换新；超时保留', () {
+    final k = SubmitKey();
+    final a = k.forRequest('bank|20');
+    expect(k.forRequest('bank|20'), a);
+    expect(k.forRequest('bank|30'), isNot(a), reason: '金额变化是另一笔申请');
+    final b = k.forRequest('bank|30');
+    k.settle(ApiException(code: ApiCodes.network, message: 'timeout'));
+    expect(k.forRequest('bank|30'), b, reason: '超时：结果不明，保留');
+    k.settle(ApiException(code: ApiCodes.validation, message: 'x'));
+    expect(k.forRequest('bank|30'), isNot(b), reason: '明确结果后换新键');
   });
 
   testWidgets('P-14：可提现为 0 时拦截；服务端 42201 显示限额信息', (tester) async {
