@@ -99,7 +99,7 @@ class _FifiPageState extends State<FifiPage> {
             bottom: 0,
             child: Image.asset(BrandAssets.fifiQuant, key: const Key('p26.fifi'), height: 200, semanticLabel: 'Fifi'),
           ),
-          Positioned(top: 22, right: 170, child: _spark(14)),
+          Positioned(bottom: 26, right: 158, child: _spark(14)), // Fifi 左下空白处：英文标题较长，放上方会压字
           Positioned(bottom: 46, right: 12, child: _spark(11)),
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),

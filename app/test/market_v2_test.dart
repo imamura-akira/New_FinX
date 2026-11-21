@@ -68,6 +68,15 @@ void main() {
     expect(searchInstruments('').any((i) => i.symbol == 'BTC'), isFalse, reason: '加密标的仅用于预测，不在搜索范围');
   });
 
+  test('迷你走势平滑：60 根分时按段均值为 24 点；不足 24 点原样', () {
+    final v = [for (var i = 0; i < 60; i++) i.toDouble()];
+    final s = smoothSpark(v);
+    expect(s, hasLength(24));
+    expect(s.first, closeTo(.5, 1e-9));
+    expect(s.last, closeTo(58, 1e-9)); // 末段 57–59
+    expect(smoothSpark([1, 2, 3]), [1, 2, 3]);
+  });
+
   testWidgets('P-09 版式：美国市场纯文字标签 → QQQ / SPY / DIA 渐变卡 → 市场统计 → 内部人交易 → 涨幅榜；无 IWM、无恐慌贪婪', (tester) async {
     final be = _backend()
       ..on('GET /market/instruments/QQQ', (_) => FakeBackend.ok(_inst('QQQ')))
@@ -100,6 +109,9 @@ void main() {
     expect(tester.widget<Text>(find.byKey(const Key('market.stats.down'))).data, '下跌 11');
     expect(tester.widget<Text>(find.byKey(const Key('market.stats.up'))).data, '上涨 11');
     expect(tester.widget<Expanded>(find.byKey(const Key('market.stats.ratio.flat'))).flex, 2);
+    for (final k in ['down', 'flat', 'up']) {
+      expect(tester.getSize(find.byKey(Key('market.stats.ratio.$k'))).height, 7, reason: '比例条 $k 段可见（有高度）');
+    }
     await tester.tap(find.byKey(const Key('market.stats.30D')));
     await tester.pumpAndSettle();
     expect(be.requests.any((r) => r.url.path.endsWith('/market/stats') && r.url.queryParameters['period'] == '30D'), isTrue);

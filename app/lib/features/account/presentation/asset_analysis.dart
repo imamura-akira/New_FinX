@@ -101,7 +101,15 @@ class HeroData {
 }
 
 String _signedUsd(double v) => v > 0 ? '+${fmtUsd(v)}' : fmtUsd(v);
-String _signedPct(double? p) => p == null ? '' : ' (${p > 0 ? '+' : ''}${p.toStringAsFixed(2)}%)';
+@visibleForTesting
+String signedPctForTest(double? p) => _signedPct(p);
+
+/// (+0.65%)；四舍五入为 0 时显示 (0.00%)，不出现 -0.00%。
+String _signedPct(double? p) {
+  if (p == null) return '';
+  final r = double.parse(p.toStringAsFixed(2));
+  return ' (${r > 0 ? '+' : ''}${(r == 0 ? 0.0 : r).toStringAsFixed(2)}%)';
+}
 
 /// P-07 资产总览：大卡 + 范围胶囊 + 筛选 + 环形图。[analysis] 为 false（未开户）时只显示大卡。
 /// [generation] 变化时重新加载（下拉刷新、模拟盘重置）。
@@ -315,65 +323,72 @@ class AssetHeroCard extends StatelessWidget {
                 ),
               Padding(
                 padding: const EdgeInsets.fromLTRB(18, 20, 18, 18),
-                child: SizedBox(
-                  width: c.maxWidth * textFrac - 18 - 4, // 扣除左内边距与 4pt 间隙：右缘不越过走势线区域
-                  child: DefaultTextStyle(
-                    style: TextStyle(color: AppColors.onAccent),
-                    child: Column(
-                      key: const Key('p07.hero.text'),
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Flexible(
-                              child: Text(
-                                data.title,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.onAccent.withValues(alpha: .92)),
+                child: DefaultTextStyle(
+                  style: TextStyle(color: AppColors.onAccent),
+                  child: Column(
+                    key: const Key('p07.hero.text'),
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // 标题行位于走势线最高点之上，可占整卡宽度（英文"Total Assets (USD)"不截断）
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Flexible(
+                            child: Text(
+                              data.title,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.onAccent.withValues(alpha: .92)),
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Semantics(
+                            button: true,
+                            label: mask.value ? t.assetShowAmounts : t.assetHideAmounts,
+                            child: GestureDetector(
+                              key: const Key('home.hide'),
+                              onTap: mask.toggle,
+                              child: Container(
+                                width: 24,
+                                height: 24,
+                                decoration: const BoxDecoration(color: AssetHeroColors.eyeBg, shape: BoxShape.circle),
+                                child: Icon(mask.value ? Icons.visibility_off_outlined : Icons.visibility_outlined, size: 14, color: AppColors.onAccent),
                               ),
                             ),
-                            const SizedBox(width: 6),
-                            Semantics(
-                              button: true,
-                              label: mask.value ? t.assetShowAmounts : t.assetHideAmounts,
-                              child: GestureDetector(
-                                key: const Key('home.hide'),
-                                onTap: mask.toggle,
-                                child: Container(
-                                  width: 24,
-                                  height: 24,
-                                  decoration: const BoxDecoration(color: AssetHeroColors.eyeBg, shape: BoxShape.circle),
-                                  child: Icon(mask.value ? Icons.visibility_off_outlined : Icons.visibility_outlined, size: 14, color: AppColors.onAccent),
-                                ),
-                              ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(
+                        width: c.maxWidth * textFrac - 18 - 4, // 金额列：扣除左内边距与 4pt 间隙，右缘不越过走势线区域
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: 6),
+                            _fit(money(data.total), Key('$p.total'), 33, FontWeight.w800),
+                            const SizedBox(height: 12),
+                            _label(t.homeBuyingPower),
+                            const SizedBox(height: 3),
+                            _fit(money(data.buyingPower), Key('$p.buyingPower'), 18, FontWeight.w800),
+                            const SizedBox(height: 12),
+                            _label(data.deltaLabel),
+                            const SizedBox(height: 3),
+                            Row(
+                              children: [
+                                Flexible(child: _fit(deltaText, Key(data.paper ? 'paper.pl' : 'home.dayChange'), 14.5, FontWeight.w800)),
+                                if (d != null && d != 0 && !mask.value) ...[
+                                  const SizedBox(width: 4),
+                                  Icon(
+                                    d > 0 ? Icons.arrow_drop_up_rounded : Icons.arrow_drop_down_rounded,
+                                    size: 22,
+                                    color: d > 0 ? AssetHeroColors.upOnGrad : AssetHeroColors.downOnGrad,
+                                  ),
+                                ],
+                              ],
                             ),
                           ],
                         ),
-                        const SizedBox(height: 6),
-                        _fit(money(data.total), Key('$p.total'), 33, FontWeight.w800),
-                        const SizedBox(height: 12),
-                        _label(t.homeBuyingPower),
-                        const SizedBox(height: 3),
-                        _fit(money(data.buyingPower), Key('$p.buyingPower'), 18, FontWeight.w800),
-                        const SizedBox(height: 12),
-                        _label(data.deltaLabel),
-                        const SizedBox(height: 3),
-                        Row(
-                          children: [
-                            Flexible(child: _fit(deltaText, Key(data.paper ? 'paper.pl' : 'home.dayChange'), 14.5, FontWeight.w800)),
-                            if (d != null && d != 0 && !mask.value) ...[
-                              const SizedBox(width: 4),
-                              Icon(
-                                d > 0 ? Icons.arrow_drop_up_rounded : Icons.arrow_drop_down_rounded,
-                                size: 22,
-                                color: d > 0 ? AssetHeroColors.upOnGrad : AssetHeroColors.downOnGrad,
-                              ),
-                            ],
-                          ],
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -412,7 +427,7 @@ class HeroTrendPainter extends CustomPainter {
   /// 各点坐标（按序号等距；数值全相同时居中）。
   static List<Offset> layout(List<double> values, Size size) {
     if (values.isEmpty) return const [];
-    final left = 6.0, right = 14.0, top = size.height * .22, bottom = size.height * .12;
+    final left = 6.0, right = 14.0, top = size.height * .28, bottom = size.height * .12;
     final lo = values.reduce(math.min), hi = values.reduce(math.max);
     final w = size.width - left - right, h = size.height - top - bottom;
     return [
@@ -593,7 +608,7 @@ class AllocationCard extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     SizedBox(
-                      width: 88,
+                      width: 72, // 内圈直径约 86pt：留出与环的间距，长金额缩小显示
                       child: FittedBox(
                         fit: BoxFit.scaleDown,
                         child: Text(

@@ -784,5 +784,6 @@
   "earnStartStreak": "Check in today to start a streak",
   "earnWeekdays": "M,T,W,T,F,S,S",
   "earnGoWardrobe": "Go to Fifi's Wardrobe",
-  "earnLoadFailed": "Couldn't load missions. Pull down to retry."
+  "earnLoadFailed": "Couldn't load missions. Pull down to retry.",
+  "searchTypeStock": "Stock"
 }

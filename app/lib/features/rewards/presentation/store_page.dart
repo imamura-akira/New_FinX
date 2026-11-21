@@ -128,10 +128,7 @@ class _StorePageState extends State<StorePage> {
 
   Widget _tiers() => Row(
     children: [
-      for (final (i, tier) in StorePage.tabs.indexed) ...[
-        if (i > 0) const SizedBox(width: 7),
-        Expanded(child: _tierChip(tier)),
-      ],
+      for (final (i, tier) in StorePage.tabs.indexed) ...[if (i > 0) const SizedBox(width: 7), Expanded(child: _tierChip(tier))],
     ],
   );
 
@@ -155,11 +152,7 @@ class _StorePageState extends State<StorePage> {
           fit: BoxFit.scaleDown,
           child: Text(
             locked ? '$label 🔒' : label,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
-              color: on ? AppColors.onAccent : (locked ? StoreColors.lockedFg : AppColors.primary),
-            ),
+            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: on ? AppColors.onAccent : (locked ? StoreColors.lockedFg : AppColors.primary)),
           ),
         ),
       ),
@@ -171,7 +164,10 @@ class _StorePageState extends State<StorePage> {
     child: Row(
       key: key,
       children: [
-        Text(title, style: TextStyle(fontSize: 15.5, fontWeight: FontWeight.w800, color: AppColors.ink)),
+        Text(
+          title,
+          style: TextStyle(fontSize: 15.5, fontWeight: FontWeight.w800, color: AppColors.ink),
+        ),
         const SizedBox(width: 6),
         Text('✦', style: TextStyle(fontSize: 13, color: AppColors.primary)),
       ],
@@ -180,8 +176,14 @@ class _StorePageState extends State<StorePage> {
 
   List<Widget> _content(RewardsCatalog c) {
     final tier = _selected;
-    final items = [for (final i in c.items) if (i.tier == tier) i];
-    final bundles = [for (final b in c.bundles) if (b.tier == tier) b];
+    final items = [
+      for (final i in c.items)
+        if (i.tier == tier) i,
+    ];
+    final bundles = [
+      for (final b in c.bundles)
+        if (b.tier == tier) b,
+    ];
     return [
       _section(t.storeTierNew(tier), key: const Key('store.section.new')),
       if (items.isEmpty && bundles.isEmpty)
@@ -191,7 +193,10 @@ class _StorePageState extends State<StorePage> {
           alignment: Alignment.center,
           margin: const EdgeInsets.only(bottom: 16),
           decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(14)),
-          child: Text(t.storeTierEmpty, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.hint)),
+          child: Text(
+            t.storeTierEmpty,
+            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.hint),
+          ),
         ),
       ..._rows(items, (i) => _productCard(i)),
       if (items.isNotEmpty) const SizedBox(height: 8),
@@ -211,10 +216,7 @@ class _StorePageState extends State<StorePage> {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              for (var k = 0; k < 4; k++) ...[
-                if (k > 0) const SizedBox(width: 8),
-                Expanded(child: r + k < list.length ? card(list[r + k]) : const SizedBox()),
-              ],
+              for (var k = 0; k < 4; k++) ...[if (k > 0) const SizedBox(width: 8), Expanded(child: r + k < list.length ? card(list[r + k]) : const SizedBox())],
             ],
           ),
         ),
@@ -258,7 +260,10 @@ class _StorePageState extends State<StorePage> {
             const SizedBox(height: 3),
             FittedBox(
               fit: BoxFit.scaleDown,
-              child: Text('★ ${fmtXp(i.xp)} XP', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: AppColors.primary)),
+              child: Text(
+                '★ ${fmtXp(i.xp)} XP',
+                style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: AppColors.primary),
+              ),
             ),
             const Spacer(),
             const SizedBox(height: 5),
@@ -268,7 +273,10 @@ class _StorePageState extends State<StorePage> {
               decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(999)),
               child: FittedBox(
                 fit: BoxFit.scaleDown,
-                child: Text(label, style: TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: fg)),
+                child: Text(
+                  label,
+                  style: TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: fg),
+                ),
               ),
             ),
           ],
@@ -298,20 +306,32 @@ class _StorePageState extends State<StorePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(b.name.text, style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w800, color: AppColors.ink)),
+                Text(
+                  b.name.text,
+                  style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w800, color: AppColors.ink),
+                ),
                 if (b.desc != null)
                   Padding(
                     padding: const EdgeInsets.only(top: 3),
-                    child: Text(b.desc!.text, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.sub)),
+                    child: Text(
+                      b.desc!.text,
+                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.sub),
+                    ),
                   ),
                 const SizedBox(height: 3),
-                Text(t.storeBundleXp(fmtXp(b.xp)), style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w800, color: AppColors.primary)),
+                Text(
+                  t.storeBundleXp(fmtXp(b.xp)),
+                  style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w800, color: AppColors.primary),
+                ),
                 const SizedBox(height: 9),
                 Container(
                   key: Key('store.bundle.${b.id}.preview'),
                   padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 8),
                   decoration: BoxDecoration(gradient: StoreColors.grad, borderRadius: BorderRadius.circular(999)),
-                  child: Text(t.storePreview, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: AppColors.onAccent)),
+                  child: Text(
+                    t.storePreview,
+                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: AppColors.onAccent),
+                  ),
                 ),
               ],
             ),
@@ -332,16 +352,18 @@ class _StorePageState extends State<StorePage> {
           Stack(
             children: [
               Image.asset(BrandAssets.storeItem(i.image), height: 66, width: double.infinity, fit: BoxFit.cover, semanticLabel: i.name.text),
-              Positioned(
-                top: 5,
-                right: 5,
-                child: Container(
-                  width: 18,
-                  height: 18,
-                  decoration: BoxDecoration(color: StoreColors.lockBadge, shape: BoxShape.circle),
-                  child: Icon(Icons.lock_rounded, size: 10, color: AppColors.onAccent),
+              // 占位图自带锁标；高清图替换后由此处补锁标
+              if (!i.placeholder)
+                Positioned(
+                  top: 5,
+                  right: 5,
+                  child: Container(
+                    width: 18,
+                    height: 18,
+                    decoration: BoxDecoration(color: StoreColors.lockBadge, shape: BoxShape.circle),
+                    child: Icon(Icons.lock_rounded, size: 10, color: AppColors.onAccent),
+                  ),
                 ),
-              ),
             ],
           ),
           const SizedBox(height: 5),
@@ -358,7 +380,10 @@ class _StorePageState extends State<StorePage> {
           const Spacer(),
           Padding(
             padding: const EdgeInsets.fromLTRB(2, 2, 2, 7),
-            child: Text(t.storeTier(i.unlockTier), style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.w700, color: AppColors.primary)),
+            child: Text(
+              t.storeTier(i.unlockTier),
+              style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.w700, color: AppColors.primary),
+            ),
           ),
         ],
       ),
@@ -376,7 +401,10 @@ class _StorePageState extends State<StorePage> {
         borderRadius: BorderRadius.circular(999),
         boxShadow: [BoxShadow(color: AppColors.primary.withValues(alpha: .32), blurRadius: 22, offset: const Offset(0, 10))],
       ),
-      child: Text('✦ ${t.storePreviewOnFifi}', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.onAccent)),
+      child: Text(
+        '✦ ${t.storePreviewOnFifi}',
+        style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.onAccent),
+      ),
     ),
   );
 
@@ -391,7 +419,10 @@ class _StorePageState extends State<StorePage> {
         borderRadius: BorderRadius.circular(999),
         border: Border.all(color: StoreColors.xpBorder, width: 1.5),
       ),
-      child: Text('★ ${t.storeEarnXp}', style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w800, color: AppColors.primary)),
+      child: Text(
+        '★ ${t.storeEarnXp}',
+        style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w800, color: AppColors.primary),
+      ),
     ),
   );
 
@@ -419,18 +450,24 @@ class _StorePageState extends State<StorePage> {
                   child: Text(t.storeImagePlaceholder, style: TextStyle(fontSize: 11, color: AppColors.hint)),
                 ),
               const SizedBox(height: 12),
-              Text(i.name.text, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.ink)),
-              if (i.desc != null) ...[
-                const SizedBox(height: 4),
-                Text(i.desc!.text, style: TextStyle(fontSize: 13, color: AppColors.sub)),
-              ],
+              Text(
+                i.name.text,
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.ink),
+              ),
+              if (i.desc != null) ...[const SizedBox(height: 4), Text(i.desc!.text, style: TextStyle(fontSize: 13, color: AppColors.sub))],
               const SizedBox(height: 6),
-              Text('★ ${fmtXp(i.xp)} XP', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.primary)),
+              Text(
+                '★ ${fmtXp(i.xp)} XP',
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.primary),
+              ),
               const SizedBox(height: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
                 decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(999)),
-                child: Text(label, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: fg)),
+                child: Text(
+                  label,
+                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: fg),
+                ),
               ),
               const SizedBox(height: 18),
               AppButton(t.storeRedeemSoon, key: const Key('store.detail.redeem'), kind: ButtonKind.ghost, onPressed: null),

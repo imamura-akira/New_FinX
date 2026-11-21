@@ -26,6 +26,21 @@ const indexSymbols = ['QQQ', 'SPY', 'DIA'];
 /// 迷你走势取最近的分时根数。
 const sparkBars = 60;
 
+/// 迷你走势点数：分时按段取均值平滑（定稿为平缓的白色细线，逐分钟噪声过密）。
+const sparkPoints = 24;
+
+List<double> smoothSpark(List<double> v, [int n = sparkPoints]) {
+  if (v.length <= n) return v;
+  return [
+    for (var i = 0; i < n; i++)
+      () {
+        final a = (v.length * i / n).floor(), b = math.max(a + 1, (v.length * (i + 1) / n).floor());
+        final seg = v.sublist(a, math.min(b, v.length));
+        return seg.reduce((x, y) => x + y) / seg.length;
+      }(),
+  ];
+}
+
 class MarketPage extends StatefulWidget {
   const MarketPage({super.key});
 
@@ -87,7 +102,7 @@ class _MarketPageState extends State<MarketPage> {
         final d = await _api!.instrument(s);
         if (!mounted) return;
         final cs = d.candles;
-        setState(() => _spark[s] = [for (final c in cs.skip(math.max(0, cs.length - sparkBars))) c.c]);
+        setState(() => _spark[s] = smoothSpark([for (final c in cs.skip(math.max(0, cs.length - sparkBars))) c.c]));
       } on ApiException {
         // 迷你走势为装饰：失败时不画线
       }
@@ -491,6 +506,7 @@ class MarketHistogram extends StatelessWidget {
           child: SizedBox(
             height: 7,
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch, // 无子组件的色块须拉伸到条高
               children: [
                 if (total == 0)
                   Expanded(child: ColoredBox(color: MarketColors.flatBar))

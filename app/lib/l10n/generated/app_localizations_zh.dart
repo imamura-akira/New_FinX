@@ -2605,4 +2605,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get earnLoadFailed => '任务加载失败，请下拉重试';
+
+  @override
+  String get searchTypeStock => '股票';
 }

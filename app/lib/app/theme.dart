@@ -297,6 +297,10 @@ abstract final class BrandAssets {
   /// F16 P-27 圣诞季限定：圣诞毛衣 Fifi（透明背景，来源 design/reward-design/cat_xmas.png）。
   static const catXmas = 'assets/brand/cat_xmas.png';
 
+  /// F22-g 欢迎页深色模式素材：原图为 RGB 白底，深色下用透明底版本（tool/gen_welcome_dark_assets.py 由原图生成）。
+  static const logoDark = 'assets/brand/logo_dark.png';
+  static const fifiPillDark = 'assets/brand/fifi_pill_dark.png';
+
   /// F22-c 成交成功页：Fifi 举回执（透明背景，来源 design/brand/fifi_order.png，缩至 720px）。
   static const fifiOrder = 'assets/brand/fifi_order.png';
 
@@ -524,6 +528,9 @@ abstract final class WelcomeColors {
 
   /// 字标下的投影（浅色）/ 光晕（深色）
   static Color get markHalo => _ld(0x2E1B1830, 0x73FFFFFF);
+
+  /// F22-g FinX 字标深色光晕（透明底字标 logo_dark.png 之下的浅色辉光）
+  static const logoGlow = Color(0xE6FFFFFF);
 }
 
 /// F22-a 资产页令牌（design/reward-design/v3/asset_v2.png）。渐变卡上的元素深浅色相同。

@@ -38,7 +38,7 @@ class OrderDoneView extends StatelessWidget {
             top: 0,
             child: LayoutBuilder(
               builder: (context, c) => Padding(
-                padding: EdgeInsets.only(top: c.maxHeight * .55),
+                padding: EdgeInsets.only(top: c.maxHeight * .50), // Fifi 从波浪中探出
                 child: ClipPath(
                   clipper: _WaveClipper(),
                   child: DecoratedBox(

@@ -138,4 +138,14 @@ void main() {
     expect(find.text('Sign In'), findsOneWidget);
     expect(find.text('Browse Markets First'), findsOneWidget);
   });
+
+  testWidgets('F22-g 深色：字标与 Fifi 胶囊改用透明底版本（原图白底，深色下不出现白块）', (tester) async {
+    await _phone(tester);
+    _mockSound(tester);
+    await pumpApp(tester, backend: FakeBackend(), appearance: ThemeMode.dark);
+    final imgs = tester.widgetList<Image>(find.byType(Image)).map((i) => (i.image as AssetImage).assetName).toSet();
+    expect(imgs, containsAll([BrandAssets.logoDark, BrandAssets.fifiPillDark]));
+    expect(imgs.contains(BrandAssets.logo), isFalse);
+    expect(imgs.contains(BrandAssets.fifiPill), isFalse);
+  });
 }

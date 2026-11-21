@@ -77,7 +77,7 @@ class _MarketSearchPageState extends State<MarketSearchPage> {
                   trailing: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(color: AppColors.pill, borderRadius: BorderRadius.circular(999)),
-                    child: Text(h.type == 'ETF' ? 'ETF' : t.assetStock, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.sub)),
+                    child: Text(h.type == 'ETF' ? 'ETF' : t.searchTypeStock, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.sub)),
                   ),
                   onTap: () => context.push('/market/${h.symbol}'),
                 );

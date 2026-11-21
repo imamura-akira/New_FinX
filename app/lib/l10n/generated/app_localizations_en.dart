@@ -2737,4 +2737,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get earnLoadFailed => 'Couldn\'t load missions. Pull down to retry.';
+
+  @override
+  String get searchTypeStock => 'Stock';
 }

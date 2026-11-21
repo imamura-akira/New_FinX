@@ -174,6 +174,12 @@ void main() {
       expect(flat[0].dy, flat[1].dy);
     });
 
+    test('涨跌幅格式：四舍五入为 0 时不显示 -0.00%', () {
+      expect(signedPctForTest(-0.0016), ' (0.00%)');
+      expect(signedPctForTest(-0.006), ' (-0.01%)');
+      expect(signedPctForTest(0.65), ' (+0.65%)');
+    });
+
     test('范围：1D / 1W / 3M / 1Y / YTD，1D 为日内', () {
       expect([for (final r in HistoryRange.values) r.code], ['1D', '1W', '3M', '1Y', 'YTD']);
       expect(HistoryRange.d1.intraday, isTrue);

@@ -83,7 +83,7 @@ class _WelcomePageState extends State<WelcomePage> with SingleTickerProviderStat
     final restIn = _seg(.25, .6, Curves.easeOut);
 
     Widget logo = _Logo(key: const Key('welcome.logo'));
-    Widget fifi = Image.asset(BrandAssets.fifiPill, width: 300, semanticLabel: 'Fifi');
+    Widget fifi = Image.asset(AppColors.isDark ? BrandAssets.fifiPillDark : BrandAssets.fifiPill, width: 300, semanticLabel: 'Fifi');
     Widget Function(Widget) rest = (child) => child;
 
     if (_intro && _reduced) {
@@ -170,23 +170,22 @@ class _WelcomePageState extends State<WelcomePage> with SingleTickerProviderStat
   }
 }
 
-/// FinX 渐变字标 + "GO FinX Go Alpha" 手写标语（logo.png）。深色下沿字标轮廓加一圈浅色光晕，保证深底上可读（F21）。
+/// FinX 渐变字标 + "GO FinX Go Alpha" 手写标语（logo.png，白底）。深色下改用透明底版本 logo_dark.png，
+/// 并在字形下加两层浅色辉光（F21"字标 + 浅色光晕"），避免白色方块且保证深底可读。
 class _Logo extends StatelessWidget {
   const _Logo({super.key});
 
   @override
   Widget build(BuildContext context) {
-    const img = Image(image: AssetImage(BrandAssets.logo), width: 210, semanticLabel: 'FinX');
-    if (!AppColors.isDark) return img;
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        ImageFiltered(
-          imageFilter: ui.ImageFilter.blur(sigmaX: 6, sigmaY: 6),
-          child: ColorFiltered(colorFilter: ColorFilter.mode(WelcomeColors.markHalo, BlendMode.srcIn), child: img),
-        ),
-        img,
-      ],
+    if (!AppColors.isDark) return const Image(image: AssetImage(BrandAssets.logo), width: 210, semanticLabel: 'FinX');
+    const img = Image(image: AssetImage(BrandAssets.logoDark), width: 210, semanticLabel: 'FinX');
+    Widget glow(double sigma) => ImageFiltered(
+      imageFilter: ui.ImageFilter.blur(sigmaX: sigma, sigmaY: sigma),
+      child: const ColorFiltered(
+        colorFilter: ColorFilter.mode(WelcomeColors.logoGlow, BlendMode.srcIn),
+        child: Image(image: AssetImage(BrandAssets.logoDark), width: 210, excludeFromSemantics: true),
+      ),
     );
+    return Stack(clipBehavior: Clip.none, children: [glow(10), glow(4), img]);
   }
 }

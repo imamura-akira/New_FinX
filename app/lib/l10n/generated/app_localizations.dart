@@ -4814,6 +4814,12 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'任务加载失败，请下拉重试'**
   String get earnLoadFailed;
+
+  /// No description provided for @searchTypeStock.
+  ///
+  /// In zh, this message translates to:
+  /// **'股票'**
+  String get searchTypeStock;
 }
 
 class _AppLocalizationsDelegate

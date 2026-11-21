@@ -1598,5 +1598,6 @@
   "earnStartStreak": "今天签到，开启连续记录",
   "earnWeekdays": "一,二,三,四,五,六,日",
   "earnGoWardrobe": "前往 Fifi 衣橱",
-  "earnLoadFailed": "任务加载失败，请下拉重试"
+  "earnLoadFailed": "任务加载失败，请下拉重试",
+  "searchTypeStock": "股票"
 }
