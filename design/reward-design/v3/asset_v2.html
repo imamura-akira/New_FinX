@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<style>
+  :root{--bg:#F6F5FC;--ink:#1B1830;--sub:#7A7490;--primary:#6C5BF5;--up:#16A34A;--dn:#E5484D;
+    --cash:#6C5BF5;--stock:#D63AA8;--etf:#F0A13C;}
+  *{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,"PingFang SC",sans-serif;}
+  body{width:390px;background:var(--bg);color:var(--ink);}
+  .p{padding:12px 16px 20px;}
+  .hd{display:flex;justify-content:space-between;align-items:center;padding:6px 2px 14px;}
+  .hd b{font-size:24px;font-weight:800;}
+  .ava{width:34px;height:34px;border-radius:50%;border:1.8px solid #C9C2E8;display:flex;align-items:center;justify-content:center;color:#8F87B5;font-size:16px;}
+  /* 渐变大卡 */
+  .hero{position:relative;border-radius:22px;padding:20px 18px 18px;color:#fff;overflow:hidden;
+    background:linear-gradient(118deg,#4D5BEF 0%,#8A4BE0 42%,#D4569B 70%,#F0944C 100%);
+    box-shadow:0 14px 30px rgba(108,91,245,.3);}
+  .hero svg.tl{position:absolute;right:0;bottom:0;width:100%;height:78%;}
+  .hero .r1{display:flex;align-items:center;max-width:46%;gap:8px;font-size:13px;opacity:.92;font-weight:600;}
+  .eye{width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;font-size:12px;}
+  .total{font-size:33px;font-weight:800;letter-spacing:.3px;margin:6px 0 14px;position:relative;}
+  .lab{font-size:12.5px;opacity:.85;font-weight:600;position:relative;}
+  .val{font-size:18px;font-weight:800;margin:3px 0 12px;position:relative;}
+  .today{font-size:12.5px;opacity:.85;font-weight:600;position:relative;}
+  .tv{font-size:14.5px;font-weight:800;margin-top:3px;position:relative;}
+  .tv .arr{color:#7CF2A4;}
+  /* 范围胶囊 */
+  .ranges{display:flex;gap:8px;background:#fff;border-radius:999px;padding:6px;margin:14px 0 16px;box-shadow:0 4px 14px rgba(27,24,48,.06);}
+  .rg{flex:1;text-align:center;font-size:13px;font-weight:700;color:var(--sub);padding:8px 0;border-radius:999px;}
+  .rg.on{background:var(--primary);color:#fff;box-shadow:0 4px 10px rgba(108,91,245,.35);}
+  /* 筛选胶囊 */
+  .filters{display:flex;gap:10px;margin-bottom:14px;}
+  .ft{flex:1;text-align:center;font-size:13.5px;font-weight:700;padding:10px 0;border-radius:999px;background:#fff;border:1.5px solid #E4E0F5;color:var(--sub);}
+  .ft.on{background:linear-gradient(135deg,#7D4DF0,#A944D8);border-color:transparent;color:#fff;box-shadow:0 6px 14px rgba(125,77,240,.3);}
+  /* 分布卡 */
+  .card{background:#fff;border-radius:20px;padding:18px 16px;box-shadow:0 8px 20px rgba(27,24,48,.06);}
+  .alloc{display:flex;align-items:center;gap:16px;}
+  .donut{width:140px;flex:none;position:relative;}
+  .donut .c{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+  .donut .c b{font-size:16.5px;font-weight:800;}
+  .donut .c span{font-size:10.5px;color:var(--sub);font-weight:600;margin-top:2px;}
+  .leg{flex:1;}
+  .lrow{display:flex;align-items:flex-start;padding:9px 0;border-bottom:1px solid #F4F2FA;}
+  .lrow:last-child{border-bottom:none;}
+  .ld{width:9px;height:9px;border-radius:50%;margin:5px 9px 0 0;flex:none;}
+  .ln{flex:1;font-size:13.5px;font-weight:700;line-height:19px;}
+  .lv{text-align:right;}
+  .lv b{display:block;font-size:13.5px;font-weight:800;line-height:19px;}
+  .lv span{display:block;font-size:11px;font-weight:700;margin-top:1px;}
+  /* 自选 */
+  .wl{background:#fff;border-radius:20px;margin-top:14px;padding:16px 0 4px;box-shadow:0 8px 20px rgba(27,24,48,.06);}
+  .wl .t{display:flex;justify-content:space-between;padding:0 16px 8px;}
+  .wl .t b{font-size:15.5px;font-weight:800;}
+  .wl .t span{font-size:11px;color:#A7A1BC;font-weight:600;}
+  .wrow{display:flex;align-items:center;padding:11px 16px;border-top:1px solid #F4F2FA;}
+  .wrow .l{flex:1;}
+  .wrow .sym{font-size:15px;font-weight:800;}
+  .wrow .nm{font-size:11.5px;color:var(--sub);margin-top:1px;}
+  .wrow .px{font-size:15px;font-weight:700;margin-right:12px;}
+  .pill{min-width:72px;text-align:center;border-radius:10px;padding:6px 0;font-size:12.5px;font-weight:800;color:#fff;}
+  .tabbar{width:390px;background:#fff;border-top:1px solid #EEEAF8;display:flex;padding:10px 0 16px;margin-top:14px;}
+  .tab{flex:1;text-align:center;font-size:10.5px;color:#B5AFC9;font-weight:600;}
+  .tab.on{color:var(--primary);}
+</style>
+</head>
+<body>
+<div class="p">
+  <div class="hd"><b>资产</b><div class="ava">&#128100;</div></div>
+
+  <!-- 渐变大卡:总资产 + 趋势线叠加 -->
+  <div class="hero">
+    <svg class="tl" viewBox="0 0 220 170" preserveAspectRatio="none" style="position:absolute;right:0;bottom:0;width:58%;height:100%;">
+      <defs><linearGradient id="hf" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#fff" stop-opacity=".2"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>
+      <path d="M6 150 L28 138 L50 144 L72 124 L94 132 L116 106 L138 116 L160 84 L182 94 L204 52 L214 40 L214 170 L6 170 Z" fill="url(#hf)"/>
+      <path d="M6 150 L28 138 L50 144 L72 124 L94 132 L116 106 L138 116 L160 84 L182 94 L204 52 L214 40" fill="none" stroke="#fff" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round" opacity=".95"/>
+      <circle cx="214" cy="40" r="4.5" fill="#fff"/><circle cx="214" cy="40" r="9" fill="#fff" opacity=".3"/>
+    </svg>
+    <div class="r1">总资产 (USD) <span class="eye">&#128065;</span></div>
+    <div class="total">$6,543.21</div>
+    <div class="lab">购买力</div>
+    <div class="val">$1,635.80</div>
+    <div class="today">今日</div>
+    <div class="tv">+$42.18 (+0.65%) <span class="arr">&#9650;</span></div>
+  </div>
+
+  <!-- 时间范围 -->
+  <div class="ranges">
+    <div class="rg on">1D</div><div class="rg">1W</div><div class="rg">3M</div><div class="rg">1Y</div><div class="rg">YTD</div>
+  </div>
+
+  <!-- 筛选(无 Portfolio 标题) -->
+  <div class="filters">
+    <div class="ft on">全部</div><div class="ft">股票</div><div class="ft">ETF</div>
+  </div>
+
+  <!-- 分布卡 -->
+  <div class="card">
+    <div class="alloc">
+      <div class="donut">
+        <svg viewBox="0 0 120 120">
+          <circle cx="60" cy="60" r="47" fill="none" stroke="#D63AA8" stroke-width="16" stroke-dasharray="132.8 162.5" stroke-dashoffset="73.8" transform="rotate(-90 60 60)"/>
+          <circle cx="60" cy="60" r="47" fill="none" stroke="#F0A13C" stroke-width="16" stroke-dasharray="88.6 206.7" stroke-dashoffset="-59" transform="rotate(-90 60 60)"/>
+          <circle cx="60" cy="60" r="47" fill="none" stroke="#6C5BF5" stroke-width="16" stroke-dasharray="73.8 221.5" stroke-dashoffset="-147.6" transform="rotate(-90 60 60)"/>
+        </svg>
+        <div class="c"><b>$6,543.21</b><span>总价值</span></div>
+      </div>
+      <div class="leg">
+        <div class="lrow"><span class="ld" style="background:#6C5BF5"></span><div class="ln">现金</div><div class="lv"><b>$1,635.80</b><span style="color:#6C5BF5">25.0%</span></div></div>
+        <div class="lrow"><span class="ld" style="background:#D63AA8"></span><div class="ln">股票</div><div class="lv"><b>$2,944.45</b><span style="color:#D63AA8">45.0%</span></div></div>
+        <div class="lrow"><span class="ld" style="background:#F0A13C"></span><div class="ln">ETF</div><div class="lv"><b>$1,962.96</b><span style="color:#F0A13C">30.0%</span></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 自选(保留) -->
+  <div class="wl">
+    <div class="t"><b>自选</b><span>实时报价 · 3 秒刷新</span></div>
+    <div class="wrow"><div class="l"><div class="sym">AAPL</div><div class="nm">Apple Inc.</div></div><div class="px">226.54</div><div class="pill" style="background:var(--up)">+0.20%</div></div>
+    <div class="wrow"><div class="l"><div class="sym">NVDA</div><div class="nm">NVIDIA Corp.</div></div><div class="px">141.32</div><div class="pill" style="background:var(--dn)">-0.84%</div></div>
+  </div>
+</div>
+<div class="tabbar">
+  <div class="tab on">资产</div><div class="tab">市场</div><div class="tab">预测</div><div class="tab">股票大师</div><div class="tab">Fifi</div><div class="tab">奖励</div>
+</div>
+</body>
+</html>

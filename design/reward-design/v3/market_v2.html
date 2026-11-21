@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<style>
+  :root{--bg:#F6F5FC;--ink:#1B1830;--sub:#7A7490;--primary:#6C5BF5;--up:#16A34A;--dn:#E5484D;}
+  *{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,"PingFang SC",sans-serif;}
+  body{width:390px;background:var(--bg);color:var(--ink);}
+  .p{padding:12px 16px 20px;}
+  .hd{display:flex;justify-content:space-between;align-items:center;padding:6px 2px 10px;}
+  .hd b{font-size:24px;font-weight:800;}
+  .sch{width:34px;height:34px;border-radius:50%;background:#fff;border:1.5px solid #E4E0F5;display:flex;align-items:center;justify-content:center;color:#8F87B5;font-size:15px;}
+  .region{display:inline-block;font-size:14.5px;font-weight:800;color:var(--primary);padding-bottom:2px;margin-bottom:12px;}
+  .seg{display:flex;gap:10px;margin-bottom:14px;}
+  .sg{padding:8px 20px;border-radius:999px;font-size:13.5px;font-weight:700;background:#fff;border:1.5px solid #D9D2F5;color:var(--primary);}
+  .sg.on{background:var(--primary);border-color:transparent;color:#fff;box-shadow:0 5px 12px rgba(108,91,245,.3);}
+  /* 渐变指数卡 */
+  .idx{display:flex;gap:10px;margin-bottom:18px;}
+  .ic{flex:1;border-radius:16px;padding:12px 12px 8px;color:#fff;position:relative;overflow:hidden;}
+  .ic .s{font-size:12px;font-weight:700;opacity:.9;}
+  .ic .v{font-size:17.5px;font-weight:800;margin:3px 0 1px;}
+  .ic .c{font-size:11.5px;font-weight:700;color:#8CF2B0;}
+  .ic .c.d{color:#FFC9CB;}
+  .ic svg{width:100%;height:26px;margin-top:4px;}
+  .g1{background:linear-gradient(135deg,#5A57EE,#8A4BE0);}
+  .g2{background:linear-gradient(135deg,#A944D8,#D4569B);}
+  .g3{background:linear-gradient(135deg,#E0638A,#F0944C);}
+  /* 市场统计 */
+  .sec{display:flex;justify-content:space-between;align-items:baseline;margin:4px 0 12px;}
+  .sec b{font-size:17px;font-weight:800;}
+  .tog{font-size:12px;color:var(--sub);font-weight:600;}
+  .tog b{color:var(--ink);font-weight:800;font-size:12px;}
+  .stats{background:#fff;border-radius:18px;padding:16px 14px 14px;box-shadow:0 6px 18px rgba(27,24,48,.06);margin-bottom:18px;}
+  .histo{display:flex;align-items:flex-end;gap:6px;height:110px;padding:0 2px;}
+  .bar{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;}
+  .bar i{display:block;width:70%;border-radius:4px 4px 0 0;}
+  .bar .n{font-size:9.5px;font-weight:800;margin-bottom:3px;}
+  .bar .lb{font-size:8.5px;color:#A7A1BC;font-weight:600;margin-top:4px;white-space:nowrap;}
+  .adv{display:flex;align-items:center;gap:8px;margin-top:14px;}
+  .adv .bl{flex:1;height:7px;border-radius:4px;display:flex;overflow:hidden;gap:2px;}
+  .adv .bl i{display:block;height:100%;}
+  .advrow{display:flex;justify-content:space-between;margin-top:6px;font-size:12px;font-weight:800;}
+  /* 内部人 -->
+  --> */
+  .ins{display:flex;gap:10px;margin-bottom:18px;}
+  .insc{flex:1;border-radius:14px;padding:12px 10px;text-align:center;}
+  .insc .t{font-size:11px;color:var(--sub);font-weight:700;}
+  .insc .sym{font-size:16px;font-weight:800;margin:4px 0 2px;}
+  .insc .d{font-size:11px;font-weight:700;}
+  .demo{display:inline-flex;align-items:center;gap:4px;background:#FBF3DF;color:#B57E0C;border-radius:999px;padding:3px 9px;font-size:10px;font-weight:800;vertical-align:3px;margin-left:8px;}
+  /* 榜单 */
+  .list{background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 14px rgba(27,24,48,.05);}
+  .rowi{display:flex;align-items:center;padding:12px 14px;border-bottom:1px solid #F4F2FA;}
+  .rowi:last-child{border-bottom:none;}
+  .rowi .l{flex:1;}
+  .rowi .sym{font-size:15px;font-weight:800;}
+  .rowi .nm{font-size:11.5px;color:var(--sub);margin-top:1px;}
+  .rowi .px{font-size:15px;font-weight:700;margin-right:12px;}
+  .pill{min-width:72px;text-align:center;border-radius:10px;padding:6px 0;font-size:12.5px;font-weight:800;color:#fff;}
+  .tabbar{width:390px;background:#fff;border-top:1px solid #EEEAF8;display:flex;padding:10px 0 16px;margin-top:16px;}
+  .tab{flex:1;text-align:center;font-size:10.5px;color:#B5AFC9;font-weight:600;}
+  .tab.on{color:var(--primary);}
+</style>
+</head>
+<body>
+<div class="p">
+  <div class="hd"><b>市场</b><div class="sch">&#128269;</div></div>
+  <div class="region">美国市场</div>
+  <div class="seg"><div class="sg on">股票</div><div class="sg">ETF</div></div>
+
+  <!-- 渐变指数卡 -->
+  <div class="idx">
+    <div class="ic g1"><div class="s">QQQ</div><div class="v">510.04</div><div class="c">+0.26%</div>
+      <svg viewBox="0 0 100 26"><path d="M2 20 L14 17 L26 19 L38 13 L50 15 L62 9 L74 12 L86 6 L98 4" fill="none" stroke="#fff" stroke-width="1.6" opacity=".9"/></svg></div>
+    <div class="ic g2"><div class="s">SPY</div><div class="v">585.19</div><div class="c d">-1.15%</div>
+      <svg viewBox="0 0 100 26"><path d="M2 8 L14 11 L26 9 L38 14 L50 12 L62 17 L74 15 L86 20 L98 21" fill="none" stroke="#fff" stroke-width="1.6" opacity=".9"/></svg></div>
+    <div class="ic g3"><div class="s">DIA</div><div class="v">439.42</div><div class="c">+0.07%</div>
+      <svg viewBox="0 0 100 26"><path d="M2 16 L14 14 L26 17 L38 12 L50 14 L62 10 L74 13 L86 9 L98 8" fill="none" stroke="#fff" stroke-width="1.6" opacity=".9"/></svg></div>
+  </div>
+
+  <!-- 市场统计:涨跌分布 -->
+  <div class="sec"><b>市场统计</b><span class="tog"><b>今日</b> &nbsp;|&nbsp; 近 30 日</span></div>
+  <div class="stats">
+    <div class="histo">
+      <div class="bar"><span class="n" style="color:var(--dn)">1</span><i style="height:8%;background:var(--dn)"></i><span class="lb">&gt;7%</span></div>
+      <div class="bar"><span class="n" style="color:var(--dn)">2</span><i style="height:16%;background:var(--dn)"></i><span class="lb">7~5</span></div>
+      <div class="bar"><span class="n" style="color:var(--dn)">3</span><i style="height:24%;background:var(--dn)"></i><span class="lb">5~3</span></div>
+      <div class="bar"><span class="n" style="color:var(--dn)">5</span><i style="height:42%;background:var(--dn)"></i><span class="lb">3~0</span></div>
+      <div class="bar"><span class="n" style="color:#8F87A5">2</span><i style="height:16%;background:#C9C4DC"></i><span class="lb">0</span></div>
+      <div class="bar"><span class="n" style="color:var(--up)">6</span><i style="height:50%;background:var(--up)"></i><span class="lb">0~3</span></div>
+      <div class="bar"><span class="n" style="color:var(--up)">3</span><i style="height:24%;background:var(--up)"></i><span class="lb">3~5</span></div>
+      <div class="bar"><span class="n" style="color:var(--up)">1</span><i style="height:8%;background:var(--up)"></i><span class="lb">5~7</span></div>
+      <div class="bar"><span class="n" style="color:var(--up)">1</span><i style="height:8%;background:var(--up)"></i><span class="lb">&gt;7%</span></div>
+    </div>
+    <div class="adv">
+      <div class="bl">
+        <i style="width:45.8%;background:var(--dn)"></i>
+        <i style="width:8.4%;background:#C9C4DC"></i>
+        <i style="width:45.8%;background:var(--up)"></i>
+      </div>
+    </div>
+    <div class="advrow"><span style="color:var(--dn)">下跌 11</span><span style="color:var(--up)">上涨 11</span></div>
+  </div>
+
+  <!-- 内部人交易 -->
+  <div class="sec"><b>内部人交易<span class="demo">演示数据</span></b><span class="tog">&gt;</span></div>
+  <div class="ins">
+    <div class="insc" style="background:#E8F7EE;"><div class="t">买入最多</div><div class="sym">NVDA</div><div class="d" style="color:var(--up)">买入 $6.2B</div></div>
+    <div class="insc" style="background:#FDEDEE;"><div class="t">卖出最多</div><div class="sym">TSLA</div><div class="d" style="color:var(--dn)">卖出 $1.8B</div></div>
+    <div class="insc" style="background:#F1EFFA;"><div class="t">最活跃</div><div class="sym">AAPL</div><div class="d" style="color:var(--primary)">交易 64 次</div></div>
+  </div>
+
+  <!-- 榜单 -->
+  <div class="sec"><b>涨幅榜</b></div>
+  <div class="list">
+    <div class="rowi"><div class="l"><div class="sym">NFLX</div><div class="nm">Netflix Inc.</div></div><div class="px">767.19</div><div class="pill" style="background:var(--up)">+2.02%</div></div>
+    <div class="rowi"><div class="l"><div class="sym">META</div><div class="nm">Meta Platforms Inc.</div></div><div class="px">569.33</div><div class="pill" style="background:var(--up)">+1.67%</div></div>
+  </div>
+</div>
+<div class="tabbar">
+  <div class="tab">资产</div><div class="tab on">市场</div><div class="tab">预测</div><div class="tab">股票大师</div><div class="tab">Fifi</div><div class="tab">奖励</div>
+</div>
+</body>
+</html>

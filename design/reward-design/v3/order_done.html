@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<style>
+  :root{--ink:#1B1830;--sub:#7A7490;--primary:#6C5BF5;--up:#16A34A;
+    --grad:linear-gradient(135deg,#7D4DF0,#A944D8);}
+  *{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,"PingFang SC",sans-serif;}
+  body{width:390px;height:844px;background:#fff;color:var(--ink);overflow:hidden;position:relative;}
+  .status{display:flex;justify-content:space-between;font-size:13px;font-weight:600;padding:14px 22px 0;}
+  /* 顶部对勾 */
+  .badge{width:64px;height:64px;border-radius:50%;background:#fff;margin:18px auto 0;display:flex;align-items:center;justify-content:center;
+    box-shadow:0 8px 22px rgba(108,91,245,.22), inset 0 0 0 3px #EFEBFE;}
+  .badge svg{width:30px;}
+  h1{text-align:center;font-size:27px;font-weight:800;color:var(--primary);margin-top:12px;letter-spacing:.5px;}
+  .subt{text-align:center;font-size:14px;color:var(--sub);font-weight:600;margin-top:5px;}
+  /* 小猫与装饰 */
+  .scene{position:relative;height:250px;margin-top:4px;}
+  .scene img{position:absolute;left:50%;transform:translateX(-50%);bottom:-6px;height:246px;filter:drop-shadow(0 10px 18px rgba(27,24,48,.15));}
+  .fw{position:absolute;left:0;right:0;bottom:-14px;height:46px;background:linear-gradient(180deg,#E3D9FA,#D9CEF8);clip-path:ellipse(75% 100% at 50% 100%);}
+  .dec{position:absolute;font-size:15px;}
+  .coin{width:26px;height:18px;border-radius:50%;position:absolute;}
+  .arrow{position:absolute;}
+  /* 波浪 */
+  .wave{position:absolute;left:0;right:0;top:468px;height:376px;z-index:-1;
+    background:linear-gradient(180deg,#D9CEF8 0%,#EFEAFB 40%,#F6F3FE 100%);
+    clip-path:ellipse(120% 100% at 50% 100%);}
+  /* 摘要卡 */
+  .card{background:#fff;border-radius:20px;margin:10px 20px 0;padding:16px 18px 6px;box-shadow:0 12px 30px rgba(27,24,48,.1);position:relative;}
+  .ct{display:flex;align-items:center;gap:10px;font-size:15.5px;font-weight:800;padding-bottom:10px;}
+  .ct .ic{width:30px;height:30px;border-radius:9px;background:#EFEBFE;display:flex;align-items:center;justify-content:center;font-size:14px;}
+  .row{display:flex;justify-content:space-between;padding:11px 0;border-top:1px solid #F4F2FA;font-size:13.5px;}
+  .row .k{color:var(--sub);font-weight:600;}
+  .row .v{color:var(--primary);font-weight:800;}
+  .btn{margin:18px 20px 0;background:var(--grad);color:#fff;text-align:center;border-radius:999px;padding:15px 0;font-size:16px;font-weight:800;box-shadow:0 10px 24px rgba(125,77,240,.35);letter-spacing:1px;}
+  .spark{position:absolute;color:#A98FF5;}
+</style>
+</head>
+<body>
+  <div class="status"><span>7:25</span><span>&#9679;&#9679;&#9679; &#9647;</span></div>
+  <div class="wave"></div>
+  <span class="spark" style="top:96px;left:66px;font-size:14px;">&#10022;</span>
+  <span class="spark" style="top:150px;right:60px;font-size:11px;">&#10022;</span>
+  <span class="spark" style="top:240px;left:40px;font-size:12px;">&#10022;</span>
+
+  <div class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="#6C5BF5" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 L9.5 18 L20 6.5"/></svg></div>
+  <h1>下单成功</h1>
+  <div class="subt">NVIDIA Corp. · 10 股</div>
+
+  <div class="scene">
+    <!-- 装饰:金币与上行箭头 -->
+    <svg class="arrow" style="right:46px;top:14px;width:64px;" viewBox="0 0 70 50"><path d="M4 44 L22 28 L34 36 L52 16" fill="none" stroke="#16A34A" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><path d="M42 12 L56 12 L56 26" fill="none" stroke="#16A34A" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <div class="coin" style="background:radial-gradient(circle at 35% 30%,#C9B2FF,#8F5BF5);left:34px;top:120px;transform:rotate(-18deg);"></div>
+    <div class="coin" style="background:radial-gradient(circle at 35% 30%,#FFD9A0,#F0A13C);right:48px;bottom:40px;transform:rotate(14deg);"></div>
+    <div class="coin" style="background:radial-gradient(circle at 35% 30%,#C9B2FF,#8F5BF5);right:84px;bottom:110px;transform:rotate(-8deg);width:20px;height:14px;"></div>
+    <img src="assets/fifi_order.png">
+    <div class="fw"></div>
+  </div>
+
+  <div class="card">
+    <div class="ct"><span class="ic">&#128196;</span>成交摘要</div>
+    <div class="row"><span class="k">代码</span><span class="v">NVDA</span></div>
+    <div class="row"><span class="k">成交价</span><span class="v">$141.32</span></div>
+    <div class="row"><span class="k">数量</span><span class="v">10 股</span></div>
+    <div class="row"><span class="k">总金额</span><span class="v">$1,413.20</span></div>
+    <div class="row"><span class="k">时间</span><span class="v">2026-11-21 · 09:32 AM ET</span></div>
+  </div>
+
+  <div class="btn">返回首页</div>
+</body>
+</html>

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<style>
+  :root{--bg:#F6F5FC;--ink:#1B1830;--sub:#7A7490;--primary:#6C5BF5;--up:#16A34A;
+    --grad:linear-gradient(100deg,#7D4DF0,#A944D8 55%,#D63AA8);}
+  *{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,"PingFang SC",sans-serif;}
+  body{width:390px;background:var(--bg);color:var(--ink);}
+  .p{padding:12px 14px 20px;}
+  .hd{display:flex;align-items:center;gap:10px;padding:4px 2px 12px;}
+  .hd .bk{font-size:18px;font-weight:800;}
+  .hd b{font-size:19px;font-weight:800;flex:1;}
+  .xp{display:flex;align-items:center;gap:5px;border:1.5px solid #D9D2F5;background:#fff;border-radius:999px;padding:6px 12px;font-size:13px;font-weight:800;color:var(--primary);}
+  .sch{width:32px;height:32px;display:flex;align-items:center;justify-content:center;color:#6F6A86;font-size:15px;}
+  /* 英雄 */
+  .hero{position:relative;border-radius:20px;overflow:hidden;height:190px;margin-bottom:14px;box-shadow:0 12px 26px rgba(108,91,245,.28);}
+  .hero img{position:absolute;right:0;top:0;height:100%;}
+  .hero .ov{position:absolute;inset:0;background:linear-gradient(92deg,#5B36C9 0%,#6A3FD8 38%,rgba(106,63,216,.55) 58%,transparent 78%);}
+  .hero .tx{position:relative;color:#fff;padding:18px 16px;max-width:60%;}
+  .hero h2{font-size:21px;font-weight:800;line-height:1.3;}
+  .hero p{font-size:12px;opacity:.9;margin-top:7px;line-height:1.6;max-width:150px;}
+  .cats_{display:flex;gap:8px;margin-top:12px;}
+  .ci{width:36px;height:30px;border-radius:9px;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:14px;}
+  /* 等级胶囊 */
+  .tiers{display:flex;gap:7px;margin-bottom:14px;}
+  .tc{flex:1;text-align:center;font-size:12px;font-weight:700;padding:9px 0;border-radius:999px;background:#EFEBFC;color:var(--primary);}
+  .tc.on{background:var(--grad);color:#fff;box-shadow:0 6px 14px rgba(125,77,240,.3);}
+  .tc.lk{background:#EFEDF4;color:#A7A1BC;}
+  .sec{display:flex;align-items:center;gap:6px;font-size:15.5px;font-weight:800;margin:4px 0 10px;}
+  .sec .st{color:var(--primary);font-size:13px;}
+  /* 商品卡 */
+  .grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin-bottom:16px;}
+  .pc{background:#fff;border-radius:14px;padding:8px 6px 9px;box-shadow:0 5px 14px rgba(27,24,48,.06);text-align:center;}
+  .pc img{width:100%;height:74px;object-fit:contain;border-radius:9px;}
+  .pc .nm{font-size:10.5px;font-weight:800;margin-top:6px;line-height:1.3;}
+  .pc .xpv{font-size:10px;font-weight:800;color:var(--primary);margin-top:3px;}
+  .pc .st{display:inline-block;font-size:9px;font-weight:700;border-radius:999px;padding:2.5px 8px;margin-top:5px;}
+  .av{background:#E8F7EE;color:var(--up);}
+  .lk2{background:#F1EFFA;color:#8F87A5;}
+  /* 套装横幅 */
+  .bundle{display:flex;align-items:center;gap:12px;background:linear-gradient(120deg,#F3EBFD,#FBEAF6);border-radius:18px;padding:12px;margin-bottom:16px;}
+  .bundle img{width:132px;border-radius:12px;}
+  .bundle .t{flex:1;}
+  .bundle b{font-size:14.5px;font-weight:800;display:block;}
+  .bundle .d{font-size:11px;color:var(--sub);font-weight:600;margin-top:3px;}
+  .bundle .xpv{font-size:11.5px;font-weight:800;color:var(--primary);margin-top:3px;}
+  .bundle .btn{display:inline-block;background:var(--grad);color:#fff;font-size:12px;font-weight:800;border-radius:999px;padding:8px 22px;margin-top:9px;}
+  /* 敬请期待 */
+  .later{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin-bottom:18px;}
+  .lc{background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 5px 14px rgba(27,24,48,.06);text-align:center;position:relative;}
+  .lc img{width:100%;height:66px;object-fit:cover;}
+  .lc .lkb{position:absolute;top:5px;right:5px;width:18px;height:18px;border-radius:50%;background:rgba(20,16,40,.55);color:#fff;font-size:9px;display:flex;align-items:center;justify-content:center;}
+  .lc .nm{font-size:10.5px;font-weight:800;margin-top:5px;}
+  .lc .tr{font-size:9.5px;font-weight:700;color:var(--primary);margin:2px 0 7px;}
+  /* 底部按钮 */
+  .cta{background:var(--grad);color:#fff;text-align:center;border-radius:999px;padding:14px 0;font-size:15px;font-weight:800;box-shadow:0 10px 22px rgba(125,77,240,.32);}
+  .cta2{background:#fff;border:1.5px solid #D9D2F5;color:var(--primary);text-align:center;border-radius:999px;padding:13px 0;font-size:14.5px;font-weight:800;margin-top:10px;}
+</style>
+</head>
+<body>
+<div class="p">
+  <div class="hd"><span class="bk">&#8249;</span><b>Fifi 商店</b><div class="xp">&#11088; 1,493 XP</div><div class="sch">&#128269;</div></div>
+
+  <div style="margin:0 0 14px;"><img src="assets/st_hero_full.png" style="width:100%;height:auto;display:block;filter:drop-shadow(0 10px 22px rgba(108,91,245,.25));"></div>
+
+  <div class="tiers">
+    <div class="tc">等级 1</div><div class="tc">等级 2</div><div class="tc on">等级 3</div>
+    <div class="tc lk">等级 4 &#128274;</div><div class="tc lk">梦想 &#128274;</div>
+  </div>
+
+  <div class="sec">等级 3 上新 <span class="st">&#10022;</span></div>
+  <div class="grid">
+    <div class="pc"><img src="assets/st_jacket.png"><div class="nm">棒球夹克</div><div class="xpv">&#9733; 800 XP</div><span class="st av">可兑换</span></div>
+    <div class="pc"><img src="assets/st_vest.png"><div class="nm">交易马甲</div><div class="xpv">&#9733; 1,200 XP</div><span class="st av">可兑换</span></div>
+    <div class="pc"><img src="assets/st_bag.png"><div class="nm">紫色挎包</div><div class="xpv">&#9733; 950 XP</div><span class="st av">可兑换</span></div>
+    <div class="pc"><img src="assets/st_phones.png"><div class="nm">量化耳机</div><div class="xpv">&#9733; 2,200 XP</div><span class="st lk2">等级 4 解锁</span></div>
+  </div>
+
+  <div class="bundle">
+    <img src="assets/st_bundle.png">
+    <div class="t">
+      <b>限定分析师套装</b>
+      <div class="d">夹克 + 挎包 + 球鞋</div>
+      <div class="xpv">套装 · 2,600 XP</div>
+      <div class="btn">预 览</div>
+    </div>
+  </div>
+
+  <div class="sec">敬请期待 <span class="st">&#10022;</span></div>
+  <div class="later">
+    <div class="lc"><img src="assets/st_garage.png"><div class="lkb">&#128274;</div><div class="nm">车库</div><div class="tr">等级 4</div></div>
+    <div class="lc"><img src="assets/st_home.png"><div class="lkb">&#128274;</div><div class="nm">梦想之家</div><div class="tr">等级 5</div></div>
+    <div class="lc"><img src="assets/st_yacht.png"><div class="lkb">&#128274;</div><div class="nm">游艇</div><div class="tr">等级 5</div></div>
+    <div class="lc"><img src="assets/st_jet.png"><div class="lkb">&#128274;</div><div class="nm">私人飞机</div><div class="tr">等级 6</div></div>
+  </div>
+
+  <div class="cta">&#10022; 在 Fifi 上预览</div>
+  <div class="cta2">&#9733; 赚取 XP</div>
+</div>
+</body>
+</html>

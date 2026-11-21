@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<style>
+  :root{--bg:#F6F5FC;--ink:#1B1830;--sub:#7A7490;--primary:#6C5BF5;}
+  *{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,"PingFang SC",sans-serif;}
+  body{width:390px;background:var(--bg);color:var(--ink);}
+  .p{padding:12px 16px 20px;}
+  .hd{display:flex;align-items:flex-start;justify-content:space-between;padding:6px 0 14px;}
+  .hd h1{font-size:21px;font-weight:800;}
+  .hd .st{font-size:12.5px;color:var(--sub);font-weight:600;margin-top:3px;}
+  .hd .r{display:flex;align-items:center;gap:9px;}
+  .xp{display:flex;align-items:center;gap:5px;border:1.5px solid #D9D2F5;background:#fff;border-radius:999px;padding:6px 12px;font-size:13px;font-weight:800;color:var(--primary);}
+  .ava{width:40px;height:40px;border-radius:50%;border:2px solid var(--primary);overflow:hidden;background:#EDE9FF;}
+  .ava img{width:100%;height:100%;object-fit:cover;}
+  /* 英雄卡 */
+  .hero{position:relative;border-radius:22px;padding:24px 20px;color:#fff;overflow:hidden;min-height:210px;
+    background:linear-gradient(118deg,#4D4FE0 0%,#7D4DF0 40%,#B44BD8 72%,#E08BC8 100%);
+    box-shadow:0 14px 30px rgba(108,91,245,.3);margin-bottom:16px;}
+  .hero h2{font-size:28px;font-weight:800;line-height:1.25;}
+  .hero p{margin-top:12px;font-size:13.5px;line-height:1.7;opacity:.95;max-width:170px;}
+  .hero img{position:absolute;right:4px;bottom:0;height:200px;filter:drop-shadow(0 8px 16px rgba(0,0,0,.28));}
+  .hero .sp{position:absolute;color:#fff;opacity:.9;}
+  /* 功能卡 */
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-bottom:18px;}
+  .fc{background:#fff;border-radius:16px;padding:14px 12px;box-shadow:0 5px 16px rgba(27,24,48,.06);position:relative;}
+  .fc .ic{width:38px;height:38px;border-radius:50%;background:#F1EFFA;display:flex;align-items:center;justify-content:center;font-size:17px;margin-bottom:9px;}
+  .fc b{display:block;font-size:13.5px;font-weight:800;line-height:1.4;}
+  .fc span{display:block;font-size:11px;color:var(--sub);line-height:1.55;margin-top:4px;}
+  .fc .lk{position:absolute;top:50%;right:10px;transform:translateY(-50%);color:#C9C2E0;font-size:12px;}
+  /* 按钮 */
+  .notify{background:#EFEBFE;color:var(--primary);text-align:center;border-radius:999px;padding:15px 0;font-size:15.5px;font-weight:800;}
+  .cap{text-align:center;font-size:11px;color:#A7A1BC;margin-top:9px;}
+  .tabbar{width:390px;background:#fff;border-top:1px solid #EEEAF8;display:flex;padding:10px 0 16px;margin-top:16px;}
+  .tab{flex:1;text-align:center;font-size:10.5px;color:#B5AFC9;font-weight:600;}
+  .tab.on{color:var(--primary);}
+</style>
+</head>
+<body>
+<div class="p">
+  <div class="hd">
+    <div><h1>Fifi 量化助手</h1><div class="st">你的智能投资助理</div></div>
+    <div class="r"><div class="xp">&#11088; 1,493 XP</div><div class="ava"><img src="assets/fifi_avatar.png"></div></div>
+  </div>
+
+  <div class="hero">
+    <span class="sp" style="top:22px;right:170px;font-size:14px;">&#10022;</span>
+    <span class="sp" style="bottom:46px;right:12px;font-size:11px;">&#10022;</span>
+    <h2>即将上线</h2>
+    <p>Fifi 正在学习为你解读图表、风险与持仓。</p>
+    <img src="assets/fifi_quant.png">
+  </div>
+
+  <div class="grid">
+    <div class="fc"><div class="ic">&#128202;</div><b>1. 持仓体检</b><span>分析你的持仓与未实现盈亏。</span><span class="lk">&#128274;</span></div>
+    <div class="fc"><div class="ic">&#8645;</div><b>2. 持有或卖出</b><span>行动前对比趋势、风险与仓位。</span><span class="lk">&#128274;</span></div>
+    <div class="fc"><div class="ic">&#128269;</div><b>3. 个股研究</b><span>汇总价格走势、基本面与新闻信号。</span><span class="lk">&#128274;</span></div>
+    <div class="fc"><div class="ic">&#9888;&#65039;</div><b>4. 风险预警</b><span>提示波动、集中度与下行压力。</span><span class="lk">&#128274;</span></div>
+    <div class="fc"><div class="ic">&#128200;</div><b>5. 量化信号</b><span>跟踪动量、反转、成交量与因子分。</span><span class="lk">&#128274;</span></div>
+    <div class="fc"><div class="ic">&#128214;</div><b>6. 跟 Fifi 学投资</b><span>用简单清晰的语言理解投资逻辑。</span><span class="lk">&#128274;</span></div>
+  </div>
+
+  <div class="notify">&#128276; 开启上线提醒</div>
+  <div class="cap">Fifi 量化助手就绪时,我们会第一时间通知你。</div>
+</div>
+<div class="tabbar">
+  <div class="tab">资产</div><div class="tab">市场</div><div class="tab">预测</div><div class="tab">股票大师</div><div class="tab on">Fifi</div><div class="tab">奖励</div>
+</div>
+</body>
+</html>
