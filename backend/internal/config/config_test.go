@@ -82,6 +82,7 @@ func TestValidation(t *testing.T) {
 		{"开发环境允许打印验证码", map[string]string{"OTP_DEV_LOG": "true", "JWT_SECRET": base64.StdEncoding.EncodeToString(make([]byte, 48))}, ""},
 		{"生产环境禁止固定验证码", map[string]string{"APP_ENV": "production", "OTP_FIXED_CODE": "true"}, "OTP_FIXED_CODE"},
 		{"固定验证码开关非布尔", map[string]string{"OTP_FIXED_CODE": "on"}, "OTP_FIXED_CODE"},
+		{"受信代理须为 CIDR", map[string]string{"TRUSTED_PROXIES": "172.16.0.1"}, "TRUSTED_PROXIES"},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {

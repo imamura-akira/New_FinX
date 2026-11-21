@@ -30,6 +30,8 @@ set_kv "$APP_ENV_FILE" DATABASE_URL "postgres://finx:${pw}@postgres:5432/finx?ss
 set_kv "$APP_ENV_FILE" OTP_DEV_LOG true
 # 固定验证码 000000：仅演示环境，生产禁止，接入邮件服务后移除（审计 SEC-P0-1，用户已知悉并接受）
 set_kv "$APP_ENV_FILE" OTP_FIXED_CODE true
+# 共用 Caddy 经 docker 网桥转发：只信任该网段的 X-Forwarded-For（限速按真实客户端 IP，审计 SEC-P1-1）
+set_kv "$APP_ENV_FILE" TRUSTED_PROXIES 172.16.0.0/12
 if [[ -n "${ALLOWED_EMAILS:-}" ]]; then
 	set_kv "$APP_ENV_FILE" ALLOWED_EMAILS "$ALLOWED_EMAILS"
 fi

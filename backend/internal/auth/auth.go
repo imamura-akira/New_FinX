@@ -166,7 +166,14 @@ func (s *Service) handleVerifyOTP(w http.ResponseWriter, r *http.Request) {
 		httpx.Fail(w, r, httpx.Validation("", httpx.FieldError{Field: "email", Reason: "请输入有效的邮箱地址"}))
 		return
 	}
+	ip := httpx.ClientIP(r)
+	if retry, blocked := s.otp.verifyBlocked(ip, s.now()); blocked {
+		s.logger.WarnContext(r.Context(), "otp verify rate limited", slog.String("email", MaskEmail(email)), slog.Int("retry_after", retry))
+		httpx.Fail(w, r, httpx.RateLimited("请求过于频繁，请稍后再试", retry))
+		return
+	}
 	if len(code) != 6 || !s.otp.verify(email, code, s.now()) {
+		s.otp.recordVerifyFail(ip, s.now())
 		httpx.Fail(w, r, httpx.Validation("验证码不正确或已过期", httpx.FieldError{Field: "code", Reason: "验证码不正确或已过期，请重新获取"}))
 		return
 	}

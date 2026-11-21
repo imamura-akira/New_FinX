@@ -3,6 +3,7 @@ package dwclient
 import (
 	"encoding/json"
 	"fmt"
+	"regexp"
 	"strings"
 )
 
@@ -16,6 +17,8 @@ var (
 		"document": true, "image": true,
 		"birthday": true, "birthmonth": true, "birthyear": true, "birthdate": true, "dob": true,
 		"street1": true, "street2": true,
+		// 审计 SEC-P1-3：地址的其余部分
+		"city": true, "postalcode": true, "zipcode": true, "province": true,
 		// 沙盒实测：DW User 对象的地址行、头像（邮箱哈希）字段名
 		"addressline1": true, "addressline2": true, "avatarurl": true,
 		"username": true, // 沙盒实测：绑卡响应 userDetails 回显后端生成的 DW 用户名
@@ -27,8 +30,9 @@ var (
 		"accountnumber": true, "routingnumber": true, "accountno": true,
 		"beneficiaryaccountnumber": true, "beneficiaryroutingnumber": true, "beneficiaryswiftaba": true,
 		"phone": true, "phonenumber": true,
-		"idno":           true, // 沙盒实测：DW User 对象中的证件号字段
-		"account_number": true, // 沙盒实测：入金响应中的账户号（下划线写法）
+		"idno":                  true, // 沙盒实测：DW User 对象中的证件号字段
+		"intermediarybankswift": true, // 审计 SEC-P1-3
+		"account_number":        true, // 沙盒实测：入金响应中的账户号（下划线写法）
 	}
 	// 保留首字符：姓名、邮箱本地部分
 	redactInitial = map[string]bool{
@@ -38,7 +42,22 @@ var (
 		"displayname": true, "acksignedby": true, "employercompany": true,
 		// 沙盒实测（2026-11-20）：GET /funding/deposits/{id} 的 details.accountHolderName 为开户姓名
 		"accountholdername": true,
+		// 审计 SEC-P1-3：dwmapper / 资金请求中实际出现的雇主、职位、董事、券商关联与自定义名称
+		"company": true, "position": true, "directorof": true, "broker": true,
+		"bankaccountnickname": true, "beneficiarybankname": true, "nickname": true,
 	}
+
+	// 自由文本字段：DW 的错误说明、状态备注等，可能回显用户输入（审计 SEC-P1-4）
+	freeText = map[string]bool{
+		"message": true, "errormessage": true, "error": true, "comment": true, "note": true,
+		"othernotes": true, "otherdetails": true, "description": true, "reason": true, "statusmessage": true,
+	}
+
+	// DW 账户号码（4 位字母 + 6 位数字，如 FEYQ000001）：出现在 accountNo，也作为入金 / 出金 id 的前缀与 URL 路径
+	accountNoRE = regexp.MustCompile(`\b[A-Z]{4}\d{6}\b`)
+	emailRE     = regexp.MustCompile(`[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}`)
+	ssnRE       = regexp.MustCompile(`\b\d{3}-\d{2}-\d{4}\b`)
+	longDigitRE = regexp.MustCompile(`\d{7,}`)
 )
 
 const maxLoggedBody = 4096
@@ -60,6 +79,19 @@ func RedactJSON(b []byte) string {
 		return string(out[:maxLoggedBody]) + "…[truncated]"
 	}
 	return string(out)
+}
+
+// RedactAccountNos 把字符串中的 DW 账户号码打码为只留尾 4 位（用于路径与任意字符串值）。
+func RedactAccountNos(s string) string {
+	return accountNoRE.ReplaceAllStringFunc(s, maskLast4)
+}
+
+// SanitizeText 清洗自由文本：账户号码、邮箱、SSN 格式与 7 位以上连续数字（证件号、电话、账号）打码。
+func SanitizeText(s string) string {
+	s = RedactAccountNos(s)
+	s = emailRE.ReplaceAllStringFunc(s, maskInitial)
+	s = ssnRE.ReplaceAllStringFunc(s, maskLast4)
+	return longDigitRE.ReplaceAllStringFunc(s, maskLast4)
 }
 
 func redactValue(key string, v any) any {
@@ -88,6 +120,11 @@ func redactValue(key string, v any) any {
 		return maskLast4(s)
 	case redactInitial[k]:
 		return maskInitial(s)
+	case freeText[k]:
+		return SanitizeText(s)
+	}
+	if str, ok := v.(string); ok {
+		return RedactAccountNos(str)
 	}
 	return v
 }

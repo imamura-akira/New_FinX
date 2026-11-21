@@ -22,6 +22,8 @@ const (
 	// OTPMaxSendsPerEmailIP：同一"邮箱 + IP"每小时最多请求次数，超限拒绝并记日志（审计 SEC-P0-1 的缓解措施）。
 	// 注意：反向代理后 ClientIP 目前是代理地址（审计 SEC-P1-1），修复前该限速实际等同于按邮箱限速。
 	OTPMaxSendsPerEmailIP = 5
+	// OTPMaxVerifyFailsPerIP：同一 IP 每小时最多校验失败次数（防止对多个邮箱轮流试码；审计 SEC-P1-1）。
+	OTPMaxVerifyFailsPerIP = 30
 )
 
 // Sender 发送验证码邮件。
@@ -67,11 +69,12 @@ type otpStore struct {
 	byEmail   map[string][]time.Time
 	byIP      map[string][]time.Time
 	byEmailIP map[string][]time.Time
+	failsByIP map[string][]time.Time
 }
 
 func newOTPStore(secret []byte) *otpStore {
 	return &otpStore{secret: secret, codes: map[string]*otpEntry{}, byEmail: map[string][]time.Time{}, byIP: map[string][]time.Time{},
-		byEmailIP: map[string][]time.Time{}}
+		byEmailIP: map[string][]time.Time{}, failsByIP: map[string][]time.Time{}}
 }
 
 // otpLimitErr：限速拒绝；scope 标明触发的规则（resend / email / email_ip / ip），用于日志。
@@ -126,6 +129,23 @@ func (s *otpStore) cancel(email string) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	delete(s.codes, email)
+}
+
+// verifyBlocked：该 IP 近一小时校验失败次数已达上限（返回需等待的秒数）。
+func (s *otpStore) verifyBlocked(ip string, now time.Time) (int, bool) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.failsByIP[ip] = prune(s.failsByIP[ip], now)
+	if f := s.failsByIP[ip]; len(f) >= OTPMaxVerifyFailsPerIP {
+		return int(time.Hour.Seconds()) - int(now.Sub(f[0]).Seconds()), true
+	}
+	return 0, false
+}
+
+func (s *otpStore) recordVerifyFail(ip string, now time.Time) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.failsByIP[ip] = append(prune(s.failsByIP[ip], now), now)
 }
 
 // verify 校验；成功后验证码立即作废（一次性）。

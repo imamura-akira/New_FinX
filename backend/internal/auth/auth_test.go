@@ -484,3 +484,24 @@ func TestOTPEmailIPLimit(t *testing.T) {
 		t.Fatalf("一小时后应恢复: %v", err)
 	}
 }
+
+// 同一 IP 每小时最多 30 次验证码校验失败，超限 429（防止对多个邮箱轮流试码；审计 SEC-P1-1）。
+func TestOTPVerifyFailLimitPerIP(t *testing.T) {
+	st := newOTPStore([]byte("k"))
+	now := time.Date(2026, 11, 21, 0, 0, 0, 0, time.UTC)
+	for i := 0; i < OTPMaxVerifyFailsPerIP; i++ {
+		if _, blocked := st.verifyBlocked("198.51.100.7", now); blocked {
+			t.Fatalf("第 %d 次不应被拦", i+1)
+		}
+		st.recordVerifyFail("198.51.100.7", now)
+	}
+	if retry, blocked := st.verifyBlocked("198.51.100.7", now); !blocked || retry <= 0 {
+		t.Fatal("达到上限后应拦截")
+	}
+	if _, blocked := st.verifyBlocked("198.51.100.8", now); blocked {
+		t.Fatal("其他 IP 不受影响")
+	}
+	if _, blocked := st.verifyBlocked("198.51.100.7", now.Add(time.Hour)); blocked {
+		t.Fatal("一小时后恢复")
+	}
+}

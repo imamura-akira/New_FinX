@@ -363,6 +363,15 @@ func TestRedactJSON(t *testing.T) {
 		{`{"addressLine1":"200 Market Street","displayName":"DTester","idNo":"****1173"}`, `{"addressLine1":"[REDACTED]","displayName":"D***","idNo":"****1173"}`},
 		{`{"account_number":"TEST000001","username":"fxabc"}`, `{"account_number":"******0001","username":"[REDACTED]"}`},
 		{`{"details":{"accountHolderName":"Demo Tester","bankAccountNumber":"000123456789"}}`, `{"details":{"accountHolderName":"D***","bankAccountNumber":"********6789"}}`},
+		// 审计 SEC-P1-3：入金 id 前缀即账户号码；地址其余部分、雇主、职位、董事、券商关联、自定义名称
+		{`{"id":"FEYQ000001-1795221580864-DPJID","accountNo":"FEYQ000001"}`, `{"accountNo":"******0001","id":"******0001-1795221580864-DPJID"}`},
+		{`{"city":"San Francisco","postalCode":"94105","province":"CA","country":"USA"}`, `{"city":"[REDACTED]","country":"USA","postalCode":"[REDACTED]","province":"[REDACTED]"}`},
+		{`{"company":"Acme Corp","position":"Engineer","directorOf":"Acme","broker":"Robin"}`, `{"broker":"R***","company":"A***","directorOf":"A***","position":"E***"}`},
+		{`{"bankAccountNickname":"Jane Checking","beneficiaryBankName":"Chase","intermediaryBankSwift":"CHASUS33XXX"}`, `{"bankAccountNickname":"J***","beneficiaryBankName":"C***","intermediaryBankSwift":"*******3XXX"}`},
+		// 审计 SEC-P1-4：自由文本中的邮箱、SSN、长数字、账户号码
+		{`{"errorCode":"U001","message":"User jane@example.com SSN 123-45-6789 phone 4155550142 account FEYQ000001 invalid"}`,
+			`{"errorCode":"U001","message":"User j***@example.com SSN *******6789 phone ******0142 account ******0001 invalid"}`},
+		{`{"message":"Available balance: 0, Fees: 0.25"}`, `{"message":"Available balance: 0, Fees: 0.25"}`},
 		{`not json`, `[non-json body, 8 bytes]`},
 		{``, ``},
 	}
@@ -383,5 +392,19 @@ func TestContextCancelDuringBackoff(t *testing.T) {
 	defer cancel()
 	if err := c.Do(ctx, http.MethodGet, "/x", nil, nil); !errors.Is(err, context.DeadlineExceeded) {
 		t.Fatalf("退避期间应响应 ctx 取消，实际 %v", err)
+	}
+}
+
+// 审计 SEC-P1-3/P1-4：错误文本与路径中的账户号码、邮箱、长数字在进入日志前清洗。
+func TestAPIErrorAndPathSanitized(t *testing.T) {
+	e := &APIError{Status: 400, DWCode: "U001", Message: "user jane@example.com tax id 123456789 account FEYQ000001"}
+	got := e.Error()
+	for _, leak := range []string{"jane@", "123456789", "FEYQ000001"} {
+		if strings.Contains(got, leak) {
+			t.Fatalf("Error() 泄露 %q：%s", leak, got)
+		}
+	}
+	if p := RedactAccountNos("/funding/deposits/FEYQ000001-1795221580864-DPJID"); p != "/funding/deposits/******0001-1795221580864-DPJID" {
+		t.Fatalf("路径未打码：%s", p)
 	}
 }

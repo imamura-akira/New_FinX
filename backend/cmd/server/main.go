@@ -28,6 +28,7 @@ import (
 	"github.com/imamura-akira/New_FinX/backend/internal/dwclient"
 	"github.com/imamura-akira/New_FinX/backend/internal/events"
 	"github.com/imamura-akira/New_FinX/backend/internal/funding"
+	"github.com/imamura-akira/New_FinX/backend/internal/httpx"
 	"github.com/imamura-akira/New_FinX/backend/internal/marketsim"
 	"github.com/imamura-akira/New_FinX/backend/internal/papertrade"
 	"github.com/imamura-akira/New_FinX/backend/internal/portfolio"
@@ -122,6 +123,10 @@ func run(migrateCmd string, logger *slog.Logger) error {
 			logger.Warn("OTP_DEV_LOG enabled: OTP codes are written to the log (development only)")
 		} else {
 			logger.Warn("email provider not configured and OTP_DEV_LOG=false: OTP login will fail")
+		}
+		httpx.SetTrustedProxies(cfg.TrustedProxies) // 限速按真实客户端 IP（审计 SEC-P1-1）
+		if len(cfg.TrustedProxies) > 0 {
+			logger.Info("trusted proxies configured", slog.Int("entries", len(cfg.TrustedProxies)))
 		}
 		authSvc := auth.New(auth.PGRepo{DB: st.DB}, sender, cfg.JWTSecret, cfg.SessionTTL, logger)
 		if len(cfg.AllowedEmails) > 0 {

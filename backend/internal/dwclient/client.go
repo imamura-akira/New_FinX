@@ -61,7 +61,7 @@ func (e *APIError) Error() string {
 		s += " (" + e.DWCode + ")"
 	}
 	if e.Message != "" {
-		s += ": " + e.Message
+		s += ": " + SanitizeText(e.Message) // DW 原文可能回显用户输入，清洗后再进入日志（审计 SEC-P1-4）
 	}
 	return s
 }
@@ -234,7 +234,7 @@ func (c *Client) send(ctx context.Context, method, path string, payload []byte, 
 	elapsed := c.now().Sub(start)
 	attrs := []any{
 		slog.String("method", method),
-		slog.String("path", path),
+		slog.String("path", RedactAccountNos(path)), // 入金 / 出金 id 以账户号码开头（审计 SEC-P1-3）
 		slog.Int("attempt", attempt),
 		slog.Int64("duration_ms", elapsed.Milliseconds()),
 	}

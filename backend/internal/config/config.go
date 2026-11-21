@@ -7,6 +7,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"net/netip"
 	"os"
 	"regexp"
 	"strconv"
@@ -108,6 +109,9 @@ type Config struct {
 	KYCPollInterval time.Duration
 	// CORSAllowedOrigins：允许跨域的来源（逗号分隔；空 = 不启用 CORS；iOS 原生 App 不需要）。
 	CORSAllowedOrigins []string
+	// TrustedProxies：受信任的反向代理网段（TRUSTED_PROXIES，逗号分隔 CIDR）。只有来自这些网段的连接才采用
+	// X-Forwarded-For 的最右侧一项作为客户端 IP（限速用，审计 SEC-P1-1）；为空时一律取连接地址（本机开发）。
+	TrustedProxies []netip.Prefix
 	// AllowedEmails：登录邮箱白名单（ALLOWED_EMAILS，逗号分隔）。以 @ 开头的条目按域名后缀放行（如 "@example.com"），
 	// 完整邮箱按精确匹配（忽略大小写）。非空时 /auth/otp/request 只接受名单内的邮箱（公网演示部署用）；空 = 不限制。
 	AllowedEmails []string
@@ -202,6 +206,14 @@ func LoadFrom(get Getenv) (*Config, error) {
 		} else {
 			c.JWTSecret = key
 		}
+	}
+	for _, x := range splitList(get("TRUSTED_PROXIES")) {
+		pfx, err := netip.ParsePrefix(x)
+		if err != nil {
+			p.errs = append(p.errs, "TRUSTED_PROXIES 每项须为 CIDR（如 172.16.0.0/12）")
+			break
+		}
+		c.TrustedProxies = append(c.TrustedProxies, pfx.Masked())
 	}
 	// OTP_FIXED_CODE 未设置时沿用 OTP_DEV_LOG（兼容现有部署与本机开发：000000 照旧）
 	c.OTPFixedCode = p.bool("OTP_FIXED_CODE", c.OTPDevLog)

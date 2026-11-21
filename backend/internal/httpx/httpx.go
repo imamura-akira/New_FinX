@@ -7,7 +7,9 @@ import (
 	"errors"
 	"io"
 	"log/slog"
+	"net"
 	"net/http"
+	"net/netip"
 	"regexp"
 	"strings"
 )
@@ -182,13 +184,45 @@ func UserID(ctx context.Context) string {
 	return v
 }
 
-// ClientIP：取连接地址（反向代理部署时需改为受信任的 X-Forwarded-For 解析）。
+// trustedProxies：受信任的反向代理网段（TRUSTED_PROXIES）。为空时不信任任何代理头。
+var trustedProxies []netip.Prefix
+
+// SetTrustedProxies 设置受信任的反向代理网段（启动时调用一次）。
+func SetTrustedProxies(p []netip.Prefix) { trustedProxies = p }
+
+// ClientIP：真实客户端 IP（审计 SEC-P1-1）。
+//   - 只有当连接来自受信代理网段时，才采用 X-Forwarded-For，并且只取最右侧一项（由最近一跳的受信代理写入；
+//     客户端自带的伪造值在左侧，被忽略。共用 Caddy 默认会丢弃不受信来源的 X-Forwarded-For 并改写为真实 IP）；
+//   - 其他情况（未配置代理、直连、代理头缺失或非法）一律取连接地址。
 func ClientIP(r *http.Request) string {
 	host := r.RemoteAddr
-	if i := strings.LastIndex(host, ":"); i > 0 {
-		host = host[:i]
+	if h, _, err := net.SplitHostPort(host); err == nil {
+		host = h
 	}
-	return strings.Trim(host, "[]")
+	host = strings.Trim(host, "[]")
+	remote, err := netip.ParseAddr(host)
+	if err != nil || !trusted(remote) {
+		return host
+	}
+	xff := r.Header.Values("X-Forwarded-For")
+	if len(xff) == 0 {
+		return host
+	}
+	parts := strings.Split(xff[len(xff)-1], ",")
+	if ip, err := netip.ParseAddr(strings.TrimSpace(parts[len(parts)-1])); err == nil {
+		return ip.Unmap().String()
+	}
+	return host
+}
+
+func trusted(a netip.Addr) bool {
+	a = a.Unmap()
+	for _, p := range trustedProxies {
+		if p.Contains(a) {
+			return true
+		}
+	}
+	return false
 }
 
 var idemKeyRE = regexp.MustCompile(`^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$`)
