@@ -6,7 +6,7 @@
 | 项 | 内容 |
 |---|---|
 | 环境 | DriveWealth UAT 沙盒（`bo-api.drivewealth.io/back-office`），本机后端 `DW_LOG_BODIES=true` |
-| 采集时间 | 2026-11-20 05:50 UTC（美东 11-20 00:50，非工作时间）；窗口期后复查 2026-11-20 14:33 UTC（第 4 节） |
+| 采集时间 | 2026-11-20 05:50 UTC（美东 11-20 00:50，非工作时间）；窗口期后复查 2026-11-20 14:33 UTC（第 4 节）；"1 天到账"验证入金 2026-11-21 00:39 UTC（第 5 节） |
 | 测试用户 | 虚构沙盒测试用户（`funded1@example.com`），已开户（LIVE / CASH / SELF），已绑定虚构银行账户 |
 | 操作 | 在 App 后端发起一笔 **$10 ACH 入金**，随后查询资金汇总，后台对账任务每 10 秒查询入金状态 |
 | 来源 | 后端日志中 `dwclient` 记录的请求体 / 响应体，未经手工改写 |
@@ -390,6 +390,148 @@
 ```
 
 我方接口对应：`GET /api/v1/funding/transfers` 显示该笔为"已完成"（SUCCESSFUL），购买力可用日与可提现日均为 2026-11-23；`GET /api/v1/account/money` 显示现金 $1,010、购买力 $0、可提现 $0、在途入金 $1,010、观察期内 $1,010。
+
+## 5. "1 天到账"配置验证：第二笔 $10 ACH 入金（2026-11-21 00:39 UTC / 北京 08:39，美东周五 19:39）
+
+目的：DW 对接人 11-20 口头通知沙盒已改为"1 天到账"，以 DW 接口返回为准验证。同一测试用户（funded1），本机后端（`DW_LOG_BODIES=true`）发起。
+
+**结论（截至 2026-11-21 08:42 北京）**：DW 已创建入金并推进到 14 Approved，状态历史最后一条为 "Awaiting money movement window to open."——**资金划转窗口未开放，DW 尚未返回 `seasoningDetails`（购买力 / 可提现生效日）**，因此"1 天到账"本次暂无法判定，待窗口开放后复查（上一笔在窗口开放、转为 Successful 时才写入生效日）。
+
+**提交过程（我方缺陷，已定位）**：首次 `POST` 10 秒超时（结果不明）；超时期间后台对账任务用同一 Idempotency-Key 重放，DW 返回 404 IK075（IDEMPOTENCY_KEY_RESPONSE_ERROR，缓存的响应尚不可取）；dwclient 重试同样 IK075。后端把 IK075 当作"券商明确拒绝"，删除了本地记录并向 App 返回 422。实际上 DW 于 00:39:40.870Z 创建了**一笔**入金（按账户列出入金核实，无重复）。本地库因此缺这笔记录，详见 sandbox-log 2026-11-21。
+
+`POST /funding/deposits`（对账重放）· HTTP 404 · 2026-11-21T00:39:28.943668Z · DW request id `request_d8fe7f4e-81e0-436f-960d-2a6e4a221a6b_clm`
+
+`POST /funding/deposits`（首次提交）· 超时 10 秒，无响应 · 2026-11-21T00:39:37.241641Z
+
+`POST /funding/deposits`（首次提交的自动重试）· HTTP 404 · 2026-11-21T00:39:38.002399Z · DW request id `request_fdfa7e91-c10c-4625-a604-0a044d77945b_clm`
+
+**请求体（三次相同）**
+
+```json
+{
+  "accountNo": "******0001",
+  "amount": 10,
+  "bankAccountID": "bank_02797f3e-7f75-4cbf-b437-407b58c98cd9",
+  "currency": "USD",
+  "type": "ACH"
+}
+```
+
+**DW 响应体（两次 404 相同）**
+
+```json
+{
+  "errorCode": "IK075",
+  "message": "Could not retrieve cached response for this idempotency key. If this persists, generate a new idempotency key and retry."
+}
+```
+
+`GET /accounts/{accountID}/funding/deposits?limit=10` · HTTP 200 · 2026-11-21 08:41 北京（按账户列出入金，用于核实是否创建 / 是否重复）：共 3 笔——本笔 `FEYQ000001-1795221580864-DPJID`（$10，Approved，无 seasoningDetails）、11-20 的 $10（Successful，购买力 / 可提现暂扣至 2026-11-23）、11-19 的 $1,000（Successful，暂扣至 2026-11-23）。
+
+`GET /funding/deposits/FEYQ000001-1795221580864-DPJID` · HTTP 200 · 2026-11-21T08:42:13.391325+08:00 · DW request id `request_0099cf70-61bc-4b0d-ac0d-1e33fde6d011_clm`
+
+**DW 响应体**
+
+```json
+{
+  "accountDetails": {
+    "accountID": "0e05d5c1-b209-4237-a4a7-6296bc726534.1795093468784",
+    "accountManagementType": {
+      "description": "Self Directed Account",
+      "name": "SELF"
+    },
+    "accountNo": "******0001",
+    "accountType": {
+      "description": "Live Account",
+      "name": "LIVE"
+    }
+  },
+  "amount": 10,
+  "bankAccountID": "bank_02797f3e-7f75-4cbf-b437-407b58c98cd9",
+  "batch": true,
+  "category": "DEPOSIT",
+  "created": "2026-11-21T00:39:40.870Z",
+  "currency": {
+    "description": "US Dollar",
+    "name": "USD",
+    "symbol": "$"
+  },
+  "details": {
+    "accountHolderName": "D***",
+    "bankAccountNickname": "Demo Checking",
+    "bankAccountNumber": "****6789",
+    "bankAccountType": "CHECKING",
+    "bankRoutingNumber": "****0021",
+    "country": "USA"
+  },
+  "id": "FEYQ000001-1795221580864-DPJID",
+  "note": "null|Demo Checking|****6789",
+  "otherDetails": "null|Demo Checking|****6789",
+  "status": {
+    "comment": "Payment successfully submitted. Moved to Approved",
+    "id": 14,
+    "message": "Approved",
+    "updated": "2026-11-21T00:39:43.821Z"
+  },
+  "statusHistory": [
+    {
+      "comment": "New deposit request from the back-office",
+      "created": "2026-11-21T00:39:40.858130723Z",
+      "status": 0,
+      "statusMessage": "Started",
+      "updatedBy": "bo.finx.api"
+    },
+    {
+      "comment": "Valid request. Auto-move to Pending",
+      "created": "2026-11-21T00:39:40.858189941Z",
+      "status": 1,
+      "statusMessage": "Pending",
+      "updatedBy": "SYSTEM"
+    },
+    {
+      "comment": "Valid request. Auto-move to Processing",
+      "created": "2026-11-21T00:39:40.858205050Z",
+      "status": 17,
+      "statusMessage": "Processing",
+      "updatedBy": "SYSTEM"
+    },
+    {
+      "comment": "Payment successfully submitted. Moved to Approved",
+      "created": "2026-11-21T00:39:41.639745861Z",
+      "status": 14,
+      "statusMessage": "Approved",
+      "updatedBy": "BO-API ACH deposit service"
+    },
+    {
+      "comment": "Awaiting money movement window to open.",
+      "created": "2026-11-21T00:39:43.821263868Z",
+      "status": 14,
+      "statusMessage": "Approved",
+      "updatedBy": "SYSTEM"
+    }
+  ],
+  "transactionCode": {
+    "code": "RECEIPT_ACH_MT",
+    "description": "Cash Receipt - ACH MT",
+    "type": "CSR"
+  },
+  "userDetails": {
+    "email": "s***@example.com",
+    "firstName": "D***",
+    "lastName": "T***",
+    "parentIB": {
+      "id": "be390250-511f-4143-89e2-fd0e502039f0",
+      "name": "Golden State Capital Inc."
+    },
+    "userID": "0e05d5c1-b209-4237-a4a7-6296bc726534",
+    "username": "[REDACTED]",
+    "wlpID": "FINX"
+  },
+  "wlpFinTranTypeID": "536c7cff-c7eb-472c-bb88-30f6a2169227"
+}
+```
+
+采集方式：入金创建过程取自本机后端日志（dwclient 脱敏）；列表与详情用一次性只读临时命令查询（同一 dwclient 与脱敏规则，命令未入库）。
 
 ---
 
