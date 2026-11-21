@@ -56,6 +56,13 @@ func TestPGFundingRepo(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	// App 幂等键去重（审计 FUND-P0-1）：按"账户 + 键"取回原记录；其他账户取不到
+	if got, err := r.TransferByIdemKey(ctx, accID, tr.IdempotencyKey); err != nil || got.ID != tid || got.Amount != "100.25" {
+		t.Fatalf("TransferByIdemKey: %+v %v", got, err)
+	}
+	if _, err := r.TransferByIdemKey(ctx, "00000000-0000-4000-8000-000000000000", tr.IdempotencyKey); !errors.Is(err, ErrNotFound) {
+		t.Fatalf("其他账户不应取到: %v", err)
+	}
 	if busy, _ := r.HasInFlight(ctx, bankID); !busy {
 		t.Fatal("提交中的入金应视为在途")
 	}

@@ -667,6 +667,8 @@ paths:
       operationId: createDeposit
       summary: ACH 入金（P-13）
       description: 后端转 DW `POST /back-office/funding/deposits`（type=ACH，已核实）。限额走后端配置 limits.*，超限返回 42201 并带限额。写操作不自动重试。
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
       requestBody:
         required: true
         content:
@@ -707,6 +709,8 @@ paths:
       description: |
         后端转 DW `POST /funding/redemptions`【Q-DW-8d 字段待核】。
         WIRE 收款人固定为开户姓名，后端强制，不接受客户端传入；金额与限额后端二次校验；可提现以 DW 返回为准。
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
       requestBody:
         required: true
         content:
@@ -928,6 +932,8 @@ paths:
         LIMIT（当日有效）：必须按 `quantity`，`limitPrice` > 0，`timeInForce` 只支持 DAY；买入冻结金额 = quantity × limitPrice；转 DW 字段 price / timeInForce。
         后端强制：买入预估金额 ≤ DW 购买力且 ≥ 单笔最低（LIMIT_MIN_ORDER，示例值 $1）；卖出 ≤ DW 可卖数量。超限 42201（data.limits）；
         OPEN_NO_NEW_TRADES 账户买入 40301；10 秒内重复提交 40901；DW 结果不明 50001（data.orderId）。
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
       requestBody:
         required: true
         content:
@@ -1552,6 +1558,16 @@ components:
       description: "Authorization: Bearer <sessionToken>（除 /auth/otp/*、/auth/oauth 外均必须）"
 
   parameters:
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: false
+      schema: { type: string, format: uuid }
+      description: >-
+        可选。App 为每笔资金类申请（入金、出金、下单）生成的 UUID；超时后重试同一笔申请时沿用同一个值。
+        后端按"账户 + 该值"去重：已有记录时不再提交给券商，直接按原记录作答——已受理返回原 transferId / orderId 与状态；
+        仍在确认中返回 502 / 50001（data 带原编号）；内容与原记录不同（金额、方向等）返回 42200。
+        不带时由后端生成（兼容旧版 App）。
     Cursor:
       name: cursor
       in: query

@@ -76,6 +76,8 @@ type Repo interface {
 	HasInFlight(ctx context.Context, bankID string) (bool, error)
 
 	InsertTransfer(ctx context.Context, t Transfer) (string, error)
+	// TransferByIdemKey：本账户下使用该幂等键的记录（App 重试去重）；没有时返回 ErrNotFound。
+	TransferByIdemKey(ctx context.Context, accountID, key string) (*Transfer, error)
 	SetSubmitted(ctx context.Context, id, dwRef, status string, now time.Time) error
 	DeleteTransfer(ctx context.Context, id string) error // DW 明确拒绝时撤销本地记录
 	RecentDuplicate(ctx context.Context, accountID, typ, amount string, bankID *string, since time.Time) (bool, error)
@@ -258,6 +260,17 @@ func (p PGRepo) UpdateTransfer(ctx context.Context, id, status string, reason *s
 func (p PGRepo) SetAvailability(ctx context.Context, id string, bp, wd *time.Time) error {
 	_, err := p.DB.ExecContext(ctx, `UPDATE transfers SET buying_power_at = $2, withdrawable_at = $3 WHERE id = $1`, id, bp, wd)
 	return err
+}
+
+func (p PGRepo) TransferByIdemKey(ctx context.Context, accountID, key string) (*Transfer, error) {
+	t, err := scanTransfer(p.DB.QueryRowContext(ctx, `SELECT `+transferCols+transferFrom+` WHERE t.account_id = $1 AND t.idempotency_key = $2::uuid`, accountID, key))
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, ErrNotFound
+	}
+	if err != nil {
+		return nil, err
+	}
+	return &t, nil
 }
 
 func (p PGRepo) DWRefUsed(ctx context.Context, dwRef string) (bool, error) {

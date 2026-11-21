@@ -59,6 +59,8 @@ var ErrNotFound = errors.New("trading: not found")
 // Repo：持久化。
 type Repo interface {
 	InsertOrder(ctx context.Context, o Order) (string, error)
+	// OrderByIdemKey：本账户下使用该幂等键的订单（App 重试去重）；没有时返回 ErrNotFound。
+	OrderByIdemKey(ctx context.Context, accountID, key string) (*Order, error)
 	SetSubmitted(ctx context.Context, id, dwOrderID, dwOrderNo string, now time.Time) error
 	DeleteOrder(ctx context.Context, id string) error // DW 明确拒绝创建时撤销本地记录
 	RecentDuplicate(ctx context.Context, o Order, since time.Time) (bool, error)
@@ -208,6 +210,17 @@ func (p PGRepo) ListOrders(ctx context.Context, accountID, filter string, before
 		out = append(out, o)
 	}
 	return out, rows.Err()
+}
+
+func (p PGRepo) OrderByIdemKey(ctx context.Context, accountID, key string) (*Order, error) {
+	o, err := scanOrder(p.DB.QueryRowContext(ctx, `SELECT `+orderCols+orderFrom+` WHERE o.account_id = $1 AND o.idempotency_key = $2::uuid`, accountID, key))
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, ErrNotFound
+	}
+	if err != nil {
+		return nil, err
+	}
+	return &o, nil
 }
 
 func (p PGRepo) GetOrder(ctx context.Context, accountID, id string) (*Order, error) {

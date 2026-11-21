@@ -124,6 +124,55 @@ func limitErr(msg string, limits map[string]string) error {
 	return &httpx.Error{HTTP: http.StatusUnprocessableEntity, Code: httpx.CodeLimit, Message: msg, Data: map[string]any{"limits": limits}}
 }
 
+// orderFingerprint：同一幂等键的重试必须是同一笔订单。
+type orderFingerprint struct {
+	symbol, side, orderType string
+	byAmount                bool
+	amountCents             int64
+	qty, limitPrice         float64
+}
+
+func numOf(n *json.Number) float64 {
+	if n == nil {
+		return 0
+	}
+	f, _ := n.Float64()
+	return f
+}
+
+// replayed：本账户已有使用该幂等键的订单时，按原订单作答并返回 true（审计 FUND-P0-1）。
+//   - 内容不同：422，不覆盖原订单；
+//   - 原订单尚无 DW 编号（提交中 / 结果不明）：502 50001 + orderId；
+//   - 否则：200 + 原订单的 orderId 与状态。
+func (s *Service) replayed(w http.ResponseWriter, r *http.Request, accountID, key string, want orderFingerprint) bool {
+	o, err := s.Repo.OrderByIdemKey(r.Context(), accountID, key)
+	if errors.Is(err, ErrNotFound) {
+		return false
+	}
+	if err != nil {
+		httpx.Fail(w, r, err)
+		return true
+	}
+	same := o.Symbol == want.symbol && o.Side == want.side && o.OrderType == want.orderType && (o.Amount != nil) == want.byAmount &&
+		math.Abs(numOf(o.LimitPrice)-want.limitPrice) < 1e-9
+	if want.byAmount {
+		same = same && cents(numOf(o.Amount)) == want.amountCents
+	} else {
+		same = same && math.Abs(numOf(o.Quantity)-want.qty) < 1e-9
+	}
+	if !same {
+		httpx.Fail(w, r, httpx.Validation("该笔订单的请求编号已被另一笔订单使用，请返回后重新下单"))
+		return true
+	}
+	if o.DWOrderID == "" {
+		httpx.Fail(w, r, &httpx.Error{HTTP: http.StatusBadGateway, Code: httpx.CodeDWFailed, Message: "订单提交结果暂未确认，请稍后在订单列表中查看，请勿重复提交",
+			Data: map[string]string{"orderId": o.ID}})
+		return true
+	}
+	httpx.OK(w, map[string]string{"orderId": o.ID, "status": o.Status})
+	return true
+}
+
 func newUUID() string {
 	b := make([]byte, 16)
 	_, _ = rand.Read(b)
@@ -245,6 +294,16 @@ func (s *Service) handleCreate(w http.ResponseWriter, r *http.Request) {
 		httpx.Fail(w, r, err)
 		return
 	}
+	// App 重试同一笔订单（同一 Idempotency-Key）：返回原订单，不再向 DW 提交（审计 FUND-P0-1）
+	idem, err := httpx.ClientIdempotencyKey(r)
+	if err != nil {
+		httpx.Fail(w, r, err)
+		return
+	}
+	want := orderFingerprint{sym, in.Side, in.OrderType, byAmount, amountCents, qty, limitPrice}
+	if idem != "" && s.replayed(w, r, a.ID, idem, want) {
+		return
+	}
 
 	if in.Side == "BUY" {
 		est := amountCents
@@ -310,6 +369,9 @@ func (s *Service) handleCreate(w http.ResponseWriter, r *http.Request) {
 
 	o := Order{AccountID: a.ID, Symbol: sym, Side: in.Side, OrderType: in.OrderType, Status: StatusSubmitting,
 		IdempotencyKey: newUUID(), CreatedBy: httpx.UserID(ctx), DWAccountNo: a.AccountNo}
+	if idem != "" {
+		o.IdempotencyKey = idem
+	}
 	if limitOrder {
 		lp, tif := json.Number(orderrules.FormatPrice(limitPrice)), "DAY"
 		o.LimitPrice, o.TimeInForce = &lp, &tif
@@ -329,6 +391,9 @@ func (s *Service) handleCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if o.ID, err = s.Repo.InsertOrder(ctx, o); err != nil {
+		if idem != "" && s.replayed(w, r, a.ID, idem, want) { // 同键并发请求：另一请求已落库
+			return
+		}
 		httpx.Fail(w, r, err)
 		return
 	}

@@ -115,6 +115,41 @@ func newUUID() string {
 	return fmt.Sprintf("%x-%x-%x-%x-%x", b[0:4], b[4:6], b[6:8], b[8:10], b[10:])
 }
 
+// keyOr：App 提供了幂等键就用它，否则后端生成（兼容旧版 App）。
+func keyOr(clientKey string) string {
+	if clientKey != "" {
+		return clientKey
+	}
+	return newUUID()
+}
+
+// replayed：本账户已有使用该幂等键的记录时，按原记录作答并返回 true（App 超时后重试同一笔申请，审计 FUND-P0-1）。
+//   - 内容不同（金额、方式、银行账户）：422，提示刷新后重试，不覆盖原记录；
+//   - 原记录尚无 DW 编号（提交中 / 结果不明）：502 50001 + transferId，与首次结果不明时一致；
+//   - 否则：200 + 原记录的 transferId 与状态。
+func (s *Service) replayed(w http.ResponseWriter, r *http.Request, accountID, key, typ, method, amount string, bankID *string) bool {
+	t, err := s.Repo.TransferByIdemKey(r.Context(), accountID, key)
+	if errors.Is(err, ErrNotFound) {
+		return false
+	}
+	if err != nil {
+		httpx.Fail(w, r, err)
+		return true
+	}
+	sameBank := (t.BankAccountID == nil) == (bankID == nil) && (bankID == nil || *t.BankAccountID == *bankID)
+	if t.Type != typ || t.Method != method || parseCents(t.Amount) != parseCents(amount) || !sameBank {
+		httpx.Fail(w, r, httpx.Validation("该笔申请的请求编号已被另一笔申请使用，请返回后重新提交"))
+		return true
+	}
+	if t.DWRef == "" {
+		httpx.Fail(w, r, &httpx.Error{HTTP: http.StatusBadGateway, Code: httpx.CodeDWFailed, Message: "提交结果暂未确认，请稍后在资金记录中查看，请勿重复提交",
+			Data: map[string]string{"transferId": t.ID}})
+		return true
+	}
+	httpx.OK(w, map[string]string{"transferId": t.ID, "status": t.Status})
+	return true
+}
+
 // ---------- 银行账户 ----------
 
 func (s *Service) handleListBanks(w http.ResponseWriter, r *http.Request) {
@@ -319,6 +354,15 @@ func (s *Service) handleDeposit(w http.ResponseWriter, r *http.Request) {
 		httpx.Fail(w, r, err)
 		return
 	}
+	// App 重试同一笔申请（同一 Idempotency-Key）：返回原记录，不再向 DW 提交（审计 FUND-P0-1）
+	idem, err := httpx.ClientIdempotencyKey(r)
+	if err != nil {
+		httpx.Fail(w, r, err)
+		return
+	}
+	if idem != "" && s.replayed(w, r, a.ID, idem, "DEPOSIT", "ACH", Cents(cents), &bank.ID) {
+		return
+	}
 	now := s.now()
 	y, m, d := now.In(s.et).Date()
 	todayET := time.Date(y, m, d, 0, 0, 0, 0, s.et)
@@ -342,8 +386,11 @@ func (s *Service) handleDeposit(w http.ResponseWriter, r *http.Request) {
 	}
 
 	t := Transfer{AccountID: a.ID, BankAccountID: &bank.ID, Type: "DEPOSIT", Method: "ACH", Amount: amount, Status: StatusSubmitting,
-		IdempotencyKey: newUUID(), CreatedBy: httpx.UserID(ctx), DWAccountNo: a.AccountNo, DWBankID: bank.DWBankID}
+		IdempotencyKey: keyOr(idem), CreatedBy: httpx.UserID(ctx), DWAccountNo: a.AccountNo, DWBankID: bank.DWBankID}
 	if t.ID, err = s.Repo.InsertTransfer(ctx, t); err != nil {
+		if idem != "" && s.replayed(w, r, a.ID, idem, "DEPOSIT", "ACH", amount, &bank.ID) { // 同键并发请求：另一请求已落库
+			return
+		}
 		httpx.Fail(w, r, err)
 		return
 	}
@@ -488,6 +535,14 @@ func (s *Service) handleWithdrawal(w http.ResponseWriter, r *http.Request) {
 	if bank != nil {
 		bankID = &bank.ID
 	}
+	idem, err := httpx.ClientIdempotencyKey(r)
+	if err != nil {
+		httpx.Fail(w, r, err)
+		return
+	}
+	if idem != "" && s.replayed(w, r, a.ID, idem, "WITHDRAWAL", in.Method, amount, bankID) {
+		return
+	}
 	if dup, err := s.Repo.RecentDuplicate(ctx, a.ID, "WITHDRAWAL", amount, bankID, s.now().Add(-60*time.Second)); err != nil {
 		httpx.Fail(w, r, err)
 		return
@@ -496,7 +551,7 @@ func (s *Service) handleWithdrawal(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	t := Transfer{AccountID: a.ID, BankAccountID: bankID, Type: "WITHDRAWAL", Method: in.Method, Amount: amount, Status: StatusSubmitting,
-		IdempotencyKey: newUUID(), CreatedBy: httpx.UserID(ctx), DWAccountNo: a.AccountNo}
+		IdempotencyKey: keyOr(idem), CreatedBy: httpx.UserID(ctx), DWAccountNo: a.AccountNo}
 	if in.Method == "WIRE" {
 		raw, _ := json.Marshal(in.Wire)
 		if t.WireEnc, err = s.Cipher.Encrypt(raw, crypto.AAD("transfers", "wire_enc", t.IdempotencyKey)); err != nil {
@@ -505,6 +560,9 @@ func (s *Service) handleWithdrawal(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	if t.ID, err = s.Repo.InsertTransfer(ctx, t); err != nil {
+		if idem != "" && s.replayed(w, r, a.ID, idem, "WITHDRAWAL", in.Method, amount, bankID) {
+			return
+		}
 		httpx.Fail(w, r, err)
 		return
 	}

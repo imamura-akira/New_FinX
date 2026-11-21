@@ -14,6 +14,10 @@ const returnWindow = 10 * 24 * time.Hour
 // 并发重放同一幂等键会得到 IK075（2026-11-21 沙盒实测）。
 const submitGrace = time.Minute
 
+// idempotencyWindow：DW 幂等键保存 4 天；超过后重放会被当作新入金（重复扣款），因此只在 [submitGrace, 95 小时) 内重放，
+// 之后只按账户反查，查不到则写错误日志转人工（审计 FUND-P0-2）。
+const idempotencyWindow = 96 * time.Hour
+
 // lookupAfter：重放仍拿不到结果（如 IK075 持续、网络错误）超过此时长，按账户列出 DW 入金反查并关联。
 const lookupAfter = 10 * time.Minute
 
@@ -38,6 +42,13 @@ func (s *Service) Sync(ctx context.Context, every time.Duration) {
 			age := now.Sub(t.SubmittedAt)
 			if age < submitGrace {
 				continue // 首次提交可能仍在进行中
+			}
+			if age >= idempotencyWindow-time.Hour {
+				if !s.lookupDeposit(ctx, t, now) {
+					s.Logger.ErrorContext(ctx, "deposit outcome unknown past idempotency window, manual check required", slog.String("transfer_id", t.ID))
+					_ = s.Repo.TouchTransfer(ctx, t.ID, now)
+				}
+				continue
 			}
 			if _, err := s.submitDeposit(ctx, t); err != nil {
 				if age >= lookupAfter && s.lookupDeposit(ctx, t, now) {

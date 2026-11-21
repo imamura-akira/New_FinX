@@ -39,12 +39,29 @@ func (m *memRepo) find(id string) *Order {
 func (m *memRepo) InsertOrder(_ context.Context, o Order) (string, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
+	for _, x := range m.orders {
+		if x.IdempotencyKey == o.IdempotencyKey {
+			return "", fmt.Errorf("duplicate key value violates unique constraint \"orders_idempotency_key_key\"")
+		}
+	}
 	m.seq++
 	o.ID = fmt.Sprintf("ord-%d", m.seq)
 	o.SubmittedAt = time.Now().Add(time.Duration(m.seq) * time.Millisecond)
 	o.UpdatedAt = o.SubmittedAt
 	m.orders = append(m.orders, o)
 	return o.ID, nil
+}
+
+func (m *memRepo) OrderByIdemKey(_ context.Context, acc, key string) (*Order, error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	for _, o := range m.orders {
+		if o.AccountID == acc && o.IdempotencyKey == key {
+			c := o
+			return &c, nil
+		}
+	}
+	return nil, ErrNotFound
 }
 
 func (m *memRepo) SetSubmitted(_ context.Context, id, dwID, dwNo string, now time.Time) error {
@@ -285,12 +302,17 @@ type res struct {
 	Data   json.RawMessage `json:"data"`
 }
 
-func (f *fx) call(method, path, body string) res {
+func (f *fx) call(method, path, body string) res { return f.callKey(method, path, body, "") }
+
+func (f *fx) callKey(method, path, body, key string) res {
 	var rd io.Reader
 	if body != "" {
 		rd = strings.NewReader(body)
 	}
 	req := httptest.NewRequest(method, path, rd)
+	if key != "" {
+		req.Header.Set("Idempotency-Key", key)
+	}
 	req.Header.Set("Content-Type", "application/json")
 	rec := httptest.NewRecorder()
 	f.mux.ServeHTTP(rec, req)
@@ -708,5 +730,48 @@ func TestStatusOf(t *testing.T) {
 	}
 	if statusOf(map[string]any{"name": "NEW"}) != "NEW" {
 		t.Error("对象形式")
+	}
+}
+
+// 审计 FUND-P0-1：App 超时（15 秒）后用户 10 秒防重复窗口外重试，同一 Idempotency-Key 不得形成第二笔订单。
+func TestOrderClientIdempotencyKey(t *testing.T) {
+	const key = "9b8a7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d"
+	body := `{"symbol":"AAPL","side":"BUY","orderType":"MARKET","amount":100}`
+	cases := []struct {
+		name      string
+		firstErr  error
+		retry     string
+		wantCode  int
+		wantPosts int
+	}{
+		{"首次成功，重试返回原订单", nil, body, 0, 1},
+		{"首次结果不明，重试仍为不明且不再提交", &dwclient.APIError{Status: 503}, body, 50001, 1},
+		{"同键不同金额：拒绝", nil, `{"symbol":"AAPL","side":"BUY","orderType":"MARKET","amount":150}`, 42200, 1},
+		{"同键不同方向：拒绝", nil, `{"symbol":"AAPL","side":"SELL","orderType":"MARKET","amount":100}`, 42200, 1},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			f := newFx(t)
+			if tc.firstErr != nil {
+				f.dw.fail["POST /orders"] = []error{tc.firstErr}
+			}
+			first := f.callKey("POST", "/api/v1/orders", body, key)
+			f.svc.now = func() time.Time { return time.Now().Add(16 * time.Second) } // 已过 10 秒防重复窗口
+			r := f.callKey("POST", "/api/v1/orders", tc.retry, key)
+			if r.Code != tc.wantCode {
+				t.Fatalf("重试 code = %d，期望 %d（%+v）", r.Code, tc.wantCode, r)
+			}
+			if n := f.dw.count("POST /orders"); n != tc.wantPosts {
+				t.Fatalf("DW 下单 POST 次数 = %d，期望 %d", n, tc.wantPosts)
+			}
+			if len(f.repo.orders) != 1 {
+				t.Fatalf("本地订单数 = %d，期望 1", len(f.repo.orders))
+			}
+			if tc.wantCode != 42200 {
+				if a, b := first.field(t, "orderId"), r.field(t, "orderId"); a == "" || a != b {
+					t.Fatalf("重试应返回原 orderId：%q vs %q", a, b)
+				}
+			}
+		})
 	}
 }

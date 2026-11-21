@@ -87,6 +87,11 @@ func (m *memRepo) HasInFlight(_ context.Context, bankID string) (bool, error) {
 func (m *memRepo) InsertTransfer(_ context.Context, t Transfer) (string, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
+	for _, x := range m.transfers {
+		if x.IdempotencyKey == t.IdempotencyKey {
+			return "", fmt.Errorf("duplicate key value violates unique constraint \"transfers_idempotency_key_key\"")
+		}
+	}
 	t.ID, t.SubmittedAt = m.id("tr"), time.Now().Add(time.Duration(m.seq)*time.Millisecond)
 	t.AmountJSON = json.Number(t.Amount)
 	if t.BankAccountID != nil {
@@ -194,6 +199,18 @@ func (m *memRepo) UpdateTransfer(_ context.Context, id, st string, reason *strin
 }
 
 func (m *memRepo) TouchTransfer(context.Context, string, time.Time) error { return nil }
+
+func (m *memRepo) TransferByIdemKey(_ context.Context, acc, key string) (*Transfer, error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	for _, t := range m.transfers {
+		if t.AccountID == acc && t.IdempotencyKey == key {
+			c := t
+			return &c, nil
+		}
+	}
+	return nil, ErrNotFound
+}
 
 func (m *memRepo) DWRefUsed(_ context.Context, ref string) (bool, error) {
 	m.mu.Lock()
@@ -329,13 +346,19 @@ type res struct {
 	Data   json.RawMessage `json:"data"`
 }
 
-func (f *fx) call(method, path, body string) res {
+func (f *fx) call(method, path, body string) res { return f.callKey(method, path, body, "") }
+
+// callKey：带 App 幂等键（Idempotency-Key 头）调用。
+func (f *fx) callKey(method, path, body, key string) res {
 	var rd io.Reader
 	if body != "" {
 		rd = strings.NewReader(body)
 	}
 	req := httptest.NewRequest(method, path, rd)
 	req.Header.Set("Content-Type", "application/json")
+	if key != "" {
+		req.Header.Set("Idempotency-Key", key)
+	}
 	rec := httptest.NewRecorder()
 	f.mux.ServeHTTP(rec, req)
 	var r res
@@ -818,4 +841,106 @@ func countBefore(f *fx, prefix string) int {
 		}
 	}
 	return 0
+}
+
+// 审计 FUND-P0-1：App 超时后重试同一笔申请（同一 Idempotency-Key）不得重复提交给 DW。
+func TestClientIdempotencyKey(t *testing.T) {
+	const key = "6f1c2a7e-3b4d-4e5f-8a9b-0c1d2e3f4a5b"
+	body := func(amount int) string { return fmt.Sprintf(`{"bankAccountId":"%%s","amount":%d}`, amount) }
+	cases := []struct {
+		name      string
+		firstErr  error
+		retryBody int
+		retryKey  string
+		wantCode  int
+		wantPosts int
+		wantRows  int
+	}{
+		{name: "首次成功，重试返回原记录", retryBody: 100, retryKey: key, wantCode: 0, wantPosts: 1, wantRows: 1},
+		{name: "首次结果不明，重试仍为不明且不再提交", firstErr: fmt.Errorf("timeout"), retryBody: 100, retryKey: key, wantCode: 50001, wantPosts: 1, wantRows: 1},
+		{name: "同键不同金额：拒绝，不覆盖", retryBody: 200, retryKey: key, wantCode: 42200, wantPosts: 1, wantRows: 1},
+		{name: "不带键：沿用后端生成（60 秒内同额被防重复拦截）", retryBody: 100, retryKey: "", wantCode: 40901, wantPosts: 1, wantRows: 1},
+		{name: "键格式错误", retryBody: 100, retryKey: "not-a-uuid", wantCode: 42200, wantPosts: 1, wantRows: 1},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			f := newFx(t)
+			bank := f.link(t)
+			if tc.firstErr != nil {
+				f.dw.fail["POST /funding/deposits"] = []error{tc.firstErr}
+			}
+			first := f.callKey("POST", "/api/v1/funding/deposits", fmt.Sprintf(body(100), bank), key)
+			r := f.callKey("POST", "/api/v1/funding/deposits", fmt.Sprintf(body(tc.retryBody), bank), tc.retryKey)
+			if r.Code != tc.wantCode {
+				t.Fatalf("重试 code = %d，期望 %d（%+v）", r.Code, tc.wantCode, r)
+			}
+			if n := f.dw.count("POST /funding/deposits"); n != tc.wantPosts {
+				t.Fatalf("DW 入金 POST 次数 = %d，期望 %d", n, tc.wantPosts)
+			}
+			if n := len(f.repo.transfers); n != tc.wantRows {
+				t.Fatalf("本地记录数 = %d，期望 %d", n, tc.wantRows)
+			}
+			if tc.wantCode == 0 || tc.wantCode == 50001 {
+				var a, b struct{ TransferID string }
+				_ = json.Unmarshal(first.Data, &a)
+				_ = json.Unmarshal(r.Data, &b)
+				if a.TransferID == "" || a.TransferID != b.TransferID {
+					t.Fatalf("重试应返回原 transferId：%q vs %q", a.TransferID, b.TransferID)
+				}
+			}
+			if tc.retryKey == key && f.repo.transfers[0].IdempotencyKey != key {
+				t.Fatal("记录应使用 App 提供的幂等键（对账重放与 DW 去重用同一个键）")
+			}
+		})
+	}
+}
+
+func TestWithdrawalClientIdempotencyKey(t *testing.T) {
+	const key = "0a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d"
+	f := newFx(t)
+	bank := f.link(t)
+	b := `{"method":"ACH","bankAccountId":"` + bank + `","amount":50}`
+	r1 := f.callKey("POST", "/api/v1/funding/withdrawals", b, key)
+	r2 := f.callKey("POST", "/api/v1/funding/withdrawals", b, key)
+	if r1.Code != 0 || r2.Code != 0 {
+		t.Fatalf("%+v / %+v", r1, r2)
+	}
+	if n := f.dw.count("POST /funding/redemptions"); n != 1 {
+		t.Fatalf("同键重试不得重复出金：DW 出金 POST %d 次", n)
+	}
+}
+
+// 审计 FUND-P0-2：DW 幂等键 4 天后失效，超过 95 小时不得再重放（否则新建一笔入金、重复扣款），只反查或转人工。
+func TestSyncStopsReplayPastIdempotencyWindow(t *testing.T) {
+	for _, tc := range []struct {
+		name      string
+		age       time.Duration
+		wantPosts int
+		wantList  int
+	}{
+		{"94 小时：仍重放", 94 * time.Hour, 2, 1},
+		{"95 小时：停止重放，只反查", 95 * time.Hour, 1, 1},
+		{"10 天：停止重放，只反查", 240 * time.Hour, 1, 1},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			f := newFx(t)
+			bank := f.link(t)
+			f.dw.fail["POST /funding/deposits"] = []error{fmt.Errorf("timeout")}
+			f.call("POST", "/api/v1/funding/deposits", `{"bankAccountId":"`+bank+`","amount":10}`)
+			submitted := f.repo.transfers[0].SubmittedAt
+			f.svc.now = func() time.Time { return submitted.Add(tc.age) }
+			f.dw.fail["POST /funding/deposits"] = []error{fmt.Errorf("timeout")}
+			f.dw.resp["GET /accounts/dwacc-1/funding/deposits"] = `[]`
+			f.svc.Sync(context.Background(), time.Minute)
+			if n := f.dw.count("POST /funding/deposits"); n != tc.wantPosts {
+				t.Fatalf("POST 次数 = %d，期望 %d", n, tc.wantPosts)
+			}
+			if n := f.dw.count("GET /accounts/dwacc-1/funding/deposits"); n != tc.wantList {
+				t.Fatalf("反查次数 = %d，期望 %d", n, tc.wantList)
+			}
+			if st := f.repo.transfers[0].Status; st != StatusSubmitting {
+				t.Fatalf("查不到时保持提交中、转人工：%s", st)
+			}
+		})
+	}
 }

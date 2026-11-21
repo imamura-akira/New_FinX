@@ -8,6 +8,7 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
+	"regexp"
 	"strings"
 )
 
@@ -188,4 +189,20 @@ func ClientIP(r *http.Request) string {
 		host = host[:i]
 	}
 	return strings.Trim(host, "[]")
+}
+
+var idemKeyRE = regexp.MustCompile(`^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$`)
+
+// ClientIdempotencyKey 读取 App 提交资金类请求（入金、出金、下单）时附带的 Idempotency-Key 头（可选，UUID）。
+// App 对同一笔申请的重试沿用同一个键，后端据此去重，避免超时后重试造成重复提交（审计 FUND-P0-1）。
+// 未带时返回空字符串（兼容旧版 App）。
+func ClientIdempotencyKey(r *http.Request) (string, error) {
+	k := strings.TrimSpace(r.Header.Get("Idempotency-Key"))
+	if k == "" {
+		return "", nil
+	}
+	if !idemKeyRE.MatchString(k) {
+		return "", Validation("", FieldError{Field: "Idempotency-Key", Reason: "请求编号格式不正确"})
+	}
+	return strings.ToLower(k), nil
 }

@@ -184,3 +184,4 @@ Base URL：`/api/v1`　认证：`Authorization: Bearer <sessionToken>`（除 /au
 | 2026-11-20 | 5.5 市场数据扩展（F11）：新增 `GET /market/sentiment`（恐慌贪婪指数 + 涨跌家数，`simulated: true`，无需登录）；P-09 指数卡新增 IWM（罗素 2000，复用 `/market/quotes`，标的池已含）。恐慌贪婪指数正式数据源待定（自行计算或采购，不得抓取第三方指数） | 新增，向后兼容 |
 | 2026-11-20 | F17 资产分布与资产趋势：新增 `GET /account/allocation`、`GET /account/history?range=`、`GET /paper/account/allocation`、`GET /paper/account/history`（每日资产快照，迁移 000008 asset_snapshots）；新增结构 `Allocation`、`AssetHistory` | 新增，向后兼容 |
 | 2026-11-20 | 新增 5.9 预测板块（F19，积分演示版）：`/predict/account`、`/predict/markets`、`/predict/markets/{id}`、`/predict/bets`（POST / GET）、`/predict/claim`；新增结构 PredictMarket、PredictBet、PredictStats；虚拟行情新增模拟加密标的 BTC、SOL | 新增，向后兼容 |
+| 2026-11-21 | 资金类写接口 `POST /funding/deposits`、`POST /funding/withdrawals`、`POST /orders` 新增**可选**请求头 `Idempotency-Key`（UUID，App 每笔申请生成、重试沿用）：后端按"账户 + 键"去重，已有记录时不再提交券商，按原记录作答（已受理 → 200 原编号与状态；确认中 → 502/50001 带原编号；内容不同 → 42200）。不带时行为不变。审计 FUND-P0-1 | 新增，向后兼容 |

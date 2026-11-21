@@ -47,6 +47,12 @@ func TestPGTradingRepo(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	if got, err := r.OrderByIdemKey(ctx, accID, o1.IdempotencyKey); err != nil || got.ID != id1 || got.Symbol != "AAPL" {
+		t.Fatalf("OrderByIdemKey: %+v %v", got, err)
+	}
+	if _, err := r.OrderByIdemKey(ctx, "00000000-0000-4000-8000-000000000000", o1.IdempotencyKey); !errors.Is(err, ErrNotFound) {
+		t.Fatalf("其他账户不应取到: %v", err)
+	}
 	qty := json.Number("0.123456")
 	o2 := Order{AccountID: accID, Symbol: "TSLA", Side: "SELL", OrderType: "MARKET", Quantity: &qty, Status: StatusSubmitting, IdempotencyKey: key("2")}
 	id2, err := r.InsertOrder(ctx, o2)
